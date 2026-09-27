@@ -6,18 +6,9 @@
 
 <!-- Closes #N -->
 
-## Agent used
-
-- [ ] none
-- [ ] opencode
-- [ ] antigravity
-- [ ] codex
-
 ## Checklist
 
-- [ ] I reviewed the full diff (not just the agent summary)
-- [ ] lint + typecheck + tests green locally
-- [ ] no secrets
-- [ ] new deps noted
-- [ ] DEMO_MODE path untouched
-- [ ] screenshot (UI only)
+- [ ] lint, typecheck, tests, build green locally
+- [ ] no secrets or `.env` committed
+- [ ] new dependencies noted above
+- [ ] screenshot attached (UI changes only)

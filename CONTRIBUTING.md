@@ -25,7 +25,7 @@ CI runs `commitlint` on both the branch's commit range and the PR title. Local p
 - Draft first, then ready for review.
 - **Required approvals = 0.** Per-path review is enforced by the `zone-guard` CI check: a PR that touches only your zone's paths merges with zero approvals; touching another zone stays red until that zone's owner approves. "Require review from Code Owners" stays OFF (GitHub's checkboxes are branch-wide and cannot express per-path gates on a personal plan).
 - CI must be green: `api`, `web`, `commitlint`, `zone-guard`.
-- Fill in the PR template (what/why, agent used, checklist). New dependencies must be noted in the PR body.
+- Fill in the PR template (what/why, checklist). New dependencies must be noted in the PR body.
 - One issue ↔ one PR ↔ one branch.
 
 ## Definition of Done

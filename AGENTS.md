@@ -86,7 +86,7 @@ If you are not the owner of a folder, ping the owner in the PR before changing i
 
 - [ ] Commands above are green (format, lint, typecheck, tests, build)
 - [ ] Self-reviewed the full diff for secrets / debug prints / stray files
-- [ ] PR body filled in (what/why, agent tool used, checklist)
+- [ ] PR body filled in (what/why, checklist)
 - [ ] Issue updated (comment or close with a pointer)
 
 ## Out of scope reminders
