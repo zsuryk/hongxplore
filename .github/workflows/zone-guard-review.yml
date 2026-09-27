@@ -1,0 +1,32 @@
+name: zone-guard
+
+on:
+  pull_request_review:
+    types: [submitted, dismissed]
+
+concurrency:
+  group: zone-guard-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  zone-guard:
+    if: github.event.pull_request.state == 'open'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Enforce zone ownership
+        run: python3 .github/scripts/zone_guard.py
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
