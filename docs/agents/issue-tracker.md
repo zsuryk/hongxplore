@@ -13,6 +13,16 @@ Issues and specs for this repo live as GitHub issues. Use the `gh` CLI for all o
 
 Infer the repo from `git remote -v`; `gh` does this automatically when run inside a clone.
 
+## Project board
+
+The tracker's board is personal project **#1 "Hongxplore"** (owner `zsuryk`; repo collaborators also have WRITER access to it). Every open ticket sits on it. Status options: `Backlog` · `Ready` · `In Progress` · `Review` · `Done` — each owner moves only their own cards (`docs/PLAN.md` → standup rule).
+
+- **List cards**: `gh project item-list 1 --owner zsuryk --limit 50 --format json` — the plain table omits Status; read `items[].status`.
+- **Add a card**: `gh project item-add 1 --owner zsuryk --url https://github.com/zsuryk/hongxplore/issues/<n>`
+- **Set / move Status**: `gh project item-edit 1 --owner zsuryk --url https://github.com/zsuryk/hongxplore/issues/<n> --field Status --value "In Progress"`
+- These need the `project` auth scope; if `gh` reports missing scopes, run `gh auth refresh -s project`.
+- Board state lives in GitHub only — never mirror it into issue bodies or repo docs.
+
 ## Pull requests as a triage surface
 
 **PRs as a request surface: no.** _(Set to `yes` if this repo treats external PRs as feature requests; `/triage` reads this flag.)_
