@@ -1,0 +1,17 @@
+# Zone owners — enforced by the zone-guard CI job (§8.2), not by a GitHub checkbox.
+# PARSER CONSTRAINT: zone_guard.py supports ONLY '*', '/dir/' and '/file' patterns
+# (no globs like '*.md'), and always reads this file from the PR's BASE commit.
+* @zsuryk
+
+/api/              @zsuryk       # routes/models/config/tests = Kyrus
+/api/app/services/ @kORNkin      # services zone = Korn (last match wins)
+/web/              @sweetpinejam
+/data/             @kORNkin
+/docs/             @zsuryk
+
+# Governance paths — Kyrus-only: teammates touching these need HIS approval via zone-guard
+/.github/     @zsuryk       # workflows (the CI flow), CODEOWNERS itself, templates
+/.gitignore   @zsuryk       # secret-exclusion guard — un-ignoring .env would leak secrets
+/AGENTS.md    @zsuryk       # rules every teammate's agent follows
+/GEMINI.md    @zsuryk
+/docs/agents/ @zsuryk       # issue-tracker / triage-labels / domain config
