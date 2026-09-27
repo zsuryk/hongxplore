@@ -1,6 +1,6 @@
 # ADR-0007: License
 
-- **Status:** proposed  ← OPEN — decide before the repo flips public (issue #16)
+- **Status:** proposed  ← OPEN — decide before the repo flips public (issue #17)
 - **Date:** 2026-09-27
 
 ## Context
@@ -9,7 +9,7 @@ The repository starts private and flips **public on demo day**. An unlicensed pu
 
 ## Decision
 
-*Open.* Tracked by **issue #16** ("License decision + flip-to-public checklist"). Must be resolved — LICENSE file added, this ADR updated to `accepted` — before the public flip.
+*Open.* Tracked by **issue #17** ("License decision + flip-to-public checklist"). Must be resolved — LICENSE file added, this ADR updated to `accepted` — before the public flip.
 
 ## Consequences
 

@@ -51,7 +51,7 @@ Mirrors `AGENTS.md` → "Before finishing a task":
 This repo flips public on demo day. Before that:
 
 - [ ] Scrub env & history for secrets: `git log -p | grep -iE 'sk-|api.?key|token|password'` and confirm GitHub → Settings → Secrets and variables → Actions is **empty**
-- [ ] Decide a LICENSE (issue #16 / ADR-0007)
+- [ ] Decide a LICENSE (issue #17 / ADR-0007)
 - [ ] Verify `.gitignore` still excludes `.env` and friends (`git check-ignore api/.env`)
 - [ ] Check commit history and docs for teammate full names or other personal data beyond GitHub handles (handles are fine)
 - [ ] Confirm no joke commits, no debug leftovers, no PRD-style files

@@ -15,7 +15,7 @@ web  →  POST /api/agent
       → respond: Activity cards + match rationale + agent log
 ```
 
-The response shape is fixed by the contract hub (issue #3): `docs/openapi.json`, the fixture `docs/examples/agent-response.json`, and generated `web/src/api/schema.ts`.
+The response shape is fixed by the contract hub (issue #4): `docs/openapi.json`, the fixture `docs/examples/agent-response.json`, and generated `web/src/api/schema.ts`.
 
 ## Search cache decision
 
@@ -33,7 +33,7 @@ All three come from env via `api/app/config.py` (pydantic-settings). **Never har
 
 ## Demo resilience
 
-`DEMO_MODE=true` → agent endpoints serve bundled seed JSON (seed data lands via a later ticket, #6) instead of calling Tavily/LLM. The API's config and every future agent route must respect this flag so the pitch never depends on live network. The example `.env` ships with `DEMO_MODE=true`.
+`DEMO_MODE=true` → agent endpoints serve bundled seed JSON (seed data lands via a later ticket, #7) instead of calling Tavily/LLM. The API's config and every future agent route must respect this flag so the pitch never depends on live network. The example `.env` ships with `DEMO_MODE=true`.
 
 ## Planned module layout (`api/app/`)
 
@@ -46,7 +46,7 @@ All three come from env via `api/app/config.py` (pydantic-settings). **Never har
 | `prompts/` | Prompt templates (intent parsing, match rationale) | Korn |
 | `tests/` | Backend tests (pytest) | Kyrus |
 
-**Service seam:** `api/app/services/ports.py` holds `Protocol` interfaces (`SearchProvider`, `LLMClient`, `ActivityCache`) drafted by Kyrus alongside issue #3 and implemented by Korn. Route code depends only on the ports; the route never imports a concrete service. Cross-cutting policy (retries, timeouts, HTTP error mapping) is Kyrus's, defaulted in `config.py`; strategy inside a service (search approach, prompt sequencing, cache TTL semantics, ranking weights) is Korn's.
+**Service seam:** `api/app/services/ports.py` holds `Protocol` interfaces (`SearchProvider`, `LLMClient`, `ActivityCache`) drafted by Kyrus alongside issue #4 and implemented by Korn. Route code depends only on the ports; the route never imports a concrete service. Cross-cutting policy (retries, timeouts, HTTP error mapping) is Kyrus's, defaulted in `config.py`; strategy inside a service (search approach, prompt sequencing, cache TTL semantics, ranking weights) is Korn's.
 
 Ownership matrix: `docs/PLAN.md` → Part B.
 
@@ -56,7 +56,7 @@ Ownership matrix: `docs/PLAN.md` → Part B.
 - **Infinite canvas**: custom DOM transform layer — pan/zoom/drag math lives in one place (viewport transform, not per-card positioning).
 - **State**: Zustand store; card positions, timeline dock state, agent conversation log.
 - **Types**: generated from FastAPI's OpenAPI snapshot (`pnpm gen:types` → `web/src/api/schema.ts`, generated — never hand-edit).
-- **Fixtures first**: web is developed against `docs/examples/agent-response.json` until `POST /api/agent` lands (issue #8) — it never blocks on a live API.
+- **Fixtures first**: web is developed against `docs/examples/agent-response.json` until `POST /api/agent` lands (issue #9) — it never blocks on a live API.
 - All user-facing strings in `web/src/copy.ts`.
 
 ## Environment variables
