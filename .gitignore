@@ -1,0 +1,29 @@
+# Python / uv
+__pycache__/
+*.py[cod]
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+*.egg-info/
+htmlcov/
+.coverage
+
+# Env & secrets
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+dist/
+*.local
+npm-debug.log*
+pnpm-debug.log*
+
+# Editors & OS
+.DS_Store
+Thumbs.db
+.idea/
+*.swp
+.vscode/
