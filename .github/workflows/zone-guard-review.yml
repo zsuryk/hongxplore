@@ -3,30 +3,47 @@ name: zone-guard
 on:
   pull_request_review:
     types: [submitted, dismissed]
+  issue_comment:
+    types: [created]
 
 concurrency:
-  group: zone-guard-${{ github.event.pull_request.number }}
+  group: zone-guard-${{ github.event.pull_request.number || github.event.issue.number }}
   cancel-in-progress: true
 
 jobs:
   zone-guard:
-    if: github.event.pull_request.state == 'open'
+    if: >-
+      (github.event_name == 'pull_request_review' && github.event.pull_request.state == 'open') ||
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && github.event.issue.state == 'open')
     runs-on: ubuntu-latest
     timeout-minutes: 3
     permissions:
       contents: read
       pull-requests: read
+      issues: read
     steps:
+      - name: Resolve PR
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+        run: |
+          PR_JSON=$(gh api "repos/$REPO/pulls/$PR_NUMBER")
+          echo "author=$(jq -r .user.login <<<"$PR_JSON")" >> "$GITHUB_OUTPUT"
+          echo "base=$(jq -r .base.sha <<<"$PR_JSON")" >> "$GITHUB_OUTPUT"
+          echo "head=$(jq -r .head.sha <<<"$PR_JSON")" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ steps.pr.outputs.head }}
       - name: Enforce zone ownership
         run: python3 .github/scripts/zone_guard.py
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           REPO_OWNER: ${{ github.repository_owner }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
-          BASE: ${{ github.event.pull_request.base.sha }}
-          HEAD: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+          PR_AUTHOR: ${{ steps.pr.outputs.author }}
+          BASE: ${{ steps.pr.outputs.base }}
+          HEAD: ${{ steps.pr.outputs.head }}
