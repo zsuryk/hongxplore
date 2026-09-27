@@ -3,12 +3,21 @@
 
 Rule: a PR merges with ZERO approvals iff the author owns every touched path;
 any path outside the author's zone needs at least one APPROVED review from that
-path's owner(s). CODEOWNERS is always read from the PR's BASE commit, never the
+path's owner(s). This applies to every author, including the repo owner — no
+short-circuit.
+
+Escape hatch: a PR conversation comment containing "zone-guard bypass"
+(case-insensitive) posted by the repo owner passes unconditionally. Only the
+oldest 100 conversation comments are scanned (fail-closed beyond that).
+
+CODEOWNERS is always read from the PR's BASE commit, never the
 PR's own copy — otherwise a PR could grant itself ownership.
 
 Supported pattern subset (see §6): '*' catch-all, '/dir/' prefix, '/file' exact.
 """
 import json, os, subprocess, sys, urllib.request
+
+BYPASS_PHRASE = "zone-guard bypass"
 
 
 def gh(path):
@@ -64,12 +73,23 @@ def owners_of(path, rules, owner):
     return owners or [owner]
 
 
+def bypassed(owner, repo, pr):
+    """Repo owner waives the gate with a conversation comment containing the phrase."""
+    try:
+        comments = gh(f"/repos/{repo}/issues/{pr}/comments?per_page=100")
+    except Exception as exc:  # API trouble: stay strict (fail closed)
+        print(f"zone-guard: warning — could not read conversation comments: {exc}")
+        return False
+    for c in comments:
+        login = ((c.get("user") or {}).get("login") or "").lower()
+        if login == owner and BYPASS_PHRASE in (c.get("body") or "").lower():
+            return True
+    return False
+
+
 def main():
     author = os.environ["PR_AUTHOR"].lower()
     owner = os.environ["REPO_OWNER"].lower()
-    if author == owner:
-        print(f"zone-guard: repo owner ({author}) — pass")
-        return 0
     rules = load_rules(os.environ["BASE"], owner)
     files = subprocess.check_output(
         ["git", "diff", "--name-only", "--no-renames",
@@ -78,6 +98,9 @@ def main():
     ).splitlines()
     if not files:
         print("zone-guard: no changed files — pass")
+        return 0
+    if bypassed(owner, os.environ["REPO"], int(os.environ["PR_NUMBER"])):
+        print(f"zone-guard: PASS — '{BYPASS_PHRASE}' comment from {owner}")
         return 0
     reviews = gh(
         f"/repos/{os.environ['REPO']}/pulls/{os.environ['PR_NUMBER']}/reviews?per_page=100"
