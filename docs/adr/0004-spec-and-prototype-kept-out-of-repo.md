@@ -5,7 +5,7 @@
 
 ## Context
 
-The product PRD is Kyrus's personal work, and an earlier static prototype (`index.html` whiteboard) exists in the separate, older `kulturecanvas` project. Both were candidates for landing in this repo during bootstrap.
+The product PRD is zsuryk's personal work, and an earlier static prototype (`index.html` whiteboard) exists in the separate, older `kulturecanvas` project. Both were candidates for landing in this repo during bootstrap.
 
 ## Decision
 

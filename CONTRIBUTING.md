@@ -4,7 +4,7 @@ Thanks for contributing. Read `AGENTS.md` first — it is the single source of t
 
 ## Workflow — GitHub Flow
 
-1. Pick up an issue from the [backlog](https://github.com/zsuryk/hongxplore/issues) (check its `Blocked by` edges and `Owner:` line first — `gh issue view <n> --comments`).
+1. Pick up an issue from the [backlog](https://github.com/zsuryk/hongxplore/issues) (check its assignee, `Blocked by` edges, and labels first — `gh issue view <n> --comments`).
 2. Branch off `main`: `feat/<issue#>-slug`, `fix/<issue#>-slug`, or `chore/<issue#>-slug`.
 3. Open a **draft PR** early, reference `Closes #N`, then land work as incremental commits.
 4. Mark ready for review when CI is green and the Definition of Done is met.

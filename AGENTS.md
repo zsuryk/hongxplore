@@ -8,12 +8,12 @@ Single source of truth for every human and AI agent working on this repo. `GEMIN
 
 | Folder | Purpose | Owner |
 | --- | --- | --- |
-| `api/` | FastAPI backend: routes, models, config, services, prompts, tests | Kyrus (services/prompts: Korn) |
-| `web/` | React + Vite frontend | Pax |
-| `data/` | Seed datasets (JSON) | Korn |
-| `docs/` | Project docs, ADRs (`docs/adr/`), skill config (`docs/agents/`) | Kyrus |
-| `.github/` | CI workflows, CODEOWNERS, templates | Kyrus |
-| Root docs | `README.md`, `AGENTS.md`, `CONTRIBUTING.md`, `CONTEXT.md`, `docs/PLAN.md` | Kyrus |
+| `api/` | FastAPI backend: routes, models, config, services, prompts, tests | zsuryk (services/prompts: kORNkin) |
+| `web/` | React + Vite frontend | sweetpinejam |
+| `data/` | Seed datasets (JSON) | kORNkin |
+| `docs/` | Project docs, ADRs (`docs/adr/`), skill config (`docs/agents/`) | zsuryk |
+| `.github/` | CI workflows, CODEOWNERS, templates | zsuryk |
+| Root docs | `README.md`, `AGENTS.md`, `CONTRIBUTING.md`, `CONTEXT.md`, `docs/PLAN.md` | zsuryk |
 
 The binding ownership matrix is **`docs/PLAN.md` → "Part B — Workstreams & ownership"** — it, not this table, is authoritative for folder ownership.
 
@@ -72,13 +72,13 @@ CI additionally lints commit messages and the PR title (`commitlint` job).
 - Agent sessions map to a single PR; a human reviews the full diff, not just the agent's summary.
 - Log non-obvious decisions as a new ADR in `docs/adr/` (append, never rewrite history).
 
-## Team & tools
+## Team & roles
 
-| Person | GitHub handle | Role | AI coding tool |
-| --- | --- | --- | --- |
-| Kyrus | `zsuryk` | Backend / API lead, repo admin, docs owner | OpenCode |
-| Korn | `kORNkin` | Data & AI integration (Tavily, LLM prompts), prompt engineering | Antigravity |
-| Pax | `sweetpinejam` | Frontend | Codex |
+| GitHub handle | Role |
+| --- | --- |
+| `zsuryk` | Backend / API lead, repo admin, docs owner |
+| `kORNkin` | Data & AI integration (Tavily, LLM prompts), prompt engineering |
+| `sweetpinejam` | Frontend |
 
 If you are not the owner of a folder, ping the owner in the PR before changing it.
 

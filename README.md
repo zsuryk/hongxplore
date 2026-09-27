@@ -67,10 +67,10 @@ CI additionally lints commit messages and the PR title (`commitlint` job).
 
 ## Team & roles
 
-| Person | GitHub handle | Role | AI coding tool |
-| --- | --- | --- | --- |
-| Kyrus | `zsuryk` | Backend / API lead, repo admin, docs owner | OpenCode |
-| Korn | `kORNkin` | Data & AI integration (Tavily, LLM prompts), prompt engineering | Antigravity |
-| Pax | `sweetpinejam` | Frontend | Codex |
+| GitHub handle | Role |
+| --- | --- |
+| `zsuryk` | Backend / API lead, repo admin, docs owner |
+| `kORNkin` | Data & AI integration (Tavily, LLM prompts), prompt engineering |
+| `sweetpinejam` | Frontend |
 
 Ownership details per folder live in [`docs/PLAN.md`](docs/PLAN.md) ("Workstreams & ownership") and are enforced by the `zone-guard` CI check via `.github/CODEOWNERS`.

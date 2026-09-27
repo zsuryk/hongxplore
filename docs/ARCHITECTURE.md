@@ -39,14 +39,14 @@ All three come from env via `api/app/config.py` (pydantic-settings). **Never har
 
 | Module | Contents | Zone |
 | --- | --- | --- |
-| `routes/` | FastAPI routers (`/health` now, `/api/agent` later) | Kyrus |
-| `models/` | Pydantic models — `Activity` is the future single source of truth for the API contract | Kyrus |
-| `config.py` | pydantic-settings: `OPENAI_*`, `TAVILY_*`, `DEMO_MODE`, cross-cutting policy (retries, timeouts, logging) | Kyrus |
-| `services/` | Search, LLM, ranking, normalisation — behind `ports.py` Protocol interfaces | Korn |
-| `prompts/` | Prompt templates (intent parsing, match rationale) | Korn |
-| `tests/` | Backend tests (pytest) | Kyrus |
+| `routes/` | FastAPI routers (`/health` now, `/api/agent` later) | zsuryk |
+| `models/` | Pydantic models — `Activity` is the future single source of truth for the API contract | zsuryk |
+| `config.py` | pydantic-settings: `OPENAI_*`, `TAVILY_*`, `DEMO_MODE`, cross-cutting policy (retries, timeouts, logging) | zsuryk |
+| `services/` | Search, LLM, ranking, normalisation — behind `ports.py` Protocol interfaces | kORNkin |
+| `prompts/` | Prompt templates (intent parsing, match rationale) | kORNkin |
+| `tests/` | Backend tests (pytest) | zsuryk |
 
-**Service seam:** `api/app/services/ports.py` holds `Protocol` interfaces (`SearchProvider`, `LLMClient`, `ActivityCache`) drafted by Kyrus alongside issue #4 and implemented by Korn. Route code depends only on the ports; the route never imports a concrete service. Cross-cutting policy (retries, timeouts, HTTP error mapping) is Kyrus's, defaulted in `config.py`; strategy inside a service (search approach, prompt sequencing, cache TTL semantics, ranking weights) is Korn's.
+**Service seam:** `api/app/services/ports.py` holds `Protocol` interfaces (`SearchProvider`, `LLMClient`, `ActivityCache`) drafted by zsuryk alongside issue #4 and implemented by kORNkin. Route code depends only on the ports; the route never imports a concrete service. Cross-cutting policy (retries, timeouts, HTTP error mapping) is zsuryk's, defaulted in `config.py`; strategy inside a service (search approach, prompt sequencing, cache TTL semantics, ranking weights) is kORNkin's.
 
 Ownership matrix: `docs/PLAN.md` → Part B.
 

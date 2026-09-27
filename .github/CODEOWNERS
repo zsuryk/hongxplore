@@ -3,13 +3,13 @@
 # (no globs like '*.md'), and always reads this file from the PR's BASE commit.
 * @zsuryk
 
-/api/              @zsuryk       # routes/models/config/tests = Kyrus
-/api/app/services/ @kORNkin      # services zone = Korn (last match wins)
+/api/              @zsuryk       # routes/models/config/tests (api zone)
+/api/app/services/ @kORNkin      # services zone (last match wins)
 /web/              @sweetpinejam
 /data/             @kORNkin
 /docs/             @zsuryk
 
-# Governance paths — Kyrus-only: teammates touching these need HIS approval via zone-guard
+# Governance paths — repo-admin only: changes here need the admin's zone-guard approval
 /.github/     @zsuryk       # workflows (the CI flow), CODEOWNERS itself, templates
 /.gitignore   @zsuryk       # secret-exclusion guard — un-ignoring .env would leak secrets
 /AGENTS.md    @zsuryk       # rules every teammate's agent follows
