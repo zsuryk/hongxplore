@@ -16,7 +16,7 @@ Completed by PR #2:
 - [x] Tooling green: uv + ruff + mypy + pytest; pnpm + eslint + prettier + tsc
 - [x] CI: `api`, `web`, `commitlint`, `zone-guard` jobs; CODEOWNERS; templates
 - [x] Contract pipeline proven: `docs/openapi.json`, `docs/examples/agent-response.json`, `web/src/api/schema.ts` via `pnpm gen:types`
-- [x] Tracker: labels, issues #1 and #3–#17 with assignees and blocking edges (project board "Hongxplore" created — #1 → Review, #3–#17 → Ready)
+- [x] Tracker: labels, issues #1 and #3–#17 with assignees and blocking edges (project board "Hongxplore" created — statuses `Backlog` · `Todo` · `In Progress` · `Done` · `Cancelled`)
 
 ### Ticket index
 
