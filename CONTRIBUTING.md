@@ -10,6 +10,10 @@ Thanks for contributing. Read `AGENTS.md` first — it is the single source of t
 4. Mark ready for review when CI is green and the Definition of Done is met.
 5. Squash merge (PR title becomes `main`'s history — it must pass commitlint).
 
+## Project board
+
+Every issue is a card on the [Hongxplore board](https://github.com/users/zsuryk/projects/1) with statuses `Backlog` · `Todo` · `In Progress` · `Done` · `Cancelled`. Move your own cards as you work — the board is the standup surface (`docs/PLAN.md` → standup rule); don't mirror board state into issue bodies. `gh` commands and the one-time Auto-add setup live in `docs/agents/issue-tracker.md`.
+
 ## Commits — Conventional Commits
 
 `type(scope): imperative summary` — lowercase, no trailing period, subject ≤ 72 chars.

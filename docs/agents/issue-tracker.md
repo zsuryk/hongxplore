@@ -15,11 +15,18 @@ Infer the repo from `git remote -v`; `gh` does this automatically when run insid
 
 ## Project board
 
-The tracker's board is personal project **#1 "Hongxplore"** (owner `zsuryk`; repo collaborators also have WRITER access to it). Every open ticket sits on it. Status options: `Backlog` · `Ready` · `In Progress` · `Review` · `Done` — each owner moves only their own cards (`docs/PLAN.md` → standup rule).
+The tracker's board is personal project **#1 "Hongxplore"** — https://github.com/users/zsuryk/projects/1 (owner `zsuryk`; repo collaborators hold WRITER access and may move any card). Every issue and PR sits on it. Status options: `Backlog` · `Todo` · `In Progress` · `Done` · `Cancelled` — each owner moves only their own cards (`docs/PLAN.md` → standup rule).
+
+- `Backlog` — parked; nobody plans to start it now.
+- `Todo` — picked up next: unblocked and assigned or claimed.
+- `In Progress` — someone is actively working on it.
+- `Done` — the issue is closed (merged or delivered).
+- `Cancelled` — dropped without doing the work.
 
 - **List cards**: `gh project item-list 1 --owner zsuryk --limit 50 --format json` — the plain table omits Status; read `items[].status`.
 - **Add a card**: `gh project item-add 1 --owner zsuryk --url https://github.com/zsuryk/hongxplore/issues/<n>`
 - **Set / move Status**: `gh project item-edit 1 --owner zsuryk --url https://github.com/zsuryk/hongxplore/issues/<n> --field Status --value "In Progress"`
+- **Auto-add (one manual step):** issues and PRs get cards automatically only after a human enables the native workflow: open the board → **Settings → Workflows → Auto-add to project** → select repository `zsuryk/hongxplore`. Neither GraphQL nor `GITHUB_TOKEN` can create or enable workflows, so this toggle cannot be scripted — until it is on, add cards with the command above.
 - These need the `project` auth scope; if `gh` reports missing scopes, run `gh auth refresh -s project`.
 - Board state lives in GitHub only — never mirror it into issue bodies or repo docs.
 
