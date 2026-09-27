@@ -23,6 +23,15 @@ The tracker's board is personal project **#1 "Hongxplore"** — https://github.c
 - `Done` — the issue is closed (merged or delivered).
 - `Cancelled` — dropped without doing the work.
 
+### Status transitions (who moves what)
+
+Status restates GitHub events — it never records intent.
+
+- **Agents may set automatically** (only from verifiable state): claiming a ticket (branch exists / assignee set) → `In Progress`; a PR with `Closes #N` merging → `Done`; an issue reopening → `Todo`; opening a new issue → add its card at `Backlog`.
+- **Humans only:** `Backlog` ↔ `Todo` (scheduling intent), `Cancelled` (the judgment of why something was dropped), and moving anyone else's cards — the standup rule covers agents acting on someone's behalf.
+
+If a session dies mid-work, a facts-derived board self-heals on the next event; an intent-derived one drifts.
+
 - **List cards**: `gh project item-list 1 --owner zsuryk --limit 50 --format json` — the plain table omits Status; read `items[].status`.
 - **Add a card**: `gh project item-add 1 --owner zsuryk --url https://github.com/zsuryk/hongxplore/issues/<n>`
 - **Set / move Status**: `gh project item-edit 1 --owner zsuryk --url https://github.com/zsuryk/hongxplore/issues/<n> --field Status --value "In Progress"`

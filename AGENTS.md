@@ -69,7 +69,7 @@ CI additionally lints commit messages and the PR title (`commitlint` job).
 
 - Branch naming: `feat/<issue#>-slug`, `fix/<issue#>-slug`, `chore/<issue#>-slug`.
 - PR references `Closes #N`. One issue ↔ one PR ↔ one branch.
-- **Project board:** every issue is a card on the "Hongxplore" project (https://github.com/users/zsuryk/projects/1) — statuses `Backlog` · `Todo` · `In Progress` · `Done` · `Cancelled`; move your own cards (`gh` commands: `docs/agents/issue-tracker.md`). Auto-add is a native UI workflow (board → Settings → Workflows → Auto-add → this repo) that only a human can enable.
+- **Project board:** every issue is a card on the "Hongxplore" project (https://github.com/users/zsuryk/projects/1) — statuses `Backlog` · `Todo` · `In Progress` · `Done` · `Cancelled`; move your own cards (`gh` commands: `docs/agents/issue-tracker.md`). Status transitions: agents set only event-derived values (claim → In Progress, merged → Done, reopened → Todo); `Backlog` ↔ `Todo` and `Cancelled` stay human — details in the same file. Auto-add is a native UI workflow (board → Settings → Workflows → Auto-add → this repo) that only a human can enable.
 - Agent sessions map to a single PR; a human reviews the full diff, not just the agent's summary.
 - Log non-obvious decisions as a new ADR in `docs/adr/` (append, never rewrite history).
 
