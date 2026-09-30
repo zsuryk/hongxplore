@@ -1,6 +1,6 @@
 # Architecture (v0 plan)
 
-This is the technical plan teammates build against. Decisions are recorded as ADRs in `docs/adr/`; tickets live in `docs/PLAN.md` and the issue backlog. Nothing here is built yet beyond `GET /health` and the web hello page.
+This is the technical plan teammates build against. Decisions are recorded as ADRs in `docs/adr/`; tickets live in `docs/PLAN.md` and the issue backlog. Nothing here is built yet beyond `GET /health`, the `POST /api/agent` contract stub, and the web hello page.
 
 ## High-level request flow
 
@@ -39,7 +39,7 @@ All three come from env via `api/app/config.py` (pydantic-settings). **Never har
 
 | Module | Contents | Zone |
 | --- | --- | --- |
-| `routes/` | FastAPI routers (`/health` now, `/api/agent` later) | zsuryk |
+| `routes/` | FastAPI routers (`/health`, plus the `POST /api/agent` stub that #9 implements) | zsuryk |
 | `models/` | Pydantic models — `Activity` is the future single source of truth for the API contract | zsuryk |
 | `config.py` | pydantic-settings: `OPENAI_*`, `TAVILY_*`, `DEMO_MODE`, cross-cutting policy (retries, timeouts, logging) | zsuryk |
 | `services/` | Search, LLM, ranking, normalisation — behind `ports.py` Protocol interfaces | kORNkin |
