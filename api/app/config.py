@@ -1,6 +1,12 @@
 """Typed settings loaded from environment / api/.env (pydantic-settings)."""
 
+from pathlib import Path
+
+from pydantic import ValidationError, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+API_ROOT = Path(__file__).resolve().parent.parent
+ENV_FILE = API_ROOT / ".env"
 
 
 class Settings(BaseSettings):
@@ -10,7 +16,7 @@ class Settings(BaseSettings):
     (ADR-0002). DEMO_MODE defaults to true so a fresh clone runs with no keys.
     """
 
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(env_file=ENV_FILE, extra="ignore")
 
     openai_api_key: str = ""
     openai_base_url: str | None = None
@@ -18,5 +24,24 @@ class Settings(BaseSettings):
     tavily_api_key: str = ""
     demo_mode: bool = True
 
+    @field_validator("openai_base_url", mode="before")
+    @classmethod
+    def _blank_base_url_is_unset(cls, value: object) -> object:
+        if isinstance(value, str) and not value.strip():
+            return None
+        return value
 
-settings = Settings()
+
+def load_settings() -> Settings:
+    """Build Settings at import time so a bad api/.env aborts startup, not first use."""
+    try:
+        return Settings()
+    except ValidationError as exc:
+        raise RuntimeError(
+            "Invalid configuration in the environment or api/.env — "
+            "fix it against api/.env.example:\n"
+            f"{exc}"
+        ) from exc
+
+
+settings = load_settings()
