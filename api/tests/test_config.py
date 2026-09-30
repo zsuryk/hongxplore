@@ -1,5 +1,8 @@
 """Settings tests — defaults, `.env` / process-env overrides, fail-fast on bad values."""
 
+import os
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -7,6 +10,7 @@ from pydantic import ValidationError
 
 from app.config import ENV_FILE, Settings, load_settings
 
+API_ROOT = Path(__file__).resolve().parents[1]
 ENV_KEYS = tuple(name.upper() for name in Settings.model_fields)
 
 
@@ -37,7 +41,7 @@ def test_defaults_with_empty_env(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_default_env_file_is_api_dotenv() -> None:
     """Settings must load from `api/.env`, whatever the working directory is."""
-    assert ENV_FILE == Path(__file__).resolve().parents[1] / ".env"
+    assert ENV_FILE == API_ROOT / ".env"
     assert Settings.model_config["env_file"] == ENV_FILE
 
 
@@ -99,9 +103,16 @@ def test_load_settings_fails_fast_with_actionable_message(
     assert "demo_mode" in str(exc_info.value.__cause__)
 
 
-def test_settings_loads_at_import() -> None:
-    """Importing `app.config` (as `app.main` does) must yield usable settings."""
-    from app.config import settings
-
-    assert isinstance(settings, Settings)
-    assert isinstance(settings.demo_mode, bool)
+def test_app_boot_aborts_on_malformed_env() -> None:
+    """A fresh interpreter must refuse to boot `app.main` on a malformed value."""
+    result = subprocess.run(
+        [sys.executable, "-c", "import app.main"],
+        capture_output=True,
+        text=True,
+        env=dict(os.environ, DEMO_MODE="sometimes"),
+        cwd=API_ROOT,
+        check=False,
+    )
+    assert result.returncode != 0
+    assert "api/.env.example" in result.stderr
+    assert "demo_mode" in result.stderr
