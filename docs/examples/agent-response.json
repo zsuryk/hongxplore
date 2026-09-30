@@ -1,3 +1,100 @@
 {
-  "status": "ok"
+  "status": "ok",
+  "query": "free saturday afternoon, something cultural in Kowloon, English friendly",
+  "matches": [
+    {
+      "activity": {
+        "id": "heritage-discovery-centre-guided-tour",
+        "title": "香港歷史博物館 導賞團",
+        "title_en": "Hong Kong Heritage Discovery Centre guided tour",
+        "lang": "zh",
+        "tags": ["culture", "museum", "guided-tour", "free", "english-available"],
+        "parts": [
+          {
+            "start": "2026-10-03T06:00:00Z",
+            "end": "2026-10-03T07:00:00Z"
+          }
+        ],
+        "source": {
+          "name": "Hong Kong Heritage Discovery Centre",
+          "url": "https://www.heritagemuseum.gov.hk/"
+        },
+        "location": {
+          "district": "Yau Tsim Mong",
+          "venue": "Hong Kong Heritage Discovery Centre",
+          "address": "Kowloon Park Drive, Tsim Sha Tsui"
+        },
+        "url": "https://www.heritagemuseum.gov.hk/",
+        "image": "https://www.heritagemuseum.gov.hk/"
+      },
+      "match_rationale": "Free, in Tsim Sha Tsui, and the 2pm start sits inside your Saturday free slot; English guiding is available on request."
+    },
+    {
+      "activity": {
+        "id": "sham-shui-po-cultural-walk",
+        "title": "深水埗文化導賞：街市與唐樓",
+        "title_en": "Sham Shui Po cultural walk: markets and tong lau",
+        "lang": "zh",
+        "tags": ["culture", "walking-tour", "neighbourhood", "ngo"],
+        "parts": [
+          {
+            "start": "2026-10-03T06:00:00Z",
+            "end": "2026-10-03T08:00:00Z"
+          }
+        ],
+        "source": {
+          "name": "Discover Hong Kong"
+        },
+        "location": {
+          "district": "Sham Shui Po",
+          "venue": "Mei Ho House",
+          "address": "70 Shek Kip Mei Street, Kowloon"
+        },
+        "url": "https://www.discoverhongkong.com/"
+      },
+      "match_rationale": "A Kowloon neighbourhood walk that starts exactly when your Saturday free slot opens, and it is free to join."
+    },
+    {
+      "activity": {
+        "id": "kowloon-park-badminton-slot",
+        "title": "Kowloon Park Sports Centre — badminton court booking",
+        "lang": "en",
+        "tags": ["sport", "facility", "bookable", "indoor"],
+        "parts": [
+          {
+            "start": "2026-10-03T10:00:00Z",
+            "end": "2026-10-03T11:00:00Z"
+          }
+        ],
+        "source": {
+          "name": "LCSD Leisure Link",
+          "url": "https://www.lcsd.gov.hk/"
+        },
+        "location": {
+          "district": "Yau Tsim Mong",
+          "venue": "Kowloon Park Sports Centre",
+          "address": "25 Aberdeen Road, Tsim Sha Tsui"
+        },
+        "url": "https://www.lcsd.gov.hk/"
+      },
+      "match_rationale": "Saturday 6pm HKT indoor court in Kowloon — bookable now, and matches the sport half of your query."
+    }
+  ],
+  "log": [
+    {
+      "ts": "2026-10-03T05:59:58Z",
+      "level": "info",
+      "message": "Parsed intent: culture, Kowloon, Saturday afternoon, free"
+    },
+    {
+      "ts": "2026-10-03T05:59:59Z",
+      "level": "info",
+      "message": "Searched 14 candidates across 3 sources"
+    },
+    {
+      "ts": "2026-10-03T06:00:00Z",
+      "level": "info",
+      "message": "Ranked 3 matches and filled 2 missing English titles"
+    }
+  ]
 }
