@@ -5,21 +5,24 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from app.config import Settings, load_settings
+from app.config import ENV_FILE, Settings, load_settings
 
-ENV_KEYS = (
-    "OPENAI_API_KEY",
-    "OPENAI_BASE_URL",
-    "OPENAI_MODEL",
-    "TAVILY_API_KEY",
-    "DEMO_MODE",
-)
+ENV_KEYS = tuple(name.upper() for name in Settings.model_fields)
 
 
 def _clear_env(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Make the test hermetic: no process env, no api/.env, no secrets."""
+    """Make the test hermetic: no process env, so `api/.env` and defaults decide."""
     for key in ENV_KEYS:
         monkeypatch.delenv(key, raising=False)
+
+
+def _write_dotenv(tmp_path: Path, **values: str) -> Path:
+    dotenv = tmp_path / ".env"
+    dotenv.write_text(
+        "\n".join(f"{key}={value}" for key, value in values.items()) + "\n",
+        encoding="utf-8",
+    )
+    return dotenv
 
 
 def test_defaults_with_empty_env(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -32,20 +35,21 @@ def test_defaults_with_empty_env(monkeypatch: pytest.MonkeyPatch) -> None:
     assert settings.demo_mode is True
 
 
+def test_default_env_file_is_api_dotenv() -> None:
+    """Settings must load from `api/.env`, whatever the working directory is."""
+    assert ENV_FILE == Path(__file__).resolve().parents[1] / ".env"
+    assert Settings.model_config["env_file"] == ENV_FILE
+
+
 def test_dotenv_overrides_defaults(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     _clear_env(monkeypatch)
-    dotenv = tmp_path / ".env"
-    dotenv.write_text(
-        "\n".join(
-            (
-                "OPENAI_API_KEY=sk-dotenv",
-                "OPENAI_BASE_URL=https://llm.example/v1",
-                "OPENAI_MODEL=vendor-model",
-                "TAVILY_API_KEY=tvly-dotenv",
-                "DEMO_MODE=false",
-            )
-        ),
-        encoding="utf-8",
+    dotenv = _write_dotenv(
+        tmp_path,
+        OPENAI_API_KEY="sk-dotenv",
+        OPENAI_BASE_URL="https://llm.example/v1",
+        OPENAI_MODEL="vendor-model",
+        TAVILY_API_KEY="tvly-dotenv",
+        DEMO_MODE="false",
     )
     settings = Settings(_env_file=dotenv)
     assert settings.openai_api_key == "sk-dotenv"
@@ -57,8 +61,7 @@ def test_dotenv_overrides_defaults(tmp_path: Path, monkeypatch: pytest.MonkeyPat
 
 def test_process_env_beats_dotenv(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     _clear_env(monkeypatch)
-    dotenv = tmp_path / ".env"
-    dotenv.write_text("OPENAI_MODEL=from-dotenv\nDEMO_MODE=true\n", encoding="utf-8")
+    dotenv = _write_dotenv(tmp_path, OPENAI_MODEL="from-dotenv", DEMO_MODE="true")
     monkeypatch.setenv("OPENAI_MODEL", "from-process")
     monkeypatch.setenv("DEMO_MODE", "false")
     settings = Settings(_env_file=dotenv)
@@ -71,9 +74,7 @@ def test_blank_optional_value_in_dotenv_is_unset(
 ) -> None:
     """`.env.example` ships `OPENAI_BASE_URL=` — blank means no override, not `""`."""
     _clear_env(monkeypatch)
-    dotenv = tmp_path / ".env"
-    dotenv.write_text("OPENAI_BASE_URL=\n", encoding="utf-8")
-    assert Settings(_env_file=dotenv).openai_base_url is None
+    assert Settings(_env_file=_write_dotenv(tmp_path, OPENAI_BASE_URL="")).openai_base_url is None
 
 
 def test_invalid_demo_mode_raises_validation_error(monkeypatch: pytest.MonkeyPatch) -> None:
