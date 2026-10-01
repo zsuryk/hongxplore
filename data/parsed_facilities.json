@@ -1,0 +1,1162 @@
+{
+  "Hong Kong Park Sports Centre": {
+    "aid": "121",
+    "name": "Hong Kong Park Sports Centre",
+    "address": "29, Cotton Tree Drive, Central, Hong Kong.",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Hong Kong Squash Centre": {
+    "aid": "122",
+    "name": "Hong Kong Squash Centre",
+    "address": "23, Cotton Tree Drive, Central, Hong Kong.",
+    "badminton": false,
+    "squash": true,
+    "table_tennis": false,
+    "fitness": false,
+    "basketball": false
+  },
+  "Shek Tong Tsui Sports Centre": {
+    "aid": "139",
+    "name": "Shek Tong Tsui Sports Centre",
+    "address": "5/F, Shek Tong Tsui Municipal Services Building, 470 Queen's Road West, Hong Kong",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Sheung Wan Sports Centre": {
+    "aid": "140",
+    "name": "Sheung Wan Sports Centre",
+    "address": "Room 1104, 11/F Sheung Wan Municipal Services Building, No. 345 Queen's Road Central, Hong Kong",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Smithfield Sports Centre": {
+    "aid": "141",
+    "name": "Smithfield Sports Centre",
+    "address": "4/F, Smithfield Municipal Services Building, 12K Smithfield, Kennedy Town, Hong Kong",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Sun Yat Sen Memorial Park Sports Centre": {
+    "aid": "144",
+    "name": "Sun Yat Sen Memorial Park Sports Centre",
+    "address": "Sun Yat Sen Memorial Park Sports Centre, 18 Eastern Street North, Sai Ying Pun, Hong Kong.",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Chai Wan Sports Centre": {
+    "aid": "461",
+    "name": "Chai Wan Sports Centre",
+    "address": "6 Yee Shun Street, Chai Wan, Hong Kong",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Island East Sports Centre": {
+    "aid": "469",
+    "name": "Island East Sports Centre",
+    "address": "52 Lei King Road, Sai Wan Ho, Hong Kong",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Java Road Sports Centre": {
+    "aid": "471",
+    "name": "Java Road Sports Centre",
+    "address": "3/F, Java Road Municipal Services Building, 99 Java Road, North Point, Hong Kong.",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Quarry Bay Sports Centre": {
+    "aid": "481",
+    "name": "Quarry Bay Sports Centre",
+    "address": "7/F, Quarry Bay Municipal Services Building, 38 Quarry Bay Street, Hong Kong",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Sai Wan Ho Sports Centre": {
+    "aid": "482",
+    "name": "Sai Wan Ho Sports Centre",
+    "address": "2/F, 111 Shaukeiwan Road, Sai Wan Ho, Hong Kong.",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Siu Sai Wan Sports Centre": {
+    "aid": "1134",
+    "name": "Siu Sai Wan Sports Centre",
+    "address": "2/F Siu Sai Wan Complex, 15 Siu Sai Wan Road, Hong Kong",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Cheung Chau Sports Centre": {
+    "aid": "855",
+    "name": "Cheung Chau Sports Centre",
+    "address": "No.3,Cheung Chau Hospital Road, Cheung Chau",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": false,
+    "fitness": true,
+    "basketball": true
+  },
+  "Mui Wo Sports Centre": {
+    "aid": "870",
+    "name": "Mui Wo Sports Centre",
+    "address": "1/F Mui Wo Municipal Services Building, 9 Ngan Shek Street, Lantau Island",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Peng Chau Sports Centre": {
+    "aid": "875",
+    "name": "Peng Chau Sports Centre",
+    "address": "G/F, Peng Chau Municipal Services Building, 6 Po Peng Street, Peng Chau",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Praya Street Sports Centre": {
+    "aid": "880",
+    "name": "Praya Street Sports Centre",
+    "address": "1/F., Cheung Chau Municipal Services Building, 2 Tai Hing Tai Road, Cheung Chau",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": false
+  },
+  "Tung Chung Man Tung Road Sports Centre": {
+    "aid": "1065",
+    "name": "Tung Chung Man Tung Road Sports Centre",
+    "address": "Tung Chung Man Tung Road Sports Centre, G/F., Tung Chung Municipal Services Building, 39 Man Tung Road, Tung Chung",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Fat Kwong Street Sports Centre": {
+    "aid": "11",
+    "name": "Fat Kwong Street Sports Centre",
+    "address": "9/F, Fat Kwong Street Sports Centre, 18 Good Shepherd Street, Ho Man Tin, Kowloon",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Ho Man Tin Sports Centre": {
+    "aid": "18",
+    "name": "Ho Man Tin Sports Centre",
+    "address": "1 Chung Yee Street, Ho Man Tin, Kowloon.",
+    "badminton": false,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": false
+  },
+  "Hung Hom Municipal Services Building Sports Centre": {
+    "aid": "22",
+    "name": "Hung Hom Municipal Services Building Sports Centre",
+    "address": "3/F, Hung Hom Municipal Services Building,11 Ma Tau Wai Road, Hung Hom, Kowloon.",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Kowloon City Sports Centre": {
+    "aid": "38",
+    "name": "Kowloon City Sports Centre",
+    "address": "3/F., Kowloon City Municipal Services Building,100 Nga Tsin Wai Road, Kowloon City, Kowloon.",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "To Kwa Wan Sports Centre": {
+    "aid": "76",
+    "name": "To Kwa Wan Sports Centre",
+    "address": "66 Ha Heung Road, To Kwa Wan, Kowloon.",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Cheung Fat Sports Centre": {
+    "aid": "770",
+    "name": "Cheung Fat Sports Centre",
+    "address": "4/F., Cheung Fat Plaza, Cheung Fat Estate, Tsing Yi, New Territories",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Fung Shue Wo Sports Centre": {
+    "aid": "776",
+    "name": "Fung Shue Wo Sports Centre",
+    "address": "10 Fung Shue Wo Road, Phase II, Tsing Yi Estate, Tsing Yi, New Territories",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": false,
+    "fitness": true,
+    "basketball": true
+  },
+  "Lai King Sports Centre": {
+    "aid": "804",
+    "name": "Lai King Sports Centre",
+    "address": "60 Lai Cho Road, Kwai Chung, New Territories",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "North Kwai Chung Tang Shiu Kin Sports Centre": {
+    "aid": "811",
+    "name": "North Kwai Chung Tang Shiu Kin Sports Centre",
+    "address": "292 Wo Yi Hop Road, Kwai Chung, New Territories",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Osman Ramju Sadick Memorial Sports Centre": {
+    "aid": "813",
+    "name": "Osman Ramju Sadick Memorial Sports Centre",
+    "address": "No.176, Hing Fong Road, Kwai Chung, New Territories",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Tai Wo Hau Sports Centre": {
+    "aid": "832",
+    "name": "Tai Wo Hau Sports Centre",
+    "address": "39 Tai Ha Street, Tai Wo Hau, Kwai Chung, New Territories",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Tsing Yi Southwest Sports Centre": {
+    "aid": "1448",
+    "name": "Tsing Yi Southwest Sports Centre",
+    "address": "70 Chung Mei Road, Tsing Yi, New Territories",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Tsing Yi Sports Centre": {
+    "aid": "843",
+    "name": "Tsing Yi Sports Centre",
+    "address": "2/F, Tsing Yi Municipal Services Building, 38 Tsing Luk Street, Tsing Yi, New Territories",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Choi Wing Road Sports Centre": {
+    "aid": "2522",
+    "name": "Choi Wing Road Sports Centre",
+    "address": "58 Choi Wing Road, Kwun Tong",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Chun Wah Road Sports Centre": {
+    "aid": "936",
+    "name": "Chun Wah Road Sports Centre",
+    "address": "Top Floor, Lok Nga Court Carpark, 50 Chun Wah Road, Ngau Tau Kok.",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Hiu Kwong Street Sports Centre": {
+    "aid": "939",
+    "name": "Hiu Kwong Street Sports Centre",
+    "address": "2 Hiu Kwong Street, Kwun Tong, Kowloon",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Kowloon Bay Sports Centre": {
+    "aid": "960",
+    "name": "Kowloon Bay Sports Centre",
+    "address": "15 Kai Lok Street, Kowloon Bay",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Lam Tin South Sports Centre": {
+    "aid": "977",
+    "name": "Lam Tin South Sports Centre",
+    "address": "170 Pik Wan Road, Lam Tin, Kwun Tong, Kowloon",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Lei Yue Mun Sports Centre": {
+    "aid": "981",
+    "name": "Lei Yue Mun Sports Centre",
+    "address": "2/F to 5/F of the Lei Yue Mun Municipal Services Building, Yau Tong, Kowloon",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Ngau Tau Kok Road Sports Centre": {
+    "aid": "986",
+    "name": "Ngau Tau Kok Road Sports Centre",
+    "address": "2/F to 4/F, Ngau Tau Kok Municipal Services Building, 183 Ngau Tau Kok Road, Kowloon",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Shui Wo Street Sports Centre": {
+    "aid": "1006",
+    "name": "Shui Wo Street Sports Centre",
+    "address": "8/F & 9/F, Shui wo Street Municipal Services Building, 9 Shui Wo Street, Kwun Tong, Kowloon",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Shun Lee Tsuen Sports Centre": {
+    "aid": "1014",
+    "name": "Shun Lee Tsuen Sports Centre",
+    "address": "No. 33, Shun Lee Tsuen Road, Kwun Tong, Kowloon",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Luen Wo Hui Sports Centre": {
+    "aid": "297",
+    "name": "Luen Wo Hui Sports Centre",
+    "address": "3/F, 9 Wo Mun Street, Luen Wo Hui, Fanling, New Territories",
+    "badminton": false,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": false
+  },
+  "Lung Sum Avenue Sports Centre": {
+    "aid": "299",
+    "name": "Lung Sum Avenue Sports Centre",
+    "address": "155 Jockey Club Road, Sheung Shui, New Territories.",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Po Wing Road Sports Centre": {
+    "aid": "1147",
+    "name": "Po Wing Road Sports Centre",
+    "address": "19 Pak Wo Road, Sheung Shui, New Territories.",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Tin Ping Sports Centre": {
+    "aid": "343",
+    "name": "Tin Ping Sports Centre",
+    "address": "3/F, Tin Ping Shopping Centre, Tin Ping Estate, Sheung Shui",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": false
+  },
+  "Wo Hing Sports Centre": {
+    "aid": "349",
+    "name": "Wo Hing Sports Centre",
+    "address": "No.8 Wo Ming Lane, Fanling",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Hang Hau Sports Centre": {
+    "aid": "1140",
+    "name": "Hang Hau Sports Centre",
+    "address": "1-3/F, Sai Kung Tseung Kwan O Government Complex, 38 Pui Shing Road, Tseung Kwan O",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Hong Kong Velodrome": {
+    "aid": "1229",
+    "name": "Hong Kong Velodrome",
+    "address": "105-107 Po Hong Road, Tseung Kwan O",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Po Lam Sports Centre": {
+    "aid": "366",
+    "name": "Po Lam Sports Centre",
+    "address": "Po Lam Estate, Tseung Kwan O",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Sai Kung Squash Courts": {
+    "aid": "374",
+    "name": "Sai Kung Squash Courts",
+    "address": "Wai Man Road, Sai Kung",
+    "badminton": false,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": false
+  },
+  "Tiu Keng Leng Sports Centre": {
+    "aid": "1274",
+    "name": "Tiu Keng Leng Sports Centre",
+    "address": "2 Chui Ling Road, Tseung Kwan O",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Tseung Kwan O Sports Centre": {
+    "aid": "382",
+    "name": "Tseung Kwan O Sports Centre",
+    "address": "9 Wan Lung Road, Tseung Kwan O",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Tsui Lam Sports Centre": {
+    "aid": "383",
+    "name": "Tsui Lam Sports Centre",
+    "address": "Tsui Lam Estate, Tseung Kwan O",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Cheung Sha Wan Sports Centre": {
+    "aid": "646",
+    "name": "Cheung Sha Wan Sports Centre",
+    "address": "J/O Hing Wah Street and Cheung Sha Wan Road, Sham Shui Po, Kowloon",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": false,
+    "basketball": true
+  },
+  "Cornwall Street Squash and Table Tennis Centre": {
+    "aid": "647",
+    "name": "Cornwall Street Squash and Table Tennis Centre",
+    "address": "17 Cornwall Street, Kowloon Tong",
+    "badminton": false,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": false,
+    "basketball": false
+  },
+  "Lai Chi Kok Park Sports Centre": {
+    "aid": "666",
+    "name": "Lai Chi Kok Park Sports Centre",
+    "address": "1 Lai Wan Road, Lai Chi Kok, Kowloon.",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Pei Ho Street Sports Centre": {
+    "aid": "671",
+    "name": "Pei Ho Street Sports Centre",
+    "address": "6/F, Pei Ho Street Municipal Services Building, 333 Ki Lung Street, Sham Shui Po, Kowloon",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Po On Road Sports Centre": {
+    "aid": "677",
+    "name": "Po On Road Sports Centre",
+    "address": "1/F, Po On Road Municipal Services Building, 325-329 Po On Road, Sham Shui Po, Kowloon.",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Sham Shui Po Sports Centre": {
+    "aid": "2752",
+    "name": "Sham Shui Po Sports Centre",
+    "address": "2/F, Sham Shui Po Leisure and Cultural Building, 38 Sham Mong Road, Sham Shui Po, Kowloon",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Shek Kip Mei Park Sports Centre": {
+    "aid": "693",
+    "name": "Shek Kip Mei Park Sports Centre",
+    "address": "290, Nam Cheong Street, Sham Shui Po, Kowloon.",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": false,
+    "fitness": true,
+    "basketball": true
+  },
+  "Tung Chau Street Park Squash Centre": {
+    "aid": "710",
+    "name": "Tung Chau Street Park Squash Centre",
+    "address": "Tung Chau Street, Sham Shui Po, Kowloon",
+    "badminton": false,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": false,
+    "basketball": false
+  },
+  "Che Kung Temple Sports Centre": {
+    "aid": "2259",
+    "name": "Che Kung Temple Sports Centre",
+    "address": "10 Sha Tin Tau Road, Sha Tin",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Heng On Sports Centre": {
+    "aid": "395",
+    "name": "Heng On Sports Centre",
+    "address": "4/F Heng On Commercial Centre, Heng On Estate, Ma On Shan, Sha Tin",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Hin Keng Sports Centre": {
+    "aid": "396",
+    "name": "Hin Keng Sports Centre",
+    "address": "Hin Keng Commercial Centre, Hin Keng Estate, Sha Tin",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Ma On Shan Sports Centre": {
+    "aid": "411",
+    "name": "Ma On Shan Sports Centre",
+    "address": "14 On Chun Street, Ma On Shan, Sha Tin",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Mei Lam Sports Centre": {
+    "aid": "414",
+    "name": "Mei Lam Sports Centre",
+    "address": "Mei Lam Estate Phase III, Tai Wai, Sha Tin",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Sha Tin Jockey Club Public Squash Courts": {
+    "aid": "423",
+    "name": "Sha Tin Jockey Club Public Squash Courts",
+    "address": "No.12 Yuen Wo Road ,Sha Tin , N.T.",
+    "badminton": false,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": false
+  },
+  "Yuen Chau Kok Sports Centre": {
+    "aid": "1312",
+    "name": "Yuen Chau Kok Sports Centre",
+    "address": "35 Ngan Shing Street, Sha Tin, NT.",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Yuen Wo Road Sports Centre": {
+    "aid": "448",
+    "name": "Yuen Wo Road Sports Centre",
+    "address": "8 Yuen Wo Road, Sha Tin, NT.",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Aberdeen Sports Centre": {
+    "aid": "545",
+    "name": "Aberdeen Sports Centre",
+    "address": "6th Floor, Aberdeen Municipal Services Building, No. 203 Aberdeen Main Road, Aberdeen, Hong Kong",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Aberdeen Tennis and Squash Centre": {
+    "aid": "548",
+    "name": "Aberdeen Tennis and Squash Centre",
+    "address": "No. 1 Aberdeen Praya Road, Aberdeen, Hong Kong.",
+    "badminton": false,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": false
+  },
+  "Ap Lei Chau Sports Centre": {
+    "aid": "557",
+    "name": "Ap Lei Chau Sports Centre",
+    "address": "1st floor of Ap Lei Chau Municipal Services Building, No.8 Hung Shing Street, Ap Lei Chau, Hong Kong.",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Stanley Sports Centre": {
+    "aid": "573",
+    "name": "Stanley Sports Centre",
+    "address": "UG/F, Stanley Municipal Services Building, No.6 Stanley Market Road, Hong Kong",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Wong Chuk Hang Sports Centre": {
+    "aid": "584",
+    "name": "Wong Chuk Hang Sports Centre",
+    "address": "No. 168 Wong Chuk Hang Road, Hong Kong",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": false,
+    "fitness": true,
+    "basketball": true
+  },
+  "Yue Kwong Road Sports Centre": {
+    "aid": "587",
+    "name": "Yue Kwong Road Sports Centre",
+    "address": "No. 43 Yue Kwong Road, Aberdeen, Hong Kong",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": false,
+    "fitness": false,
+    "basketball": true
+  },
+  "Fu Heng Sports Centre": {
+    "aid": "82",
+    "name": "Fu Heng Sports Centre",
+    "address": "1/F, Fu Heng Shopping Centre, Fu Heng Estate, Tai Po.",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Fu Shin Sports Centre": {
+    "aid": "83",
+    "name": "Fu Shin Sports Centre",
+    "address": "6/F, Multi-storey Car-park Building, Fu Shin Estate, Tai Po",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Tai Po Hui Sports Centre": {
+    "aid": "93",
+    "name": "Tai Po Hui Sports Centre",
+    "address": "6/F, Tai Po Complex, No. 8 Heung Sze Wui Street, Tai Po",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Tai Po Sports Centre": {
+    "aid": "95",
+    "name": "Tai Po Sports Centre",
+    "address": "No.13, Ting Tai Road, Tai Po",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Tai Wo Sports Centre": {
+    "aid": "104",
+    "name": "Tai Wo Sports Centre",
+    "address": "Podium Level, Tai Wo Shopping Centre, Tai Wo Estate, Tai Po.",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Tung Cheong Street Sports Centre": {
+    "aid": "2722",
+    "name": "Tung Cheong Street Sports Centre",
+    "address": "3/F, Tai Po Tung Cheong Street Leisure Building, 25 Tung Cheong Street, Tai Po",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Tsuen King Circuit Sports Centre": {
+    "aid": "623",
+    "name": "Tsuen King Circuit Sports Centre",
+    "address": "No. 38, Mei Wan Street, Tsuen Wan, N.T.",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Tsuen Wan Sports Centre": {
+    "aid": "2117",
+    "name": "Tsuen Wan Sports Centre",
+    "address": "TSUEN WAN WEST STATION",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Tsuen Wan West Sports Centre": {
+    "aid": "635",
+    "name": "Tsuen Wan West Sports Centre",
+    "address": "No.68, Hoi On Road, Tsuen Wan",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Wai Tsuen Sports Centre": {
+    "aid": "638",
+    "name": "Wai Tsuen Sports Centre",
+    "address": "No 6 Miu Kong Street, Tsuen Wan",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Yeung Uk Road Sports Centre": {
+    "aid": "639",
+    "name": "Yeung Uk Road Sports Centre",
+    "address": "4/F & 5/F, Yeung Uk Road Municipal Services Building, No. 45 Yeung Uk Road, Tsuen Wan",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Leung Tin Sports Centre": {
+    "aid": "226",
+    "name": "Leung Tin Sports Centre",
+    "address": "4/F, Car Park Building, Tin King Estate, Tuen Mun",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": false,
+    "fitness": true,
+    "basketball": true
+  },
+  "Siu Lun Sports Centre": {
+    "aid": "2190",
+    "name": "Siu Lun Sports Centre",
+    "address": "3/F, Tuen Mun Siu Lun Government Complex, 19 Siu Lun Street, Tuen Mun, N.T.",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Tai Hing Sports Centre": {
+    "aid": "239",
+    "name": "Tai Hing Sports Centre",
+    "address": "38 Tsing Chung Koon Road, Tuen Mun",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "The Jockey Club Tuen Mun Butterfly Beach Sports Centre": {
+    "aid": "242",
+    "name": "The Jockey Club Tuen Mun Butterfly Beach Sports Centre",
+    "address": "No. 11 Wu Shan Road, Tuen Mun, N.T.",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Yau Oi Sports Centre": {
+    "aid": "272",
+    "name": "Yau Oi Sports Centre",
+    "address": "3 Hing On Lane, Tuen Mun",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Harbour Road Sports Centre": {
+    "aid": "916",
+    "name": "Harbour Road Sports Centre",
+    "address": "Harbour Road Sports Centre27 Harbour Road, Wan Chai, Hong Kong",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Lockhart Road Sports Centre": {
+    "aid": "922",
+    "name": "Lockhart Road Sports Centre",
+    "address": "Lockhart Road Sports Centre, 10/F, Lockhart Road Municipal Services Building, 225 Hennessy Road, Wan Chai,Hong Kong",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Wong Nai Chung Sports Centre": {
+    "aid": "935",
+    "name": "Wong Nai Chung Sports Centre",
+    "address": "Wong Nai Chung Sports Centre4/F, Wong Nai Chung Municipal Services Building,2 Yuk Sau Street,Wong Nai Chung,Hong Kong",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Choi Hung Road Badminton Centre": {
+    "aid": "712",
+    "name": "Choi Hung Road Badminton Centre",
+    "address": "150 Choi Hung Road, Wong Tai Sin",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": false,
+    "fitness": false,
+    "basketball": false
+  },
+  "Choi Hung Road Sports Centre": {
+    "aid": "719",
+    "name": "Choi Hung Road Sports Centre",
+    "address": "No. 150 Choi Hung Road, Wong Tai Sin.",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Chuk Yuen Sports Centre": {
+    "aid": "720",
+    "name": "Chuk Yuen Sports Centre",
+    "address": "Chuk Yuen Sports Centre, 10 Chuk Yuen Road, Kowloon",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Kai Tak East Sports Centre": {
+    "aid": "727",
+    "name": "Kai Tak East Sports Centre",
+    "address": "30 Luk Hop Street, San Po Kong, Kowloon",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": false,
+    "basketball": true
+  },
+  "Ma Chai Hang Sports Centre": {
+    "aid": "3169",
+    "name": "Ma Chai Hang Sports Centre",
+    "address": "30 Ma Chai Hang Road, Wong Tai Sin, Kowloon",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Morse Park Sports Centre": {
+    "aid": "749",
+    "name": "Morse Park Sports Centre",
+    "address": "40 Fung Mo Street, Wong Tai Sin, Kowloon",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": false,
+    "basketball": true
+  },
+  "Ngau Chi Wan Sports Centre": {
+    "aid": "753",
+    "name": "Ngau Chi Wan Sports Centre",
+    "address": "1/F, Ngau Chi Wan Municipal Services Building,11 Clear Water Bay Road, Kowloon",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": false,
+    "basketball": true
+  },
+  "Po Kong Village Road Sports Centre": {
+    "aid": "754",
+    "name": "Po Kong Village Road Sports Centre",
+    "address": "120 Po Kong Village Road, Tsz Wan Shan, Wong Tai Sin, Kowloon",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Boundary Street Sports Centre No. 1": {
+    "aid": "504",
+    "name": "Boundary Street Sports Centre No. 1",
+    "address": "200 Sai Yee Street, Mong Kok, Kowloon",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": false,
+    "fitness": false,
+    "basketball": true
+  },
+  "Boundary Street Sports Centre No. 2": {
+    "aid": "505",
+    "name": "Boundary Street Sports Centre No. 2",
+    "address": "200 Sai Yee Street, Mong Kok, Kowloon",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Fa Yuen Street Sports Centre": {
+    "aid": "512",
+    "name": "Fa Yuen Street Sports Centre",
+    "address": "10-13/F., Fa Yuen Street Municipal Services Building, 123A Fa Yuen Street, Mong Kok, Kowloon",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Kowloon Park Sports Centre": {
+    "aid": "524",
+    "name": "Kowloon Park Sports Centre",
+    "address": "Kowloon Park Sports Centre22 Austin Road, Tsim Sha Tsui, Kowloon",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": false
+  },
+  "Kwun Chung Sports Centre": {
+    "aid": "525",
+    "name": "Kwun Chung Sports Centre",
+    "address": "6/F, Kwun Chung Municipal Services Building, 17 Bowring Street, Jordan, Kowloon",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Tai Kok Tsui Sports Centre": {
+    "aid": "537",
+    "name": "Tai Kok Tsui Sports Centre",
+    "address": "6/F, Tai Kok Tsui Municipal Services Building, 63 Fuk Tsun Street, Tai Kok Tsui, Kowloon",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Fung Kam Street Sports Centre": {
+    "aid": "149",
+    "name": "Fung Kam Street Sports Centre",
+    "address": "No. 20, Fung Yau Street North, Yuen Long, N.T.",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Long Ping Sports Centre": {
+    "aid": "159",
+    "name": "Long Ping Sports Centre",
+    "address": "Unit 202, Long Ping Commercial Centre, Long Ping Estate, Yuen Long",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Ping Shan Tin Shui Wai Sports Centre": {
+    "aid": "1141",
+    "name": "Ping Shan Tin Shui Wai Sports Centre",
+    "address": "1 Tsui Sing Road, Tin Shui Wai",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Sir Denys Roberts Squash Courts": {
+    "aid": "3055",
+    "name": "Sir Denys Roberts Squash Courts",
+    "address": "1 Ping Fai Path, Ping Wu Street, Yuen Long",
+    "badminton": false,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": false,
+    "basketball": false
+  },
+  "Tai Kiu Market Squash Courts": {
+    "aid": "3057",
+    "name": "Tai Kiu Market Squash Courts",
+    "address": "M/F, Yuen Long Government Offices, 2 Kiu Lok Square, Yuen Long",
+    "badminton": false,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": false,
+    "basketball": false
+  },
+  "Tin Fai Road Sports Centre": {
+    "aid": "1174",
+    "name": "Tin Fai Road Sports Centre",
+    "address": "63 Tin Shui Road, Tin Shui Wai, Yuen Long.",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Tin Shui Sports Centre": {
+    "aid": "188",
+    "name": "Tin Shui Sports Centre",
+    "address": "No. 7, Tin Shui Road, Tin Shui Wai, Yuen Long, N.T.",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Tin Shui Wai Sports Centre": {
+    "aid": "195",
+    "name": "Tin Shui Wai Sports Centre",
+    "address": "No.1, Tin Pak Road, Tin Shui Wai, Yuen Long, N.T.",
+    "badminton": true,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  },
+  "Yuen Long Jockey Club Squash Courts": {
+    "aid": "3059",
+    "name": "Yuen Long Jockey Club Squash Courts",
+    "address": "32 Kin Tak Street, Yuen Long",
+    "badminton": false,
+    "squash": true,
+    "table_tennis": true,
+    "fitness": false,
+    "basketball": false
+  },
+  "Yuen Long Sports Centre": {
+    "aid": "1445",
+    "name": "Yuen Long Sports Centre",
+    "address": "",
+    "badminton": true,
+    "squash": false,
+    "table_tennis": true,
+    "fitness": true,
+    "basketball": true
+  }
+}

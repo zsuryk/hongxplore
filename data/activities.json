@@ -1,0 +1,3467 @@
+[
+  {
+    "id": "act-001",
+    "title": "香港公園體育館羽毛球場預訂",
+    "title_en": "Badminton Court Booking — Hong Kong Park Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "badminton",
+      "indoor",
+      "lcsd",
+      "court-booking"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T02:00:00Z",
+        "end": "2026-10-03T04:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Central & Western",
+      "venue": "Hong Kong Park Sports Centre",
+      "address": "29 Cotton Tree Drive, Central"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#121"
+  },
+  {
+    "id": "act-002",
+    "title": "香港壁球中心壁球場租訂",
+    "title_en": "Squash Court Session — Hong Kong Squash Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "squash",
+      "indoor",
+      "lcsd"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T06:00:00Z",
+        "end": "2026-10-04T08:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Central & Western",
+      "venue": "Hong Kong Squash Centre",
+      "address": "23 Cotton Tree Drive, Central"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#122"
+  },
+  {
+    "id": "act-003",
+    "title": "中山紀念公園游泳池公眾暢泳（冬季設有暖水）",
+    "title_en": "Public Swimming (Winter Heated Pool) — Sun Yat Sen Memorial Park Swimming Pool",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "swimming",
+      "indoor",
+      "lcsd"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T01:00:00Z",
+        "end": "2026-10-04T03:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Central & Western",
+      "venue": "Sun Yat Sen Memorial Park Swimming Pool",
+      "address": "16 Eastern Street North, Sai Ying Pun"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Swimming.do?swpId=40"
+  },
+  {
+    "id": "act-004",
+    "title": "駱克道體育館乒乓球室活動",
+    "title_en": "Indoor Table Tennis — Lockhart Road Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "table-tennis",
+      "indoor",
+      "wan-chai"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-02T10:00:00Z",
+        "end": "2026-10-02T12:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Wan Chai",
+      "venue": "Lockhart Road Municipal Services Building",
+      "address": "225 Hennessy Road, Wan Chai"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#922"
+  },
+  {
+    "id": "act-005",
+    "title": "維多利亞公園網球場租用",
+    "title_en": "Outdoor Tennis Court Booking — Victoria Park Tennis Courts",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "tennis",
+      "outdoor",
+      "causeway-bay"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T08:00:00Z",
+        "end": "2026-10-03T10:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Wan Chai",
+      "venue": "Victoria Park",
+      "address": "1 Hing Fat Street, Causeway Bay"
+    },
+    "url": "https://www.lcsd.gov.hk/en/parks/vp/index.html"
+  },
+  {
+    "id": "act-006",
+    "title": "港島東體育館室內運動攀登牆體驗",
+    "title_en": "Public Indoor Climbing Wall — Island East Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "climbing",
+      "bouldering",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T05:00:00Z",
+        "end": "2026-10-03T07:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Eastern",
+      "venue": "Island East Sports Centre",
+      "address": "52 Lei King Road, Sai Wan Ho"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#469"
+  },
+  {
+    "id": "act-007",
+    "title": "創興水上活動中心獨木舟水上活動",
+    "title_en": "Water Sports & Sea Kayak Rental — Chong Hing Water Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "kayaking",
+      "outdoor",
+      "water-sports",
+      "sai-kung"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T01:30:00Z",
+        "end": "2026-10-04T08:30:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Sai Kung",
+      "venue": "High Island Reservoir West Dam",
+      "address": "Sai Kung"
+    },
+    "url": "https://www.lcsd.gov.hk/en/watersport/index/inde_chong.html"
+  },
+  {
+    "id": "act-008",
+    "title": "修頓遊樂場戶外籃球對抗賽",
+    "title_en": "Outdoor Basketball Casual Pickup — Southorn Playground",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "basketball",
+      "outdoor",
+      "free",
+      "pickup-game"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T10:00:00Z",
+        "end": "2026-10-03T13:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Wan Chai",
+      "venue": "Southorn Playground",
+      "address": "130 Hennessy Road, Wan Chai"
+    },
+    "url": "https://www.lcsd.gov.hk/en/facilities/facilitieslist/facilities.php?fid=562"
+  },
+  {
+    "id": "act-009",
+    "title": "九龍公園游泳池公眾暢泳（冬季設有暖水）",
+    "title_en": "Public Swimming (Winter Heated Pool) — Kowloon Park Swimming Pool",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "swimming",
+      "indoor",
+      "tsim-sha-tsui",
+      "lcsd"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T00:00:00Z",
+        "end": "2026-10-03T02:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Yau Tsim Mong",
+      "venue": "Kowloon Park Swimming Pool",
+      "address": "22 Austin Road, Tsim Sha Tsui, Kowloon"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Swimming.do?swpId=11"
+  },
+  {
+    "id": "act-010",
+    "title": "沙田賽馬會游泳池公眾暢泳及訓練",
+    "title_en": "Public Swimming & Lap Training — Sha Tin Jockey Club Swimming Pool",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "swimming",
+      "outdoor",
+      "sha-tin",
+      "lcsd"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T02:00:00Z",
+        "end": "2026-10-04T04:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Sha Tin",
+      "venue": "Sha Tin Jockey Club Swimming Pool",
+      "address": "10 Yuen Wo Road, Sha Tin"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Swimming.do?swpId=32"
+  },
+  {
+    "id": "act-011",
+    "title": "北河街體育館乒乓球切磋時段",
+    "title_en": "Table Tennis Practice — Pei Ho Street Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "table-tennis",
+      "sham-shui-po",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T07:00:00Z",
+        "end": "2026-10-03T09:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Sham Shui Po",
+      "venue": "Pei Ho Street Municipal Services Building",
+      "address": "333 Ki Lung Street, Sham Shui Po"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#671"
+  },
+  {
+    "id": "act-012",
+    "title": "蕙荃體育館羽毛球雙打時段",
+    "title_en": "Badminton Play — Wai Tsuen Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "badminton",
+      "tsuen-wan",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T03:00:00Z",
+        "end": "2026-10-04T05:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Tsuen Wan",
+      "venue": "Wai Tsuen Sports Centre",
+      "address": "63 Miaokang Street, Tsuen Wan"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#638"
+  },
+  {
+    "id": "act-013",
+    "title": "香港仔體育館壁球場活動",
+    "title_en": "Public Squash Court — Aberdeen Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "squash",
+      "southern-district",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T06:00:00Z",
+        "end": "2026-10-03T08:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Southern",
+      "venue": "Aberdeen Municipal Services Building",
+      "address": "203 Aberdeen Main Road"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#545"
+  },
+  {
+    "id": "act-014",
+    "title": "九龍灣運動場戶外跑道緩步跑",
+    "title_en": "Outdoor Jogging & Track Running — Kowloon Bay Sports Ground",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "running",
+      "jogging",
+      "outdoor",
+      "free"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-06T11:00:00Z",
+        "end": "2026-10-06T13:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Kwun Tong",
+      "venue": "Kowloon Bay Sports Ground",
+      "address": "1 Kai Lok Street, Kowloon Bay"
+    },
+    "url": "https://www.lcsd.gov.hk/en/facilities/facilitieslist/facilities.php?fid=641"
+  },
+  {
+    "id": "act-015",
+    "title": "牛池灣體育館公眾射箭體驗場",
+    "title_en": "Public Archery Practice Session — Ngau Chi Wan Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "archery",
+      "wong-tai-sin",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T06:00:00Z",
+        "end": "2026-10-04T09:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Wong Tai Sin",
+      "venue": "Ngau Chi Wan Municipal Services Building",
+      "address": "11 Clear Water Bay Road"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#753"
+  },
+  {
+    "id": "act-016",
+    "title": "維多利亞公園滾軸溜冰場休閒溜冰",
+    "title_en": "Outdoor Roller Skating — Victoria Park Roller Skating Rinks",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "skating",
+      "roller-skating",
+      "outdoor",
+      "free"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T08:00:00Z",
+        "end": "2026-10-03T10:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Wan Chai",
+      "venue": "Victoria Park",
+      "address": "Causeway Bay"
+    },
+    "url": "https://www.lcsd.gov.hk/en/parks/vp/index.html"
+  },
+  {
+    "id": "act-017",
+    "title": "藍田南體育館壁球場練習時段",
+    "title_en": "Squash Court Practice — Lam Tin South Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "squash",
+      "indoor",
+      "kwun-tong",
+      "lcsd"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T07:00:00Z",
+        "end": "2026-10-04T09:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Kwun Tong",
+      "venue": "Lam Tin South Sports Centre",
+      "address": "170 Pik Wan Road, Lam Tin, Kwun Tong"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#977"
+  },
+  {
+    "id": "act-018",
+    "title": "蒲崗村道體育館羽毛球場",
+    "title_en": "Badminton Play — Po Kong Village Road Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "badminton",
+      "indoor",
+      "diamond-hill"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T02:00:00Z",
+        "end": "2026-10-03T04:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Wong Tai Sin",
+      "venue": "Po Kong Village Road Sports Centre",
+      "address": "120 Po Kong Village Road, Diamond Hill"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#754"
+  },
+  {
+    "id": "act-019",
+    "title": "黃金泳灘沙灘排球同樂時段",
+    "title_en": "Outdoor Beach Volleyball Casual Play — Golden Beach",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "volleyball",
+      "beach",
+      "outdoor",
+      "free"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T06:00:00Z",
+        "end": "2026-10-03T10:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Tuen Mun",
+      "venue": "Golden Beach",
+      "address": "Castle Peak Road, Tuen Mun"
+    },
+    "url": "https://www.lcsd.gov.hk/en/beach/index.html"
+  },
+  {
+    "id": "act-020",
+    "title": "東涌游泳池公眾暢泳（冬季設有暖水）",
+    "title_en": "Public Swimming (Winter Heated Pool) — Tung Chung Swimming Pool",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "swimming",
+      "indoor",
+      "tung-chung",
+      "lantau",
+      "lcsd"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T05:30:00Z",
+        "end": "2026-10-04T08:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Islands",
+      "venue": "Tung Chung Swimming Pool",
+      "address": "5 Tat Tung Road, Tung Chung, Lantau Island"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Swimming.do?swpId=38"
+  },
+  {
+    "id": "act-021",
+    "title": "M+ 視覺文化博物館當代藝術常設展覽",
+    "title_en": "M+ Museum Contemporary Visual Culture Exhibition",
+    "lang": "zh",
+    "tags": [
+      "arts",
+      "museum",
+      "contemporary-art",
+      "west-kowloon",
+      "exhibition"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T03:00:00Z",
+        "end": "2026-10-03T06:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "M+ Museum",
+      "url": "https://www.mplus.org.hk/"
+    },
+    "location": {
+      "district": "Yau Tsim Mong",
+      "venue": "West Kowloon Cultural District",
+      "address": "38 Museum Drive, Kowloon"
+    },
+    "url": "https://www.mplus.org.hk/en/"
+  },
+  {
+    "id": "act-022",
+    "title": "香港故宮文化博物館珍寶專題展",
+    "title_en": "Hong Kong Palace Museum Treasures Exhibition",
+    "lang": "zh",
+    "tags": [
+      "arts",
+      "history",
+      "museum",
+      "heritage",
+      "west-kowloon"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T06:00:00Z",
+        "end": "2026-10-04T09:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Hong Kong Palace Museum",
+      "url": "https://www.hkpm.org.hk/"
+    },
+    "location": {
+      "district": "Yau Tsim Mong",
+      "venue": null,
+      "address": "8 Museum Drive, West Kowloon Cultural District"
+    },
+    "url": "https://www.hkpm.org.hk/en/"
+  },
+  {
+    "id": "act-023",
+    "title": "大館歷史古蹟與域多利監獄導賞團",
+    "title_en": "Tai Kwun Heritage & Prison Cell Guided Tour",
+    "lang": "zh",
+    "tags": [
+      "heritage",
+      "guided-tour",
+      "history",
+      "central",
+      "free"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T06:30:00Z",
+        "end": "2026-10-03T07:45:00Z"
+      }
+    ],
+    "source": {
+      "name": "Tai Kwun Centre for Heritage and Arts",
+      "url": "https://www.taikwun.hk/"
+    },
+    "location": {
+      "district": "Central & Western",
+      "venue": "Tai Kwun",
+      "address": "10 Hollywood Road, Central"
+    },
+    "url": "https://www.taikwun.hk/en/"
+  },
+  {
+    "id": "act-024",
+    "title": "元創方文創設計小店與週末手作市集",
+    "title_en": "PMQ Creative Design Studios & Weekend Craft Market",
+    "lang": "zh",
+    "tags": [
+      "arts",
+      "design",
+      "crafts",
+      "market",
+      "central"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T05:00:00Z",
+        "end": "2026-10-03T08:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "PMQ Management Co. Ltd.",
+      "url": "https://www.pmq.org.hk/"
+    },
+    "location": {
+      "district": "Central & Western",
+      "venue": null,
+      "address": "35 Aberdeen Street, Central"
+    },
+    "url": "https://www.pmq.org.hk/"
+  },
+  {
+    "id": "act-025",
+    "title": "香港藝術館常設展覽與維港藝術漫步",
+    "title_en": "Hong Kong Museum of Art (HKMoA) Permanent Galleries",
+    "lang": "zh",
+    "tags": [
+      "arts",
+      "museum",
+      "tsim-sha-tsui",
+      "free",
+      "harbour-view"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T03:00:00Z",
+        "end": "2026-10-04T05:30:00Z"
+      }
+    ],
+    "source": {
+      "name": "Hong Kong Museum of Art",
+      "url": "https://hk.art.museum/"
+    },
+    "location": {
+      "district": "Yau Tsim Mong",
+      "venue": null,
+      "address": "10 Salisbury Road, Tsim Sha Tsui"
+    },
+    "url": "https://hk.art.museum/en/"
+  },
+  {
+    "id": "act-026",
+    "title": "油街實現藝術空間當代藝術展覽與古蹟草坪參觀",
+    "title_en": "Oi! (Oil Street Art Space) Contemporary Art & Heritage Lawn Visit",
+    "lang": "zh",
+    "tags": [
+      "arts",
+      "community",
+      "heritage",
+      "north-point",
+      "free"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T07:00:00Z",
+        "end": "2026-10-03T09:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Eastern",
+      "venue": null,
+      "address": "12 Oil Street, North Point"
+    },
+    "url": "https://www.apo.hk/en/web/apo/oi.html"
+  },
+  {
+    "id": "act-027",
+    "title": "牛棚藝術村歷史建築與駐場藝術家工作室參觀",
+    "title_en": "Cattle Depot Artist Village Open Studios Walk",
+    "lang": "zh",
+    "tags": [
+      "arts",
+      "heritage",
+      "to-kwa-wan",
+      "independent-art",
+      "free"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T06:00:00Z",
+        "end": "2026-10-04T08:30:00Z"
+      }
+    ],
+    "source": {
+      "name": "Antiquities and Monuments Office",
+      "url": "https://www.amo.gov.hk/"
+    },
+    "location": {
+      "district": "Kowloon City",
+      "venue": null,
+      "address": "63 Ma Tau Kok Road, To Kwa Wan"
+    },
+    "url": "https://www.amo.gov.hk/en/index.html"
+  },
+  {
+    "id": "act-028",
+    "title": "灣仔藍屋建築群社區導賞與文化館體驗",
+    "title_en": "Blue House Heritage Walk & Community Stories",
+    "lang": "zh",
+    "tags": [
+      "heritage",
+      "community",
+      "wan-chai",
+      "architecture"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T03:00:00Z",
+        "end": "2026-10-03T04:30:00Z"
+      }
+    ],
+    "source": {
+      "name": "St. James' Settlement",
+      "url": "https://sjs.org.hk/"
+    },
+    "location": {
+      "district": "Wan Chai",
+      "venue": null,
+      "address": "72 Stone Nullah Lane, Wan Chai"
+    },
+    "url": "https://vivabluehouse.hk/en/"
+  },
+  {
+    "id": "act-029",
+    "title": "香港文化博物館粵劇文物館與武俠金庸館",
+    "title_en": "Hong Kong Heritage Museum Cantonese Opera Exhibition",
+    "lang": "zh",
+    "tags": [
+      "arts",
+      "museum",
+      "history",
+      "cantonese-opera",
+      "sha-tin"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T05:30:00Z",
+        "end": "2026-10-03T08:30:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Sha Tin",
+      "venue": null,
+      "address": "1 Man Lam Road, Sha Tin"
+    },
+    "url": "https://www.heritagemuseum.gov.hk/en/"
+  },
+  {
+    "id": "act-030",
+    "title": "藝穗會爵士樂與獨立原聲音樂之夜",
+    "title_en": "Fringe Club Independent Jazz & Acoustic Night",
+    "lang": "zh",
+    "tags": [
+      "arts",
+      "music",
+      "jazz",
+      "central",
+      "nightlife"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-02T12:30:00Z",
+        "end": "2026-10-02T14:30:00Z"
+      }
+    ],
+    "source": {
+      "name": "The Fringe Club",
+      "url": "https://www.hkfringeclub.org/"
+    },
+    "location": {
+      "district": "Central & Western",
+      "venue": null,
+      "address": "2 Lower Albert Road, Central"
+    },
+    "url": "https://www.hkfringeclub.com/en"
+  },
+  {
+    "id": "act-031",
+    "title": "石澳龍脊遠足徑山脊漫遊",
+    "title_en": "Dragon's Back Trail Ridge Hike",
+    "lang": "zh",
+    "tags": [
+      "outdoors",
+      "hiking",
+      "nature",
+      "scenic-views",
+      "free"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T01:00:00Z",
+        "end": "2026-10-03T05:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Agriculture, Fisheries and Conservation Department",
+      "url": "https://www.afcd.gov.hk/"
+    },
+    "location": {
+      "district": "Southern",
+      "venue": "Starts at To Tei Wan",
+      "address": "Shek O Road (Bus 9 from Shau Kei Wan MTR)"
+    },
+    "url": "https://www.hiking.gov.hk/"
+  },
+  {
+    "id": "act-032",
+    "title": "獅子山晨光登頂遠足",
+    "title_en": "Lion Rock Summit Morning Hike",
+    "lang": "zh",
+    "tags": [
+      "outdoors",
+      "hiking",
+      "viewpoint",
+      "challenge",
+      "free"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T23:30:00Z",
+        "end": "2026-10-04T03:30:00Z"
+      }
+    ],
+    "source": {
+      "name": "Agriculture, Fisheries and Conservation Department",
+      "url": "https://www.afcd.gov.hk/"
+    },
+    "location": {
+      "district": "Wong Tai Sin",
+      "venue": "Lion Rock Country Park",
+      "address": "Wong Tai Sin"
+    },
+    "url": "https://www.hiking.gov.hk/"
+  },
+  {
+    "id": "act-033",
+    "title": "麥理浩徑第二段：萬宜水庫東壩至大浪灣健行",
+    "title_en": "MacLehose Trail Section 2: High Island to Tai Long Wan",
+    "lang": "zh",
+    "tags": [
+      "outdoors",
+      "hiking",
+      "geopark",
+      "beach",
+      "sai-kung"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T00:30:00Z",
+        "end": "2026-10-03T07:30:00Z"
+      }
+    ],
+    "source": {
+      "name": "Hong Kong UNESCO Global Geopark",
+      "url": "https://www.geopark.gov.hk/"
+    },
+    "location": {
+      "district": "Sai Kung",
+      "venue": "High Island Reservoir East Dam",
+      "address": "Sai Kung"
+    },
+    "url": "https://www.geopark.gov.hk/en"
+  },
+  {
+    "id": "act-034",
+    "title": "南丫島家樂徑漫步（榕樹灣至索罟灣）",
+    "title_en": "Lamma Island Family Trail Walk (Yung Shue Wan to Sok Kwu Wan)",
+    "lang": "zh",
+    "tags": [
+      "outdoors",
+      "islands",
+      "trail",
+      "leisure",
+      "ferry-trip"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T02:30:00Z",
+        "end": "2026-10-04T07:30:00Z"
+      }
+    ],
+    "source": {
+      "name": "Hong Kong Tourism Board",
+      "url": "https://www.discoverhongkong.com/"
+    },
+    "location": {
+      "district": "Islands",
+      "venue": "Ferry from Central Pier 4 to Yung Shue Wan",
+      "address": null
+    },
+    "url": "https://www.discoverhongkong.com/eng/explore/great-outdoors/lamma-island.html"
+  },
+  {
+    "id": "act-035",
+    "title": "長洲單車環島遊與傳統街頭美食漫步",
+    "title_en": "Cheung Chau Island Cycling & Heritage Food Trail",
+    "lang": "zh",
+    "tags": [
+      "outdoors",
+      "cycling",
+      "food",
+      "islands",
+      "heritage"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T02:00:00Z",
+        "end": "2026-10-03T08:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Hong Kong Tourism Board",
+      "url": "https://www.discoverhongkong.com/"
+    },
+    "location": {
+      "district": "Islands",
+      "venue": "Ferry from Central Pier 5 to Cheung Chau",
+      "address": null
+    },
+    "url": "https://www.discoverhongkong.com/eng/explore/great-outdoors/cheung-chau.html"
+  },
+  {
+    "id": "act-036",
+    "title": "城門水塘白千層林道與水浸白千層生態漫遊",
+    "title_en": "Shing Mun Reservoir Paperbark Tree Forest Walk",
+    "lang": "zh",
+    "tags": [
+      "outdoors",
+      "nature",
+      "photography",
+      "reservoir",
+      "free"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T01:30:00Z",
+        "end": "2026-10-04T05:30:00Z"
+      }
+    ],
+    "source": {
+      "name": "Agriculture, Fisheries and Conservation Department",
+      "url": "https://www.afcd.gov.hk/"
+    },
+    "location": {
+      "district": "Tsuen Wan",
+      "venue": "Shing Mun Country Park",
+      "address": "Tsuen Wan"
+    },
+    "url": "https://www.hiking.gov.hk/"
+  },
+  {
+    "id": "act-037",
+    "title": "大東山秋冬芒草與石屋群登山遠足",
+    "title_en": "Sunset Peak (Tai Tung Shan) Silvergrass Trek",
+    "lang": "zh",
+    "tags": [
+      "outdoors",
+      "hiking",
+      "lantau",
+      "scenic-views",
+      "free"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T05:00:00Z",
+        "end": "2026-10-03T10:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Agriculture, Fisheries and Conservation Department",
+      "url": "https://www.afcd.gov.hk/"
+    },
+    "location": {
+      "district": "Islands",
+      "venue": "Lantau South Country Park",
+      "address": "starting from Pak Kung Au"
+    },
+    "url": "https://www.hiking.gov.hk/"
+  },
+  {
+    "id": "act-038",
+    "title": "新娘潭與照鏡潭自然教育徑瀑布漫遊",
+    "title_en": "Bride's Pool & Mirror Pool Waterfall Nature Trail",
+    "lang": "zh",
+    "tags": [
+      "outdoors",
+      "waterfall",
+      "nature",
+      "tai-po",
+      "free"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T02:00:00Z",
+        "end": "2026-10-04T05:30:00Z"
+      }
+    ],
+    "source": {
+      "name": "Agriculture, Fisheries and Conservation Department",
+      "url": "https://www.afcd.gov.hk/"
+    },
+    "location": {
+      "district": "Tai Po",
+      "venue": "Plover Cove Country Park",
+      "address": "Bride's Pool Road, Tai Po"
+    },
+    "url": "https://www.hiking.gov.hk/"
+  },
+  {
+    "id": "act-039",
+    "title": "太平山盧吉道晨間環山步道維港全景走",
+    "title_en": "Victoria Peak Lugard Road Morning Sky Walk",
+    "lang": "zh",
+    "tags": [
+      "outdoors",
+      "walking",
+      "skyline",
+      "the-peak",
+      "free"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T00:30:00Z",
+        "end": "2026-10-03T02:30:00Z"
+      }
+    ],
+    "source": {
+      "name": "Hong Kong Tourism Board",
+      "url": "https://www.discoverhongkong.com/"
+    },
+    "location": {
+      "district": "Central & Western",
+      "venue": "Lugard Road",
+      "address": "The Peak, Hong Kong Island"
+    },
+    "url": "https://www.discoverhongkong.com/eng/explore/great-outdoors/the-peak.html"
+  },
+  {
+    "id": "act-040",
+    "title": "大潭水務文物徑英倫風石橋與水塘健行",
+    "title_en": "Tai Tam Waterworks Heritage Trail Hike",
+    "lang": "zh",
+    "tags": [
+      "outdoors",
+      "heritage",
+      "hiking",
+      "reservoir",
+      "free"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T05:30:00Z",
+        "end": "2026-10-04T09:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Water Supplies Department",
+      "url": "https://www.wsd.gov.hk/"
+    },
+    "location": {
+      "district": "Southern",
+      "venue": "Tai Tam Country Park",
+      "address": "Tai Tam Reservoir Road"
+    },
+    "url": "https://www.wsd.gov.hk/en/home/index.html"
+  },
+  {
+    "id": "act-041",
+    "title": "灣仔粵語英語語言交換聚會",
+    "title_en": "Cantonese-English Language Exchange Meetup — Wan Chai",
+    "lang": "zh",
+    "tags": [
+      "community",
+      "language-exchange",
+      "cantonese",
+      "students",
+      "social"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T07:00:00Z",
+        "end": "2026-10-03T09:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Hong Kong Language Exchange Group",
+      "url": "https://www.meetup.com/"
+    },
+    "location": {
+      "district": "Wan Chai",
+      "venue": "Common Room Cafe",
+      "address": "15 Hennessy Road, Wan Chai"
+    },
+    "url": "https://www.meetup.com/"
+  },
+  {
+    "id": "act-042",
+    "title": "聖雅各福群會土作坊陶藝拉坯體驗工作坊",
+    "title_en": "Beginner Ceramic Pottery Workshop — St. James' Creation",
+    "lang": "zh",
+    "tags": [
+      "community",
+      "crafts",
+      "pottery",
+      "workshop",
+      "social-enterprise"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T06:00:00Z",
+        "end": "2026-10-03T08:30:00Z"
+      }
+    ],
+    "source": {
+      "name": "St. James' Settlement",
+      "url": "https://sjs.org.hk/"
+    },
+    "location": {
+      "district": "Wan Chai",
+      "venue": "St. James' Creation",
+      "address": "85 Stone Nullah Lane, Wan Chai"
+    },
+    "url": "https://sjc.sjs.org.hk/"
+  },
+  {
+    "id": "act-043",
+    "title": "旺角國際學生桌遊桌上遊戲同樂日",
+    "title_en": "International Student Board Games Social — Mong Kok",
+    "lang": "zh",
+    "tags": [
+      "community",
+      "board-games",
+      "mong-kok",
+      "social",
+      "students"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T11:00:00Z",
+        "end": "2026-10-03T14:30:00Z"
+      }
+    ],
+    "source": {
+      "name": "Jolly Thinkers Board Game Cafe",
+      "url": "https://www.jolly-thinkers.com/"
+    },
+    "location": {
+      "district": "Yau Tsim Mong",
+      "venue": "Jolly Thinkers",
+      "address": "11/F, 240 Sai Yeung Choi Street South, Mong Kok"
+    },
+    "url": "https://www.facebook.com/jollythinkers/"
+  },
+  {
+    "id": "act-044",
+    "title": "龍鼓灘海岸清潔志願者義工活動",
+    "title_en": "Community Coastal Clean-up Volunteer Day — Lung Kwu Tan",
+    "lang": "zh",
+    "tags": [
+      "community",
+      "volunteering",
+      "environment",
+      "beach-cleanup",
+      "free"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T01:00:00Z",
+        "end": "2026-10-04T04:30:00Z"
+      }
+    ],
+    "source": {
+      "name": "Ocean Park Conservation Foundation Hong Kong",
+      "url": "https://www.opcf.org.hk/"
+    },
+    "location": {
+      "district": "Tuen Mun",
+      "venue": "Lung Kwu Tan Beach",
+      "address": "Tuen Mun"
+    },
+    "url": "https://www.opcf.org.hk/"
+  },
+  {
+    "id": "act-045",
+    "title": "傳統香港霓虹燈手作體驗工作坊",
+    "title_en": "Traditional Hong Kong Neon Sign Making Workshop",
+    "lang": "zh",
+    "tags": [
+      "crafts",
+      "workshop",
+      "neon-light",
+      "kwun-tong",
+      "culture"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T06:30:00Z",
+        "end": "2026-10-04T09:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Myosotis Flower & Ceramic Studio",
+      "url": "https://www.myosotis.hk/"
+    },
+    "location": {
+      "district": "Kwun Tong",
+      "venue": "Kwun Tong Industrial Centre",
+      "address": "436 Kwun Tong Road"
+    },
+    "url": "https://www.instagram.com/myosotis_flower/"
+  },
+  {
+    "id": "act-046",
+    "title": "MakerBay 創客空間3D打印與激光切割初階導引",
+    "title_en": "MakerBay Digital Fabrication & 3D Printing Induction",
+    "lang": "zh",
+    "tags": [
+      "community",
+      "workshop",
+      "technology",
+      "maker",
+      "the-mills"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T03:00:00Z",
+        "end": "2026-10-03T05:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "MakerBay Foundation",
+      "url": "https://www.makerbay.org/"
+    },
+    "location": {
+      "district": "Tsuen Wan",
+      "venue": "The Mills",
+      "address": "45 Pak Tin Par Street, Tsuen Wan"
+    },
+    "url": "https://www.makerbay.org/"
+  },
+  {
+    "id": "act-047",
+    "title": "國際十字路會物資整理與體驗志工日",
+    "title_en": "Volunteering with Crossroads Foundation — Global Village",
+    "lang": "zh",
+    "tags": [
+      "community",
+      "volunteering",
+      "charity",
+      "tuen-mun",
+      "free"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T02:00:00Z",
+        "end": "2026-10-03T08:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Crossroads Foundation",
+      "url": "https://www.crossroads.org.hk/"
+    },
+    "location": {
+      "district": "Tuen Mun",
+      "venue": "Crossroads Village",
+      "address": "2 Castle Peak Road, Tuen Mun"
+    },
+    "url": "https://www.crossroads.org.hk/"
+  },
+  {
+    "id": "act-048",
+    "title": "香港中央圖書館月度讀書會與專題講座",
+    "title_en": "Hong Kong Central Library Monthly Book Talk & Reading Club",
+    "lang": "zh",
+    "tags": [
+      "community",
+      "library",
+      "books",
+      "literature",
+      "free"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T06:30:00Z",
+        "end": "2026-10-03T08:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Hong Kong Public Libraries",
+      "url": "https://www.hkpl.gov.hk/"
+    },
+    "location": {
+      "district": "Wan Chai",
+      "venue": null,
+      "address": "66 Causeway Road, Causeway Bay"
+    },
+    "url": "https://www.hkpl.gov.hk/"
+  },
+  {
+    "id": "act-049",
+    "title": "南豐紗廠紡織文化導賞與永續時尚巡禮",
+    "title_en": "The Mills Textile Heritage Tour & Sustainable Fashion Walk",
+    "lang": "zh",
+    "tags": [
+      "heritage",
+      "arts",
+      "fashion",
+      "the-mills",
+      "tsuen-wan"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T06:00:00Z",
+        "end": "2026-10-04T07:30:00Z"
+      }
+    ],
+    "source": {
+      "name": "Centre for Heritage, Arts and Textile (CHAT)",
+      "url": "https://www.mill6chat.org/"
+    },
+    "location": {
+      "district": "Tsuen Wan",
+      "venue": null,
+      "address": "45 Pak Tin Par Street, Tsuen Wan"
+    },
+    "url": "https://www.mill6chat.org/"
+  },
+  {
+    "id": "act-050",
+    "title": "鰂魚涌室內抱石攀岩社交攀爬時段",
+    "title_en": "Bouldering & Climbing Social Session — Verm City",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "bouldering",
+      "climbing",
+      "quarry-bay",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-02T11:00:00Z",
+        "end": "2026-10-02T14:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Verm City Bouldering",
+      "url": "https://www.vermcity.com/"
+    },
+    "location": {
+      "district": "Eastern",
+      "venue": "Verm City",
+      "address": "4/F, Kodak House II, 321 Java Road, Quarry Bay"
+    },
+    "url": "https://vermcity.com/"
+  },
+  {
+    "id": "act-051",
+    "title": "廟街夜市大排檔與特色地道街頭小食巡禮",
+    "title_en": "Temple Street Night Market & Street Food Evening Walk",
+    "lang": "zh",
+    "tags": [
+      "food",
+      "night-market",
+      "street-food",
+      "yau-ma-tei",
+      "nightlife"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T10:30:00Z",
+        "end": "2026-10-03T13:30:00Z"
+      }
+    ],
+    "source": {
+      "name": "Hong Kong Tourism Board",
+      "url": "https://www.discoverhongkong.com/"
+    },
+    "location": {
+      "district": "Yau Tsim Mong",
+      "venue": "Temple Street",
+      "address": "Yau Ma Tei, Kowloon"
+    },
+    "url": "https://www.discoverhongkong.com/eng/explore/neighborhoods/west-kowloon.html"
+  },
+  {
+    "id": "act-052",
+    "title": "深水埗黃金電腦商場與鴨寮街布藝尋寶散策",
+    "title_en": "Sham Shui Po Electronics & Fabric Market Thrift Walk",
+    "lang": "zh",
+    "tags": [
+      "shopping",
+      "electronics",
+      "thrift",
+      "sham-shui-po",
+      "culture"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T05:30:00Z",
+        "end": "2026-10-03T08:30:00Z"
+      }
+    ],
+    "source": {
+      "name": "Hong Kong Tourism Board",
+      "url": "https://www.discoverhongkong.com/"
+    },
+    "location": {
+      "district": "Sham Shui Po",
+      "venue": "Apliu Street & Fuk Wa Street",
+      "address": "Sham Shui Po"
+    },
+    "url": "https://www.discoverhongkong.com/eng/explore/neighborhoods/sham-shui-po.html"
+  },
+  {
+    "id": "act-053",
+    "title": "黃大仙祠道教建築與求籤文化探秘",
+    "title_en": "Wong Tai Sin Temple Architecture & Taoist Culture Tour",
+    "lang": "zh",
+    "tags": [
+      "culture",
+      "temple",
+      "heritage",
+      "wong-tai-sin",
+      "free"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T02:00:00Z",
+        "end": "2026-10-04T04:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Sik Sik Yuen Wong Tai Sin Temple",
+      "url": "https://www.siksikyuen.org.hk/"
+    },
+    "location": {
+      "district": "Wong Tai Sin",
+      "venue": null,
+      "address": "2 Chuk Yuen Village, Wong Tai Sin"
+    },
+    "url": "https://www.siksikyuen.org.hk/"
+  },
+  {
+    "id": "act-054",
+    "title": "大澳水鄉棚屋風情與中華白海豚出海尋訪",
+    "title_en": "Tai O Fishing Village Stilt House & Dolphin Boat Excursion",
+    "lang": "zh",
+    "tags": [
+      "heritage",
+      "boat-tour",
+      "culture",
+      "tai-o",
+      "lantau"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T02:30:00Z",
+        "end": "2026-10-03T08:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Hong Kong Tourism Board",
+      "url": "https://www.discoverhongkong.com/"
+    },
+    "location": {
+      "district": "Islands",
+      "venue": "Tai O Village",
+      "address": "Lantau Island (Bus 11 from Tung Chung MTR)"
+    },
+    "url": "https://www.discoverhongkong.com/eng/explore/great-outdoors/tai-o.html"
+  },
+  {
+    "id": "act-055",
+    "title": "鯉魚門海鮮村古樸漁村與舊石礦場廢墟探索",
+    "title_en": "Lei Yue Mun Historic Seafood Village & Old Quarry Walk",
+    "lang": "zh",
+    "tags": [
+      "heritage",
+      "seafood",
+      "photography",
+      "kwun-tong",
+      "free"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T07:30:00Z",
+        "end": "2026-10-04T10:30:00Z"
+      }
+    ],
+    "source": {
+      "name": "Hong Kong Tourism Board",
+      "url": "https://www.discoverhongkong.com/"
+    },
+    "location": {
+      "district": "Kwun Tong",
+      "venue": "Lei Yue Mun",
+      "address": "Yau Tong, Kowloon"
+    },
+    "url": "https://www.discoverhongkong.com/eng/explore/neighborhoods/kowloon-east.html"
+  },
+  {
+    "id": "act-056",
+    "title": "旺角花墟與園蒲街雀鳥花園悠閒晨間漫步",
+    "title_en": "Flower Market & Yuen Po Bird Garden Morning Stroll",
+    "lang": "zh",
+    "tags": [
+      "nature",
+      "market",
+      "culture",
+      "mong-kok",
+      "free"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T01:30:00Z",
+        "end": "2026-10-03T03:30:00Z"
+      }
+    ],
+    "source": {
+      "name": "Hong Kong Tourism Board",
+      "url": "https://www.discoverhongkong.com/"
+    },
+    "location": {
+      "district": "Yau Tsim Mong",
+      "venue": "Flower Market Road",
+      "address": "Prince Edward, Mong Kok"
+    },
+    "url": "https://www.discoverhongkong.com/"
+  },
+  {
+    "id": "act-057",
+    "title": "九龍寨城公園江南園林與昔日寨城遺蹟探索",
+    "title_en": "Kowloon Walled City Park Historical Garden Tour",
+    "lang": "zh",
+    "tags": [
+      "heritage",
+      "history",
+      "garden",
+      "kowloon-city",
+      "free"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T06:00:00Z",
+        "end": "2026-10-04T08:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Kowloon City",
+      "venue": "Tung Tsing Road",
+      "address": "Kowloon City"
+    },
+    "url": "https://www.lcsd.gov.hk/en/parks/kwcp/index.html"
+  },
+  {
+    "id": "act-058",
+    "title": "屏山文物徑鄧氏宗祠與聚星樓歷史步道",
+    "title_en": "Ping Shan Heritage Trail Ancient Ancestral Halls Walk",
+    "lang": "zh",
+    "tags": [
+      "heritage",
+      "history",
+      "yuen-long",
+      "architecture",
+      "free"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T02:00:00Z",
+        "end": "2026-10-03T05:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Antiquities and Monuments Office",
+      "url": "https://www.amo.gov.hk/"
+    },
+    "location": {
+      "district": "Yuen Long",
+      "venue": "Starts at Tsui Sing Lau Pagoda",
+      "address": "Tin Shui Wai MTR Station Exit E3"
+    },
+    "url": "https://www.amo.gov.hk/en/heritage-trails/ping-shan-heritage-trail/index.html"
+  },
+  {
+    "id": "act-059",
+    "title": "九龍城「小泰國」地道泰式美食與香料店漫遊",
+    "title_en": "Kowloon City Little Thailand Culinary Exploration",
+    "lang": "zh",
+    "tags": [
+      "food",
+      "thai-food",
+      "culture",
+      "kowloon-city"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-02T10:30:00Z",
+        "end": "2026-10-02T13:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Hong Kong Tourism Board",
+      "url": "https://www.discoverhongkong.com/"
+    },
+    "location": {
+      "district": "Kowloon City",
+      "venue": "South Wall Road & Nga Tsin Wai Road",
+      "address": "Kowloon City"
+    },
+    "url": "https://www.discoverhongkong.com/"
+  },
+  {
+    "id": "act-060",
+    "title": "重慶大廈多元族裔文化漫遊與正宗南亞咖哩品嚐",
+    "title_en": "Chungking Mansions Cultural Tour & South Asian Cuisine",
+    "lang": "zh",
+    "tags": [
+      "culture",
+      "food",
+      "diversity",
+      "tsim-sha-tsui"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T04:00:00Z",
+        "end": "2026-10-03T06:30:00Z"
+      }
+    ],
+    "source": {
+      "name": "Hong Kong Tourism Board",
+      "url": "https://www.discoverhongkong.com/"
+    },
+    "location": {
+      "district": "Yau Tsim Mong",
+      "venue": null,
+      "address": "36-44 Nathan Road, Tsim Sha Tsui"
+    },
+    "url": "https://www.discoverhongkong.com/"
+  },
+  {
+    "id": "act-061",
+    "title": "指南：康文署 SmartPLAY 康體通系統註冊與訂場教學",
+    "title_en": "Guide: How to Register & Book Sports Courts on LCSD SmartPLAY",
+    "lang": "zh",
+    "tags": [
+      "guide",
+      "lcsd",
+      "court-booking",
+      "sports",
+      "smartplay"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T16:00:00Z",
+        "end": "2026-10-05T15:59:00Z"
+      }
+    ],
+    "source": {
+      "name": "LCSD SmartPLAY",
+      "url": "https://www.smartplay.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Central & Western",
+      "venue": "Online portal & District SmartPLAY kiosks",
+      "address": null
+    },
+    "url": "https://www.smartplay.lcsd.gov.hk/"
+  },
+  {
+    "id": "act-062",
+    "title": "指南：大專學生如何辦理香港公共圖書館圖書證與電子資源開通",
+    "title_en": "Guide: Getting a Public Library Card for University Students",
+    "lang": "zh",
+    "tags": [
+      "guide",
+      "library",
+      "students",
+      "academics"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T16:00:00Z",
+        "end": "2026-10-05T15:59:00Z"
+      }
+    ],
+    "source": {
+      "name": "Hong Kong Public Libraries",
+      "url": "https://www.hkpl.gov.hk/"
+    },
+    "location": {
+      "district": "Wan Chai",
+      "venue": "Any Hong Kong Public Library branch",
+      "address": null
+    },
+    "url": "https://www.hkpl.gov.hk/"
+  },
+  {
+    "id": "act-063",
+    "title": "指南：香港夏季遠足防中暑與登山安全必讀守則",
+    "title_en": "Guide: Hong Kong Summer Hiking Safety & Heat Preparedness",
+    "lang": "zh",
+    "tags": [
+      "guide",
+      "hiking",
+      "safety",
+      "outdoors"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T16:00:00Z",
+        "end": "2026-10-05T15:59:00Z"
+      }
+    ],
+    "source": {
+      "name": "Agriculture, Fisheries and Conservation Department",
+      "url": "https://www.afcd.gov.hk/"
+    },
+    "location": {
+      "district": "Sai Kung",
+      "venue": "All HK Country Parks",
+      "address": null
+    },
+    "url": "https://www.hiking.gov.hk/"
+  },
+  {
+    "id": "act-064",
+    "title": "指南：大專全日制學生八達通申請與港鐵半價乘車優惠",
+    "title_en": "Guide: Student Octopus Card Application & Public Transport Fare Concessions",
+    "lang": "zh",
+    "tags": [
+      "guide",
+      "transport",
+      "students",
+      "octopus-card"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T16:00:00Z",
+        "end": "2026-10-05T15:59:00Z"
+      }
+    ],
+    "source": {
+      "name": "MTR Corporation",
+      "url": "https://www.mtr.com.hk/"
+    },
+    "location": {
+      "district": "Yau Tsim Mong",
+      "venue": "Online via MTR Student Travel Scheme App",
+      "address": null
+    },
+    "url": "https://www.mtr.com.hk/en/customer/tickets/student_travel_scheme.html"
+  },
+  {
+    "id": "act-065",
+    "title": "香港公園體育館羽毛球場租訂",
+    "title_en": "Badminton Court Booking — Hong Kong Park Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "badminton",
+      "lcsd",
+      "central-western",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T06:00:00Z",
+        "end": "2026-10-04T08:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Central & Western",
+      "venue": "Hong Kong Park Sports Centre",
+      "address": "29 Cotton Tree Drive, Central"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#121"
+  },
+  {
+    "id": "act-066",
+    "title": "香港壁球中心壁球場練習租訂",
+    "title_en": "Squash Court Booking — Hong Kong Squash Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "squash",
+      "lcsd",
+      "central-western",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T01:00:00Z",
+        "end": "2026-10-03T03:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Central & Western",
+      "venue": "Hong Kong Squash Centre",
+      "address": "23 Cotton Tree Drive, Central"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#122"
+  },
+  {
+    "id": "act-067",
+    "title": "上環體育館壁球場練習租訂",
+    "title_en": "Squash Court Booking — Sheung Wan Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "squash",
+      "lcsd",
+      "central-western",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T02:00:00Z",
+        "end": "2026-10-04T04:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Central & Western",
+      "venue": "Sheung Wan Sports Centre",
+      "address": "345 Queen's Road Central"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#140"
+  },
+  {
+    "id": "act-068",
+    "title": "士美非路體育館公眾健身室訓練時段",
+    "title_en": "Public Fitness Room Session — Smithfield Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "fitness",
+      "lcsd",
+      "central-western",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T03:00:00Z",
+        "end": "2026-10-03T05:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Central & Western",
+      "venue": "Smithfield Sports Centre",
+      "address": "12K Smithfield, Kennedy Town"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#141"
+  },
+  {
+    "id": "act-069",
+    "title": "中山紀念公園體育館室內體育主場籃球時段",
+    "title_en": "Indoor Basketball & Sports Hall Session — Sun Yat Sen Memorial Park Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "basketball",
+      "lcsd",
+      "central-western",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T04:00:00Z",
+        "end": "2026-10-04T06:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Central & Western",
+      "venue": "Sun Yat Sen Memorial Park Sports Centre",
+      "address": "18 Eastern Street North, Sai Ying Pun"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#144"
+  },
+  {
+    "id": "act-070",
+    "title": "駱克道體育館羽毛球場租訂",
+    "title_en": "Badminton Court Booking — Lockhart Road Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "badminton",
+      "lcsd",
+      "wan-chai",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T05:00:00Z",
+        "end": "2026-10-03T07:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Wan Chai",
+      "venue": "Lockhart Road Sports Centre",
+      "address": "225 Hennessy Road, Wan Chai"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#922"
+  },
+  {
+    "id": "act-071",
+    "title": "港灣道體育館乒乓球室切磋時段",
+    "title_en": "Table Tennis Practice Session — Harbour Road Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "table-tennis",
+      "lcsd",
+      "wan-chai",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T06:00:00Z",
+        "end": "2026-10-04T08:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Wan Chai",
+      "venue": "Harbour Road Sports Centre",
+      "address": "27 Harbour Road, Wan Chai"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#916"
+  },
+  {
+    "id": "act-072",
+    "title": "黃泥涌體育館壁球場練習租訂",
+    "title_en": "Squash Court Booking — Wong Nai Chung Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "squash",
+      "lcsd",
+      "wan-chai",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T01:00:00Z",
+        "end": "2026-10-03T03:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Wan Chai",
+      "venue": "Wong Nai Chung Sports Centre",
+      "address": "2 Yuk Sau Street, Happy Valley"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#935"
+  },
+  {
+    "id": "act-073",
+    "title": "港島東體育館羽毛球場租訂",
+    "title_en": "Badminton Court Booking — Island East Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "badminton",
+      "lcsd",
+      "eastern",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T02:00:00Z",
+        "end": "2026-10-04T04:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Eastern",
+      "venue": "Island East Sports Centre",
+      "address": "52 Lei King Road, Sai Wan Ho"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#469"
+  },
+  {
+    "id": "act-074",
+    "title": "柴灣體育館室內體育主場籃球時段",
+    "title_en": "Indoor Basketball & Sports Hall Session — Chai Wan Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "basketball",
+      "lcsd",
+      "eastern",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T03:00:00Z",
+        "end": "2026-10-03T05:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Eastern",
+      "venue": "Chai Wan Sports Centre",
+      "address": "Yee Shun Lane, Chai Wan Road"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#461"
+  },
+  {
+    "id": "act-075",
+    "title": "渣華道體育館羽毛球場租訂",
+    "title_en": "Badminton Court Booking — Java Road Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "badminton",
+      "lcsd",
+      "eastern",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T04:00:00Z",
+        "end": "2026-10-04T06:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Eastern",
+      "venue": "Java Road Sports Centre",
+      "address": "99 Java Road, North Point"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#471"
+  },
+  {
+    "id": "act-076",
+    "title": "鰂魚涌體育館乒乓球室切磋時段",
+    "title_en": "Table Tennis Practice Session — Quarry Bay Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "table-tennis",
+      "lcsd",
+      "eastern",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T05:00:00Z",
+        "end": "2026-10-03T07:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Eastern",
+      "venue": "Quarry Bay Sports Centre",
+      "address": "38 Quarry Bay Street"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#481"
+  },
+  {
+    "id": "act-077",
+    "title": "西灣河體育館壁球場練習租訂",
+    "title_en": "Squash Court Booking — Sai Wan Ho Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "squash",
+      "lcsd",
+      "eastern",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T06:00:00Z",
+        "end": "2026-10-04T08:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Eastern",
+      "venue": "Sai Wan Ho Sports Centre",
+      "address": "111 Shau Kei Wan Road"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#482"
+  },
+  {
+    "id": "act-078",
+    "title": "香港仔體育館公眾健身室訓練時段",
+    "title_en": "Public Fitness Room Session — Aberdeen Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "fitness",
+      "lcsd",
+      "southern",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T01:00:00Z",
+        "end": "2026-10-03T03:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Southern",
+      "venue": "Aberdeen Sports Centre",
+      "address": "203 Aberdeen Main Road"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#545"
+  },
+  {
+    "id": "act-079",
+    "title": "赤柱體育館公眾健身室訓練時段",
+    "title_en": "Public Fitness Room Session — Stanley Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "fitness",
+      "lcsd",
+      "southern",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T02:00:00Z",
+        "end": "2026-10-04T04:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Southern",
+      "venue": "Stanley Sports Centre",
+      "address": "6 Stanley Market Road"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#573"
+  },
+  {
+    "id": "act-080",
+    "title": "黃竹坑體育館羽毛球場租訂",
+    "title_en": "Badminton Court Booking — Wong Chuk Hang Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "badminton",
+      "lcsd",
+      "southern",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T03:00:00Z",
+        "end": "2026-10-03T05:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Southern",
+      "venue": "Wong Chuk Hang Sports Centre",
+      "address": "168 Wong Chuk Hang Road"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#584"
+  },
+  {
+    "id": "act-081",
+    "title": "鴨脷洲體育館乒乓球室切磋時段",
+    "title_en": "Table Tennis Practice Session — Ap Lei Chau Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "table-tennis",
+      "lcsd",
+      "southern",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T04:00:00Z",
+        "end": "2026-10-04T06:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Southern",
+      "venue": "Ap Lei Chau Sports Centre",
+      "address": "8 Hung Shing Street, Ap Lei Chau"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#557"
+  },
+  {
+    "id": "act-082",
+    "title": "九龍公園體育館乒乓球室切磋時段",
+    "title_en": "Table Tennis Practice Session — Kowloon Park Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "table-tennis",
+      "lcsd",
+      "yau-tsim-mong",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T05:00:00Z",
+        "end": "2026-10-03T07:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Yau Tsim Mong",
+      "venue": "Kowloon Park Sports Centre",
+      "address": "22 Austin Road, Tsim Sha Tsui"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#524"
+  },
+  {
+    "id": "act-083",
+    "title": "界限街一號體育館羽毛球場租訂",
+    "title_en": "Badminton Court Booking — Boundary Street Sports Centre No. 1",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "badminton",
+      "lcsd",
+      "yau-tsim-mong",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T06:00:00Z",
+        "end": "2026-10-04T08:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Yau Tsim Mong",
+      "venue": "Boundary Street Sports Centre No. 1",
+      "address": "200 Sai Yee Street, Mong Kok"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#504"
+  },
+  {
+    "id": "act-084",
+    "title": "花園街體育館室內體育主場籃球時段",
+    "title_en": "Indoor Basketball & Sports Hall Session — Fa Yuen Street Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "basketball",
+      "lcsd",
+      "yau-tsim-mong",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T01:00:00Z",
+        "end": "2026-10-03T03:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Yau Tsim Mong",
+      "venue": "Fa Yuen Street Sports Centre",
+      "address": "123A Fa Yuen Street, Mong Kok"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#512"
+  },
+  {
+    "id": "act-085",
+    "title": "大角咀體育館羽毛球場租訂",
+    "title_en": "Badminton Court Booking — Tai Kok Tsui Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "badminton",
+      "lcsd",
+      "yau-tsim-mong",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T02:00:00Z",
+        "end": "2026-10-04T04:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Yau Tsim Mong",
+      "venue": "Tai Kok Tsui Sports Centre",
+      "address": "63 Fuk Tsun Street, Tai Kok Tsui"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#537"
+  },
+  {
+    "id": "act-086",
+    "title": "北河街體育館乒乓球室切磋時段",
+    "title_en": "Table Tennis Practice Session — Pei Ho Street Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "table-tennis",
+      "lcsd",
+      "sham-shui-po",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T03:00:00Z",
+        "end": "2026-10-03T05:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Sham Shui Po",
+      "venue": "Pei Ho Street Sports Centre",
+      "address": "333 Ki Lung Street, Sham Shui Po"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#671"
+  },
+  {
+    "id": "act-087",
+    "title": "荔枝角公園體育館壁球場練習租訂",
+    "title_en": "Squash Court Booking — Lai Chi Kok Park Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "squash",
+      "lcsd",
+      "sham-shui-po",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T04:00:00Z",
+        "end": "2026-10-04T06:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Sham Shui Po",
+      "venue": "Lai Chi Kok Park Sports Centre",
+      "address": "1 Lai Wan Road, Lai Chi Kok"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#666"
+  },
+  {
+    "id": "act-088",
+    "title": "保安道體育館公眾健身室訓練時段",
+    "title_en": "Public Fitness Room Session — Po On Road Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "fitness",
+      "lcsd",
+      "sham-shui-po",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T05:00:00Z",
+        "end": "2026-10-03T07:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Sham Shui Po",
+      "venue": "Po On Road Sports Centre",
+      "address": "325-329 Po On Road, Sham Shui Po"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#677"
+  },
+  {
+    "id": "act-089",
+    "title": "石硤尾公園體育館羽毛球場租訂",
+    "title_en": "Badminton Court Booking — Shek Kip Mei Park Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "badminton",
+      "lcsd",
+      "sham-shui-po",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T06:00:00Z",
+        "end": "2026-10-04T08:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Sham Shui Po",
+      "venue": "Shek Kip Mei Park Sports Centre",
+      "address": "17 Wai Chi Street, Shek Kip Mei"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#693"
+  },
+  {
+    "id": "act-090",
+    "title": "九龍城市政大廈體育館羽毛球場租訂",
+    "title_en": "Badminton Court Booking — Kowloon City Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "badminton",
+      "lcsd",
+      "kowloon-city",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T01:00:00Z",
+        "end": "2026-10-03T03:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Kowloon City",
+      "venue": "Kowloon City Sports Centre",
+      "address": "100 Nga Tsin Wai Road, Kowloon City"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#38"
+  },
+  {
+    "id": "act-091",
+    "title": "何文田體育館乒乓球室切磋時段",
+    "title_en": "Table Tennis Practice Session — Ho Man Tin Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "table-tennis",
+      "lcsd",
+      "kowloon-city",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T02:00:00Z",
+        "end": "2026-10-04T04:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Kowloon City",
+      "venue": "Ho Man Tin Sports Centre",
+      "address": "1 Chung Yee Street, Ho Man Tin"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#18"
+  },
+  {
+    "id": "act-092",
+    "title": "紅磡市政大廈體育館壁球場練習租訂",
+    "title_en": "Squash Court Booking — Hung Hom Municipal Services Building Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "squash",
+      "lcsd",
+      "kowloon-city",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T03:00:00Z",
+        "end": "2026-10-03T05:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Kowloon City",
+      "venue": "Hung Hom Municipal Services Building Sports Centre",
+      "address": "11 Ma Tau Wai Road, Hung Hom"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#22"
+  },
+  {
+    "id": "act-093",
+    "title": "土瓜灣體育館公眾健身室訓練時段",
+    "title_en": "Public Fitness Room Session — To Kwa Wan Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "fitness",
+      "lcsd",
+      "kowloon-city",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T04:00:00Z",
+        "end": "2026-10-04T06:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Kowloon City",
+      "venue": "To Kwa Wan Sports Centre",
+      "address": "66 Ha Heung Road, To Kwa Wan"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#76"
+  },
+  {
+    "id": "act-094",
+    "title": "蒲崗村道體育館室內體育主場籃球時段",
+    "title_en": "Indoor Basketball & Sports Hall Session — Po Kong Village Road Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "basketball",
+      "lcsd",
+      "wong-tai-sin",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T05:00:00Z",
+        "end": "2026-10-03T07:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Wong Tai Sin",
+      "venue": "Po Kong Village Road Sports Centre",
+      "address": "120 Po Kong Village Road, Diamond Hill"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#754"
+  },
+  {
+    "id": "act-095",
+    "title": "牛池灣體育館羽毛球場租訂",
+    "title_en": "Badminton Court Booking — Ngau Chi Wan Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "badminton",
+      "lcsd",
+      "wong-tai-sin",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T06:00:00Z",
+        "end": "2026-10-04T08:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Wong Tai Sin",
+      "venue": "Ngau Chi Wan Sports Centre",
+      "address": "11 Clear Water Bay Road"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#753"
+  },
+  {
+    "id": "act-096",
+    "title": "摩士公園體育館乒乓球室切磋時段",
+    "title_en": "Table Tennis Practice Session — Morse Park Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "table-tennis",
+      "lcsd",
+      "wong-tai-sin",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T01:00:00Z",
+        "end": "2026-10-03T03:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Wong Tai Sin",
+      "venue": "Morse Park Sports Centre",
+      "address": "Morse Park No. 3, Fung Mo Street"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#749"
+  },
+  {
+    "id": "act-097",
+    "title": "竹園體育館壁球場練習租訂",
+    "title_en": "Squash Court Booking — Chuk Yuen Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "squash",
+      "lcsd",
+      "wong-tai-sin",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T02:00:00Z",
+        "end": "2026-10-04T04:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Wong Tai Sin",
+      "venue": "Chuk Yuen Sports Centre",
+      "address": "Chuk Yuen Estate, Wong Tai Sin"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#720"
+  },
+  {
+    "id": "act-098",
+    "title": "藍田南體育館公眾健身室訓練時段",
+    "title_en": "Public Fitness Room Session — Lam Tin South Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "fitness",
+      "lcsd",
+      "kwun-tong",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T03:00:00Z",
+        "end": "2026-10-03T05:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Kwun Tong",
+      "venue": "Lam Tin South Sports Centre",
+      "address": "170 Pik Wan Road, Lam Tin"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#977"
+  },
+  {
+    "id": "act-099",
+    "title": "振華道體育館公眾健身室訓練時段",
+    "title_en": "Public Fitness Room Session — Chun Wah Road Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "fitness",
+      "lcsd",
+      "kwun-tong",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T04:00:00Z",
+        "end": "2026-10-04T06:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Kwun Tong",
+      "venue": "Chun Wah Road Sports Centre",
+      "address": "50 Chun Wah Road, Ngau Tau Kok"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#936"
+  },
+  {
+    "id": "act-100",
+    "title": "曉光街體育館羽毛球場租訂",
+    "title_en": "Badminton Court Booking — Hiu Kwong Street Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "badminton",
+      "lcsd",
+      "kwun-tong",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T05:00:00Z",
+        "end": "2026-10-03T07:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Kwun Tong",
+      "venue": "Hiu Kwong Street Sports Centre",
+      "address": "2 Hiu Kwong Street, Kwun Tong"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#939"
+  },
+  {
+    "id": "act-101",
+    "title": "九龍灣體育館乒乓球室切磋時段",
+    "title_en": "Table Tennis Practice Session — Kowloon Bay Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "table-tennis",
+      "lcsd",
+      "kwun-tong",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T06:00:00Z",
+        "end": "2026-10-04T08:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Kwun Tong",
+      "venue": "Kowloon Bay Sports Centre",
+      "address": "1 Kai Lok Street, Kowloon Bay"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#960"
+  },
+  {
+    "id": "act-102",
+    "title": "蕙荃體育館壁球場練習租訂",
+    "title_en": "Squash Court Booking — Wai Tsuen Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "squash",
+      "lcsd",
+      "tsuen-wan",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T01:00:00Z",
+        "end": "2026-10-03T03:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Tsuen Wan",
+      "venue": "Wai Tsuen Sports Centre",
+      "address": "63 Miaokang Street, Tsuen Wan"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#638"
+  },
+  {
+    "id": "act-103",
+    "title": "荃灣體育館公眾健身室訓練時段",
+    "title_en": "Public Fitness Room Session — Tsuen Wan Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "fitness",
+      "lcsd",
+      "tsuen-wan",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T02:00:00Z",
+        "end": "2026-10-04T04:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Tsuen Wan",
+      "venue": "Tsuen Wan Sports Centre",
+      "address": "53 Wing Shun Street, Tsuen Wan"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#2117"
+  },
+  {
+    "id": "act-104",
+    "title": "楊屋道體育館室內體育主場籃球時段",
+    "title_en": "Indoor Basketball & Sports Hall Session — Yeung Uk Road Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "basketball",
+      "lcsd",
+      "tsuen-wan",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T03:00:00Z",
+        "end": "2026-10-03T05:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Tsuen Wan",
+      "venue": "Yeung Uk Road Sports Centre",
+      "address": "45 Yeung Uk Road, Tsuen Wan"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#639"
+  },
+  {
+    "id": "act-105",
+    "title": "荃灣景圍體育館羽毛球場租訂",
+    "title_en": "Badminton Court Booking — Tsuen King Circuit Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "badminton",
+      "lcsd",
+      "tsuen-wan",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T04:00:00Z",
+        "end": "2026-10-04T06:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Tsuen Wan",
+      "venue": "Tsuen King Circuit Sports Centre",
+      "address": "38 Mei Wan Street, Tsuen Wan"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#623"
+  },
+  {
+    "id": "act-106",
+    "title": "大興體育館乒乓球室切磋時段",
+    "title_en": "Table Tennis Practice Session — Tai Hing Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "table-tennis",
+      "lcsd",
+      "tuen-mun",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T05:00:00Z",
+        "end": "2026-10-03T07:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Tuen Mun",
+      "venue": "Tai Hing Sports Centre",
+      "address": "38 Tsing Chung Koon Road, Tuen Mun"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#239"
+  },
+  {
+    "id": "act-107",
+    "title": "友愛體育館壁球場練習租訂",
+    "title_en": "Squash Court Booking — Yau Oi Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "squash",
+      "lcsd",
+      "tuen-mun",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T06:00:00Z",
+        "end": "2026-10-04T08:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Tuen Mun",
+      "venue": "Yau Oi Sports Centre",
+      "address": "Hing On Lane, Yau Oi Estate, Tuen Mun"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#272"
+  },
+  {
+    "id": "act-108",
+    "title": "賽馬會屯門蝴蝶灣體育館公眾健身室訓練時段",
+    "title_en": "Public Fitness Room Session — The Jockey Club Tuen Mun Butterfly Beach Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "fitness",
+      "lcsd",
+      "tuen-mun",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T01:00:00Z",
+        "end": "2026-10-03T03:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Tuen Mun",
+      "venue": "The Jockey Club Tuen Mun Butterfly Beach Sports Centre",
+      "address": "Butterfly Beach, Tuen Mun"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#242"
+  },
+  {
+    "id": "act-109",
+    "title": "天水圍體育館室內體育主場籃球時段",
+    "title_en": "Indoor Basketball & Sports Hall Session — Tin Shui Wai Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "basketball",
+      "lcsd",
+      "yuen-long",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T02:00:00Z",
+        "end": "2026-10-04T04:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Yuen Long",
+      "venue": "Tin Shui Wai Sports Centre",
+      "address": "1 Tin Pak Road, Tin Shui Wai"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#195"
+  },
+  {
+    "id": "act-110",
+    "title": "鳳琴街體育館乒乓球室切磋時段",
+    "title_en": "Table Tennis Practice Session — Fung Kam Street Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "table-tennis",
+      "lcsd",
+      "yuen-long",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T03:00:00Z",
+        "end": "2026-10-03T05:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Yuen Long",
+      "venue": "Fung Kam Street Sports Centre",
+      "address": "Fung Kam Street, Yuen Long"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#149"
+  },
+  {
+    "id": "act-111",
+    "title": "天暉路體育館公眾健身室訓練時段",
+    "title_en": "Public Fitness Room Session — Tin Fai Road Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "fitness",
+      "lcsd",
+      "yuen-long",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T04:00:00Z",
+        "end": "2026-10-04T06:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Yuen Long",
+      "venue": "Tin Fai Road Sports Centre",
+      "address": "5 Tin Fai Road, Tin Shui Wai"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#1174"
+  },
+  {
+    "id": "act-112",
+    "title": "龍琛路體育館壁球場練習租訂",
+    "title_en": "Squash Court Booking — Lung Sum Avenue Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "squash",
+      "lcsd",
+      "north",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T05:00:00Z",
+        "end": "2026-10-03T07:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "North",
+      "venue": "Lung Sum Avenue Sports Centre",
+      "address": "Lung Sum Avenue, Sheung Shui"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#299"
+  },
+  {
+    "id": "act-113",
+    "title": "保榮路體育館羽毛球場租訂",
+    "title_en": "Badminton Court Booking — Po Wing Road Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "badminton",
+      "lcsd",
+      "north",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T06:00:00Z",
+        "end": "2026-10-04T08:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "North",
+      "venue": "Po Wing Road Sports Centre",
+      "address": "19 Po Wing Road, Sheung Shui"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#1147"
+  },
+  {
+    "id": "act-114",
+    "title": "和興體育館室內體育主場籃球時段",
+    "title_en": "Indoor Basketball & Sports Hall Session — Wo Hing Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "basketball",
+      "lcsd",
+      "north",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T01:00:00Z",
+        "end": "2026-10-03T03:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "North",
+      "venue": "Wo Hing Sports Centre",
+      "address": "8 Wo Ming Lane, Fanling"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#349"
+  },
+  {
+    "id": "act-115",
+    "title": "大埔體育館羽毛球場租訂",
+    "title_en": "Badminton Court Booking — Tai Po Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "badminton",
+      "lcsd",
+      "tai-po",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T02:00:00Z",
+        "end": "2026-10-04T04:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Tai Po",
+      "venue": "Tai Po Sports Centre",
+      "address": "13 Ting Kok Road, Tai Po"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#95"
+  },
+  {
+    "id": "act-116",
+    "title": "富亨體育館乒乓球室切磋時段",
+    "title_en": "Table Tennis Practice Session — Fu Heng Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "table-tennis",
+      "lcsd",
+      "tai-po",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T03:00:00Z",
+        "end": "2026-10-03T05:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Tai Po",
+      "venue": "Fu Heng Sports Centre",
+      "address": "Fu Heng Shopping Centre, Tai Po"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#82"
+  },
+  {
+    "id": "act-117",
+    "title": "大埔墟體育館羽毛球場租訂",
+    "title_en": "Badminton Court Booking — Tai Po Hui Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "badminton",
+      "lcsd",
+      "tai-po",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T04:00:00Z",
+        "end": "2026-10-04T06:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Tai Po",
+      "venue": "Tai Po Hui Sports Centre",
+      "address": "8 Heung Sze Wui Street, Tai Po"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#93"
+  },
+  {
+    "id": "act-118",
+    "title": "馬鞍山體育館乒乓球室切磋時段",
+    "title_en": "Table Tennis Practice Session — Ma On Shan Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "table-tennis",
+      "lcsd",
+      "sha-tin",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T05:00:00Z",
+        "end": "2026-10-03T07:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Sha Tin",
+      "venue": "Ma On Shan Sports Centre",
+      "address": "14 On Chun Street, Ma On Shan"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#411"
+  },
+  {
+    "id": "act-119",
+    "title": "源禾路體育館室內體育主場籃球時段",
+    "title_en": "Indoor Basketball & Sports Hall Session — Yuen Wo Road Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "basketball",
+      "lcsd",
+      "sha-tin",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-04T06:00:00Z",
+        "end": "2026-10-04T08:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Sha Tin",
+      "venue": "Yuen Wo Road Sports Centre",
+      "address": "8 Yuen Wo Road, Sha Tin"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#448"
+  },
+  {
+    "id": "act-120",
+    "title": "顯徑體育館羽毛球場租訂",
+    "title_en": "Badminton Court Booking — Hin Keng Sports Centre",
+    "lang": "zh",
+    "tags": [
+      "sports",
+      "badminton",
+      "lcsd",
+      "sha-tin",
+      "indoor"
+    ],
+    "parts": [
+      {
+        "start": "2026-10-03T01:00:00Z",
+        "end": "2026-10-03T03:00:00Z"
+      }
+    ],
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Sha Tin",
+      "venue": "Hin Keng Sports Centre",
+      "address": "Hin Keng Estate, Sha Tin"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#396"
+  }
+]
