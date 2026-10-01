@@ -1,0 +1,196 @@
+[
+  {
+    "id": "kowloon-culture-saturday",
+    "description": "Free cultural activity in Kowloon on Saturday afternoon, English friendly",
+    "request": {
+      "query": "free saturday afternoon, something cultural in Kowloon, English friendly",
+      "free_slots": [
+        {
+          "start": "2026-10-03T06:00:00Z",
+          "end": "2026-10-03T10:00:00Z"
+        }
+      ]
+    },
+    "expected_parsed": {
+      "query": "free saturday afternoon, something cultural in Kowloon, English friendly",
+      "search_query": "cultural guided tour museum Kowloon",
+      "categories": [
+        "culture",
+        "museum",
+        "guided-tour"
+      ],
+      "districts": [
+        "Yau Tsim Mong",
+        "Sham Shui Po",
+        "Kowloon City",
+        "Wong Tai Sin",
+        "Kwun Tong"
+      ],
+      "free_only": true,
+      "english_friendly": true,
+      "temporal_expression": "Saturday afternoon",
+      "matched_slot_indices": [
+        0
+      ],
+      "target_slots": [
+        {
+          "start": "2026-10-03T06:00:00Z",
+          "end": "2026-10-03T10:00:00Z"
+        }
+      ],
+      "summary": "culture, Kowloon, Saturday afternoon, free"
+    },
+    "sample_llm_response": "{\n  \"search_query\": \"cultural guided tour museum Kowloon\",\n  \"categories\": [\"culture\", \"museum\", \"guided-tour\"],\n  \"districts\": [\"Yau Tsim Mong\", \"Sham Shui Po\", \"Kowloon City\", \"Wong Tai Sin\", \"Kwun Tong\"],\n  \"free_only\": true,\n  \"english_friendly\": true,\n  \"temporal_expression\": \"Saturday afternoon\",\n  \"matched_slot_indices\": [0],\n  \"summary\": \"culture, Kowloon, Saturday afternoon, free\"\n}"
+  },
+  {
+    "id": "badminton-wanchai-sunday",
+    "description": "Bookable badminton court on Sunday morning in Wan Chai or Central",
+    "request": {
+      "query": "badminton court indoor booking this Sunday morning in Wan Chai or Central",
+      "free_slots": [
+        {
+          "start": "2026-10-04T01:00:00Z",
+          "end": "2026-10-04T04:00:00Z"
+        }
+      ]
+    },
+    "expected_parsed": {
+      "query": "badminton court indoor booking this Sunday morning in Wan Chai or Central",
+      "search_query": "badminton court booking indoor sports centre Wan Chai Central",
+      "categories": [
+        "sport",
+        "badminton",
+        "facility",
+        "indoor"
+      ],
+      "districts": [
+        "Wan Chai",
+        "Central and Western"
+      ],
+      "free_only": false,
+      "english_friendly": false,
+      "temporal_expression": "Sunday morning",
+      "matched_slot_indices": [
+        0
+      ],
+      "target_slots": [
+        {
+          "start": "2026-10-04T01:00:00Z",
+          "end": "2026-10-04T04:00:00Z"
+        }
+      ],
+      "summary": "badminton, Wan Chai / Central, Sunday morning"
+    },
+    "sample_llm_response": "{\n  \"search_query\": \"badminton court booking indoor sports centre Wan Chai Central\",\n  \"categories\": [\"sport\", \"badminton\", \"facility\", \"indoor\"],\n  \"districts\": [\"Wan Chai\", \"Central and Western\"],\n  \"free_only\": false,\n  \"english_friendly\": false,\n  \"temporal_expression\": \"Sunday morning\",\n  \"matched_slot_indices\": [0],\n  \"summary\": \"badminton, Wan Chai / Central, Sunday morning\"\n}"
+  },
+  {
+    "id": "art-exhibition-hkisland-friday",
+    "description": "Quiet art exhibition or museum on HK Island Friday evening",
+    "request": {
+      "query": "quiet art exhibition or museum tour on Hong Kong Island Friday evening",
+      "free_slots": [
+        {
+          "start": "2026-10-02T10:00:00Z",
+          "end": "2026-10-02T13:00:00Z"
+        }
+      ]
+    },
+    "expected_parsed": {
+      "query": "quiet art exhibition or museum tour on Hong Kong Island Friday evening",
+      "search_query": "art exhibition museum tour Hong Kong Island",
+      "categories": [
+        "art",
+        "exhibition",
+        "museum"
+      ],
+      "districts": [
+        "Central and Western",
+        "Wan Chai",
+        "Eastern",
+        "Southern"
+      ],
+      "free_only": false,
+      "english_friendly": false,
+      "temporal_expression": "Friday evening",
+      "matched_slot_indices": [
+        0
+      ],
+      "target_slots": [
+        {
+          "start": "2026-10-02T10:00:00Z",
+          "end": "2026-10-02T13:00:00Z"
+        }
+      ],
+      "summary": "art exhibition, Hong Kong Island, Friday evening"
+    },
+    "sample_llm_response": "{\n  \"search_query\": \"art exhibition museum tour Hong Kong Island\",\n  \"categories\": [\"art\", \"exhibition\", \"museum\"],\n  \"districts\": [\"Central and Western\", \"Wan Chai\", \"Eastern\", \"Southern\"],\n  \"free_only\": false,\n  \"english_friendly\": false,\n  \"temporal_expression\": \"Friday evening\",\n  \"matched_slot_indices\": [0],\n  \"summary\": \"art exhibition, Hong Kong Island, Friday evening\"\n}"
+  },
+  {
+    "id": "hiking-photography-saikung",
+    "description": "Nature hiking trail or outdoor photography in Sai Kung with friends",
+    "request": {
+      "query": "nature hiking trail or outdoor photography in Sai Kung with friends",
+      "free_slots": []
+    },
+    "expected_parsed": {
+      "query": "nature hiking trail or outdoor photography in Sai Kung with friends",
+      "search_query": "hiking trail nature outdoor photography Sai Kung",
+      "categories": [
+        "outdoor",
+        "nature",
+        "hiking",
+        "photography"
+      ],
+      "districts": [
+        "Sai Kung"
+      ],
+      "free_only": false,
+      "english_friendly": false,
+      "temporal_expression": null,
+      "matched_slot_indices": [],
+      "target_slots": [],
+      "summary": "hiking / photography, Sai Kung, outdoor"
+    },
+    "sample_llm_response": "{\n  \"search_query\": \"hiking trail nature outdoor photography Sai Kung\",\n  \"categories\": [\"outdoor\", \"nature\", \"hiking\", \"photography\"],\n  \"districts\": [\"Sai Kung\"],\n  \"free_only\": false,\n  \"english_friendly\": false,\n  \"temporal_expression\": null,\n  \"matched_slot_indices\": [],\n  \"summary\": \"hiking / photography, Sai Kung, outdoor\"\n}"
+  },
+  {
+    "id": "language-exchange-shamshuipo",
+    "description": "Free community workshop or Cantonese language exchange in Sham Shui Po",
+    "request": {
+      "query": "cheap or free evening Cantonese language exchange or community workshop in Sham Shui Po",
+      "free_slots": [
+        {
+          "start": "2026-10-03T11:00:00Z",
+          "end": "2026-10-03T14:00:00Z"
+        }
+      ]
+    },
+    "expected_parsed": {
+      "query": "cheap or free evening Cantonese language exchange or community workshop in Sham Shui Po",
+      "search_query": "Cantonese language exchange community workshop Sham Shui Po",
+      "categories": [
+        "community",
+        "workshop",
+        "language",
+        "ngo"
+      ],
+      "districts": [
+        "Sham Shui Po"
+      ],
+      "free_only": true,
+      "english_friendly": true,
+      "temporal_expression": "evening",
+      "matched_slot_indices": [
+        0
+      ],
+      "target_slots": [
+        {
+          "start": "2026-10-03T11:00:00Z",
+          "end": "2026-10-03T14:00:00Z"
+        }
+      ],
+      "summary": "language exchange / community workshop, Sham Shui Po, evening, free"
+    },
+    "sample_llm_response": "{\n  \"search_query\": \"Cantonese language exchange community workshop Sham Shui Po\",\n  \"categories\": [\"community\", \"workshop\", \"language\", \"ngo\"],\n  \"districts\": [\"Sham Shui Po\"],\n  \"free_only\": true,\n  \"english_friendly\": true,\n  \"temporal_expression\": \"evening\",\n  \"matched_slot_indices\": [0],\n  \"summary\": \"language exchange / community workshop, Sham Shui Po, evening, free\"\n}"
+  }
+]
