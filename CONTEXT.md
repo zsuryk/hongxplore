@@ -14,5 +14,6 @@
 | **DEMO_MODE** | Config flag: when true, agent endpoints serve seed JSON instead of live search/LLM calls, so demos never depend on the network. |
 | **Guide card** | A card that explains *how to do something* (e.g. booking an LCSD court) rather than listing an Activity. We say **guide card**, not "tutorial". |
 | **Match rationale** | The agent's short explanation of *why* an Activity was returned for a query. Attached to each response; shown on/with the card. We say **match rationale**, not "reason" or "score explanation". |
+| **Agent log** | The ordered list of steps the agent records while handling a query (parse → search → normalise → rank → translate). Returned as `log` on the agent response and shown in the status panel. We say **agent log**, not "trace" or "activity stream" (that collides with Activity). |
 | **Discard bin** | The drop target for rejected cards — removes them from consideration without deleting the underlying Activity. We say **discard bin**, not "trash". |
 | **Find similar** | Card action that re-queries the agent using the card as the seed. We say **find similar**, not "discover more". |

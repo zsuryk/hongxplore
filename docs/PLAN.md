@@ -71,7 +71,7 @@ Scope: turn `api/app/config.py` into a real settings layer: a pydantic-settings 
 
 **Area:** api · **Owner:** zsuryk · **Depends on:** #3 · **Blocks:** 9, 14
 
-Scope: the only cross-zone artifact. Define the Pydantic models in `api/app/models/` — `Activity` (title, `lang`, `tags`, `parts` = time slots, `source`, location, url, image, plus match rationale on responses) and the `POST /api/agent` request/response envelopes. Regenerate `docs/openapi.json`, seed `docs/examples/agent-response.json`, and draft the service seam `api/app/services/ports.py` (`Protocol` interfaces: `SearchProvider`, `LLMClient`, `ActivityCache`). Contract freeze requires kORNkin's data ack (Part B, A8.3).
+Scope: the only cross-zone artifact. Define the Pydantic models in `api/app/models/` — `Activity` (title + `title_en`, `lang`, `tags`, `parts` = time slots, `source`, location, url, image, plus match rationale on responses) and the `POST /api/agent` request/response envelopes. A contract stub route (`POST /api/agent` → 501) puts the envelopes into `docs/openapi.json`; issue #9 replaces its body with the real orchestration. Regenerate `docs/openapi.json`, seed `docs/examples/agent-response.json`, and draft the service seam `api/app/services/ports.py` (`Protocol` interfaces: `SearchProvider`, `LLMClient`, `ActivityCache`). Contract freeze requires kORNkin's data ack (Part B, A8.3).
 
 Acceptance criteria — **this issue is the contract hub**; downstream tickets #6, #9, #13, #14 link back here:
 
@@ -277,7 +277,7 @@ Every ticket carries `Depends on` / `Blocks` — the exact edges are in the Part
 
 ### A3. Day-one sequencing (all three busy in parallel from hour one, zero shared files)
 
-- **zsuryk:** #1 (this PR) → #3 → #4 (contract freeze) → #9 route stub
+- **zsuryk:** #1 (this PR) → #3 → #4 (contract freeze + `/api/agent` stub) → #9 route + wiring
 - **kORNkin:** #7 seed dataset (no code deps) → #5 → #8 → #6 (works only inside `services/` + `data/`, behind interfaces; never touches `routes/`) → joins #9
 - **sweetpinejam:** #10 → #11 → #14 (fixture-driven; generate types from #4's OpenAPI output the moment it merges) → #12; #13 UI shell early, wiring lands after #9
 

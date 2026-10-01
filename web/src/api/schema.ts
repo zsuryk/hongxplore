@@ -13,7 +13,7 @@ export interface paths {
         };
         /**
          * Health
-         * @description Liveness probe. Shape is mirrored by docs/examples/agent-response.json.
+         * @description Liveness probe: returns `{"status": "ok"}`.
          */
         get: operations["health_health_get"];
         put?: never;
@@ -24,10 +24,235 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/agent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Agent
+         * @description Parse intent → search → normalise → rank → translate → respond (contract stub).
+         *
+         *     The route exists from issue #4 so the request and response envelopes are part of
+         *     the OpenAPI contract; issue #9 replaces this body with the real orchestration.
+         */
+        post: operations["agent_api_agent_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: never;
+    schemas: {
+        /**
+         * Activity
+         * @description A real-world thing a student can attend or book in Hong Kong.
+         */
+        Activity: {
+            /**
+             * Id
+             * @description Stable identifier, unique across seed data and search results.
+             */
+            id: string;
+            /**
+             * Title
+             * @description Title in the Activity's own language, given by `lang`.
+             */
+            title: string;
+            /**
+             * Title En
+             * @description English translation of `title`; filled by the agent's translate step.
+             */
+            title_en?: string | null;
+            /**
+             * Lang
+             * @description Language of `title`.
+             * @enum {string}
+             */
+            lang: "zh" | "en";
+            /**
+             * Tags
+             * @description Tags used for search, ranking and filtering.
+             */
+            tags: string[];
+            /**
+             * Parts
+             * @description Time slots the Activity runs; empty when the source publishes no schedule.
+             */
+            parts: components["schemas"]["ActivityPart"][];
+            /** @description Where this Activity came from. */
+            source: components["schemas"]["Source"];
+            /** @description District, venue and address. */
+            location: components["schemas"]["Location"];
+            /**
+             * Url
+             * Format: uri
+             * @description The Activity's own page — details or booking.
+             */
+            url: string;
+            /** Image */
+            image?: string | null;
+        };
+        /**
+         * ActivityPart
+         * @description One bookable or attendable time slot of an Activity — what ``Activity.parts`` holds.
+         */
+        ActivityPart: {
+            /**
+             * Start
+             * Format: date-time
+             */
+            start: string;
+            /**
+             * End
+             * Format: date-time
+             */
+            end: string;
+        };
+        /**
+         * AgentLogEntry
+         * @description One line of the **agent log** shown in the status panel.
+         */
+        AgentLogEntry: {
+            /**
+             * Ts
+             * Format: date-time
+             * @description When the entry was recorded (UTC).
+             */
+            ts: string;
+            /**
+             * Level
+             * @default info
+             * @enum {string}
+             */
+            level: "info" | "warn" | "error";
+            /** Message */
+            message: string;
+        };
+        /**
+         * AgentRequest
+         * @description What the search bar and time-slot chips submit.
+         */
+        AgentRequest: {
+            /**
+             * Query
+             * @description Natural-language query from the search bar.
+             */
+            query: string;
+            /**
+             * Free Slots
+             * @description Availability picked via the time-slot chips.
+             */
+            free_slots?: components["schemas"]["FreeSlot"][];
+        };
+        /**
+         * AgentResponse
+         * @description What the agent returns: activity cards with rationales, plus its log.
+         */
+        AgentResponse: {
+            /**
+             * Status
+             * @description `ok` on the happy path; `error` only when the agent reports failure.
+             * @enum {string}
+             */
+            status: "ok" | "error";
+            /**
+             * Query
+             * @description Echo of the submitted query.
+             */
+            query: string;
+            /**
+             * Matches
+             * @description Ranked Activity cards with match rationales.
+             */
+            matches: components["schemas"]["MatchedActivity"][];
+            /**
+             * Log
+             * @description Agent log entries, in order.
+             */
+            log: components["schemas"]["AgentLogEntry"][];
+            /**
+             * Error
+             * @description Human-readable failure when `status` is `error`.
+             */
+            error?: string | null;
+        };
+        /**
+         * FreeSlot
+         * @description A period the user marked as available — the glossary's **free slot**.
+         */
+        FreeSlot: {
+            /**
+             * Start
+             * Format: date-time
+             */
+            start: string;
+            /**
+             * End
+             * Format: date-time
+             */
+            end: string;
+        };
+        /** HTTPValidationError */
+        HTTPValidationError: {
+            /** Detail */
+            detail?: components["schemas"]["ValidationError"][];
+        };
+        /**
+         * Location
+         * @description Where an Activity happens. ``district`` drives district-filtered search.
+         */
+        Location: {
+            /** District */
+            district: string;
+            /** Venue */
+            venue?: string | null;
+            /** Address */
+            address?: string | null;
+        };
+        /**
+         * MatchedActivity
+         * @description An Activity the agent returned, carrying its **match rationale**.
+         */
+        MatchedActivity: {
+            activity: components["schemas"]["Activity"];
+            /**
+             * Match Rationale
+             * @description Short 'why this matches', shown on the activity card.
+             */
+            match_rationale: string;
+        };
+        /**
+         * Source
+         * @description Where an Activity was found — attribution for seed data and search results.
+         */
+        Source: {
+            /** Name */
+            name: string;
+            /** Url */
+            url?: string | null;
+        };
+        /** ValidationError */
+        ValidationError: {
+            /** Location */
+            loc: (string | number)[];
+            /** Message */
+            msg: string;
+            /** Error Type */
+            type: string;
+            /** Input */
+            input?: unknown;
+            /** Context */
+            ctx?: Record<string, never>;
+        };
+    };
     responses: never;
     parameters: never;
     requestBodies: never;
@@ -55,6 +280,46 @@ export interface operations {
                         [key: string]: string;
                     };
                 };
+            };
+        };
+    };
+    agent_api_agent_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AgentRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Not implemented — the happy path lands with issue #9. */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

@@ -9,7 +9,7 @@
     "/health": {
       "get": {
         "summary": "Health",
-        "description": "Liveness probe. Shape is mirrored by docs/examples/agent-response.json.",
+        "description": "Liveness probe: returns `{\"status\": \"ok\"}`.",
         "operationId": "health_health_get",
         "responses": {
           "200": {
@@ -27,6 +27,447 @@
             }
           }
         }
+      }
+    },
+    "/api/agent": {
+      "post": {
+        "tags": [
+          "agent"
+        ],
+        "summary": "Agent",
+        "description": "Parse intent → search → normalise → rank → translate → respond (contract stub).\n\nThe route exists from issue #4 so the request and response envelopes are part of\nthe OpenAPI contract; issue #9 replaces this body with the real orchestration.",
+        "operationId": "agent_api_agent_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentResponse"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "Not implemented — the happy path lands with issue #9."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Activity": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Stable identifier, unique across seed data and search results."
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "description": "Title in the Activity's own language, given by `lang`."
+          },
+          "title_en": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title En",
+            "description": "English translation of `title`; filled by the agent's translate step."
+          },
+          "lang": {
+            "type": "string",
+            "enum": [
+              "zh",
+              "en"
+            ],
+            "title": "Lang",
+            "description": "Language of `title`."
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tags",
+            "description": "Tags used for search, ranking and filtering."
+          },
+          "parts": {
+            "items": {
+              "$ref": "#/components/schemas/ActivityPart"
+            },
+            "type": "array",
+            "title": "Parts",
+            "description": "Time slots the Activity runs; empty when the source publishes no schedule."
+          },
+          "source": {
+            "$ref": "#/components/schemas/Source",
+            "description": "Where this Activity came from."
+          },
+          "location": {
+            "$ref": "#/components/schemas/Location",
+            "description": "District, venue and address."
+          },
+          "url": {
+            "type": "string",
+            "maxLength": 2083,
+            "minLength": 1,
+            "format": "uri",
+            "title": "Url",
+            "description": "The Activity's own page — details or booking."
+          },
+          "image": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2083,
+                "minLength": 1,
+                "format": "uri"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "lang",
+          "tags",
+          "parts",
+          "source",
+          "location",
+          "url"
+        ],
+        "title": "Activity",
+        "description": "A real-world thing a student can attend or book in Hong Kong."
+      },
+      "ActivityPart": {
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Start"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time",
+            "title": "End"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "start",
+          "end"
+        ],
+        "title": "ActivityPart",
+        "description": "One bookable or attendable time slot of an Activity — what ``Activity.parts`` holds."
+      },
+      "AgentLogEntry": {
+        "properties": {
+          "ts": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Ts",
+            "description": "When the entry was recorded (UTC)."
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "info",
+              "warn",
+              "error"
+            ],
+            "title": "Level",
+            "default": "info"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "ts",
+          "message"
+        ],
+        "title": "AgentLogEntry",
+        "description": "One line of the **agent log** shown in the status panel."
+      },
+      "AgentRequest": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Query",
+            "description": "Natural-language query from the search bar."
+          },
+          "free_slots": {
+            "items": {
+              "$ref": "#/components/schemas/FreeSlot"
+            },
+            "type": "array",
+            "title": "Free Slots",
+            "description": "Availability picked via the time-slot chips."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "title": "AgentRequest",
+        "description": "What the search bar and time-slot chips submit."
+      },
+      "AgentResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "error"
+            ],
+            "title": "Status",
+            "description": "`ok` on the happy path; `error` only when the agent reports failure."
+          },
+          "query": {
+            "type": "string",
+            "title": "Query",
+            "description": "Echo of the submitted query."
+          },
+          "matches": {
+            "items": {
+              "$ref": "#/components/schemas/MatchedActivity"
+            },
+            "type": "array",
+            "title": "Matches",
+            "description": "Ranked Activity cards with match rationales."
+          },
+          "log": {
+            "items": {
+              "$ref": "#/components/schemas/AgentLogEntry"
+            },
+            "type": "array",
+            "title": "Log",
+            "description": "Agent log entries, in order."
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error",
+            "description": "Human-readable failure when `status` is `error`."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "status",
+          "query",
+          "matches",
+          "log"
+        ],
+        "title": "AgentResponse",
+        "description": "What the agent returns: activity cards with rationales, plus its log."
+      },
+      "FreeSlot": {
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Start"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time",
+            "title": "End"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "start",
+          "end"
+        ],
+        "title": "FreeSlot",
+        "description": "A period the user marked as available — the glossary's **free slot**."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Location": {
+        "properties": {
+          "district": {
+            "type": "string",
+            "title": "District"
+          },
+          "venue": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Venue"
+          },
+          "address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Address"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "district"
+        ],
+        "title": "Location",
+        "description": "Where an Activity happens. ``district`` drives district-filtered search."
+      },
+      "MatchedActivity": {
+        "properties": {
+          "activity": {
+            "$ref": "#/components/schemas/Activity"
+          },
+          "match_rationale": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Match Rationale",
+            "description": "Short 'why this matches', shown on the activity card."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "activity",
+          "match_rationale"
+        ],
+        "title": "MatchedActivity",
+        "description": "An Activity the agent returned, carrying its **match rationale**."
+      },
+      "Source": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2083,
+                "minLength": 1,
+                "format": "uri"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "Source",
+        "description": "Where an Activity was found — attribution for seed data and search results."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
       }
     }
   }
