@@ -8,25 +8,21 @@ This dataset is used by `DEMO_MODE=true` to serve rich, realistic activities to 
 
 ## Schema
 
-Each entry in `activities.json` conforms to the canonical `Activity` domain structure:
+Each entry in `activities.json` conforms strictly to the canonical `Activity` domain structure defined in `api/app/models/activity.py` (issue #4 / PR #28):
 
 | Field | Type | Description |
 | --- | --- | --- |
 | `id` | `string` | Unique identifier (e.g. `act-001`) |
-| `title` | `string` | Activity title in English |
-| `title_alt` | `string` | Traditional Chinese (Cantonese context) title |
-| `description` | `string` | Detailed English summary of the activity |
-| `description_alt` | `string` | Detailed Cantonese summary |
-| `lang` | `string` | Language code (`bilingual`, `en`, `zh-HK`) |
-| `district` | `string` | Hong Kong district (one of the 18 districts) |
-| `location` | `string` | Venue name and address in English |
-| `location_alt` | `string` | Venue name and address in Traditional Chinese |
-| `source` | `string` | Organizing body or platform name |
+| `title` | `string` | Title in the activity's own language (Traditional Chinese / Cantonese original) |
+| `title_en` | `string \| null` | English translation of `title` |
+| `lang` | `string` | Language code of `title` (`"zh"` or `"en"`) |
+| `tags` | `string[]` | Categorical and intent tags for search & ranking (guide cards tagged with `"guide"`) |
+| `parts` | `object[]` | Schedule slots with UTC ISO-8601 `start` and `end` datetimes |
+| `source` | `object` | Source attribution with `name` and official `url` |
+| `location` | `object` | Structured location: `district`, `venue`, and `address` |
 | `url` | `string` | Official URL for booking or facility details |
-| `tags` | `string[]` | Categorical and intent tags for search & ranking |
-| `parts` | `object[]` | Schedule slots (`day_of_week`, `start_time`, `end_time`) |
-| `cost` | `string` | Fee information (e.g. `Free`, `HKD 59–118 / hr`) |
-| `is_guide` | `boolean` | `true` if this card is an instructional walkthrough (guide card) |
+| `image` | `string \| null` | Optional official venue / event image URL |
+
 
 ## Category Distribution
 
@@ -52,7 +48,7 @@ Hong Kong public venues and facilities do not offer permanent, static per-sessio
 - **Official Tariffs & Fees**: Costs for public facilities represent official statutory LCSD gazetted hire charges (e.g., Badminton Peak HKD 59–118/hr, Squash HKD 27–54/30 mins, Table Tennis HKD 14–28/hr, Swimming HKD 17–19 per session, Fitness Room HKD 14/hr) or official museum general admission prices.
 
 ### 2. Operational Scheduling Conventions in `DEMO_MODE`
-- **Simulated Booking Slots (`parts`)**: Citizen booking platforms in Hong Kong (LCSD SmartPLAY, URBTIX, Cityline) manage bookings behind dynamic user logins with 7-day rolling windows. Because static URLs cannot link to live rolling booking instances, specific weekend time slots (e.g., `saturday 10:00–12:00`) represent realistic simulated booking windows within standard facility operating hours (typically 07:00–23:00) to allow interactive drag-and-drop scheduling, timeline placement, and conflict detection in the Hongxplore whiteboard canvas.
+- **Simulated Booking Slots (`parts`)**: Citizen booking platforms in Hong Kong (LCSD SmartPLAY, URBTIX, Cityline) manage bookings behind dynamic user logins with 7-day rolling windows. Because static URLs cannot link to live rolling booking instances, simulated weekend time slots are normalized to UTC ISO-8601 (e.g., Saturday 10:00–12:00 HKT mapped to `2026-10-03T02:00:00Z`–`04:00:00Z` UTC) within standard facility operating hours (typically 07:00–23:00 HKT) to allow interactive drag-and-drop scheduling, timeline placement, and conflict detection in the Hongxplore whiteboard canvas. All instants store UTC and display HKT per repository rules.
 - **Unverified Schedule/Booking Status**: The specific dates, recurring weekend hours, and booking status in `parts` should be treated as synthetic simulation data for demo planning rather than live real-time booking reservations.
 
 ### 3. Automated Crawler & Bot Protection Note

@@ -1,16 +1,9 @@
 [
   {
     "id": "act-001",
-    "title": "Badminton Court Booking — Hong Kong Park Sports Centre",
-    "title_alt": "香港公園體育館羽毛球場預訂",
-    "description": "Indoor air-conditioned badminton courts in the heart of Central. Bookings open 7 days in advance via SmartPLAY.",
-    "description_alt": "位於中環心臟地帶的室內冷氣羽毛球場。可透過 SmartPLAY 系統於7天前預訂場地。",
-    "lang": "bilingual",
-    "district": "Central & Western",
-    "location": "Hong Kong Park Sports Centre, 29 Cotton Tree Drive, Central",
-    "location_alt": "中環紅棉路29號香港公園體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#121",
+    "title": "香港公園體育館羽毛球場預訂",
+    "title_en": "Badminton Court Booking — Hong Kong Park Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "badminton",
@@ -20,26 +13,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "10:00",
-        "end_time": "12:00"
+        "start": "2026-10-03T02:00:00Z",
+        "end": "2026-10-03T04:00:00Z"
       }
     ],
-    "cost": "HKD 59–118 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Central & Western",
+      "venue": "Hong Kong Park Sports Centre",
+      "address": "29 Cotton Tree Drive, Central"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#121"
   },
   {
     "id": "act-002",
-    "title": "Squash Court Session — Hong Kong Squash Centre",
-    "title_alt": "香港壁球中心壁球場租訂",
-    "description": "Specialized squash facility next to Hong Kong Park offering multiple standard glass-back courts.",
-    "description_alt": "鄰近香港公園的專用壁球中心，設有多個符合國際標準的玻璃後牆壁球場。",
-    "lang": "bilingual",
-    "district": "Central & Western",
-    "location": "Hong Kong Squash Centre, 23 Cotton Tree Drive, Central",
-    "location_alt": "中環紅棉路23號香港壁球中心",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#122",
+    "title": "香港壁球中心壁球場租訂",
+    "title_en": "Squash Court Session — Hong Kong Squash Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "squash",
@@ -48,26 +41,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "14:00",
-        "end_time": "16:00"
+        "start": "2026-10-04T06:00:00Z",
+        "end": "2026-10-04T08:00:00Z"
       }
     ],
-    "cost": "HKD 27–54 / 30 mins",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Central & Western",
+      "venue": "Hong Kong Squash Centre",
+      "address": "23 Cotton Tree Drive, Central"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#122"
   },
   {
     "id": "act-003",
-    "title": "Public Swimming (Winter Heated Pool) — Sun Yat Sen Memorial Park Swimming Pool",
-    "title_alt": "中山紀念公園游泳池公眾暢泳（冬季設有暖水）",
-    "description": "Indoor 50-metre competition pool and training pool overlooking Victoria Harbour. Heated facilities are provided during winter (mid-November to mid-April).",
-    "description_alt": "設有面向維多利亞港的50米室內主池及訓練池，冬季（11月中至翌年4月中）提供暖水游泳設施。",
-    "lang": "bilingual",
-    "district": "Central & Western",
-    "location": "16 Eastern Street North, Sai Ying Pun",
-    "location_alt": "西營盤東邊街北16號",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Swimming.do?swpId=40",
+    "title": "中山紀念公園游泳池公眾暢泳（冬季設有暖水）",
+    "title_en": "Public Swimming (Winter Heated Pool) — Sun Yat Sen Memorial Park Swimming Pool",
+    "lang": "zh",
     "tags": [
       "sports",
       "swimming",
@@ -76,26 +69,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "09:00",
-        "end_time": "11:00"
+        "start": "2026-10-04T01:00:00Z",
+        "end": "2026-10-04T03:00:00Z"
       }
     ],
-    "cost": "HKD 17–19",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Central & Western",
+      "venue": "Sun Yat Sen Memorial Park Swimming Pool",
+      "address": "16 Eastern Street North, Sai Ying Pun"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Swimming.do?swpId=40"
   },
   {
     "id": "act-004",
-    "title": "Indoor Table Tennis — Lockhart Road Sports Centre",
-    "title_alt": "駱克道體育館乒乓球室活動",
-    "description": "Equipped table tennis rooms located right next to Wan Chai MTR station. Easy for casual evening matches.",
-    "description_alt": "鄰近灣仔港鐵站的乒乓球室，配套齊全，方便平日下班或週末休閒切磋。",
-    "lang": "bilingual",
-    "district": "Wan Chai",
-    "location": "Lockhart Road Municipal Services Building, 225 Hennessy Road, Wan Chai",
-    "location_alt": "灣仔軒尼詩道225號駱克道市政大廈",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#922",
+    "title": "駱克道體育館乒乓球室活動",
+    "title_en": "Indoor Table Tennis — Lockhart Road Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "table-tennis",
@@ -104,26 +97,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "friday",
-        "start_time": "18:00",
-        "end_time": "20:00"
+        "start": "2026-10-02T10:00:00Z",
+        "end": "2026-10-02T12:00:00Z"
       }
     ],
-    "cost": "HKD 14–28 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Wan Chai",
+      "venue": "Lockhart Road Municipal Services Building",
+      "address": "225 Hennessy Road, Wan Chai"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#922"
   },
   {
     "id": "act-005",
-    "title": "Outdoor Tennis Court Booking — Victoria Park Tennis Courts",
-    "title_alt": "維多利亞公園網球場租用",
-    "description": "Standard hard-surface outdoor tennis courts located in Causeway Bay with floodlight facilities for night play.",
-    "description_alt": "銅鑼灣維多利亞公園內的多個標準硬地網球場，設有夜間照明系統。",
-    "lang": "bilingual",
-    "district": "Wan Chai",
-    "location": "Victoria Park, 1 Hing Fat Street, Causeway Bay",
-    "location_alt": "銅鑼灣興發街1號維多利亞公園",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/en/parks/vp/index.html",
+    "title": "維多利亞公園網球場租用",
+    "title_en": "Outdoor Tennis Court Booking — Victoria Park Tennis Courts",
+    "lang": "zh",
     "tags": [
       "sports",
       "tennis",
@@ -132,26 +125,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "16:00",
-        "end_time": "18:00"
+        "start": "2026-10-03T08:00:00Z",
+        "end": "2026-10-03T10:00:00Z"
       }
     ],
-    "cost": "HKD 42–84 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Wan Chai",
+      "venue": "Victoria Park",
+      "address": "1 Hing Fat Street, Causeway Bay"
+    },
+    "url": "https://www.lcsd.gov.hk/en/parks/vp/index.html"
   },
   {
     "id": "act-006",
-    "title": "Public Indoor Climbing Wall — Island East Sports Centre",
-    "title_alt": "港島東體育館室內運動攀登牆體驗",
-    "description": "LCSD certified indoor climbing wall featuring top-rope and lead routes for accredited climbers.",
-    "description_alt": "設於港島東體育館的室內攀石牆，提供頂繩及先鋒攀登路線，合資格人士可租用。",
-    "lang": "bilingual",
-    "district": "Eastern",
-    "location": "52 Lei King Road, Sai Wan Ho",
-    "location_alt": "西灣河鯉景道52號港島東體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#469",
+    "title": "港島東體育館室內運動攀登牆體驗",
+    "title_en": "Public Indoor Climbing Wall — Island East Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "climbing",
@@ -160,26 +153,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "13:00",
-        "end_time": "15:00"
+        "start": "2026-10-03T05:00:00Z",
+        "end": "2026-10-03T07:00:00Z"
       }
     ],
-    "cost": "Free to registered climbers",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Eastern",
+      "venue": "Island East Sports Centre",
+      "address": "52 Lei King Road, Sai Wan Ho"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#469"
   },
   {
     "id": "act-007",
-    "title": "Water Sports & Sea Kayak Rental — Chong Hing Water Sports Centre",
-    "title_alt": "創興水上活動中心獨木舟水上活動",
-    "description": "Kayak, canoe, and windsurfing day rentals on High Island Reservoir. Scenic and serene water environment.",
-    "description_alt": "萬宜水庫西壩創興水上活動中心，提供獨木舟、直立板及滑浪風帆日租與活動體驗。",
-    "lang": "bilingual",
-    "district": "Sai Kung",
-    "location": "High Island Reservoir West Dam, Sai Kung",
-    "location_alt": "西貢萬宜水庫西壩",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/en/watersport/index/inde_chong.html",
+    "title": "創興水上活動中心獨木舟水上活動",
+    "title_en": "Water Sports & Sea Kayak Rental — Chong Hing Water Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "kayaking",
@@ -189,26 +182,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "09:30",
-        "end_time": "16:30"
+        "start": "2026-10-04T01:30:00Z",
+        "end": "2026-10-04T08:30:00Z"
       }
     ],
-    "cost": "HKD 35–70 / day",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Sai Kung",
+      "venue": "High Island Reservoir West Dam",
+      "address": "Sai Kung"
+    },
+    "url": "https://www.lcsd.gov.hk/en/watersport/index/inde_chong.html"
   },
   {
     "id": "act-008",
-    "title": "Outdoor Basketball Casual Pickup — Southorn Playground",
-    "title_alt": "修頓遊樂場戶外籃球對抗賽",
-    "description": "Hong Kong's famous urban basketball hotspot. Open to the public for free walk-in half-court and full-court pickup.",
-    "description_alt": "香港極具標誌性的街頭籃球聖地，免費開放公眾即場組隊打半場及全場比賽。",
-    "lang": "bilingual",
-    "district": "Wan Chai",
-    "location": "130 Hennessy Road, Wan Chai",
-    "location_alt": "灣仔軒尼詩道130號修頓遊樂場",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/en/facilities/facilitieslist/facilities.php?fid=562",
+    "title": "修頓遊樂場戶外籃球對抗賽",
+    "title_en": "Outdoor Basketball Casual Pickup — Southorn Playground",
+    "lang": "zh",
     "tags": [
       "sports",
       "basketball",
@@ -218,26 +211,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "18:00",
-        "end_time": "21:00"
+        "start": "2026-10-03T10:00:00Z",
+        "end": "2026-10-03T13:00:00Z"
       }
     ],
-    "cost": "Free",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Wan Chai",
+      "venue": "Southorn Playground",
+      "address": "130 Hennessy Road, Wan Chai"
+    },
+    "url": "https://www.lcsd.gov.hk/en/facilities/facilitieslist/facilities.php?fid=562"
   },
   {
     "id": "act-009",
-    "title": "Public Swimming (Winter Heated Pool) — Kowloon Park Swimming Pool",
-    "title_alt": "九龍公園游泳池公眾暢泳（冬季設有暖水）",
-    "description": "Premier Olympic-standard swimming complex in Tsim Sha Tsui featuring indoor pools and diving facilities. Heated pool facilities operate during winter (mid-November to mid-April).",
-    "description_alt": "尖沙咀奧運標準室內游泳池，設有主池與跳水池，冬季（11月中至翌年4月中）提供暖水設施。",
-    "lang": "bilingual",
-    "district": "Yau Tsim Mong",
-    "location": "22 Austin Road, Tsim Sha Tsui, Kowloon",
-    "location_alt": "九龍尖沙咀柯士甸道22號九龍公園",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Swimming.do?swpId=11",
+    "title": "九龍公園游泳池公眾暢泳（冬季設有暖水）",
+    "title_en": "Public Swimming (Winter Heated Pool) — Kowloon Park Swimming Pool",
+    "lang": "zh",
     "tags": [
       "sports",
       "swimming",
@@ -247,26 +240,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "08:00",
-        "end_time": "10:00"
+        "start": "2026-10-03T00:00:00Z",
+        "end": "2026-10-03T02:00:00Z"
       }
     ],
-    "cost": "HKD 17–19",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Yau Tsim Mong",
+      "venue": "Kowloon Park Swimming Pool",
+      "address": "22 Austin Road, Tsim Sha Tsui, Kowloon"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Swimming.do?swpId=11"
   },
   {
     "id": "act-010",
-    "title": "Public Swimming & Lap Training — Sha Tin Jockey Club Swimming Pool",
-    "title_alt": "沙田賽馬會游泳池公眾暢泳及訓練",
-    "description": "Large public swimming complex featuring a standard 50-metre main pool, teaching pool, and diving pool for recreational and lap swimming.",
-    "description_alt": "沙田大型公眾游泳館，設有50米標準主池、訓練池及跳水池，適合休閒游泳與體能訓練。",
-    "lang": "bilingual",
-    "district": "Sha Tin",
-    "location": "10 Yuen Wo Road, Sha Tin",
-    "location_alt": "沙田源禾路10號",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Swimming.do?swpId=32",
+    "title": "沙田賽馬會游泳池公眾暢泳及訓練",
+    "title_en": "Public Swimming & Lap Training — Sha Tin Jockey Club Swimming Pool",
+    "lang": "zh",
     "tags": [
       "sports",
       "swimming",
@@ -276,26 +269,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "10:00",
-        "end_time": "12:00"
+        "start": "2026-10-04T02:00:00Z",
+        "end": "2026-10-04T04:00:00Z"
       }
     ],
-    "cost": "HKD 17–19",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Sha Tin",
+      "venue": "Sha Tin Jockey Club Swimming Pool",
+      "address": "10 Yuen Wo Road, Sha Tin"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Swimming.do?swpId=32"
   },
   {
     "id": "act-011",
-    "title": "Table Tennis Practice — Pei Ho Street Sports Centre",
-    "title_alt": "北河街體育館乒乓球切磋時段",
-    "description": "Convenient venue in Sham Shui Po popular among local students and neighborhood club players.",
-    "description_alt": "位於深水埗的體育館，乒乓球設施完善，深受學生與附近球友歡迎。",
-    "lang": "bilingual",
-    "district": "Sham Shui Po",
-    "location": "Pei Ho Street Municipal Services Building, 333 Ki Lung Street, Sham Shui Po",
-    "location_alt": "深水埗基隆街333號北河街市政大廈",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#671",
+    "title": "北河街體育館乒乓球切磋時段",
+    "title_en": "Table Tennis Practice — Pei Ho Street Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "table-tennis",
@@ -304,26 +297,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "15:00",
-        "end_time": "17:00"
+        "start": "2026-10-03T07:00:00Z",
+        "end": "2026-10-03T09:00:00Z"
       }
     ],
-    "cost": "HKD 14–28 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Sham Shui Po",
+      "venue": "Pei Ho Street Municipal Services Building",
+      "address": "333 Ki Lung Street, Sham Shui Po"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#671"
   },
   {
     "id": "act-012",
-    "title": "Badminton Play — Wai Tsuen Sports Centre",
-    "title_alt": "蕙荃體育館羽毛球雙打時段",
-    "description": "Spacious sports hall in Tsuen Wan with modern flooring, ideal for weekend doubles matches.",
-    "description_alt": "位於荃灣的寬敞體育館，鋪設專業木地板，非常適合週末相約打雙打。",
-    "lang": "bilingual",
-    "district": "Tsuen Wan",
-    "location": "63 Miaokang Street, Tsuen Wan",
-    "location_alt": "荃灣廟崗街63號",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#638",
+    "title": "蕙荃體育館羽毛球雙打時段",
+    "title_en": "Badminton Play — Wai Tsuen Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "badminton",
@@ -332,26 +325,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "11:00",
-        "end_time": "13:00"
+        "start": "2026-10-04T03:00:00Z",
+        "end": "2026-10-04T05:00:00Z"
       }
     ],
-    "cost": "HKD 59–118 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Tsuen Wan",
+      "venue": "Wai Tsuen Sports Centre",
+      "address": "63 Miaokang Street, Tsuen Wan"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#638"
   },
   {
     "id": "act-013",
-    "title": "Public Squash Court — Aberdeen Sports Centre",
-    "title_alt": "香港仔體育館壁球場活動",
-    "description": "Multi-court facility on the south side of Hong Kong Island overlooking Aberdeen Harbour.",
-    "description_alt": "位於港島南區的體育館，設有多面壁球場，環境清幽且設施齊備。",
-    "lang": "bilingual",
-    "district": "Southern",
-    "location": "Aberdeen Municipal Services Building, 203 Aberdeen Main Road",
-    "location_alt": "香港仔大道203號香港仔市政大廈",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#545",
+    "title": "香港仔體育館壁球場活動",
+    "title_en": "Public Squash Court — Aberdeen Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "squash",
@@ -360,26 +353,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "14:00",
-        "end_time": "16:00"
+        "start": "2026-10-03T06:00:00Z",
+        "end": "2026-10-03T08:00:00Z"
       }
     ],
-    "cost": "HKD 27–54 / 30 mins",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Southern",
+      "venue": "Aberdeen Municipal Services Building",
+      "address": "203 Aberdeen Main Road"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#545"
   },
   {
     "id": "act-014",
-    "title": "Outdoor Jogging & Track Running — Kowloon Bay Sports Ground",
-    "title_alt": "九龍灣運動場戶外跑道緩步跑",
-    "description": "Standard 400m synthetic running track open to the general public during designated jogging hours.",
-    "description_alt": "400米標準全天候田徑跑道，於指定緩步跑時段免費開放公眾跑步鍛鍊。",
-    "lang": "bilingual",
-    "district": "Kwun Tong",
-    "location": "1 Kai Lok Street, Kowloon Bay",
-    "location_alt": "九龍灣啟樂街1號",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/en/facilities/facilitieslist/facilities.php?fid=641",
+    "title": "九龍灣運動場戶外跑道緩步跑",
+    "title_en": "Outdoor Jogging & Track Running — Kowloon Bay Sports Ground",
+    "lang": "zh",
     "tags": [
       "sports",
       "running",
@@ -389,26 +382,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "tuesday",
-        "start_time": "19:00",
-        "end_time": "21:00"
+        "start": "2026-10-06T11:00:00Z",
+        "end": "2026-10-06T13:00:00Z"
       }
     ],
-    "cost": "Free",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Kwun Tong",
+      "venue": "Kowloon Bay Sports Ground",
+      "address": "1 Kai Lok Street, Kowloon Bay"
+    },
+    "url": "https://www.lcsd.gov.hk/en/facilities/facilitieslist/facilities.php?fid=641"
   },
   {
     "id": "act-015",
-    "title": "Public Archery Practice Session — Ngau Chi Wan Sports Centre",
-    "title_alt": "牛池灣體育館公眾射箭體驗場",
-    "description": "Indoor archery range designated for certified archers and introductory clinic attendees.",
-    "description_alt": "設有室內射箭場地的體育館，供合資格射箭愛好者及初級培訓班使用。",
-    "lang": "bilingual",
-    "district": "Wong Tai Sin",
-    "location": "Ngau Chi Wan Municipal Services Building, 11 Clear Water Bay Road",
-    "location_alt": "黃大仙清水灣道11號牛池灣市政大廈",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#753",
+    "title": "牛池灣體育館公眾射箭體驗場",
+    "title_en": "Public Archery Practice Session — Ngau Chi Wan Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "archery",
@@ -417,26 +410,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "14:00",
-        "end_time": "17:00"
+        "start": "2026-10-04T06:00:00Z",
+        "end": "2026-10-04T09:00:00Z"
       }
     ],
-    "cost": "HKD 35 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Wong Tai Sin",
+      "venue": "Ngau Chi Wan Municipal Services Building",
+      "address": "11 Clear Water Bay Road"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#753"
   },
   {
     "id": "act-016",
-    "title": "Outdoor Roller Skating — Victoria Park Roller Skating Rinks",
-    "title_alt": "維多利亞公園滾軸溜冰場休閒溜冰",
-    "description": "Two dedicated smooth-surface outdoor roller skating rinks open for free recreational skating.",
-    "description_alt": "維園內設有兩個專用戶外滾軸溜冰場，平整地面，免費開放公眾進行溜冰及滾軸訓練。",
-    "lang": "bilingual",
-    "district": "Wan Chai",
-    "location": "Victoria Park, Causeway Bay",
-    "location_alt": "銅鑼灣維多利亞公園",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/en/parks/vp/index.html",
+    "title": "維多利亞公園滾軸溜冰場休閒溜冰",
+    "title_en": "Outdoor Roller Skating — Victoria Park Roller Skating Rinks",
+    "lang": "zh",
     "tags": [
       "sports",
       "skating",
@@ -446,26 +439,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "16:00",
-        "end_time": "18:00"
+        "start": "2026-10-03T08:00:00Z",
+        "end": "2026-10-03T10:00:00Z"
       }
     ],
-    "cost": "Free",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Wan Chai",
+      "venue": "Victoria Park",
+      "address": "Causeway Bay"
+    },
+    "url": "https://www.lcsd.gov.hk/en/parks/vp/index.html"
   },
   {
     "id": "act-017",
-    "title": "Squash Court Practice — Lam Tin South Sports Centre",
-    "title_alt": "藍田南體育館壁球場練習時段",
-    "description": "Multi-court recreational facility in East Kowloon offering quality indoor squash courts bookable via SmartPLAY.",
-    "description_alt": "位於東九龍藍田的康體設施，設有標準室內壁球場，可透過 SmartPLAY 系統預約租用。",
-    "lang": "bilingual",
-    "district": "Kwun Tong",
-    "location": "170 Pik Wan Road, Lam Tin, Kwun Tong",
-    "location_alt": "觀塘藍田碧雲道170號",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#977",
+    "title": "藍田南體育館壁球場練習時段",
+    "title_en": "Squash Court Practice — Lam Tin South Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "squash",
@@ -475,26 +468,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "15:00",
-        "end_time": "17:00"
+        "start": "2026-10-04T07:00:00Z",
+        "end": "2026-10-04T09:00:00Z"
       }
     ],
-    "cost": "HKD 27–54 / 30 mins",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Kwun Tong",
+      "venue": "Lam Tin South Sports Centre",
+      "address": "170 Pik Wan Road, Lam Tin, Kwun Tong"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#977"
   },
   {
     "id": "act-018",
-    "title": "Badminton Play — Po Kong Village Road Sports Centre",
-    "title_alt": "蒲崗村道體育館羽毛球場",
-    "description": "Modern multi-purpose sports complex in Diamond Hill with air conditioning and 8 badminton courts.",
-    "description_alt": "鑽石山區內大型綜合體育館，設有空調主場及8個羽毛球場，配套完善。",
-    "lang": "bilingual",
-    "district": "Wong Tai Sin",
-    "location": "120 Po Kong Village Road, Diamond Hill",
-    "location_alt": "黃大仙鑽石山蒲崗村道120號",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#754",
+    "title": "蒲崗村道體育館羽毛球場",
+    "title_en": "Badminton Play — Po Kong Village Road Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "badminton",
@@ -503,26 +496,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "10:00",
-        "end_time": "12:00"
+        "start": "2026-10-03T02:00:00Z",
+        "end": "2026-10-03T04:00:00Z"
       }
     ],
-    "cost": "HKD 59–118 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Wong Tai Sin",
+      "venue": "Po Kong Village Road Sports Centre",
+      "address": "120 Po Kong Village Road, Diamond Hill"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#754"
   },
   {
     "id": "act-019",
-    "title": "Outdoor Beach Volleyball Casual Play — Golden Beach",
-    "title_alt": "黃金泳灘沙灘排球同樂時段",
-    "description": "Hong Kong's premier artificial sand beach with permanent beach volleyball courts available on a first-come, first-served basis.",
-    "description_alt": "屯門黃金泳灘設有固定的沙灘排球場地，沙質細膩，免費供市民以先到先得方式使用。",
-    "lang": "bilingual",
-    "district": "Tuen Mun",
-    "location": "Golden Beach, Castle Peak Road, Tuen Mun",
-    "location_alt": "屯門青山公路黃金泳灘",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/en/beach/index.html",
+    "title": "黃金泳灘沙灘排球同樂時段",
+    "title_en": "Outdoor Beach Volleyball Casual Play — Golden Beach",
+    "lang": "zh",
     "tags": [
       "sports",
       "volleyball",
@@ -532,26 +525,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "14:00",
-        "end_time": "18:00"
+        "start": "2026-10-03T06:00:00Z",
+        "end": "2026-10-03T10:00:00Z"
       }
     ],
-    "cost": "Free",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Tuen Mun",
+      "venue": "Golden Beach",
+      "address": "Castle Peak Road, Tuen Mun"
+    },
+    "url": "https://www.lcsd.gov.hk/en/beach/index.html"
   },
   {
     "id": "act-020",
-    "title": "Public Swimming (Winter Heated Pool) — Tung Chung Swimming Pool",
-    "title_alt": "東涌游泳池公眾暢泳（冬季設有暖水）",
-    "description": "Public swimming facility on Lantau Island with 50-metre indoor main pool and outdoor training pool. Heated facilities operate during winter (mid-November to mid-April).",
-    "description_alt": "大嶼山東涌現代化公眾泳池，設有50米室內主池及室外訓練池，冬季（11月中至翌年4月中）提供暖水設施。",
-    "lang": "bilingual",
-    "district": "Islands",
-    "location": "5 Tat Tung Road, Tung Chung, Lantau Island",
-    "location_alt": "大嶼山東涌達東路5號",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Swimming.do?swpId=38",
+    "title": "東涌游泳池公眾暢泳（冬季設有暖水）",
+    "title_en": "Public Swimming (Winter Heated Pool) — Tung Chung Swimming Pool",
+    "lang": "zh",
     "tags": [
       "sports",
       "swimming",
@@ -562,26 +555,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "13:30",
-        "end_time": "16:00"
+        "start": "2026-10-04T05:30:00Z",
+        "end": "2026-10-04T08:00:00Z"
       }
     ],
-    "cost": "HKD 17–19",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Islands",
+      "venue": "Tung Chung Swimming Pool",
+      "address": "5 Tat Tung Road, Tung Chung, Lantau Island"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Swimming.do?swpId=38"
   },
   {
     "id": "act-021",
-    "title": "M+ Museum Contemporary Visual Culture Exhibition",
-    "title_alt": "M+ 視覺文化博物館當代藝術常設展覽",
-    "description": "Explore 20th and 21st-century visual art, design, architecture, and moving image from Asia and worldwide in West Kowloon.",
-    "description_alt": "西九文化區地標級博物館，展出20及21世紀來自亞洲及全球的當代視覺藝術、設計、建築及流動影像。",
-    "lang": "bilingual",
-    "district": "Yau Tsim Mong",
-    "location": "West Kowloon Cultural District, 38 Museum Drive, Kowloon",
-    "location_alt": "西九文化區博物館道38號",
-    "source": "M+ Museum",
-    "url": "https://www.mplus.org.hk/en/",
+    "title": "M+ 視覺文化博物館當代藝術常設展覽",
+    "title_en": "M+ Museum Contemporary Visual Culture Exhibition",
+    "lang": "zh",
     "tags": [
       "arts",
       "museum",
@@ -591,26 +584,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "11:00",
-        "end_time": "14:00"
+        "start": "2026-10-03T03:00:00Z",
+        "end": "2026-10-03T06:00:00Z"
       }
     ],
-    "cost": "HKD 120 (Standard) / HKD 60 (Student concession)",
-    "is_guide": false
+    "source": {
+      "name": "M+ Museum",
+      "url": "https://www.mplus.org.hk/"
+    },
+    "location": {
+      "district": "Yau Tsim Mong",
+      "venue": "West Kowloon Cultural District",
+      "address": "38 Museum Drive, Kowloon"
+    },
+    "url": "https://www.mplus.org.hk/en/"
   },
   {
     "id": "act-022",
-    "title": "Hong Kong Palace Museum Treasures Exhibition",
-    "title_alt": "香港故宮文化博物館珍寶專題展",
-    "description": "Showcasing over 900 priceless treasures on loan from the Palace Museum in Beijing alongside modern interpretations.",
-    "description_alt": "展出從北京故宮博物院借展的900多件珍貴文物，並透過現代策展視角展現中國古代宮廷藝術與文化。",
-    "lang": "bilingual",
-    "district": "Yau Tsim Mong",
-    "location": "8 Museum Drive, West Kowloon Cultural District",
-    "location_alt": "西九文化區博物館道8號",
-    "source": "Hong Kong Palace Museum",
-    "url": "https://www.hkpm.org.hk/en/",
+    "title": "香港故宮文化博物館珍寶專題展",
+    "title_en": "Hong Kong Palace Museum Treasures Exhibition",
+    "lang": "zh",
     "tags": [
       "arts",
       "history",
@@ -620,26 +613,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "14:00",
-        "end_time": "17:00"
+        "start": "2026-10-04T06:00:00Z",
+        "end": "2026-10-04T09:00:00Z"
       }
     ],
-    "cost": "HKD 60 (Standard) / HKD 30 (Student concession)",
-    "is_guide": false
+    "source": {
+      "name": "Hong Kong Palace Museum",
+      "url": "https://www.hkpm.org.hk/"
+    },
+    "location": {
+      "district": "Yau Tsim Mong",
+      "venue": null,
+      "address": "8 Museum Drive, West Kowloon Cultural District"
+    },
+    "url": "https://www.hkpm.org.hk/en/"
   },
   {
     "id": "act-023",
-    "title": "Tai Kwun Heritage & Prison Cell Guided Tour",
-    "title_alt": "大館歷史古蹟與域多利監獄導賞團",
-    "description": "Walk through the revitalized Central Police Station compound, Victoria Prison, and the former Central Magistracy.",
-    "description_alt": "參觀中區警署建築群活化後的文化藝術空間，探索百年域多利監獄囚室與中央裁判司署歷史。",
-    "lang": "bilingual",
-    "district": "Central & Western",
-    "location": "Tai Kwun, 10 Hollywood Road, Central",
-    "location_alt": "中環荷李活道10號大館",
-    "source": "Tai Kwun",
-    "url": "https://www.taikwun.hk/en/",
+    "title": "大館歷史古蹟與域多利監獄導賞團",
+    "title_en": "Tai Kwun Heritage & Prison Cell Guided Tour",
+    "lang": "zh",
     "tags": [
       "heritage",
       "guided-tour",
@@ -649,26 +642,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "14:30",
-        "end_time": "15:45"
+        "start": "2026-10-03T06:30:00Z",
+        "end": "2026-10-03T07:45:00Z"
       }
     ],
-    "cost": "Free (registration required)",
-    "is_guide": false
+    "source": {
+      "name": "Tai Kwun Centre for Heritage and Arts",
+      "url": "https://www.taikwun.hk/"
+    },
+    "location": {
+      "district": "Central & Western",
+      "venue": "Tai Kwun",
+      "address": "10 Hollywood Road, Central"
+    },
+    "url": "https://www.taikwun.hk/en/"
   },
   {
     "id": "act-024",
-    "title": "PMQ Creative Design Studios & Weekend Craft Market",
-    "title_alt": "元創方文創設計小店與週末手作市集",
-    "description": "Former Police Married Quarters turned design hub hosting over 100 local designers, ceramicists, and craft makers.",
-    "description_alt": "由前荷李活道已婚警察宿舍活化而成的創意地標，匯聚過百位本地獨立設計師、陶藝家與手工藝小店。",
-    "lang": "bilingual",
-    "district": "Central & Western",
-    "location": "35 Aberdeen Street, Central",
-    "location_alt": "中環鴨巴甸街35號PMQ元創方",
-    "source": "PMQ",
-    "url": "https://www.pmq.org.hk/",
+    "title": "元創方文創設計小店與週末手作市集",
+    "title_en": "PMQ Creative Design Studios & Weekend Craft Market",
+    "lang": "zh",
     "tags": [
       "arts",
       "design",
@@ -678,26 +671,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "13:00",
-        "end_time": "16:00"
+        "start": "2026-10-03T05:00:00Z",
+        "end": "2026-10-03T08:00:00Z"
       }
     ],
-    "cost": "Free entry",
-    "is_guide": false
+    "source": {
+      "name": "PMQ Management Co. Ltd.",
+      "url": "https://www.pmq.org.hk/"
+    },
+    "location": {
+      "district": "Central & Western",
+      "venue": null,
+      "address": "35 Aberdeen Street, Central"
+    },
+    "url": "https://www.pmq.org.hk/"
   },
   {
     "id": "act-025",
-    "title": "Hong Kong Museum of Art (HKMoA) Permanent Galleries",
-    "title_alt": "香港藝術館常設展覽與維港藝術漫步",
-    "description": "Multi-storey harbourfront museum with Chinese antiquities, modern calligraphy, and contemporary local HK art.",
-    "description_alt": "座落於尖沙咀海旁的香港藝術館，展出豐富的中國古代文物、水墨畫作以及香港本土現代藝術作品。",
-    "lang": "bilingual",
-    "district": "Yau Tsim Mong",
-    "location": "10 Salisbury Road, Tsim Sha Tsui",
-    "location_alt": "尖沙咀梳士巴利道10號香港藝術館",
-    "source": "HKMoA",
-    "url": "https://hk.art.museum/en/",
+    "title": "香港藝術館常設展覽與維港藝術漫步",
+    "title_en": "Hong Kong Museum of Art (HKMoA) Permanent Galleries",
+    "lang": "zh",
     "tags": [
       "arts",
       "museum",
@@ -707,26 +700,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "11:00",
-        "end_time": "13:30"
+        "start": "2026-10-04T03:00:00Z",
+        "end": "2026-10-04T05:30:00Z"
       }
     ],
-    "cost": "Free (Permanent galleries)",
-    "is_guide": false
+    "source": {
+      "name": "Hong Kong Museum of Art",
+      "url": "https://hk.art.museum/"
+    },
+    "location": {
+      "district": "Yau Tsim Mong",
+      "venue": null,
+      "address": "10 Salisbury Road, Tsim Sha Tsui"
+    },
+    "url": "https://hk.art.museum/en/"
   },
   {
     "id": "act-026",
-    "title": "Oi! (Oil Street Art Space) Contemporary Art & Heritage Lawn Visit",
-    "title_alt": "油街實現藝術空間當代藝術展覽與古蹟草坪參觀",
-    "description": "Historic Grade II red-brick former yacht club clubhouse revitalized by the Art Promotion Office, featuring free contemporary visual art exhibitions, community creative projects, and open green lawns.",
-    "description_alt": "由前香港皇家遊艇會會所二級歷史紅磚建築活化而成的藝術空間，定期舉辦當代視覺藝術展覽、大型裝置藝術，並設有免費開放的草坪與公共活動空間。",
-    "lang": "bilingual",
-    "district": "Eastern",
-    "location": "12 Oil Street, North Point",
-    "location_alt": "北角油街12號油街實現",
-    "source": "LCSD",
-    "url": "https://www.apo.hk/en/web/apo/oi.html",
+    "title": "油街實現藝術空間當代藝術展覽與古蹟草坪參觀",
+    "title_en": "Oi! (Oil Street Art Space) Contemporary Art & Heritage Lawn Visit",
+    "lang": "zh",
     "tags": [
       "arts",
       "community",
@@ -736,26 +729,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "15:00",
-        "end_time": "17:00"
+        "start": "2026-10-03T07:00:00Z",
+        "end": "2026-10-03T09:00:00Z"
       }
     ],
-    "cost": "Free entry",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Eastern",
+      "venue": null,
+      "address": "12 Oil Street, North Point"
+    },
+    "url": "https://www.apo.hk/en/web/apo/oi.html"
   },
   {
     "id": "act-027",
-    "title": "Cattle Depot Artist Village Open Studios Walk",
-    "title_alt": "牛棚藝術村歷史建築與駐場藝術家工作室參觀",
-    "description": "Former 1908 slaughterhouse in To Kwa Wan featuring red-brick architecture and independent artist collectives.",
-    "description_alt": "建於1908年的百年紅磚屠房活化成的藝術群落，聚集多個本地前衛藝術團體與獨立工作室。",
-    "lang": "bilingual",
-    "district": "Kowloon City",
-    "location": "63 Ma Tau Kok Road, To Kwa Wan",
-    "location_alt": "土瓜灣馬頭角道63號牛棚藝術村",
-    "source": "AMO",
-    "url": "https://www.amo.gov.hk/en/index.html",
+    "title": "牛棚藝術村歷史建築與駐場藝術家工作室參觀",
+    "title_en": "Cattle Depot Artist Village Open Studios Walk",
+    "lang": "zh",
     "tags": [
       "arts",
       "heritage",
@@ -765,26 +758,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "14:00",
-        "end_time": "16:30"
+        "start": "2026-10-04T06:00:00Z",
+        "end": "2026-10-04T08:30:00Z"
       }
     ],
-    "cost": "Free",
-    "is_guide": false
+    "source": {
+      "name": "Antiquities and Monuments Office",
+      "url": "https://www.amo.gov.hk/"
+    },
+    "location": {
+      "district": "Kowloon City",
+      "venue": null,
+      "address": "63 Ma Tau Kok Road, To Kwa Wan"
+    },
+    "url": "https://www.amo.gov.hk/en/index.html"
   },
   {
     "id": "act-028",
-    "title": "Blue House Heritage Walk & Community Stories",
-    "title_alt": "灣仔藍屋建築群社區導賞與文化館體驗",
-    "description": "Lingnan-style shophouse heritage site with a living community and the Hong Kong House of Stories museum.",
-    "description_alt": "結合「留屋留人」保育理念的灣仔百年藍屋唐樓群，設有香港故事館，展示舊灣仔基層街坊生活歷史。",
-    "lang": "bilingual",
-    "district": "Wan Chai",
-    "location": "72 Stone Nullah Lane, Wan Chai",
-    "location_alt": "灣仔石水渠街72號藍屋",
-    "source": "St. James' Settlement",
-    "url": "https://vivabluehouse.hk/en/",
+    "title": "灣仔藍屋建築群社區導賞與文化館體驗",
+    "title_en": "Blue House Heritage Walk & Community Stories",
+    "lang": "zh",
     "tags": [
       "heritage",
       "community",
@@ -793,26 +786,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "11:00",
-        "end_time": "12:30"
+        "start": "2026-10-03T03:00:00Z",
+        "end": "2026-10-03T04:30:00Z"
       }
     ],
-    "cost": "Free / Small donation for tours",
-    "is_guide": false
+    "source": {
+      "name": "St. James' Settlement",
+      "url": "https://sjs.org.hk/"
+    },
+    "location": {
+      "district": "Wan Chai",
+      "venue": null,
+      "address": "72 Stone Nullah Lane, Wan Chai"
+    },
+    "url": "https://vivabluehouse.hk/en/"
   },
   {
     "id": "act-029",
-    "title": "Hong Kong Heritage Museum Cantonese Opera Exhibition",
-    "title_alt": "香港文化博物館粵劇文物館與武俠金庸館",
-    "description": "Comprehensive museum in Sha Tin featuring permanent exhibitions on Bruce Lee, Jin Yong wuxia literature, and Cantonese opera.",
-    "description_alt": "座落沙田城門河畔，設有金庸館、李小龍專題展及精緻的粵劇文物館，深具香港本土文化特色。",
-    "lang": "bilingual",
-    "district": "Sha Tin",
-    "location": "1 Man Lam Road, Sha Tin",
-    "location_alt": "沙田文林路1號香港文化博物館",
-    "source": "LCSD",
-    "url": "https://www.heritagemuseum.gov.hk/en/",
+    "title": "香港文化博物館粵劇文物館與武俠金庸館",
+    "title_en": "Hong Kong Heritage Museum Cantonese Opera Exhibition",
+    "lang": "zh",
     "tags": [
       "arts",
       "museum",
@@ -822,26 +815,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "13:30",
-        "end_time": "16:30"
+        "start": "2026-10-03T05:30:00Z",
+        "end": "2026-10-03T08:30:00Z"
       }
     ],
-    "cost": "Free (Permanent galleries)",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Sha Tin",
+      "venue": null,
+      "address": "1 Man Lam Road, Sha Tin"
+    },
+    "url": "https://www.heritagemuseum.gov.hk/en/"
   },
   {
     "id": "act-030",
-    "title": "Fringe Club Independent Jazz & Acoustic Night",
-    "title_alt": "藝穗會爵士樂與獨立原聲音樂之夜",
-    "description": "Historic dairy building in Central hosting intimate weekend jazz sets, comedy open mics, and experimental theatre.",
-    "description_alt": "位於中環蘭桂坊旁的古蹟紅白磚建築，週末定期舉辦爵士樂表演、獨立樂隊原聲演奏及小劇場演出。",
-    "lang": "bilingual",
-    "district": "Central & Western",
-    "location": "2 Lower Albert Road, Central",
-    "location_alt": "中環下亞厘畢道2號藝穗會",
-    "source": "The Fringe Club",
-    "url": "https://www.hkfringeclub.com/en",
+    "title": "藝穗會爵士樂與獨立原聲音樂之夜",
+    "title_en": "Fringe Club Independent Jazz & Acoustic Night",
+    "lang": "zh",
     "tags": [
       "arts",
       "music",
@@ -851,26 +844,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "friday",
-        "start_time": "20:30",
-        "end_time": "22:30"
+        "start": "2026-10-02T12:30:00Z",
+        "end": "2026-10-02T14:30:00Z"
       }
     ],
-    "cost": "HKD 100–180 (includes 1 drink)",
-    "is_guide": false
+    "source": {
+      "name": "The Fringe Club",
+      "url": "https://www.hkfringeclub.org/"
+    },
+    "location": {
+      "district": "Central & Western",
+      "venue": null,
+      "address": "2 Lower Albert Road, Central"
+    },
+    "url": "https://www.hkfringeclub.com/en"
   },
   {
     "id": "act-031",
-    "title": "Dragon's Back Trail Ridge Hike",
-    "title_alt": "石澳龍脊遠足徑山脊漫遊",
-    "description": "World-renowned coastal ridge hike offering sweeping panoramic views of Shek O Beach, Big Wave Bay, and the South China Sea.",
-    "description_alt": "享譽國際的香港經典海岸山徑，沿途可眺望石澳泳灘、大浪灣及南中國海壯麗全景，交通便利。",
-    "lang": "bilingual",
-    "district": "Southern",
-    "location": "Starts at To Tei Wan, Shek O Road (Bus 9 from Shau Kei Wan MTR)",
-    "location_alt": "土地灣起步（筲箕灣港鐵站乘新巴9號線）",
-    "source": "AFCD",
-    "url": "https://www.hiking.gov.hk/",
+    "title": "石澳龍脊遠足徑山脊漫遊",
+    "title_en": "Dragon's Back Trail Ridge Hike",
+    "lang": "zh",
     "tags": [
       "outdoors",
       "hiking",
@@ -880,26 +873,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "09:00",
-        "end_time": "13:00"
+        "start": "2026-10-03T01:00:00Z",
+        "end": "2026-10-03T05:00:00Z"
       }
     ],
-    "cost": "Free",
-    "is_guide": false
+    "source": {
+      "name": "Agriculture, Fisheries and Conservation Department",
+      "url": "https://www.afcd.gov.hk/"
+    },
+    "location": {
+      "district": "Southern",
+      "venue": "Starts at To Tei Wan",
+      "address": "Shek O Road (Bus 9 from Shau Kei Wan MTR)"
+    },
+    "url": "https://www.hiking.gov.hk/"
   },
   {
     "id": "act-032",
-    "title": "Lion Rock Summit Morning Hike",
-    "title_alt": "獅子山晨光登頂遠足",
-    "description": "Climb Hong Kong's symbolic mountain overlooking Kowloon Peninsula and Victoria Harbour. Steep stair ascent rewarded by iconic views.",
-    "description_alt": "攀登象徵香港拼搏精神的獅子山，俯瞰九龍半島棋盤街道與對岸維港天際線，風景極具震撼力。",
-    "lang": "bilingual",
-    "district": "Wong Tai Sin",
-    "location": "Lion Rock Country Park, Wong Tai Sin",
-    "location_alt": "黃大仙獅子山郊野公園",
-    "source": "AFCD",
-    "url": "https://www.hiking.gov.hk/",
+    "title": "獅子山晨光登頂遠足",
+    "title_en": "Lion Rock Summit Morning Hike",
+    "lang": "zh",
     "tags": [
       "outdoors",
       "hiking",
@@ -909,26 +902,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "07:30",
-        "end_time": "11:30"
+        "start": "2026-10-03T23:30:00Z",
+        "end": "2026-10-04T03:30:00Z"
       }
     ],
-    "cost": "Free",
-    "is_guide": false
+    "source": {
+      "name": "Agriculture, Fisheries and Conservation Department",
+      "url": "https://www.afcd.gov.hk/"
+    },
+    "location": {
+      "district": "Wong Tai Sin",
+      "venue": "Lion Rock Country Park",
+      "address": "Wong Tai Sin"
+    },
+    "url": "https://www.hiking.gov.hk/"
   },
   {
     "id": "act-033",
-    "title": "MacLehose Trail Section 2: High Island to Tai Long Wan",
-    "title_alt": "麥理浩徑第二段：萬宜水庫東壩至大浪灣健行",
-    "description": "Explore Hexagonal rock columns at East Dam and trek to Hong Kong's most pristine white-sand surf beaches.",
-    "description_alt": "走訪聯合國教科文組織世界地質公園六角形岩柱，並徒步探訪浪茄及大浪西灣天然海灘。",
-    "lang": "bilingual",
-    "district": "Sai Kung",
-    "location": "High Island Reservoir East Dam, Sai Kung",
-    "location_alt": "西貢萬宜水庫東壩",
-    "source": "Hong Kong UNESCO Global Geopark",
-    "url": "https://www.geopark.gov.hk/en",
+    "title": "麥理浩徑第二段：萬宜水庫東壩至大浪灣健行",
+    "title_en": "MacLehose Trail Section 2: High Island to Tai Long Wan",
+    "lang": "zh",
     "tags": [
       "outdoors",
       "hiking",
@@ -938,26 +931,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "08:30",
-        "end_time": "15:30"
+        "start": "2026-10-03T00:30:00Z",
+        "end": "2026-10-03T07:30:00Z"
       }
     ],
-    "cost": "Free (transportation costs apply)",
-    "is_guide": false
+    "source": {
+      "name": "Hong Kong UNESCO Global Geopark",
+      "url": "https://www.geopark.gov.hk/"
+    },
+    "location": {
+      "district": "Sai Kung",
+      "venue": "High Island Reservoir East Dam",
+      "address": "Sai Kung"
+    },
+    "url": "https://www.geopark.gov.hk/en"
   },
   {
     "id": "act-034",
-    "title": "Lamma Island Family Trail Walk (Yung Shue Wan to Sok Kwu Wan)",
-    "title_alt": "南丫島家樂徑漫步（榕樹灣至索罟灣）",
-    "description": "Gentle island walking trail connecting Yung Shue Wan's indie cafes and craft shops to Sok Kwu Wan seafood village.",
-    "description_alt": "平緩易走的島嶼漫步路線，途經文青風情的榕樹灣咖啡館小店、洪聖爺泳灘及索罟灣海鮮街。",
-    "lang": "bilingual",
-    "district": "Islands",
-    "location": "Ferry from Central Pier 4 to Yung Shue Wan",
-    "location_alt": "中環4號碼頭乘渡輪至榕樹灣",
-    "source": "Discover Hong Kong",
-    "url": "https://www.discoverhongkong.com/eng/explore/great-outdoors/lamma-island.html",
+    "title": "南丫島家樂徑漫步（榕樹灣至索罟灣）",
+    "title_en": "Lamma Island Family Trail Walk (Yung Shue Wan to Sok Kwu Wan)",
+    "lang": "zh",
     "tags": [
       "outdoors",
       "islands",
@@ -967,26 +960,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "10:30",
-        "end_time": "15:30"
+        "start": "2026-10-04T02:30:00Z",
+        "end": "2026-10-04T07:30:00Z"
       }
     ],
-    "cost": "Free (ferry fare ~HKD 25 each way)",
-    "is_guide": false
+    "source": {
+      "name": "Hong Kong Tourism Board",
+      "url": "https://www.discoverhongkong.com/"
+    },
+    "location": {
+      "district": "Islands",
+      "venue": "Ferry from Central Pier 4 to Yung Shue Wan",
+      "address": null
+    },
+    "url": "https://www.discoverhongkong.com/eng/explore/great-outdoors/lamma-island.html"
   },
   {
     "id": "act-035",
-    "title": "Cheung Chau Island Cycling & Heritage Food Trail",
-    "title_alt": "長洲單車環島遊與傳統街頭美食漫步",
-    "description": "Rent a bicycle to explore Pak Tai Temple, pirate Cheung Po Tsai Cave, and taste local mango mochi and fish balls.",
-    "description_alt": "租單車悠閒穿梭長洲小巷，走訪古老北帝廟、探訪張保仔洞，品嚐著名芒果糯米糍與大魚蛋。",
-    "lang": "bilingual",
-    "district": "Islands",
-    "location": "Ferry from Central Pier 5 to Cheung Chau",
-    "location_alt": "中環5號碼頭乘渡輪至長洲",
-    "source": "Discover Hong Kong",
-    "url": "https://www.discoverhongkong.com/eng/explore/great-outdoors/cheung-chau.html",
+    "title": "長洲單車環島遊與傳統街頭美食漫步",
+    "title_en": "Cheung Chau Island Cycling & Heritage Food Trail",
+    "lang": "zh",
     "tags": [
       "outdoors",
       "cycling",
@@ -996,26 +989,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "10:00",
-        "end_time": "16:00"
+        "start": "2026-10-03T02:00:00Z",
+        "end": "2026-10-03T08:00:00Z"
       }
     ],
-    "cost": "HKD 40–80 (bicycle rental)",
-    "is_guide": false
+    "source": {
+      "name": "Hong Kong Tourism Board",
+      "url": "https://www.discoverhongkong.com/"
+    },
+    "location": {
+      "district": "Islands",
+      "venue": "Ferry from Central Pier 5 to Cheung Chau",
+      "address": null
+    },
+    "url": "https://www.discoverhongkong.com/eng/explore/great-outdoors/cheung-chau.html"
   },
   {
     "id": "act-036",
-    "title": "Shing Mun Reservoir Paperbark Tree Forest Walk",
-    "title_alt": "城門水塘白千層林道與水浸白千層生態漫遊",
-    "description": "Picturesque freshwater reservoir walk lined with paperbark trees and scenic lakeside picnic spots in Tsuen Wan.",
-    "description_alt": "荃灣城門水塘環塘步道，沿途擁有著名的白千層樹林與水浸白千層奇景，偶遇野生猴子與水牛。",
-    "lang": "bilingual",
-    "district": "Tsuen Wan",
-    "location": "Shing Mun Country Park, Tsuen Wan",
-    "location_alt": "荃灣城門郊野公園",
-    "source": "AFCD",
-    "url": "https://www.hiking.gov.hk/",
+    "title": "城門水塘白千層林道與水浸白千層生態漫遊",
+    "title_en": "Shing Mun Reservoir Paperbark Tree Forest Walk",
+    "lang": "zh",
     "tags": [
       "outdoors",
       "nature",
@@ -1025,26 +1018,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "09:30",
-        "end_time": "13:30"
+        "start": "2026-10-04T01:30:00Z",
+        "end": "2026-10-04T05:30:00Z"
       }
     ],
-    "cost": "Free",
-    "is_guide": false
+    "source": {
+      "name": "Agriculture, Fisheries and Conservation Department",
+      "url": "https://www.afcd.gov.hk/"
+    },
+    "location": {
+      "district": "Tsuen Wan",
+      "venue": "Shing Mun Country Park",
+      "address": "Tsuen Wan"
+    },
+    "url": "https://www.hiking.gov.hk/"
   },
   {
     "id": "act-037",
-    "title": "Sunset Peak (Tai Tung Shan) Silvergrass Trek",
-    "title_alt": "大東山秋冬芒草與石屋群登山遠足",
-    "description": "Ascend Lantau Island's third-highest peak famous for expansive silvergrass fields and mountain stone cabins.",
-    "description_alt": "攀登大嶼山第三高峰大東山，秋冬季節滿山芒草搖曳，配以爛頭營古老石屋群，景色絕美。",
-    "lang": "bilingual",
-    "district": "Islands",
-    "location": "Lantau South Country Park, starting from Pak Kung Au",
-    "location_alt": "大嶼山伯公坳起步",
-    "source": "AFCD",
-    "url": "https://www.hiking.gov.hk/",
+    "title": "大東山秋冬芒草與石屋群登山遠足",
+    "title_en": "Sunset Peak (Tai Tung Shan) Silvergrass Trek",
+    "lang": "zh",
     "tags": [
       "outdoors",
       "hiking",
@@ -1054,26 +1047,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "13:00",
-        "end_time": "18:00"
+        "start": "2026-10-03T05:00:00Z",
+        "end": "2026-10-03T10:00:00Z"
       }
     ],
-    "cost": "Free",
-    "is_guide": false
+    "source": {
+      "name": "Agriculture, Fisheries and Conservation Department",
+      "url": "https://www.afcd.gov.hk/"
+    },
+    "location": {
+      "district": "Islands",
+      "venue": "Lantau South Country Park",
+      "address": "starting from Pak Kung Au"
+    },
+    "url": "https://www.hiking.gov.hk/"
   },
   {
     "id": "act-038",
-    "title": "Bride's Pool & Mirror Pool Waterfall Nature Trail",
-    "title_alt": "新娘潭與照鏡潭自然教育徑瀑布漫遊",
-    "description": "Easy scenic forest trail visiting twin natural waterfalls and geological plunge pools in northeastern New Territories.",
-    "description_alt": "位於新界東北船灣郊野公園的自然教育徑，沿途探訪新娘潭瀑布及照鏡潭瀑布，林蔭清幽。",
-    "lang": "bilingual",
-    "district": "Tai Po",
-    "location": "Plover Cove Country Park, Bride's Pool Road, Tai Po",
-    "location_alt": "大埔新娘潭路船灣郊野公園",
-    "source": "AFCD",
-    "url": "https://www.hiking.gov.hk/",
+    "title": "新娘潭與照鏡潭自然教育徑瀑布漫遊",
+    "title_en": "Bride's Pool & Mirror Pool Waterfall Nature Trail",
+    "lang": "zh",
     "tags": [
       "outdoors",
       "waterfall",
@@ -1083,26 +1076,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "10:00",
-        "end_time": "13:30"
+        "start": "2026-10-04T02:00:00Z",
+        "end": "2026-10-04T05:30:00Z"
       }
     ],
-    "cost": "Free",
-    "is_guide": false
+    "source": {
+      "name": "Agriculture, Fisheries and Conservation Department",
+      "url": "https://www.afcd.gov.hk/"
+    },
+    "location": {
+      "district": "Tai Po",
+      "venue": "Plover Cove Country Park",
+      "address": "Bride's Pool Road, Tai Po"
+    },
+    "url": "https://www.hiking.gov.hk/"
   },
   {
     "id": "act-039",
-    "title": "Victoria Peak Lugard Road Morning Sky Walk",
-    "title_alt": "太平山盧吉道晨間環山步道維港全景走",
-    "description": "Flat, paved cliffside loop around The Peak providing the most famous postcard vista of Hong Kong's skyline.",
-    "description_alt": "沿太平山盧吉道開鑿於懸崖峭壁旁的平緩環山林蔭步道，可無遮擋俯瞰維港兩岸摩天大樓全景。",
-    "lang": "bilingual",
-    "district": "Central & Western",
-    "location": "Lugard Road, The Peak, Hong Kong Island",
-    "location_alt": "山頂盧吉道",
-    "source": "Discover Hong Kong",
-    "url": "https://www.discoverhongkong.com/eng/explore/great-outdoors/the-peak.html",
+    "title": "太平山盧吉道晨間環山步道維港全景走",
+    "title_en": "Victoria Peak Lugard Road Morning Sky Walk",
+    "lang": "zh",
     "tags": [
       "outdoors",
       "walking",
@@ -1112,26 +1105,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "08:30",
-        "end_time": "10:30"
+        "start": "2026-10-03T00:30:00Z",
+        "end": "2026-10-03T02:30:00Z"
       }
     ],
-    "cost": "Free",
-    "is_guide": false
+    "source": {
+      "name": "Hong Kong Tourism Board",
+      "url": "https://www.discoverhongkong.com/"
+    },
+    "location": {
+      "district": "Central & Western",
+      "venue": "Lugard Road",
+      "address": "The Peak, Hong Kong Island"
+    },
+    "url": "https://www.discoverhongkong.com/eng/explore/great-outdoors/the-peak.html"
   },
   {
     "id": "act-040",
-    "title": "Tai Tam Waterworks Heritage Trail Hike",
-    "title_alt": "大潭水務文物徑英倫風石橋與水塘健行",
-    "description": "Trek across historic Victorian granite bridges, masonry dams, and aqueducts built between 1883 and 1917.",
-    "description_alt": "穿越大潭水塘群，欣賞21座被列為古蹟的維多利亞時代英式花崗岩拱橋、石砌大壩及輸水道。",
-    "lang": "bilingual",
-    "district": "Southern",
-    "location": "Tai Tam Country Park, Tai Tam Reservoir Road",
-    "location_alt": "大潭水塘道大潭郊野公園",
-    "source": "WSD",
-    "url": "https://www.wsd.gov.hk/en/home/index.html",
+    "title": "大潭水務文物徑英倫風石橋與水塘健行",
+    "title_en": "Tai Tam Waterworks Heritage Trail Hike",
+    "lang": "zh",
     "tags": [
       "outdoors",
       "heritage",
@@ -1141,26 +1134,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "13:30",
-        "end_time": "17:00"
+        "start": "2026-10-04T05:30:00Z",
+        "end": "2026-10-04T09:00:00Z"
       }
     ],
-    "cost": "Free",
-    "is_guide": false
+    "source": {
+      "name": "Water Supplies Department",
+      "url": "https://www.wsd.gov.hk/"
+    },
+    "location": {
+      "district": "Southern",
+      "venue": "Tai Tam Country Park",
+      "address": "Tai Tam Reservoir Road"
+    },
+    "url": "https://www.wsd.gov.hk/en/home/index.html"
   },
   {
     "id": "act-041",
-    "title": "Cantonese-English Language Exchange Meetup — Wan Chai",
-    "title_alt": "灣仔粵語英語語言交換聚會",
-    "description": "Weekly friendly table conversation matching international students with local bilingual youth over coffee.",
-    "description_alt": "每週舉辦的輕鬆語言文化交流小組，安排非本地學生與本地雙語青年同桌交流，練習實用廣東話。",
-    "lang": "bilingual",
-    "district": "Wan Chai",
-    "location": "Common Room Cafe, 15 Hennessy Road, Wan Chai",
-    "location_alt": "灣仔軒尼詩道15號",
-    "source": "Meetup HK",
-    "url": "https://www.meetup.com/",
+    "title": "灣仔粵語英語語言交換聚會",
+    "title_en": "Cantonese-English Language Exchange Meetup — Wan Chai",
+    "lang": "zh",
     "tags": [
       "community",
       "language-exchange",
@@ -1170,26 +1163,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "15:00",
-        "end_time": "17:00"
+        "start": "2026-10-03T07:00:00Z",
+        "end": "2026-10-03T09:00:00Z"
       }
     ],
-    "cost": "Cost of a beverage (~HKD 40)",
-    "is_guide": false
+    "source": {
+      "name": "Hong Kong Language Exchange Group",
+      "url": "https://www.meetup.com/"
+    },
+    "location": {
+      "district": "Wan Chai",
+      "venue": "Common Room Cafe",
+      "address": "15 Hennessy Road, Wan Chai"
+    },
+    "url": "https://www.meetup.com/"
   },
   {
     "id": "act-042",
-    "title": "Beginner Ceramic Pottery Workshop — St. James' Creation",
-    "title_alt": "聖雅各福群會土作坊陶藝拉坯體驗工作坊",
-    "description": "Hand-building and wheel-throwing ceramic workshop led by local artisan instructors in a social enterprise setting.",
-    "description_alt": "由社會企業工藝導師帶領的陶藝拉坯與捏陶手作工作坊，學習製作屬於自己的陶瓷杯或器皿。",
-    "lang": "bilingual",
-    "district": "Wan Chai",
-    "location": "85 Stone Nullah Lane, Wan Chai",
-    "location_alt": "灣仔石水渠街85號",
-    "source": "St. James' Settlement",
-    "url": "https://sjc.sjs.org.hk/",
+    "title": "聖雅各福群會土作坊陶藝拉坯體驗工作坊",
+    "title_en": "Beginner Ceramic Pottery Workshop — St. James' Creation",
+    "lang": "zh",
     "tags": [
       "community",
       "crafts",
@@ -1199,26 +1192,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "14:00",
-        "end_time": "16:30"
+        "start": "2026-10-03T06:00:00Z",
+        "end": "2026-10-03T08:30:00Z"
       }
     ],
-    "cost": "HKD 280 (materials included)",
-    "is_guide": false
+    "source": {
+      "name": "St. James' Settlement",
+      "url": "https://sjs.org.hk/"
+    },
+    "location": {
+      "district": "Wan Chai",
+      "venue": "St. James' Creation",
+      "address": "85 Stone Nullah Lane, Wan Chai"
+    },
+    "url": "https://sjc.sjs.org.hk/"
   },
   {
     "id": "act-043",
-    "title": "International Student Board Games Social — Mong Kok",
-    "title_alt": "旺角國際學生桌遊桌上遊戲同樂日",
-    "description": "Casual Saturday games gathering featuring over 300 modern board games with English and bilingual rule explainers.",
-    "description_alt": "藏有超過300款中英雙語派對與策略桌上遊戲，設有專業店員教學，適合同學結伴認識新朋友。",
-    "lang": "bilingual",
-    "district": "Yau Tsim Mong",
-    "location": "Jolly Thinkers, 11/F, 240 Sai Yeung Choi Street South, Mong Kok",
-    "location_alt": "旺角西洋菜南街240號11樓",
-    "source": "Jolly Thinkers",
-    "url": "https://www.facebook.com/jollythinkers/",
+    "title": "旺角國際學生桌遊桌上遊戲同樂日",
+    "title_en": "International Student Board Games Social — Mong Kok",
+    "lang": "zh",
     "tags": [
       "community",
       "board-games",
@@ -1228,26 +1221,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "19:00",
-        "end_time": "22:30"
+        "start": "2026-10-03T11:00:00Z",
+        "end": "2026-10-03T14:30:00Z"
       }
     ],
-    "cost": "HKD 75 / session (includes 1 drink)",
-    "is_guide": false
+    "source": {
+      "name": "Jolly Thinkers Board Game Cafe",
+      "url": "https://www.jolly-thinkers.com/"
+    },
+    "location": {
+      "district": "Yau Tsim Mong",
+      "venue": "Jolly Thinkers",
+      "address": "11/F, 240 Sai Yeung Choi Street South, Mong Kok"
+    },
+    "url": "https://www.facebook.com/jollythinkers/"
   },
   {
     "id": "act-044",
-    "title": "Community Coastal Clean-up Volunteer Day — Lung Kwu Tan",
-    "title_alt": "龍鼓灘海岸清潔志願者義工活動",
-    "description": "Join local environmental volunteer teams to remove plastic waste from natural beaches and learn about marine ecology.",
-    "description_alt": "參與本地環保組織舉辦的週末海灘清潔行動，共同清理海岸垃圾，認識香港海洋微塑膠問題。",
-    "lang": "bilingual",
-    "district": "Tuen Mun",
-    "location": "Lung Kwu Tan Beach, Tuen Mun",
-    "location_alt": "屯門龍鼓灘",
-    "source": "OPCF",
-    "url": "https://www.opcf.org.hk/",
+    "title": "龍鼓灘海岸清潔志願者義工活動",
+    "title_en": "Community Coastal Clean-up Volunteer Day — Lung Kwu Tan",
+    "lang": "zh",
     "tags": [
       "community",
       "volunteering",
@@ -1257,26 +1250,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "09:00",
-        "end_time": "12:30"
+        "start": "2026-10-04T01:00:00Z",
+        "end": "2026-10-04T04:30:00Z"
       }
     ],
-    "cost": "Free",
-    "is_guide": false
+    "source": {
+      "name": "Ocean Park Conservation Foundation Hong Kong",
+      "url": "https://www.opcf.org.hk/"
+    },
+    "location": {
+      "district": "Tuen Mun",
+      "venue": "Lung Kwu Tan Beach",
+      "address": "Tuen Mun"
+    },
+    "url": "https://www.opcf.org.hk/"
   },
   {
     "id": "act-045",
-    "title": "Traditional Hong Kong Neon Sign Making Workshop",
-    "title_alt": "傳統香港霓虹燈手作體驗工作坊",
-    "description": "Learn the history of Hong Kong's fading neon craft and create your own customized illuminated mini-sign using EL-wire.",
-    "description_alt": "深入了解香港即將消失的霓虹夜景招牌歷史，在導師指導下利用冷光線親手製作屬於自己的微型霓虹燈牌。",
-    "lang": "bilingual",
-    "district": "Kwun Tong",
-    "location": "Kwun Tong Industrial Centre, 436 Kwun Tong Road",
-    "location_alt": "觀塘道436號觀塘工業中心",
-    "source": "Myosotis Studio",
-    "url": "https://www.instagram.com/myosotis_flower/",
+    "title": "傳統香港霓虹燈手作體驗工作坊",
+    "title_en": "Traditional Hong Kong Neon Sign Making Workshop",
+    "lang": "zh",
     "tags": [
       "crafts",
       "workshop",
@@ -1286,26 +1279,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "14:30",
-        "end_time": "17:00"
+        "start": "2026-10-04T06:30:00Z",
+        "end": "2026-10-04T09:00:00Z"
       }
     ],
-    "cost": "HKD 320",
-    "is_guide": false
+    "source": {
+      "name": "Myosotis Flower & Ceramic Studio",
+      "url": "https://www.myosotis.hk/"
+    },
+    "location": {
+      "district": "Kwun Tong",
+      "venue": "Kwun Tong Industrial Centre",
+      "address": "436 Kwun Tong Road"
+    },
+    "url": "https://www.instagram.com/myosotis_flower/"
   },
   {
     "id": "act-046",
-    "title": "MakerBay Digital Fabrication & 3D Printing Induction",
-    "title_alt": "MakerBay 創客空間3D打印與激光切割初階導引",
-    "description": "Hands-on maker induction session introducing laser cutting, 3D printing, and rapid prototyping for student inventors.",
-    "description_alt": "為創客與學生設計的入門工作坊，認識激光切割機、3D立體打印機操作及快速原型製作概念。",
-    "lang": "bilingual",
-    "district": "Tsuen Wan",
-    "location": "The Mills, 45 Pak Tin Par Street, Tsuen Wan",
-    "location_alt": "荃灣白田壩街45號南豐紗廠",
-    "source": "MakerBay",
-    "url": "https://www.makerbay.org/",
+    "title": "MakerBay 創客空間3D打印與激光切割初階導引",
+    "title_en": "MakerBay Digital Fabrication & 3D Printing Induction",
+    "lang": "zh",
     "tags": [
       "community",
       "workshop",
@@ -1315,26 +1308,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "11:00",
-        "end_time": "13:00"
+        "start": "2026-10-03T03:00:00Z",
+        "end": "2026-10-03T05:00:00Z"
       }
     ],
-    "cost": "HKD 150",
-    "is_guide": false
+    "source": {
+      "name": "MakerBay Foundation",
+      "url": "https://www.makerbay.org/"
+    },
+    "location": {
+      "district": "Tsuen Wan",
+      "venue": "The Mills",
+      "address": "45 Pak Tin Par Street, Tsuen Wan"
+    },
+    "url": "https://www.makerbay.org/"
   },
   {
     "id": "act-047",
-    "title": "Volunteering with Crossroads Foundation — Global Village",
-    "title_alt": "國際十字路會物資整理與體驗志工日",
-    "description": "Sort donated humanitarian goods and participate in empathy simulation workshops at the former Perowne Barracks in Tuen Mun.",
-    "description_alt": "在屯門前軍營參與人道救援物資分類包裝志願服務，並可參與國際貧困模擬工作坊。",
-    "lang": "bilingual",
-    "district": "Tuen Mun",
-    "location": "Crossroads Village, 2 Castle Peak Road, Tuen Mun",
-    "location_alt": "屯門青山公路2號十字路會村",
-    "source": "Crossroads Foundation",
-    "url": "https://www.crossroads.org.hk/",
+    "title": "國際十字路會物資整理與體驗志工日",
+    "title_en": "Volunteering with Crossroads Foundation — Global Village",
+    "lang": "zh",
     "tags": [
       "community",
       "volunteering",
@@ -1344,26 +1337,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "10:00",
-        "end_time": "16:00"
+        "start": "2026-10-03T02:00:00Z",
+        "end": "2026-10-03T08:00:00Z"
       }
     ],
-    "cost": "Free",
-    "is_guide": false
+    "source": {
+      "name": "Crossroads Foundation",
+      "url": "https://www.crossroads.org.hk/"
+    },
+    "location": {
+      "district": "Tuen Mun",
+      "venue": "Crossroads Village",
+      "address": "2 Castle Peak Road, Tuen Mun"
+    },
+    "url": "https://www.crossroads.org.hk/"
   },
   {
     "id": "act-048",
-    "title": "Hong Kong Central Library Monthly Book Talk & Reading Club",
-    "title_alt": "香港中央圖書館月度讀書會與專題講座",
-    "description": "Engage in literary discussions focusing on Hong Kong local literature and Asian urban sociology in Causeway Bay.",
-    "description_alt": "位於銅鑼灣的中央圖書館主辦的讀書分享會，圍繞香港本土歷史小說、都市社會學及亞洲文學展開討論。",
-    "lang": "bilingual",
-    "district": "Wan Chai",
-    "location": "66 Causeway Road, Causeway Bay",
-    "location_alt": "銅鑼灣高士威道66號香港中央圖書館",
-    "source": "HKPL",
-    "url": "https://www.hkpl.gov.hk/",
+    "title": "香港中央圖書館月度讀書會與專題講座",
+    "title_en": "Hong Kong Central Library Monthly Book Talk & Reading Club",
+    "lang": "zh",
     "tags": [
       "community",
       "library",
@@ -1373,26 +1366,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "14:30",
-        "end_time": "16:00"
+        "start": "2026-10-03T06:30:00Z",
+        "end": "2026-10-03T08:00:00Z"
       }
     ],
-    "cost": "Free",
-    "is_guide": false
+    "source": {
+      "name": "Hong Kong Public Libraries",
+      "url": "https://www.hkpl.gov.hk/"
+    },
+    "location": {
+      "district": "Wan Chai",
+      "venue": null,
+      "address": "66 Causeway Road, Causeway Bay"
+    },
+    "url": "https://www.hkpl.gov.hk/"
   },
   {
     "id": "act-049",
-    "title": "The Mills Textile Heritage Tour & Sustainable Fashion Walk",
-    "title_alt": "南豐紗廠紡織文化導賞與永續時尚巡禮",
-    "description": "Guided walking tour through Nan Fung Cotton Mills revitalization, CHAT (Centre for Heritage, Arts and Textile).",
-    "description_alt": "走進由昔日大型棉紡織廠活化而成的南豐紗廠，參觀六廠紡織文化藝術館（CHAT），回顧香港紡織工業黃金時代。",
-    "lang": "bilingual",
-    "district": "Tsuen Wan",
-    "location": "45 Pak Tin Par Street, Tsuen Wan",
-    "location_alt": "荃灣白田壩街45號南豐紗廠",
-    "source": "CHAT / The Mills",
-    "url": "https://www.mill6chat.org/",
+    "title": "南豐紗廠紡織文化導賞與永續時尚巡禮",
+    "title_en": "The Mills Textile Heritage Tour & Sustainable Fashion Walk",
+    "lang": "zh",
     "tags": [
       "heritage",
       "arts",
@@ -1402,26 +1395,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "14:00",
-        "end_time": "15:30"
+        "start": "2026-10-04T06:00:00Z",
+        "end": "2026-10-04T07:30:00Z"
       }
     ],
-    "cost": "Free",
-    "is_guide": false
+    "source": {
+      "name": "Centre for Heritage, Arts and Textile (CHAT)",
+      "url": "https://www.mill6chat.org/"
+    },
+    "location": {
+      "district": "Tsuen Wan",
+      "venue": null,
+      "address": "45 Pak Tin Par Street, Tsuen Wan"
+    },
+    "url": "https://www.mill6chat.org/"
   },
   {
     "id": "act-050",
-    "title": "Bouldering & Climbing Social Session — Verm City",
-    "title_alt": "鰂魚涌室內抱石攀岩社交攀爬時段",
-    "description": "Spacious commercial bouldering gym in Quarry Bay with climbing problems from V0 to V8 and social climbing groups.",
-    "description_alt": "位於鰂魚涌的室內大型抱石館，路線豐富適合初學者至進階攀登者，常有大專學生社團交流聚會。",
-    "lang": "bilingual",
-    "district": "Eastern",
-    "location": "4/F, Kodak House II, 321 Java Road, Quarry Bay",
-    "location_alt": "鰂魚涌渣華道321號柯達大廈二期4樓",
-    "source": "Verm City",
-    "url": "https://vermcity.com/",
+    "title": "鰂魚涌室內抱石攀岩社交攀爬時段",
+    "title_en": "Bouldering & Climbing Social Session — Verm City",
+    "lang": "zh",
     "tags": [
       "sports",
       "bouldering",
@@ -1431,26 +1424,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "friday",
-        "start_time": "19:00",
-        "end_time": "22:00"
+        "start": "2026-10-02T11:00:00Z",
+        "end": "2026-10-02T14:00:00Z"
       }
     ],
-    "cost": "HKD 200–250 (Day pass)",
-    "is_guide": false
+    "source": {
+      "name": "Verm City Bouldering",
+      "url": "https://www.vermcity.com/"
+    },
+    "location": {
+      "district": "Eastern",
+      "venue": "Verm City",
+      "address": "4/F, Kodak House II, 321 Java Road, Quarry Bay"
+    },
+    "url": "https://vermcity.com/"
   },
   {
     "id": "act-051",
-    "title": "Temple Street Night Market & Street Food Evening Walk",
-    "title_alt": "廟街夜市大排檔與特色地道街頭小食巡禮",
-    "description": "Vibrant night bazaar in Yau Ma Tei featuring claypot rice, seafood dai pai dongs, open-air Cantonese opera, and souvenirs.",
-    "description_alt": "油麻地經典夜市，漫步於煲仔飯香、海鮮大牌檔、街頭粵劇榕樹頭點唱以及復古小攤檔之間。",
-    "lang": "bilingual",
-    "district": "Yau Tsim Mong",
-    "location": "Temple Street, Yau Ma Tei, Kowloon",
-    "location_alt": "九龍油麻地廟街",
-    "source": "Discover Hong Kong",
-    "url": "https://www.discoverhongkong.com/eng/explore/neighborhoods/west-kowloon.html",
+    "title": "廟街夜市大排檔與特色地道街頭小食巡禮",
+    "title_en": "Temple Street Night Market & Street Food Evening Walk",
+    "lang": "zh",
     "tags": [
       "food",
       "night-market",
@@ -1460,26 +1453,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "18:30",
-        "end_time": "21:30"
+        "start": "2026-10-03T10:30:00Z",
+        "end": "2026-10-03T13:30:00Z"
       }
     ],
-    "cost": "Pay as you eat (~HKD 60–120)",
-    "is_guide": false
+    "source": {
+      "name": "Hong Kong Tourism Board",
+      "url": "https://www.discoverhongkong.com/"
+    },
+    "location": {
+      "district": "Yau Tsim Mong",
+      "venue": "Temple Street",
+      "address": "Yau Ma Tei, Kowloon"
+    },
+    "url": "https://www.discoverhongkong.com/eng/explore/neighborhoods/west-kowloon.html"
   },
   {
     "id": "act-052",
-    "title": "Sham Shui Po Electronics & Fabric Market Thrift Walk",
-    "title_alt": "深水埗黃金電腦商場與鴨寮街布藝尋寶散策",
-    "description": "Explore electronics paradise Apliu Street, Golden Computer Arcade, and traditional fabric & button shops on Yu Chau Street.",
-    "description_alt": "探索全港電子零件與數碼勝地鴨寮街、黃金電腦商場，以及汝州街傳統手作花邊鈕扣特色街區。",
-    "lang": "bilingual",
-    "district": "Sham Shui Po",
-    "location": "Apliu Street & Fuk Wa Street, Sham Shui Po",
-    "location_alt": "深水埗鴨寮街及福華街一帶",
-    "source": "Discover Hong Kong",
-    "url": "https://www.discoverhongkong.com/eng/explore/neighborhoods/sham-shui-po.html",
+    "title": "深水埗黃金電腦商場與鴨寮街布藝尋寶散策",
+    "title_en": "Sham Shui Po Electronics & Fabric Market Thrift Walk",
+    "lang": "zh",
     "tags": [
       "shopping",
       "electronics",
@@ -1489,26 +1482,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "13:30",
-        "end_time": "16:30"
+        "start": "2026-10-03T05:30:00Z",
+        "end": "2026-10-03T08:30:00Z"
       }
     ],
-    "cost": "Free walk-in",
-    "is_guide": false
+    "source": {
+      "name": "Hong Kong Tourism Board",
+      "url": "https://www.discoverhongkong.com/"
+    },
+    "location": {
+      "district": "Sham Shui Po",
+      "venue": "Apliu Street & Fuk Wa Street",
+      "address": "Sham Shui Po"
+    },
+    "url": "https://www.discoverhongkong.com/eng/explore/neighborhoods/sham-shui-po.html"
   },
   {
     "id": "act-053",
-    "title": "Wong Tai Sin Temple Architecture & Taoist Culture Tour",
-    "title_alt": "黃大仙祠道教建築與求籤文化探秘",
-    "description": "Visit Hong Kong's famous three-religions shrine, renowned for its ornate Chinese imperial architecture and traditional divination stalls.",
-    "description_alt": "參觀香火鼎盛的嗇色園黃大仙祠，欣賞金碧輝煌的九龍壁與傳統宮殿式建築，體驗香港求籤解籤文化。",
-    "lang": "bilingual",
-    "district": "Wong Tai Sin",
-    "location": "2 Chuk Yuen Village, Wong Tai Sin",
-    "location_alt": "黃大仙竹園村2號嗇色園黃大仙祠",
-    "source": "Sik Sik Yuen",
-    "url": "https://www.siksikyuen.org.hk/",
+    "title": "黃大仙祠道教建築與求籤文化探秘",
+    "title_en": "Wong Tai Sin Temple Architecture & Taoist Culture Tour",
+    "lang": "zh",
     "tags": [
       "culture",
       "temple",
@@ -1518,26 +1511,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "10:00",
-        "end_time": "12:00"
+        "start": "2026-10-04T02:00:00Z",
+        "end": "2026-10-04T04:00:00Z"
       }
     ],
-    "cost": "Free entry",
-    "is_guide": false
+    "source": {
+      "name": "Sik Sik Yuen Wong Tai Sin Temple",
+      "url": "https://www.siksikyuen.org.hk/"
+    },
+    "location": {
+      "district": "Wong Tai Sin",
+      "venue": null,
+      "address": "2 Chuk Yuen Village, Wong Tai Sin"
+    },
+    "url": "https://www.siksikyuen.org.hk/"
   },
   {
     "id": "act-054",
-    "title": "Tai O Fishing Village Stilt House & Dolphin Boat Excursion",
-    "title_alt": "大澳水鄉棚屋風情與中華白海豚出海尋訪",
-    "description": "Historic stilt village known as the 'Venice of the East' with traditional shrimp paste factories and Chinese white dolphin boat tours.",
-    "description_alt": "漫步大澳棚屋水上聚落，探訪百年傳統蝦膏蝦醬工場，並乘駁艇出海尋找中華白海豚蹤影。",
-    "lang": "bilingual",
-    "district": "Islands",
-    "location": "Tai O Village, Lantau Island (Bus 11 from Tung Chung MTR)",
-    "location_alt": "大嶼山大澳漁村",
-    "source": "Discover Hong Kong",
-    "url": "https://www.discoverhongkong.com/eng/explore/great-outdoors/tai-o.html",
+    "title": "大澳水鄉棚屋風情與中華白海豚出海尋訪",
+    "title_en": "Tai O Fishing Village Stilt House & Dolphin Boat Excursion",
+    "lang": "zh",
     "tags": [
       "heritage",
       "boat-tour",
@@ -1547,26 +1540,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "10:30",
-        "end_time": "16:00"
+        "start": "2026-10-03T02:30:00Z",
+        "end": "2026-10-03T08:00:00Z"
       }
     ],
-    "cost": "HKD 30–50 for boat excursion",
-    "is_guide": false
+    "source": {
+      "name": "Hong Kong Tourism Board",
+      "url": "https://www.discoverhongkong.com/"
+    },
+    "location": {
+      "district": "Islands",
+      "venue": "Tai O Village",
+      "address": "Lantau Island (Bus 11 from Tung Chung MTR)"
+    },
+    "url": "https://www.discoverhongkong.com/eng/explore/great-outdoors/tai-o.html"
   },
   {
     "id": "act-055",
-    "title": "Lei Yue Mun Historic Seafood Village & Old Quarry Walk",
-    "title_alt": "鯉魚門海鮮村古樸漁村與舊石礦場廢墟探索",
-    "description": "Quaint village with centuries of maritime heritage, fresh seafood stalls, and the scenic Lei Yue Mun Lighthouse and stone quarry.",
-    "description_alt": "擁有數百年石礦及捕魚歷史的鯉魚門，漫步海鮮小街、天后古廟及舊石礦場壯闊水邊廢墟岩壁。",
-    "lang": "bilingual",
-    "district": "Kwun Tong",
-    "location": "Lei Yue Mun, Yau Tong, Kowloon",
-    "location_alt": "九龍油塘鯉魚門",
-    "source": "Discover Hong Kong",
-    "url": "https://www.discoverhongkong.com/eng/explore/neighborhoods/kowloon-east.html",
+    "title": "鯉魚門海鮮村古樸漁村與舊石礦場廢墟探索",
+    "title_en": "Lei Yue Mun Historic Seafood Village & Old Quarry Walk",
+    "lang": "zh",
     "tags": [
       "heritage",
       "seafood",
@@ -1576,26 +1569,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "15:30",
-        "end_time": "18:30"
+        "start": "2026-10-04T07:30:00Z",
+        "end": "2026-10-04T10:30:00Z"
       }
     ],
-    "cost": "Free walk-in",
-    "is_guide": false
+    "source": {
+      "name": "Hong Kong Tourism Board",
+      "url": "https://www.discoverhongkong.com/"
+    },
+    "location": {
+      "district": "Kwun Tong",
+      "venue": "Lei Yue Mun",
+      "address": "Yau Tong, Kowloon"
+    },
+    "url": "https://www.discoverhongkong.com/eng/explore/neighborhoods/kowloon-east.html"
   },
   {
     "id": "act-056",
-    "title": "Flower Market & Yuen Po Bird Garden Morning Stroll",
-    "title_alt": "旺角花墟與園蒲街雀鳥花園悠閒晨間漫步",
-    "description": "Fragrant morning stroll through Mong Kok's bustling exotic plant stalls and traditional Chinese songbird pavilions.",
-    "description_alt": "清晨造訪芳香四溢的旺角花墟，並漫步至園蒲街中式庭園風格的雀鳥花園，感受老香港悠閒情調。",
-    "lang": "bilingual",
-    "district": "Yau Tsim Mong",
-    "location": "Flower Market Road, Prince Edward, Mong Kok",
-    "location_alt": "旺角太子花墟道及園蒲街",
-    "source": "Discover Hong Kong",
-    "url": "https://www.discoverhongkong.com/",
+    "title": "旺角花墟與園蒲街雀鳥花園悠閒晨間漫步",
+    "title_en": "Flower Market & Yuen Po Bird Garden Morning Stroll",
+    "lang": "zh",
     "tags": [
       "nature",
       "market",
@@ -1605,26 +1598,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "09:30",
-        "end_time": "11:30"
+        "start": "2026-10-03T01:30:00Z",
+        "end": "2026-10-03T03:30:00Z"
       }
     ],
-    "cost": "Free",
-    "is_guide": false
+    "source": {
+      "name": "Hong Kong Tourism Board",
+      "url": "https://www.discoverhongkong.com/"
+    },
+    "location": {
+      "district": "Yau Tsim Mong",
+      "venue": "Flower Market Road",
+      "address": "Prince Edward, Mong Kok"
+    },
+    "url": "https://www.discoverhongkong.com/"
   },
   {
     "id": "act-057",
-    "title": "Kowloon Walled City Park Historical Garden Tour",
-    "title_alt": "九龍寨城公園江南園林與昔日寨城遺蹟探索",
-    "description": "Traditional Jiangnan garden built over the ruins of the infamous Kowloon Walled City, preserving the Yamen and cannons.",
-    "description_alt": "在昔日傳奇九龍寨城舊址上建立的典雅江南園林，完整保留清代大鵬協府衙門古蹟、古炮及微縮模型。",
-    "lang": "bilingual",
-    "district": "Kowloon City",
-    "location": "Tung Tsing Road, Kowloon City",
-    "location_alt": "九龍城東正道九龍寨城公園",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/en/parks/kwcp/index.html",
+    "title": "九龍寨城公園江南園林與昔日寨城遺蹟探索",
+    "title_en": "Kowloon Walled City Park Historical Garden Tour",
+    "lang": "zh",
     "tags": [
       "heritage",
       "history",
@@ -1634,26 +1627,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "14:00",
-        "end_time": "16:00"
+        "start": "2026-10-04T06:00:00Z",
+        "end": "2026-10-04T08:00:00Z"
       }
     ],
-    "cost": "Free",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Kowloon City",
+      "venue": "Tung Tsing Road",
+      "address": "Kowloon City"
+    },
+    "url": "https://www.lcsd.gov.hk/en/parks/kwcp/index.html"
   },
   {
     "id": "act-058",
-    "title": "Ping Shan Heritage Trail Ancient Ancestral Halls Walk",
-    "title_alt": "屏山文物徑鄧氏宗祠與聚星樓歷史步道",
-    "description": "Hong Kong's first heritage trail visiting the 600-year-old Tang Clan Ancestral Hall and the ancient Tsui Sing Lau Pagoda.",
-    "description_alt": "香港首條文物徑，沿途探訪新界鄧氏宗族擁有600年歷史的祠堂、古廟及香港唯一現存古塔聚星樓。",
-    "lang": "bilingual",
-    "district": "Yuen Long",
-    "location": "Starts at Tsui Sing Lau Pagoda, Tin Shui Wai MTR Station Exit E3",
-    "location_alt": "天水圍港鐵站E3出口聚星樓起步",
-    "source": "AMO",
-    "url": "https://www.amo.gov.hk/en/heritage-trails/ping-shan-heritage-trail/index.html",
+    "title": "屏山文物徑鄧氏宗祠與聚星樓歷史步道",
+    "title_en": "Ping Shan Heritage Trail Ancient Ancestral Halls Walk",
+    "lang": "zh",
     "tags": [
       "heritage",
       "history",
@@ -1663,26 +1656,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "10:00",
-        "end_time": "13:00"
+        "start": "2026-10-03T02:00:00Z",
+        "end": "2026-10-03T05:00:00Z"
       }
     ],
-    "cost": "Free",
-    "is_guide": false
+    "source": {
+      "name": "Antiquities and Monuments Office",
+      "url": "https://www.amo.gov.hk/"
+    },
+    "location": {
+      "district": "Yuen Long",
+      "venue": "Starts at Tsui Sing Lau Pagoda",
+      "address": "Tin Shui Wai MTR Station Exit E3"
+    },
+    "url": "https://www.amo.gov.hk/en/heritage-trails/ping-shan-heritage-trail/index.html"
   },
   {
     "id": "act-059",
-    "title": "Kowloon City Little Thailand Culinary Exploration",
-    "title_alt": "九龍城「小泰國」地道泰式美食與香料店漫遊",
-    "description": "Explore Hong Kong's culinary hub for authentic Thai groceries, lemongrass grilled skewers, boat noodles, and mango sticky rice.",
-    "description_alt": "漫步九龍城著名泰國文化商圈，品嚐地道泰國船麵、惹味炭火串燒、芒果糯米飯及選購進口香料食材。",
-    "lang": "bilingual",
-    "district": "Kowloon City",
-    "location": "South Wall Road & Nga Tsin Wai Road, Kowloon City",
-    "location_alt": "九龍城南角道及衙前圍道一帶",
-    "source": "Discover Hong Kong",
-    "url": "https://www.discoverhongkong.com/",
+    "title": "九龍城「小泰國」地道泰式美食與香料店漫遊",
+    "title_en": "Kowloon City Little Thailand Culinary Exploration",
+    "lang": "zh",
     "tags": [
       "food",
       "thai-food",
@@ -1691,26 +1684,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "friday",
-        "start_time": "18:30",
-        "end_time": "21:00"
+        "start": "2026-10-02T10:30:00Z",
+        "end": "2026-10-02T13:00:00Z"
       }
     ],
-    "cost": "Pay as you eat (~HKD 80–150)",
-    "is_guide": false
+    "source": {
+      "name": "Hong Kong Tourism Board",
+      "url": "https://www.discoverhongkong.com/"
+    },
+    "location": {
+      "district": "Kowloon City",
+      "venue": "South Wall Road & Nga Tsin Wai Road",
+      "address": "Kowloon City"
+    },
+    "url": "https://www.discoverhongkong.com/"
   },
   {
     "id": "act-060",
-    "title": "Chungking Mansions Cultural Tour & South Asian Cuisine",
-    "title_alt": "重慶大廈多元族裔文化漫遊與正宗南亞咖哩品嚐",
-    "description": "Discover the global micro-community inside Tsim Sha Tsui's Chungking Mansions and enjoy authentic Pakistani biryani and samosas.",
-    "description_alt": "走訪尖沙咀重慶大廈這座世界級多元文化微縮聚落，品嚐正宗印度脆角、巴基斯坦香料飯及拉茶。",
-    "lang": "bilingual",
-    "district": "Yau Tsim Mong",
-    "location": "36-44 Nathan Road, Tsim Sha Tsui",
-    "location_alt": "尖沙咀彌敦道36-44號重慶大廈",
-    "source": "Discover Hong Kong",
-    "url": "https://www.discoverhongkong.com/",
+    "title": "重慶大廈多元族裔文化漫遊與正宗南亞咖哩品嚐",
+    "title_en": "Chungking Mansions Cultural Tour & South Asian Cuisine",
+    "lang": "zh",
     "tags": [
       "culture",
       "food",
@@ -1719,26 +1712,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "12:00",
-        "end_time": "14:30"
+        "start": "2026-10-03T04:00:00Z",
+        "end": "2026-10-03T06:30:00Z"
       }
     ],
-    "cost": "Pay as you eat (~HKD 60–100)",
-    "is_guide": false
+    "source": {
+      "name": "Hong Kong Tourism Board",
+      "url": "https://www.discoverhongkong.com/"
+    },
+    "location": {
+      "district": "Yau Tsim Mong",
+      "venue": null,
+      "address": "36-44 Nathan Road, Tsim Sha Tsui"
+    },
+    "url": "https://www.discoverhongkong.com/"
   },
   {
     "id": "act-061",
-    "title": "Guide: How to Register & Book Sports Courts on LCSD SmartPLAY",
-    "title_alt": "指南：康文署 SmartPLAY 康體通系統註冊與訂場教學",
-    "description": "Step-by-step walkthrough for international students on registering an iAM Smart account, paying deposits, and booking badminton or tennis courts.",
-    "description_alt": "針對非本地學生的實用教學：手把手教你開立「智方便」或康體通用戶、身份認證、場地預訂及電子繳費流程。",
-    "lang": "bilingual",
-    "district": "Central & Western",
-    "location": "Online portal & District SmartPLAY kiosks",
-    "location_alt": "網上預訂系統及各大體育館自助服務站",
-    "source": "SmartPLAY",
-    "url": "https://www.smartplay.lcsd.gov.hk/",
+    "title": "指南：康文署 SmartPLAY 康體通系統註冊與訂場教學",
+    "title_en": "Guide: How to Register & Book Sports Courts on LCSD SmartPLAY",
+    "lang": "zh",
     "tags": [
       "guide",
       "lcsd",
@@ -1748,26 +1741,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "monday",
-        "start_time": "00:00",
-        "end_time": "23:59"
+        "start": "2026-10-04T16:00:00Z",
+        "end": "2026-10-05T15:59:00Z"
       }
     ],
-    "cost": "Free guide",
-    "is_guide": true
+    "source": {
+      "name": "LCSD SmartPLAY",
+      "url": "https://www.smartplay.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Central & Western",
+      "venue": "Online portal & District SmartPLAY kiosks",
+      "address": null
+    },
+    "url": "https://www.smartplay.lcsd.gov.hk/"
   },
   {
     "id": "act-062",
-    "title": "Guide: Getting a Public Library Card for University Students",
-    "title_alt": "指南：大專學生如何辦理香港公共圖書館圖書證與電子資源開通",
-    "description": "How to register your Hong Kong ID or student visa at any public library branch to access physical books, digital academic databases, and study carrels.",
-    "description_alt": "憑香港身份證或學生簽證在全港公共圖書館辦理讀者證，免費借閱實體書籍及使用巨量電子學術數據庫資源。",
-    "lang": "bilingual",
-    "district": "Wan Chai",
-    "location": "Any Hong Kong Public Library branch",
-    "location_alt": "全港各區公共圖書館分館",
-    "source": "HKPL",
-    "url": "https://www.hkpl.gov.hk/",
+    "title": "指南：大專學生如何辦理香港公共圖書館圖書證與電子資源開通",
+    "title_en": "Guide: Getting a Public Library Card for University Students",
+    "lang": "zh",
     "tags": [
       "guide",
       "library",
@@ -1776,26 +1769,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "monday",
-        "start_time": "00:00",
-        "end_time": "23:59"
+        "start": "2026-10-04T16:00:00Z",
+        "end": "2026-10-05T15:59:00Z"
       }
     ],
-    "cost": "Free",
-    "is_guide": true
+    "source": {
+      "name": "Hong Kong Public Libraries",
+      "url": "https://www.hkpl.gov.hk/"
+    },
+    "location": {
+      "district": "Wan Chai",
+      "venue": "Any Hong Kong Public Library branch",
+      "address": null
+    },
+    "url": "https://www.hkpl.gov.hk/"
   },
   {
     "id": "act-063",
-    "title": "Guide: Hong Kong Summer Hiking Safety & Heat Preparedness",
-    "title_alt": "指南：香港夏季遠足防中暑與登山安全必讀守則",
-    "description": "Crucial guidelines on water calculation (1L per 2 hours), weather warnings (Very Hot Weather, Thunderstorm), and emergency 112/999 protocols.",
-    "description_alt": "香港夏季行山必備指南：包括每小時飲水量計算、酷熱天氣警告應對、防曬防蚊及緊急求救112定位教學。",
-    "lang": "bilingual",
-    "district": "Sai Kung",
-    "location": "All HK Country Parks",
-    "location_alt": "全港各郊野公園",
-    "source": "AFCD",
-    "url": "https://www.hiking.gov.hk/",
+    "title": "指南：香港夏季遠足防中暑與登山安全必讀守則",
+    "title_en": "Guide: Hong Kong Summer Hiking Safety & Heat Preparedness",
+    "lang": "zh",
     "tags": [
       "guide",
       "hiking",
@@ -1804,26 +1797,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "monday",
-        "start_time": "00:00",
-        "end_time": "23:59"
+        "start": "2026-10-04T16:00:00Z",
+        "end": "2026-10-05T15:59:00Z"
       }
     ],
-    "cost": "Free",
-    "is_guide": true
+    "source": {
+      "name": "Agriculture, Fisheries and Conservation Department",
+      "url": "https://www.afcd.gov.hk/"
+    },
+    "location": {
+      "district": "Sai Kung",
+      "venue": "All HK Country Parks",
+      "address": null
+    },
+    "url": "https://www.hiking.gov.hk/"
   },
   {
     "id": "act-064",
-    "title": "Guide: Student Octopus Card Application & Public Transport Fare Concessions",
-    "title_alt": "指南：大專全日制學生八達通申請與港鐵半價乘車優惠",
-    "description": "How to verify full-time student status with your university portal and activate the MTR 50% fare reduction concession.",
-    "description_alt": "非本地全日制學生如何經大學教務處認證申請「個人學生八達通」，享受港鐵半價乘車等專屬優惠。",
-    "lang": "bilingual",
-    "district": "Yau Tsim Mong",
-    "location": "Online via MTR Student Travel Scheme App",
-    "location_alt": "港鐵學生乘車優惠計劃網頁",
-    "source": "MTR",
-    "url": "https://www.mtr.com.hk/en/customer/tickets/student_travel_scheme.html",
+    "title": "指南：大專全日制學生八達通申請與港鐵半價乘車優惠",
+    "title_en": "Guide: Student Octopus Card Application & Public Transport Fare Concessions",
+    "lang": "zh",
     "tags": [
       "guide",
       "transport",
@@ -1832,26 +1825,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "monday",
-        "start_time": "00:00",
-        "end_time": "23:59"
+        "start": "2026-10-04T16:00:00Z",
+        "end": "2026-10-05T15:59:00Z"
       }
     ],
-    "cost": "HKD 90 (deposit & processing fee)",
-    "is_guide": true
+    "source": {
+      "name": "MTR Corporation",
+      "url": "https://www.mtr.com.hk/"
+    },
+    "location": {
+      "district": "Yau Tsim Mong",
+      "venue": "Online via MTR Student Travel Scheme App",
+      "address": null
+    },
+    "url": "https://www.mtr.com.hk/en/customer/tickets/student_travel_scheme.html"
   },
   {
     "id": "act-065",
-    "title": "Badminton Court Booking — Hong Kong Park Sports Centre",
-    "title_alt": "香港公園體育館羽毛球場租訂",
-    "description": "Standard public recreational facility provided by LCSD at Hong Kong Park Sports Centre in Central & Western. Air-conditioned indoor badminton courts bookable 7 days in advance via SmartPLAY during standard opening hours (07:00–23:00).",
-    "description_alt": "康文署於Central & Western香港公園體育館提供的標準康體設施。設有空調的室內羽毛球場，可於開放時間（07:00–23:00）透過 SmartPLAY 系統提前7天預約。",
-    "lang": "bilingual",
-    "district": "Central & Western",
-    "location": "Hong Kong Park Sports Centre, 29 Cotton Tree Drive, Central",
-    "location_alt": "中環紅棉路29號香港公園體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#121",
+    "title": "香港公園體育館羽毛球場租訂",
+    "title_en": "Badminton Court Booking — Hong Kong Park Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "badminton",
@@ -1861,26 +1854,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "14:00",
-        "end_time": "16:00"
+        "start": "2026-10-04T06:00:00Z",
+        "end": "2026-10-04T08:00:00Z"
       }
     ],
-    "cost": "HKD 59–118 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Central & Western",
+      "venue": "Hong Kong Park Sports Centre",
+      "address": "29 Cotton Tree Drive, Central"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#121"
   },
   {
     "id": "act-066",
-    "title": "Squash Court Booking — Hong Kong Squash Centre",
-    "title_alt": "香港壁球中心壁球場練習租訂",
-    "description": "Standard public recreational facility provided by LCSD at Hong Kong Squash Centre in Central & Western. Standard indoor squash courts with glass back-walls available for public hire via SmartPLAY during operating hours.",
-    "description_alt": "康文署於Central & Western香港壁球中心提供的標準康體設施。設有玻璃後牆的標準室內壁球場，可於開放時間透過 SmartPLAY 預訂租用。",
-    "lang": "bilingual",
-    "district": "Central & Western",
-    "location": "Hong Kong Squash Centre, 23 Cotton Tree Drive, Central",
-    "location_alt": "中環紅棉路23號香港壁球中心",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#122",
+    "title": "香港壁球中心壁球場練習租訂",
+    "title_en": "Squash Court Booking — Hong Kong Squash Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "squash",
@@ -1890,26 +1883,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "09:00",
-        "end_time": "11:00"
+        "start": "2026-10-03T01:00:00Z",
+        "end": "2026-10-03T03:00:00Z"
       }
     ],
-    "cost": "HKD 27–54 / 30 mins",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Central & Western",
+      "venue": "Hong Kong Squash Centre",
+      "address": "23 Cotton Tree Drive, Central"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#122"
   },
   {
     "id": "act-067",
-    "title": "Squash Court Booking — Sheung Wan Sports Centre",
-    "title_alt": "上環體育館壁球場練習租訂",
-    "description": "Standard public recreational facility provided by LCSD at Sheung Wan Sports Centre in Central & Western. Standard indoor squash courts with glass back-walls available for public hire via SmartPLAY during operating hours.",
-    "description_alt": "康文署於Central & Western上環體育館提供的標準康體設施。設有玻璃後牆的標準室內壁球場，可於開放時間透過 SmartPLAY 預訂租用。",
-    "lang": "bilingual",
-    "district": "Central & Western",
-    "location": "Sheung Wan Sports Centre, 345 Queen's Road Central",
-    "location_alt": "中環皇后大道中345號上環體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#140",
+    "title": "上環體育館壁球場練習租訂",
+    "title_en": "Squash Court Booking — Sheung Wan Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "squash",
@@ -1919,26 +1912,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "10:00",
-        "end_time": "12:00"
+        "start": "2026-10-04T02:00:00Z",
+        "end": "2026-10-04T04:00:00Z"
       }
     ],
-    "cost": "HKD 27–54 / 30 mins",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Central & Western",
+      "venue": "Sheung Wan Sports Centre",
+      "address": "345 Queen's Road Central"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#140"
   },
   {
     "id": "act-068",
-    "title": "Public Fitness Room Session — Smithfield Sports Centre",
-    "title_alt": "士美非路體育館公眾健身室訓練時段",
-    "description": "Standard public recreational facility provided by LCSD at Smithfield Sports Centre in Central & Western. LCSD fitness room equipped with resistance and cardio equipment for registered fitness cardholders during public sessions.",
-    "description_alt": "康文署於Central & Western士美非路體育館提供的標準康體設施。配備心肺功能及阻力器械的康文署健身室，合資格登記人士可於公眾時段入場鍛鍊。",
-    "lang": "bilingual",
-    "district": "Central & Western",
-    "location": "Smithfield Sports Centre, 12K Smithfield, Kennedy Town",
-    "location_alt": "堅尼地城士美菲路12K號士美非路體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#141",
+    "title": "士美非路體育館公眾健身室訓練時段",
+    "title_en": "Public Fitness Room Session — Smithfield Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "fitness",
@@ -1948,26 +1941,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "11:00",
-        "end_time": "13:00"
+        "start": "2026-10-03T03:00:00Z",
+        "end": "2026-10-03T05:00:00Z"
       }
     ],
-    "cost": "HKD 14 / hr (requires LCSD fitness card)",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Central & Western",
+      "venue": "Smithfield Sports Centre",
+      "address": "12K Smithfield, Kennedy Town"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#141"
   },
   {
     "id": "act-069",
-    "title": "Indoor Basketball & Sports Hall Session — Sun Yat Sen Memorial Park Sports Centre",
-    "title_alt": "中山紀念公園體育館室內體育主場籃球時段",
-    "description": "Standard public recreational facility provided by LCSD at Sun Yat Sen Memorial Park Sports Centre in Central & Western. Multi-purpose sports hall configured for basketball during scheduled public sessions or club booking via SmartPLAY.",
-    "description_alt": "康文署於Central & Western中山紀念公園體育館提供的標準康體設施。多用途室內主場，設有標準木地板及籃球設施，可透過 SmartPLAY 預訂時段進行練球或比賽。",
-    "lang": "bilingual",
-    "district": "Central & Western",
-    "location": "Sun Yat Sen Memorial Park Sports Centre, 18 Eastern Street North, Sai Ying Pun",
-    "location_alt": "西營盤東邊街北18號中山紀念公園體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#144",
+    "title": "中山紀念公園體育館室內體育主場籃球時段",
+    "title_en": "Indoor Basketball & Sports Hall Session — Sun Yat Sen Memorial Park Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "basketball",
@@ -1977,26 +1970,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "12:00",
-        "end_time": "14:00"
+        "start": "2026-10-04T04:00:00Z",
+        "end": "2026-10-04T06:00:00Z"
       }
     ],
-    "cost": "HKD 148–296 / hr (Full court booking)",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Central & Western",
+      "venue": "Sun Yat Sen Memorial Park Sports Centre",
+      "address": "18 Eastern Street North, Sai Ying Pun"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#144"
   },
   {
     "id": "act-070",
-    "title": "Badminton Court Booking — Lockhart Road Sports Centre",
-    "title_alt": "駱克道體育館羽毛球場租訂",
-    "description": "Standard public recreational facility provided by LCSD at Lockhart Road Sports Centre in Wan Chai. Air-conditioned indoor badminton courts bookable 7 days in advance via SmartPLAY during standard opening hours (07:00–23:00).",
-    "description_alt": "康文署於Wan Chai駱克道體育館提供的標準康體設施。設有空調的室內羽毛球場，可於開放時間（07:00–23:00）透過 SmartPLAY 系統提前7天預約。",
-    "lang": "bilingual",
-    "district": "Wan Chai",
-    "location": "Lockhart Road Sports Centre, 225 Hennessy Road, Wan Chai",
-    "location_alt": "灣仔軒尼詩道225號駱克道體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#922",
+    "title": "駱克道體育館羽毛球場租訂",
+    "title_en": "Badminton Court Booking — Lockhart Road Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "badminton",
@@ -2006,26 +1999,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "13:00",
-        "end_time": "15:00"
+        "start": "2026-10-03T05:00:00Z",
+        "end": "2026-10-03T07:00:00Z"
       }
     ],
-    "cost": "HKD 59–118 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Wan Chai",
+      "venue": "Lockhart Road Sports Centre",
+      "address": "225 Hennessy Road, Wan Chai"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#922"
   },
   {
     "id": "act-071",
-    "title": "Table Tennis Practice Session — Harbour Road Sports Centre",
-    "title_alt": "港灣道體育館乒乓球室切磋時段",
-    "description": "Standard public recreational facility provided by LCSD at Harbour Road Sports Centre in Wan Chai. Standard indoor table tennis tables bookable via SmartPLAY during venue operating hours.",
-    "description_alt": "康文署於Wan Chai港灣道體育館提供的標準康體設施。配備標準球枱的室內乒乓球室，可於場館開放時間透過 SmartPLAY 預約租用進行切磋練習。",
-    "lang": "bilingual",
-    "district": "Wan Chai",
-    "location": "Harbour Road Sports Centre, 27 Harbour Road, Wan Chai",
-    "location_alt": "灣仔港灣道27號港灣道體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#916",
+    "title": "港灣道體育館乒乓球室切磋時段",
+    "title_en": "Table Tennis Practice Session — Harbour Road Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "table-tennis",
@@ -2035,26 +2028,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "14:00",
-        "end_time": "16:00"
+        "start": "2026-10-04T06:00:00Z",
+        "end": "2026-10-04T08:00:00Z"
       }
     ],
-    "cost": "HKD 14–28 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Wan Chai",
+      "venue": "Harbour Road Sports Centre",
+      "address": "27 Harbour Road, Wan Chai"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#916"
   },
   {
     "id": "act-072",
-    "title": "Squash Court Booking — Wong Nai Chung Sports Centre",
-    "title_alt": "黃泥涌體育館壁球場練習租訂",
-    "description": "Standard public recreational facility provided by LCSD at Wong Nai Chung Sports Centre in Wan Chai. Standard indoor squash courts with glass back-walls available for public hire via SmartPLAY during operating hours.",
-    "description_alt": "康文署於Wan Chai黃泥涌體育館提供的標準康體設施。設有玻璃後牆的標準室內壁球場，可於開放時間透過 SmartPLAY 預訂租用。",
-    "lang": "bilingual",
-    "district": "Wan Chai",
-    "location": "Wong Nai Chung Sports Centre, 2 Yuk Sau Street, Happy Valley",
-    "location_alt": "跑馬地毓秀街2號黃泥涌體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#935",
+    "title": "黃泥涌體育館壁球場練習租訂",
+    "title_en": "Squash Court Booking — Wong Nai Chung Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "squash",
@@ -2064,26 +2057,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "09:00",
-        "end_time": "11:00"
+        "start": "2026-10-03T01:00:00Z",
+        "end": "2026-10-03T03:00:00Z"
       }
     ],
-    "cost": "HKD 27–54 / 30 mins",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Wan Chai",
+      "venue": "Wong Nai Chung Sports Centre",
+      "address": "2 Yuk Sau Street, Happy Valley"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#935"
   },
   {
     "id": "act-073",
-    "title": "Badminton Court Booking — Island East Sports Centre",
-    "title_alt": "港島東體育館羽毛球場租訂",
-    "description": "Standard public recreational facility provided by LCSD at Island East Sports Centre in Eastern. Air-conditioned indoor badminton courts bookable 7 days in advance via SmartPLAY during standard opening hours (07:00–23:00).",
-    "description_alt": "康文署於Eastern港島東體育館提供的標準康體設施。設有空調的室內羽毛球場，可於開放時間（07:00–23:00）透過 SmartPLAY 系統提前7天預約。",
-    "lang": "bilingual",
-    "district": "Eastern",
-    "location": "Island East Sports Centre, 52 Lei King Road, Sai Wan Ho",
-    "location_alt": "西灣河鯉景道52號港島東體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#469",
+    "title": "港島東體育館羽毛球場租訂",
+    "title_en": "Badminton Court Booking — Island East Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "badminton",
@@ -2093,26 +2086,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "10:00",
-        "end_time": "12:00"
+        "start": "2026-10-04T02:00:00Z",
+        "end": "2026-10-04T04:00:00Z"
       }
     ],
-    "cost": "HKD 59–118 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Eastern",
+      "venue": "Island East Sports Centre",
+      "address": "52 Lei King Road, Sai Wan Ho"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#469"
   },
   {
     "id": "act-074",
-    "title": "Indoor Basketball & Sports Hall Session — Chai Wan Sports Centre",
-    "title_alt": "柴灣體育館室內體育主場籃球時段",
-    "description": "Standard public recreational facility provided by LCSD at Chai Wan Sports Centre in Eastern. Multi-purpose sports hall configured for basketball during scheduled public sessions or club booking via SmartPLAY.",
-    "description_alt": "康文署於Eastern柴灣體育館提供的標準康體設施。多用途室內主場，設有標準木地板及籃球設施，可透過 SmartPLAY 預訂時段進行練球或比賽。",
-    "lang": "bilingual",
-    "district": "Eastern",
-    "location": "Chai Wan Sports Centre, Yee Shun Lane, Chai Wan Road",
-    "location_alt": "柴灣柴灣道怡順街柴灣體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#461",
+    "title": "柴灣體育館室內體育主場籃球時段",
+    "title_en": "Indoor Basketball & Sports Hall Session — Chai Wan Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "basketball",
@@ -2122,26 +2115,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "11:00",
-        "end_time": "13:00"
+        "start": "2026-10-03T03:00:00Z",
+        "end": "2026-10-03T05:00:00Z"
       }
     ],
-    "cost": "HKD 148–296 / hr (Full court booking)",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Eastern",
+      "venue": "Chai Wan Sports Centre",
+      "address": "Yee Shun Lane, Chai Wan Road"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#461"
   },
   {
     "id": "act-075",
-    "title": "Badminton Court Booking — Java Road Sports Centre",
-    "title_alt": "渣華道體育館羽毛球場租訂",
-    "description": "Standard public recreational facility provided by LCSD at Java Road Sports Centre in Eastern. Air-conditioned indoor badminton courts bookable 7 days in advance via SmartPLAY during standard opening hours (07:00–23:00).",
-    "description_alt": "康文署於Eastern渣華道體育館提供的標準康體設施。設有空調的室內羽毛球場，可於開放時間（07:00–23:00）透過 SmartPLAY 系統提前7天預約。",
-    "lang": "bilingual",
-    "district": "Eastern",
-    "location": "Java Road Sports Centre, 99 Java Road, North Point",
-    "location_alt": "北角渣華道99號渣華道體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#471",
+    "title": "渣華道體育館羽毛球場租訂",
+    "title_en": "Badminton Court Booking — Java Road Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "badminton",
@@ -2151,26 +2144,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "12:00",
-        "end_time": "14:00"
+        "start": "2026-10-04T04:00:00Z",
+        "end": "2026-10-04T06:00:00Z"
       }
     ],
-    "cost": "HKD 59–118 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Eastern",
+      "venue": "Java Road Sports Centre",
+      "address": "99 Java Road, North Point"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#471"
   },
   {
     "id": "act-076",
-    "title": "Table Tennis Practice Session — Quarry Bay Sports Centre",
-    "title_alt": "鰂魚涌體育館乒乓球室切磋時段",
-    "description": "Standard public recreational facility provided by LCSD at Quarry Bay Sports Centre in Eastern. Standard indoor table tennis tables bookable via SmartPLAY during venue operating hours.",
-    "description_alt": "康文署於Eastern鰂魚涌體育館提供的標準康體設施。配備標準球枱的室內乒乓球室，可於場館開放時間透過 SmartPLAY 預約租用進行切磋練習。",
-    "lang": "bilingual",
-    "district": "Eastern",
-    "location": "Quarry Bay Sports Centre, 38 Quarry Bay Street",
-    "location_alt": "鰂魚涌街38號鰂魚涌體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#481",
+    "title": "鰂魚涌體育館乒乓球室切磋時段",
+    "title_en": "Table Tennis Practice Session — Quarry Bay Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "table-tennis",
@@ -2180,26 +2173,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "13:00",
-        "end_time": "15:00"
+        "start": "2026-10-03T05:00:00Z",
+        "end": "2026-10-03T07:00:00Z"
       }
     ],
-    "cost": "HKD 14–28 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Eastern",
+      "venue": "Quarry Bay Sports Centre",
+      "address": "38 Quarry Bay Street"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#481"
   },
   {
     "id": "act-077",
-    "title": "Squash Court Booking — Sai Wan Ho Sports Centre",
-    "title_alt": "西灣河體育館壁球場練習租訂",
-    "description": "Standard public recreational facility provided by LCSD at Sai Wan Ho Sports Centre in Eastern. Standard indoor squash courts with glass back-walls available for public hire via SmartPLAY during operating hours.",
-    "description_alt": "康文署於Eastern西灣河體育館提供的標準康體設施。設有玻璃後牆的標準室內壁球場，可於開放時間透過 SmartPLAY 預訂租用。",
-    "lang": "bilingual",
-    "district": "Eastern",
-    "location": "Sai Wan Ho Sports Centre, 111 Shau Kei Wan Road",
-    "location_alt": "筲箕灣道111號西灣河體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#482",
+    "title": "西灣河體育館壁球場練習租訂",
+    "title_en": "Squash Court Booking — Sai Wan Ho Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "squash",
@@ -2209,26 +2202,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "14:00",
-        "end_time": "16:00"
+        "start": "2026-10-04T06:00:00Z",
+        "end": "2026-10-04T08:00:00Z"
       }
     ],
-    "cost": "HKD 27–54 / 30 mins",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Eastern",
+      "venue": "Sai Wan Ho Sports Centre",
+      "address": "111 Shau Kei Wan Road"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#482"
   },
   {
     "id": "act-078",
-    "title": "Public Fitness Room Session — Aberdeen Sports Centre",
-    "title_alt": "香港仔體育館公眾健身室訓練時段",
-    "description": "Standard public recreational facility provided by LCSD at Aberdeen Sports Centre in Southern. LCSD fitness room equipped with resistance and cardio equipment for registered fitness cardholders during public sessions.",
-    "description_alt": "康文署於Southern香港仔體育館提供的標準康體設施。配備心肺功能及阻力器械的康文署健身室，合資格登記人士可於公眾時段入場鍛鍊。",
-    "lang": "bilingual",
-    "district": "Southern",
-    "location": "Aberdeen Sports Centre, 203 Aberdeen Main Road",
-    "location_alt": "香港仔大道203號香港仔體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#545",
+    "title": "香港仔體育館公眾健身室訓練時段",
+    "title_en": "Public Fitness Room Session — Aberdeen Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "fitness",
@@ -2238,26 +2231,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "09:00",
-        "end_time": "11:00"
+        "start": "2026-10-03T01:00:00Z",
+        "end": "2026-10-03T03:00:00Z"
       }
     ],
-    "cost": "HKD 14 / hr (requires LCSD fitness card)",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Southern",
+      "venue": "Aberdeen Sports Centre",
+      "address": "203 Aberdeen Main Road"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#545"
   },
   {
     "id": "act-079",
-    "title": "Public Fitness Room Session — Stanley Sports Centre",
-    "title_alt": "赤柱體育館公眾健身室訓練時段",
-    "description": "Standard public recreational facility provided by LCSD at Stanley Sports Centre in Southern. LCSD fitness room equipped with resistance and cardio equipment for registered fitness cardholders during public sessions.",
-    "description_alt": "康文署於Southern赤柱體育館提供的標準康體設施。配備心肺功能及阻力器械的康文署健身室，合資格登記人士可於公眾時段入場鍛鍊。",
-    "lang": "bilingual",
-    "district": "Southern",
-    "location": "Stanley Sports Centre, 6 Stanley Market Road",
-    "location_alt": "赤柱市場道6號赤柱體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#573",
+    "title": "赤柱體育館公眾健身室訓練時段",
+    "title_en": "Public Fitness Room Session — Stanley Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "fitness",
@@ -2267,26 +2260,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "10:00",
-        "end_time": "12:00"
+        "start": "2026-10-04T02:00:00Z",
+        "end": "2026-10-04T04:00:00Z"
       }
     ],
-    "cost": "HKD 14 / hr (requires LCSD fitness card)",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Southern",
+      "venue": "Stanley Sports Centre",
+      "address": "6 Stanley Market Road"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#573"
   },
   {
     "id": "act-080",
-    "title": "Badminton Court Booking — Wong Chuk Hang Sports Centre",
-    "title_alt": "黃竹坑體育館羽毛球場租訂",
-    "description": "Standard public recreational facility provided by LCSD at Wong Chuk Hang Sports Centre in Southern. Air-conditioned indoor badminton courts bookable 7 days in advance via SmartPLAY during standard opening hours (07:00–23:00).",
-    "description_alt": "康文署於Southern黃竹坑體育館提供的標準康體設施。設有空調的室內羽毛球場，可於開放時間（07:00–23:00）透過 SmartPLAY 系統提前7天預約。",
-    "lang": "bilingual",
-    "district": "Southern",
-    "location": "Wong Chuk Hang Sports Centre, 168 Wong Chuk Hang Road",
-    "location_alt": "香港仔黃竹坑道168號黃竹坑體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#584",
+    "title": "黃竹坑體育館羽毛球場租訂",
+    "title_en": "Badminton Court Booking — Wong Chuk Hang Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "badminton",
@@ -2296,26 +2289,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "11:00",
-        "end_time": "13:00"
+        "start": "2026-10-03T03:00:00Z",
+        "end": "2026-10-03T05:00:00Z"
       }
     ],
-    "cost": "HKD 59–118 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Southern",
+      "venue": "Wong Chuk Hang Sports Centre",
+      "address": "168 Wong Chuk Hang Road"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#584"
   },
   {
     "id": "act-081",
-    "title": "Table Tennis Practice Session — Ap Lei Chau Sports Centre",
-    "title_alt": "鴨脷洲體育館乒乓球室切磋時段",
-    "description": "Standard public recreational facility provided by LCSD at Ap Lei Chau Sports Centre in Southern. Standard indoor table tennis tables bookable via SmartPLAY during venue operating hours.",
-    "description_alt": "康文署於Southern鴨脷洲體育館提供的標準康體設施。配備標準球枱的室內乒乓球室，可於場館開放時間透過 SmartPLAY 預約租用進行切磋練習。",
-    "lang": "bilingual",
-    "district": "Southern",
-    "location": "Ap Lei Chau Sports Centre, 8 Hung Shing Street, Ap Lei Chau",
-    "location_alt": "鴨脷洲洪聖街8號鴨脷洲體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#557",
+    "title": "鴨脷洲體育館乒乓球室切磋時段",
+    "title_en": "Table Tennis Practice Session — Ap Lei Chau Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "table-tennis",
@@ -2325,26 +2318,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "12:00",
-        "end_time": "14:00"
+        "start": "2026-10-04T04:00:00Z",
+        "end": "2026-10-04T06:00:00Z"
       }
     ],
-    "cost": "HKD 14–28 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Southern",
+      "venue": "Ap Lei Chau Sports Centre",
+      "address": "8 Hung Shing Street, Ap Lei Chau"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#557"
   },
   {
     "id": "act-082",
-    "title": "Table Tennis Practice Session — Kowloon Park Sports Centre",
-    "title_alt": "九龍公園體育館乒乓球室切磋時段",
-    "description": "Standard public recreational facility provided by LCSD at Kowloon Park Sports Centre in Yau Tsim Mong. Standard indoor table tennis tables bookable via SmartPLAY during venue operating hours.",
-    "description_alt": "康文署於Yau Tsim Mong九龍公園體育館提供的標準康體設施。配備標準球枱的室內乒乓球室，可於場館開放時間透過 SmartPLAY 預約租用進行切磋練習。",
-    "lang": "bilingual",
-    "district": "Yau Tsim Mong",
-    "location": "Kowloon Park Sports Centre, 22 Austin Road, Tsim Sha Tsui",
-    "location_alt": "尖沙咀柯士甸道22號九龍公園體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#524",
+    "title": "九龍公園體育館乒乓球室切磋時段",
+    "title_en": "Table Tennis Practice Session — Kowloon Park Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "table-tennis",
@@ -2354,26 +2347,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "13:00",
-        "end_time": "15:00"
+        "start": "2026-10-03T05:00:00Z",
+        "end": "2026-10-03T07:00:00Z"
       }
     ],
-    "cost": "HKD 14–28 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Yau Tsim Mong",
+      "venue": "Kowloon Park Sports Centre",
+      "address": "22 Austin Road, Tsim Sha Tsui"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#524"
   },
   {
     "id": "act-083",
-    "title": "Badminton Court Booking — Boundary Street Sports Centre No. 1",
-    "title_alt": "界限街一號體育館羽毛球場租訂",
-    "description": "Standard public recreational facility provided by LCSD at Boundary Street Sports Centre No. 1 in Yau Tsim Mong. Air-conditioned indoor badminton courts bookable 7 days in advance via SmartPLAY during standard opening hours (07:00–23:00).",
-    "description_alt": "康文署於Yau Tsim Mong界限街一號體育館提供的標準康體設施。設有空調的室內羽毛球場，可於開放時間（07:00–23:00）透過 SmartPLAY 系統提前7天預約。",
-    "lang": "bilingual",
-    "district": "Yau Tsim Mong",
-    "location": "Boundary Street Sports Centre No. 1, 200 Sai Yee Street, Mong Kok",
-    "location_alt": "旺角洗衣街200號界限街一號體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#504",
+    "title": "界限街一號體育館羽毛球場租訂",
+    "title_en": "Badminton Court Booking — Boundary Street Sports Centre No. 1",
+    "lang": "zh",
     "tags": [
       "sports",
       "badminton",
@@ -2383,26 +2376,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "14:00",
-        "end_time": "16:00"
+        "start": "2026-10-04T06:00:00Z",
+        "end": "2026-10-04T08:00:00Z"
       }
     ],
-    "cost": "HKD 59–118 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Yau Tsim Mong",
+      "venue": "Boundary Street Sports Centre No. 1",
+      "address": "200 Sai Yee Street, Mong Kok"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#504"
   },
   {
     "id": "act-084",
-    "title": "Indoor Basketball & Sports Hall Session — Fa Yuen Street Sports Centre",
-    "title_alt": "花園街體育館室內體育主場籃球時段",
-    "description": "Standard public recreational facility provided by LCSD at Fa Yuen Street Sports Centre in Yau Tsim Mong. Multi-purpose sports hall configured for basketball during scheduled public sessions or club booking via SmartPLAY.",
-    "description_alt": "康文署於Yau Tsim Mong花園街體育館提供的標準康體設施。多用途室內主場，設有標準木地板及籃球設施，可透過 SmartPLAY 預訂時段進行練球或比賽。",
-    "lang": "bilingual",
-    "district": "Yau Tsim Mong",
-    "location": "Fa Yuen Street Sports Centre, 123A Fa Yuen Street, Mong Kok",
-    "location_alt": "旺角花園街123號A花園街體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#512",
+    "title": "花園街體育館室內體育主場籃球時段",
+    "title_en": "Indoor Basketball & Sports Hall Session — Fa Yuen Street Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "basketball",
@@ -2412,26 +2405,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "09:00",
-        "end_time": "11:00"
+        "start": "2026-10-03T01:00:00Z",
+        "end": "2026-10-03T03:00:00Z"
       }
     ],
-    "cost": "HKD 148–296 / hr (Full court booking)",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Yau Tsim Mong",
+      "venue": "Fa Yuen Street Sports Centre",
+      "address": "123A Fa Yuen Street, Mong Kok"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#512"
   },
   {
     "id": "act-085",
-    "title": "Badminton Court Booking — Tai Kok Tsui Sports Centre",
-    "title_alt": "大角咀體育館羽毛球場租訂",
-    "description": "Standard public recreational facility provided by LCSD at Tai Kok Tsui Sports Centre in Yau Tsim Mong. Air-conditioned indoor badminton courts bookable 7 days in advance via SmartPLAY during standard opening hours (07:00–23:00).",
-    "description_alt": "康文署於Yau Tsim Mong大角咀體育館提供的標準康體設施。設有空調的室內羽毛球場，可於開放時間（07:00–23:00）透過 SmartPLAY 系統提前7天預約。",
-    "lang": "bilingual",
-    "district": "Yau Tsim Mong",
-    "location": "Tai Kok Tsui Sports Centre, 63 Fuk Tsun Street, Tai Kok Tsui",
-    "location_alt": "大角咀福全街63號大角咀體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#537",
+    "title": "大角咀體育館羽毛球場租訂",
+    "title_en": "Badminton Court Booking — Tai Kok Tsui Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "badminton",
@@ -2441,26 +2434,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "10:00",
-        "end_time": "12:00"
+        "start": "2026-10-04T02:00:00Z",
+        "end": "2026-10-04T04:00:00Z"
       }
     ],
-    "cost": "HKD 59–118 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Yau Tsim Mong",
+      "venue": "Tai Kok Tsui Sports Centre",
+      "address": "63 Fuk Tsun Street, Tai Kok Tsui"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#537"
   },
   {
     "id": "act-086",
-    "title": "Table Tennis Practice Session — Pei Ho Street Sports Centre",
-    "title_alt": "北河街體育館乒乓球室切磋時段",
-    "description": "Standard public recreational facility provided by LCSD at Pei Ho Street Sports Centre in Sham Shui Po. Standard indoor table tennis tables bookable via SmartPLAY during venue operating hours.",
-    "description_alt": "康文署於Sham Shui Po北河街體育館提供的標準康體設施。配備標準球枱的室內乒乓球室，可於場館開放時間透過 SmartPLAY 預約租用進行切磋練習。",
-    "lang": "bilingual",
-    "district": "Sham Shui Po",
-    "location": "Pei Ho Street Sports Centre, 333 Ki Lung Street, Sham Shui Po",
-    "location_alt": "深水埗基隆街333號北河街體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#671",
+    "title": "北河街體育館乒乓球室切磋時段",
+    "title_en": "Table Tennis Practice Session — Pei Ho Street Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "table-tennis",
@@ -2470,26 +2463,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "11:00",
-        "end_time": "13:00"
+        "start": "2026-10-03T03:00:00Z",
+        "end": "2026-10-03T05:00:00Z"
       }
     ],
-    "cost": "HKD 14–28 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Sham Shui Po",
+      "venue": "Pei Ho Street Sports Centre",
+      "address": "333 Ki Lung Street, Sham Shui Po"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#671"
   },
   {
     "id": "act-087",
-    "title": "Squash Court Booking — Lai Chi Kok Park Sports Centre",
-    "title_alt": "荔枝角公園體育館壁球場練習租訂",
-    "description": "Standard public recreational facility provided by LCSD at Lai Chi Kok Park Sports Centre in Sham Shui Po. Standard indoor squash courts with glass back-walls available for public hire via SmartPLAY during operating hours.",
-    "description_alt": "康文署於Sham Shui Po荔枝角公園體育館提供的標準康體設施。設有玻璃後牆的標準室內壁球場，可於開放時間透過 SmartPLAY 預訂租用。",
-    "lang": "bilingual",
-    "district": "Sham Shui Po",
-    "location": "Lai Chi Kok Park Sports Centre, 1 Lai Wan Road, Lai Chi Kok",
-    "location_alt": "荔枝角荔灣道1號荔枝角公園體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#666",
+    "title": "荔枝角公園體育館壁球場練習租訂",
+    "title_en": "Squash Court Booking — Lai Chi Kok Park Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "squash",
@@ -2499,26 +2492,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "12:00",
-        "end_time": "14:00"
+        "start": "2026-10-04T04:00:00Z",
+        "end": "2026-10-04T06:00:00Z"
       }
     ],
-    "cost": "HKD 27–54 / 30 mins",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Sham Shui Po",
+      "venue": "Lai Chi Kok Park Sports Centre",
+      "address": "1 Lai Wan Road, Lai Chi Kok"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#666"
   },
   {
     "id": "act-088",
-    "title": "Public Fitness Room Session — Po On Road Sports Centre",
-    "title_alt": "保安道體育館公眾健身室訓練時段",
-    "description": "Standard public recreational facility provided by LCSD at Po On Road Sports Centre in Sham Shui Po. LCSD fitness room equipped with resistance and cardio equipment for registered fitness cardholders during public sessions.",
-    "description_alt": "康文署於Sham Shui Po保安道體育館提供的標準康體設施。配備心肺功能及阻力器械的康文署健身室，合資格登記人士可於公眾時段入場鍛鍊。",
-    "lang": "bilingual",
-    "district": "Sham Shui Po",
-    "location": "Po On Road Sports Centre, 325-329 Po On Road, Sham Shui Po",
-    "location_alt": "深水埗保安道325-329號保安道體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#677",
+    "title": "保安道體育館公眾健身室訓練時段",
+    "title_en": "Public Fitness Room Session — Po On Road Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "fitness",
@@ -2528,26 +2521,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "13:00",
-        "end_time": "15:00"
+        "start": "2026-10-03T05:00:00Z",
+        "end": "2026-10-03T07:00:00Z"
       }
     ],
-    "cost": "HKD 14 / hr (requires LCSD fitness card)",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Sham Shui Po",
+      "venue": "Po On Road Sports Centre",
+      "address": "325-329 Po On Road, Sham Shui Po"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#677"
   },
   {
     "id": "act-089",
-    "title": "Badminton Court Booking — Shek Kip Mei Park Sports Centre",
-    "title_alt": "石硤尾公園體育館羽毛球場租訂",
-    "description": "Standard public recreational facility provided by LCSD at Shek Kip Mei Park Sports Centre in Sham Shui Po. Air-conditioned indoor badminton courts bookable 7 days in advance via SmartPLAY during standard opening hours (07:00–23:00).",
-    "description_alt": "康文署於Sham Shui Po石硤尾公園體育館提供的標準康體設施。設有空調的室內羽毛球場，可於開放時間（07:00–23:00）透過 SmartPLAY 系統提前7天預約。",
-    "lang": "bilingual",
-    "district": "Sham Shui Po",
-    "location": "Shek Kip Mei Park Sports Centre, 17 Wai Chi Street, Shek Kip Mei",
-    "location_alt": "石硤尾偉智街17號石硤尾公園體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#693",
+    "title": "石硤尾公園體育館羽毛球場租訂",
+    "title_en": "Badminton Court Booking — Shek Kip Mei Park Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "badminton",
@@ -2557,26 +2550,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "14:00",
-        "end_time": "16:00"
+        "start": "2026-10-04T06:00:00Z",
+        "end": "2026-10-04T08:00:00Z"
       }
     ],
-    "cost": "HKD 59–118 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Sham Shui Po",
+      "venue": "Shek Kip Mei Park Sports Centre",
+      "address": "17 Wai Chi Street, Shek Kip Mei"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#693"
   },
   {
     "id": "act-090",
-    "title": "Badminton Court Booking — Kowloon City Sports Centre",
-    "title_alt": "九龍城市政大廈體育館羽毛球場租訂",
-    "description": "Standard public recreational facility provided by LCSD at Kowloon City Sports Centre in Kowloon City. Air-conditioned indoor badminton courts bookable 7 days in advance via SmartPLAY during standard opening hours (07:00–23:00).",
-    "description_alt": "康文署於Kowloon City九龍城市政大廈體育館提供的標準康體設施。設有空調的室內羽毛球場，可於開放時間（07:00–23:00）透過 SmartPLAY 系統提前7天預約。",
-    "lang": "bilingual",
-    "district": "Kowloon City",
-    "location": "Kowloon City Sports Centre, 100 Nga Tsin Wai Road, Kowloon City",
-    "location_alt": "九龍城衙前圍道100號九龍城市政大廈體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#38",
+    "title": "九龍城市政大廈體育館羽毛球場租訂",
+    "title_en": "Badminton Court Booking — Kowloon City Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "badminton",
@@ -2586,26 +2579,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "09:00",
-        "end_time": "11:00"
+        "start": "2026-10-03T01:00:00Z",
+        "end": "2026-10-03T03:00:00Z"
       }
     ],
-    "cost": "HKD 59–118 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Kowloon City",
+      "venue": "Kowloon City Sports Centre",
+      "address": "100 Nga Tsin Wai Road, Kowloon City"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#38"
   },
   {
     "id": "act-091",
-    "title": "Table Tennis Practice Session — Ho Man Tin Sports Centre",
-    "title_alt": "何文田體育館乒乓球室切磋時段",
-    "description": "Standard public recreational facility provided by LCSD at Ho Man Tin Sports Centre in Kowloon City. Standard indoor table tennis tables bookable via SmartPLAY during venue operating hours.",
-    "description_alt": "康文署於Kowloon City何文田體育館提供的標準康體設施。配備標準球枱的室內乒乓球室，可於場館開放時間透過 SmartPLAY 預約租用進行切磋練習。",
-    "lang": "bilingual",
-    "district": "Kowloon City",
-    "location": "Ho Man Tin Sports Centre, 1 Chung Yee Street, Ho Man Tin",
-    "location_alt": "何文田忠義街1號何文田體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#18",
+    "title": "何文田體育館乒乓球室切磋時段",
+    "title_en": "Table Tennis Practice Session — Ho Man Tin Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "table-tennis",
@@ -2615,26 +2608,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "10:00",
-        "end_time": "12:00"
+        "start": "2026-10-04T02:00:00Z",
+        "end": "2026-10-04T04:00:00Z"
       }
     ],
-    "cost": "HKD 14–28 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Kowloon City",
+      "venue": "Ho Man Tin Sports Centre",
+      "address": "1 Chung Yee Street, Ho Man Tin"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#18"
   },
   {
     "id": "act-092",
-    "title": "Squash Court Booking — Hung Hom Municipal Services Building Sports Centre",
-    "title_alt": "紅磡市政大廈體育館壁球場練習租訂",
-    "description": "Standard public recreational facility provided by LCSD at Hung Hom Municipal Services Building Sports Centre in Kowloon City. Standard indoor squash courts with glass back-walls available for public hire via SmartPLAY during operating hours.",
-    "description_alt": "康文署於Kowloon City紅磡市政大廈體育館提供的標準康體設施。設有玻璃後牆的標準室內壁球場，可於開放時間透過 SmartPLAY 預訂租用。",
-    "lang": "bilingual",
-    "district": "Kowloon City",
-    "location": "Hung Hom Municipal Services Building Sports Centre, 11 Ma Tau Wai Road, Hung Hom",
-    "location_alt": "紅磡馬頭圍道11號紅磡市政大廈體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#22",
+    "title": "紅磡市政大廈體育館壁球場練習租訂",
+    "title_en": "Squash Court Booking — Hung Hom Municipal Services Building Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "squash",
@@ -2644,26 +2637,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "11:00",
-        "end_time": "13:00"
+        "start": "2026-10-03T03:00:00Z",
+        "end": "2026-10-03T05:00:00Z"
       }
     ],
-    "cost": "HKD 27–54 / 30 mins",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Kowloon City",
+      "venue": "Hung Hom Municipal Services Building Sports Centre",
+      "address": "11 Ma Tau Wai Road, Hung Hom"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#22"
   },
   {
     "id": "act-093",
-    "title": "Public Fitness Room Session — To Kwa Wan Sports Centre",
-    "title_alt": "土瓜灣體育館公眾健身室訓練時段",
-    "description": "Standard public recreational facility provided by LCSD at To Kwa Wan Sports Centre in Kowloon City. LCSD fitness room equipped with resistance and cardio equipment for registered fitness cardholders during public sessions.",
-    "description_alt": "康文署於Kowloon City土瓜灣體育館提供的標準康體設施。配備心肺功能及阻力器械的康文署健身室，合資格登記人士可於公眾時段入場鍛鍊。",
-    "lang": "bilingual",
-    "district": "Kowloon City",
-    "location": "To Kwa Wan Sports Centre, 66 Ha Heung Road, To Kwa Wan",
-    "location_alt": "土瓜灣下鄉道66號土瓜灣體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#76",
+    "title": "土瓜灣體育館公眾健身室訓練時段",
+    "title_en": "Public Fitness Room Session — To Kwa Wan Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "fitness",
@@ -2673,26 +2666,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "12:00",
-        "end_time": "14:00"
+        "start": "2026-10-04T04:00:00Z",
+        "end": "2026-10-04T06:00:00Z"
       }
     ],
-    "cost": "HKD 14 / hr (requires LCSD fitness card)",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Kowloon City",
+      "venue": "To Kwa Wan Sports Centre",
+      "address": "66 Ha Heung Road, To Kwa Wan"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#76"
   },
   {
     "id": "act-094",
-    "title": "Indoor Basketball & Sports Hall Session — Po Kong Village Road Sports Centre",
-    "title_alt": "蒲崗村道體育館室內體育主場籃球時段",
-    "description": "Standard public recreational facility provided by LCSD at Po Kong Village Road Sports Centre in Wong Tai Sin. Multi-purpose sports hall configured for basketball during scheduled public sessions or club booking via SmartPLAY.",
-    "description_alt": "康文署於Wong Tai Sin蒲崗村道體育館提供的標準康體設施。多用途室內主場，設有標準木地板及籃球設施，可透過 SmartPLAY 預訂時段進行練球或比賽。",
-    "lang": "bilingual",
-    "district": "Wong Tai Sin",
-    "location": "Po Kong Village Road Sports Centre, 120 Po Kong Village Road, Diamond Hill",
-    "location_alt": "黃大仙鑽石山蒲崗村道120號蒲崗村道體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#754",
+    "title": "蒲崗村道體育館室內體育主場籃球時段",
+    "title_en": "Indoor Basketball & Sports Hall Session — Po Kong Village Road Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "basketball",
@@ -2702,26 +2695,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "13:00",
-        "end_time": "15:00"
+        "start": "2026-10-03T05:00:00Z",
+        "end": "2026-10-03T07:00:00Z"
       }
     ],
-    "cost": "HKD 148–296 / hr (Full court booking)",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Wong Tai Sin",
+      "venue": "Po Kong Village Road Sports Centre",
+      "address": "120 Po Kong Village Road, Diamond Hill"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#754"
   },
   {
     "id": "act-095",
-    "title": "Badminton Court Booking — Ngau Chi Wan Sports Centre",
-    "title_alt": "牛池灣體育館羽毛球場租訂",
-    "description": "Standard public recreational facility provided by LCSD at Ngau Chi Wan Sports Centre in Wong Tai Sin. Air-conditioned indoor badminton courts bookable 7 days in advance via SmartPLAY during standard opening hours (07:00–23:00).",
-    "description_alt": "康文署於Wong Tai Sin牛池灣體育館提供的標準康體設施。設有空調的室內羽毛球場，可於開放時間（07:00–23:00）透過 SmartPLAY 系統提前7天預約。",
-    "lang": "bilingual",
-    "district": "Wong Tai Sin",
-    "location": "Ngau Chi Wan Sports Centre, 11 Clear Water Bay Road",
-    "location_alt": "清水灣道11號牛池灣體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#753",
+    "title": "牛池灣體育館羽毛球場租訂",
+    "title_en": "Badminton Court Booking — Ngau Chi Wan Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "badminton",
@@ -2731,26 +2724,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "14:00",
-        "end_time": "16:00"
+        "start": "2026-10-04T06:00:00Z",
+        "end": "2026-10-04T08:00:00Z"
       }
     ],
-    "cost": "HKD 59–118 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Wong Tai Sin",
+      "venue": "Ngau Chi Wan Sports Centre",
+      "address": "11 Clear Water Bay Road"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#753"
   },
   {
     "id": "act-096",
-    "title": "Table Tennis Practice Session — Morse Park Sports Centre",
-    "title_alt": "摩士公園體育館乒乓球室切磋時段",
-    "description": "Standard public recreational facility provided by LCSD at Morse Park Sports Centre in Wong Tai Sin. Standard indoor table tennis tables bookable via SmartPLAY during venue operating hours.",
-    "description_alt": "康文署於Wong Tai Sin摩士公園體育館提供的標準康體設施。配備標準球枱的室內乒乓球室，可於場館開放時間透過 SmartPLAY 預約租用進行切磋練習。",
-    "lang": "bilingual",
-    "district": "Wong Tai Sin",
-    "location": "Morse Park Sports Centre, Morse Park No. 3, Fung Mo Street",
-    "location_alt": "黃大仙鳳舞街摩士公園體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#749",
+    "title": "摩士公園體育館乒乓球室切磋時段",
+    "title_en": "Table Tennis Practice Session — Morse Park Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "table-tennis",
@@ -2760,26 +2753,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "09:00",
-        "end_time": "11:00"
+        "start": "2026-10-03T01:00:00Z",
+        "end": "2026-10-03T03:00:00Z"
       }
     ],
-    "cost": "HKD 14–28 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Wong Tai Sin",
+      "venue": "Morse Park Sports Centre",
+      "address": "Morse Park No. 3, Fung Mo Street"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#749"
   },
   {
     "id": "act-097",
-    "title": "Squash Court Booking — Chuk Yuen Sports Centre",
-    "title_alt": "竹園體育館壁球場練習租訂",
-    "description": "Standard public recreational facility provided by LCSD at Chuk Yuen Sports Centre in Wong Tai Sin. Standard indoor squash courts with glass back-walls available for public hire via SmartPLAY during operating hours.",
-    "description_alt": "康文署於Wong Tai Sin竹園體育館提供的標準康體設施。設有玻璃後牆的標準室內壁球場，可於開放時間透過 SmartPLAY 預訂租用。",
-    "lang": "bilingual",
-    "district": "Wong Tai Sin",
-    "location": "Chuk Yuen Sports Centre, Chuk Yuen Estate, Wong Tai Sin",
-    "location_alt": "黃大仙竹園邨竹園體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#720",
+    "title": "竹園體育館壁球場練習租訂",
+    "title_en": "Squash Court Booking — Chuk Yuen Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "squash",
@@ -2789,26 +2782,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "10:00",
-        "end_time": "12:00"
+        "start": "2026-10-04T02:00:00Z",
+        "end": "2026-10-04T04:00:00Z"
       }
     ],
-    "cost": "HKD 27–54 / 30 mins",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Wong Tai Sin",
+      "venue": "Chuk Yuen Sports Centre",
+      "address": "Chuk Yuen Estate, Wong Tai Sin"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#720"
   },
   {
     "id": "act-098",
-    "title": "Public Fitness Room Session — Lam Tin South Sports Centre",
-    "title_alt": "藍田南體育館公眾健身室訓練時段",
-    "description": "Standard public recreational facility provided by LCSD at Lam Tin South Sports Centre in Kwun Tong. LCSD fitness room equipped with resistance and cardio equipment for registered fitness cardholders during public sessions.",
-    "description_alt": "康文署於Kwun Tong藍田南體育館提供的標準康體設施。配備心肺功能及阻力器械的康文署健身室，合資格登記人士可於公眾時段入場鍛鍊。",
-    "lang": "bilingual",
-    "district": "Kwun Tong",
-    "location": "Lam Tin South Sports Centre, 170 Pik Wan Road, Lam Tin",
-    "location_alt": "藍田碧雲道170號藍田南體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#977",
+    "title": "藍田南體育館公眾健身室訓練時段",
+    "title_en": "Public Fitness Room Session — Lam Tin South Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "fitness",
@@ -2818,26 +2811,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "11:00",
-        "end_time": "13:00"
+        "start": "2026-10-03T03:00:00Z",
+        "end": "2026-10-03T05:00:00Z"
       }
     ],
-    "cost": "HKD 14 / hr (requires LCSD fitness card)",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Kwun Tong",
+      "venue": "Lam Tin South Sports Centre",
+      "address": "170 Pik Wan Road, Lam Tin"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#977"
   },
   {
     "id": "act-099",
-    "title": "Public Fitness Room Session — Chun Wah Road Sports Centre",
-    "title_alt": "振華道體育館公眾健身室訓練時段",
-    "description": "Standard public recreational facility provided by LCSD at Chun Wah Road Sports Centre in Kwun Tong. LCSD fitness room equipped with resistance and cardio equipment for registered fitness cardholders during public sessions.",
-    "description_alt": "康文署於Kwun Tong振華道體育館提供的標準康體設施。配備心肺功能及阻力器械的康文署健身室，合資格登記人士可於公眾時段入場鍛鍊。",
-    "lang": "bilingual",
-    "district": "Kwun Tong",
-    "location": "Chun Wah Road Sports Centre, 50 Chun Wah Road, Ngau Tau Kok",
-    "location_alt": "牛頭角振華道50號振華道體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#936",
+    "title": "振華道體育館公眾健身室訓練時段",
+    "title_en": "Public Fitness Room Session — Chun Wah Road Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "fitness",
@@ -2847,26 +2840,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "12:00",
-        "end_time": "14:00"
+        "start": "2026-10-04T04:00:00Z",
+        "end": "2026-10-04T06:00:00Z"
       }
     ],
-    "cost": "HKD 14 / hr (requires LCSD fitness card)",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Kwun Tong",
+      "venue": "Chun Wah Road Sports Centre",
+      "address": "50 Chun Wah Road, Ngau Tau Kok"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#936"
   },
   {
     "id": "act-100",
-    "title": "Badminton Court Booking — Hiu Kwong Street Sports Centre",
-    "title_alt": "曉光街體育館羽毛球場租訂",
-    "description": "Standard public recreational facility provided by LCSD at Hiu Kwong Street Sports Centre in Kwun Tong. Air-conditioned indoor badminton courts bookable 7 days in advance via SmartPLAY during standard opening hours (07:00–23:00).",
-    "description_alt": "康文署於Kwun Tong曉光街體育館提供的標準康體設施。設有空調的室內羽毛球場，可於開放時間（07:00–23:00）透過 SmartPLAY 系統提前7天預約。",
-    "lang": "bilingual",
-    "district": "Kwun Tong",
-    "location": "Hiu Kwong Street Sports Centre, 2 Hiu Kwong Street, Kwun Tong",
-    "location_alt": "觀塘曉光街2號曉光街體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#939",
+    "title": "曉光街體育館羽毛球場租訂",
+    "title_en": "Badminton Court Booking — Hiu Kwong Street Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "badminton",
@@ -2876,26 +2869,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "13:00",
-        "end_time": "15:00"
+        "start": "2026-10-03T05:00:00Z",
+        "end": "2026-10-03T07:00:00Z"
       }
     ],
-    "cost": "HKD 59–118 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Kwun Tong",
+      "venue": "Hiu Kwong Street Sports Centre",
+      "address": "2 Hiu Kwong Street, Kwun Tong"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#939"
   },
   {
     "id": "act-101",
-    "title": "Table Tennis Practice Session — Kowloon Bay Sports Centre",
-    "title_alt": "九龍灣體育館乒乓球室切磋時段",
-    "description": "Standard public recreational facility provided by LCSD at Kowloon Bay Sports Centre in Kwun Tong. Standard indoor table tennis tables bookable via SmartPLAY during venue operating hours.",
-    "description_alt": "康文署於Kwun Tong九龍灣體育館提供的標準康體設施。配備標準球枱的室內乒乓球室，可於場館開放時間透過 SmartPLAY 預約租用進行切磋練習。",
-    "lang": "bilingual",
-    "district": "Kwun Tong",
-    "location": "Kowloon Bay Sports Centre, 1 Kai Lok Street, Kowloon Bay",
-    "location_alt": "九龍灣啟樂街1號九龍灣體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#960",
+    "title": "九龍灣體育館乒乓球室切磋時段",
+    "title_en": "Table Tennis Practice Session — Kowloon Bay Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "table-tennis",
@@ -2905,26 +2898,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "14:00",
-        "end_time": "16:00"
+        "start": "2026-10-04T06:00:00Z",
+        "end": "2026-10-04T08:00:00Z"
       }
     ],
-    "cost": "HKD 14–28 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Kwun Tong",
+      "venue": "Kowloon Bay Sports Centre",
+      "address": "1 Kai Lok Street, Kowloon Bay"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#960"
   },
   {
     "id": "act-102",
-    "title": "Squash Court Booking — Wai Tsuen Sports Centre",
-    "title_alt": "蕙荃體育館壁球場練習租訂",
-    "description": "Standard public recreational facility provided by LCSD at Wai Tsuen Sports Centre in Tsuen Wan. Standard indoor squash courts with glass back-walls available for public hire via SmartPLAY during operating hours.",
-    "description_alt": "康文署於Tsuen Wan蕙荃體育館提供的標準康體設施。設有玻璃後牆的標準室內壁球場，可於開放時間透過 SmartPLAY 預訂租用。",
-    "lang": "bilingual",
-    "district": "Tsuen Wan",
-    "location": "Wai Tsuen Sports Centre, 63 Miaokang Street, Tsuen Wan",
-    "location_alt": "荃灣廟崗街63號蕙荃體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#638",
+    "title": "蕙荃體育館壁球場練習租訂",
+    "title_en": "Squash Court Booking — Wai Tsuen Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "squash",
@@ -2934,26 +2927,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "09:00",
-        "end_time": "11:00"
+        "start": "2026-10-03T01:00:00Z",
+        "end": "2026-10-03T03:00:00Z"
       }
     ],
-    "cost": "HKD 27–54 / 30 mins",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Tsuen Wan",
+      "venue": "Wai Tsuen Sports Centre",
+      "address": "63 Miaokang Street, Tsuen Wan"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#638"
   },
   {
     "id": "act-103",
-    "title": "Public Fitness Room Session — Tsuen Wan Sports Centre",
-    "title_alt": "荃灣體育館公眾健身室訓練時段",
-    "description": "Standard public recreational facility provided by LCSD at Tsuen Wan Sports Centre in Tsuen Wan. LCSD fitness room equipped with resistance and cardio equipment for registered fitness cardholders during public sessions.",
-    "description_alt": "康文署於Tsuen Wan荃灣體育館提供的標準康體設施。配備心肺功能及阻力器械的康文署健身室，合資格登記人士可於公眾時段入場鍛鍊。",
-    "lang": "bilingual",
-    "district": "Tsuen Wan",
-    "location": "Tsuen Wan Sports Centre, 53 Wing Shun Street, Tsuen Wan",
-    "location_alt": "荃灣永順街53號荃灣體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#2117",
+    "title": "荃灣體育館公眾健身室訓練時段",
+    "title_en": "Public Fitness Room Session — Tsuen Wan Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "fitness",
@@ -2963,26 +2956,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "10:00",
-        "end_time": "12:00"
+        "start": "2026-10-04T02:00:00Z",
+        "end": "2026-10-04T04:00:00Z"
       }
     ],
-    "cost": "HKD 14 / hr (requires LCSD fitness card)",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Tsuen Wan",
+      "venue": "Tsuen Wan Sports Centre",
+      "address": "53 Wing Shun Street, Tsuen Wan"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#2117"
   },
   {
     "id": "act-104",
-    "title": "Indoor Basketball & Sports Hall Session — Yeung Uk Road Sports Centre",
-    "title_alt": "楊屋道體育館室內體育主場籃球時段",
-    "description": "Standard public recreational facility provided by LCSD at Yeung Uk Road Sports Centre in Tsuen Wan. Multi-purpose sports hall configured for basketball during scheduled public sessions or club booking via SmartPLAY.",
-    "description_alt": "康文署於Tsuen Wan楊屋道體育館提供的標準康體設施。多用途室內主場，設有標準木地板及籃球設施，可透過 SmartPLAY 預訂時段進行練球或比賽。",
-    "lang": "bilingual",
-    "district": "Tsuen Wan",
-    "location": "Yeung Uk Road Sports Centre, 45 Yeung Uk Road, Tsuen Wan",
-    "location_alt": "荃灣楊屋道45號楊屋道體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#639",
+    "title": "楊屋道體育館室內體育主場籃球時段",
+    "title_en": "Indoor Basketball & Sports Hall Session — Yeung Uk Road Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "basketball",
@@ -2992,26 +2985,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "11:00",
-        "end_time": "13:00"
+        "start": "2026-10-03T03:00:00Z",
+        "end": "2026-10-03T05:00:00Z"
       }
     ],
-    "cost": "HKD 148–296 / hr (Full court booking)",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Tsuen Wan",
+      "venue": "Yeung Uk Road Sports Centre",
+      "address": "45 Yeung Uk Road, Tsuen Wan"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#639"
   },
   {
     "id": "act-105",
-    "title": "Badminton Court Booking — Tsuen King Circuit Sports Centre",
-    "title_alt": "荃灣景圍體育館羽毛球場租訂",
-    "description": "Standard public recreational facility provided by LCSD at Tsuen King Circuit Sports Centre in Tsuen Wan. Air-conditioned indoor badminton courts bookable 7 days in advance via SmartPLAY during standard opening hours (07:00–23:00).",
-    "description_alt": "康文署於Tsuen Wan荃灣景圍體育館提供的標準康體設施。設有空調的室內羽毛球場，可於開放時間（07:00–23:00）透過 SmartPLAY 系統提前7天預約。",
-    "lang": "bilingual",
-    "district": "Tsuen Wan",
-    "location": "Tsuen King Circuit Sports Centre, 38 Mei Wan Street, Tsuen Wan",
-    "location_alt": "荃灣美環街38號荃灣景圍體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#623",
+    "title": "荃灣景圍體育館羽毛球場租訂",
+    "title_en": "Badminton Court Booking — Tsuen King Circuit Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "badminton",
@@ -3021,26 +3014,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "12:00",
-        "end_time": "14:00"
+        "start": "2026-10-04T04:00:00Z",
+        "end": "2026-10-04T06:00:00Z"
       }
     ],
-    "cost": "HKD 59–118 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Tsuen Wan",
+      "venue": "Tsuen King Circuit Sports Centre",
+      "address": "38 Mei Wan Street, Tsuen Wan"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#623"
   },
   {
     "id": "act-106",
-    "title": "Table Tennis Practice Session — Tai Hing Sports Centre",
-    "title_alt": "大興體育館乒乓球室切磋時段",
-    "description": "Standard public recreational facility provided by LCSD at Tai Hing Sports Centre in Tuen Mun. Standard indoor table tennis tables bookable via SmartPLAY during venue operating hours.",
-    "description_alt": "康文署於Tuen Mun大興體育館提供的標準康體設施。配備標準球枱的室內乒乓球室，可於場館開放時間透過 SmartPLAY 預約租用進行切磋練習。",
-    "lang": "bilingual",
-    "district": "Tuen Mun",
-    "location": "Tai Hing Sports Centre, 38 Tsing Chung Koon Road, Tuen Mun",
-    "location_alt": "屯門青松觀路38號大興體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#239",
+    "title": "大興體育館乒乓球室切磋時段",
+    "title_en": "Table Tennis Practice Session — Tai Hing Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "table-tennis",
@@ -3050,26 +3043,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "13:00",
-        "end_time": "15:00"
+        "start": "2026-10-03T05:00:00Z",
+        "end": "2026-10-03T07:00:00Z"
       }
     ],
-    "cost": "HKD 14–28 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Tuen Mun",
+      "venue": "Tai Hing Sports Centre",
+      "address": "38 Tsing Chung Koon Road, Tuen Mun"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#239"
   },
   {
     "id": "act-107",
-    "title": "Squash Court Booking — Yau Oi Sports Centre",
-    "title_alt": "友愛體育館壁球場練習租訂",
-    "description": "Standard public recreational facility provided by LCSD at Yau Oi Sports Centre in Tuen Mun. Standard indoor squash courts with glass back-walls available for public hire via SmartPLAY during operating hours.",
-    "description_alt": "康文署於Tuen Mun友愛體育館提供的標準康體設施。設有玻璃後牆的標準室內壁球場，可於開放時間透過 SmartPLAY 預訂租用。",
-    "lang": "bilingual",
-    "district": "Tuen Mun",
-    "location": "Yau Oi Sports Centre, Hing On Lane, Yau Oi Estate, Tuen Mun",
-    "location_alt": "屯門友愛邨興安里友愛體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#272",
+    "title": "友愛體育館壁球場練習租訂",
+    "title_en": "Squash Court Booking — Yau Oi Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "squash",
@@ -3079,26 +3072,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "14:00",
-        "end_time": "16:00"
+        "start": "2026-10-04T06:00:00Z",
+        "end": "2026-10-04T08:00:00Z"
       }
     ],
-    "cost": "HKD 27–54 / 30 mins",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Tuen Mun",
+      "venue": "Yau Oi Sports Centre",
+      "address": "Hing On Lane, Yau Oi Estate, Tuen Mun"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#272"
   },
   {
     "id": "act-108",
-    "title": "Public Fitness Room Session — The Jockey Club Tuen Mun Butterfly Beach Sports Centre",
-    "title_alt": "賽馬會屯門蝴蝶灣體育館公眾健身室訓練時段",
-    "description": "Standard public recreational facility provided by LCSD at The Jockey Club Tuen Mun Butterfly Beach Sports Centre in Tuen Mun. LCSD fitness room equipped with resistance and cardio equipment for registered fitness cardholders during public sessions.",
-    "description_alt": "康文署於Tuen Mun賽馬會屯門蝴蝶灣體育館提供的標準康體設施。配備心肺功能及阻力器械的康文署健身室，合資格登記人士可於公眾時段入場鍛鍊。",
-    "lang": "bilingual",
-    "district": "Tuen Mun",
-    "location": "The Jockey Club Tuen Mun Butterfly Beach Sports Centre, Butterfly Beach, Tuen Mun",
-    "location_alt": "屯門蝴蝶灣公園賽馬會屯門蝴蝶灣體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#242",
+    "title": "賽馬會屯門蝴蝶灣體育館公眾健身室訓練時段",
+    "title_en": "Public Fitness Room Session — The Jockey Club Tuen Mun Butterfly Beach Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "fitness",
@@ -3108,26 +3101,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "09:00",
-        "end_time": "11:00"
+        "start": "2026-10-03T01:00:00Z",
+        "end": "2026-10-03T03:00:00Z"
       }
     ],
-    "cost": "HKD 14 / hr (requires LCSD fitness card)",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Tuen Mun",
+      "venue": "The Jockey Club Tuen Mun Butterfly Beach Sports Centre",
+      "address": "Butterfly Beach, Tuen Mun"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#242"
   },
   {
     "id": "act-109",
-    "title": "Indoor Basketball & Sports Hall Session — Tin Shui Wai Sports Centre",
-    "title_alt": "天水圍體育館室內體育主場籃球時段",
-    "description": "Standard public recreational facility provided by LCSD at Tin Shui Wai Sports Centre in Yuen Long. Multi-purpose sports hall configured for basketball during scheduled public sessions or club booking via SmartPLAY.",
-    "description_alt": "康文署於Yuen Long天水圍體育館提供的標準康體設施。多用途室內主場，設有標準木地板及籃球設施，可透過 SmartPLAY 預訂時段進行練球或比賽。",
-    "lang": "bilingual",
-    "district": "Yuen Long",
-    "location": "Tin Shui Wai Sports Centre, 1 Tin Pak Road, Tin Shui Wai",
-    "location_alt": "天水圍天柏路1號天水圍體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#195",
+    "title": "天水圍體育館室內體育主場籃球時段",
+    "title_en": "Indoor Basketball & Sports Hall Session — Tin Shui Wai Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "basketball",
@@ -3137,26 +3130,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "10:00",
-        "end_time": "12:00"
+        "start": "2026-10-04T02:00:00Z",
+        "end": "2026-10-04T04:00:00Z"
       }
     ],
-    "cost": "HKD 148–296 / hr (Full court booking)",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Yuen Long",
+      "venue": "Tin Shui Wai Sports Centre",
+      "address": "1 Tin Pak Road, Tin Shui Wai"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#195"
   },
   {
     "id": "act-110",
-    "title": "Table Tennis Practice Session — Fung Kam Street Sports Centre",
-    "title_alt": "鳳琴街體育館乒乓球室切磋時段",
-    "description": "Standard public recreational facility provided by LCSD at Fung Kam Street Sports Centre in Yuen Long. Standard indoor table tennis tables bookable via SmartPLAY during venue operating hours.",
-    "description_alt": "康文署於Yuen Long鳳琴街體育館提供的標準康體設施。配備標準球枱的室內乒乓球室，可於場館開放時間透過 SmartPLAY 預約租用進行切磋練習。",
-    "lang": "bilingual",
-    "district": "Yuen Long",
-    "location": "Fung Kam Street Sports Centre, Fung Kam Street, Yuen Long",
-    "location_alt": "元朗鳳琴街鳳琴街體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#149",
+    "title": "鳳琴街體育館乒乓球室切磋時段",
+    "title_en": "Table Tennis Practice Session — Fung Kam Street Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "table-tennis",
@@ -3166,26 +3159,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "11:00",
-        "end_time": "13:00"
+        "start": "2026-10-03T03:00:00Z",
+        "end": "2026-10-03T05:00:00Z"
       }
     ],
-    "cost": "HKD 14–28 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Yuen Long",
+      "venue": "Fung Kam Street Sports Centre",
+      "address": "Fung Kam Street, Yuen Long"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#149"
   },
   {
     "id": "act-111",
-    "title": "Public Fitness Room Session — Tin Fai Road Sports Centre",
-    "title_alt": "天暉路體育館公眾健身室訓練時段",
-    "description": "Standard public recreational facility provided by LCSD at Tin Fai Road Sports Centre in Yuen Long. LCSD fitness room equipped with resistance and cardio equipment for registered fitness cardholders during public sessions.",
-    "description_alt": "康文署於Yuen Long天暉路體育館提供的標準康體設施。配備心肺功能及阻力器械的康文署健身室，合資格登記人士可於公眾時段入場鍛鍊。",
-    "lang": "bilingual",
-    "district": "Yuen Long",
-    "location": "Tin Fai Road Sports Centre, 5 Tin Fai Road, Tin Shui Wai",
-    "location_alt": "天水圍天暉路5號天暉路體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#1174",
+    "title": "天暉路體育館公眾健身室訓練時段",
+    "title_en": "Public Fitness Room Session — Tin Fai Road Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "fitness",
@@ -3195,26 +3188,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "12:00",
-        "end_time": "14:00"
+        "start": "2026-10-04T04:00:00Z",
+        "end": "2026-10-04T06:00:00Z"
       }
     ],
-    "cost": "HKD 14 / hr (requires LCSD fitness card)",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Yuen Long",
+      "venue": "Tin Fai Road Sports Centre",
+      "address": "5 Tin Fai Road, Tin Shui Wai"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#1174"
   },
   {
     "id": "act-112",
-    "title": "Squash Court Booking — Lung Sum Avenue Sports Centre",
-    "title_alt": "龍琛路體育館壁球場練習租訂",
-    "description": "Standard public recreational facility provided by LCSD at Lung Sum Avenue Sports Centre in North. Standard indoor squash courts with glass back-walls available for public hire via SmartPLAY during operating hours.",
-    "description_alt": "康文署於North龍琛路體育館提供的標準康體設施。設有玻璃後牆的標準室內壁球場，可於開放時間透過 SmartPLAY 預訂租用。",
-    "lang": "bilingual",
-    "district": "North",
-    "location": "Lung Sum Avenue Sports Centre, Lung Sum Avenue, Sheung Shui",
-    "location_alt": "上水龍琛路龍琛路體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#299",
+    "title": "龍琛路體育館壁球場練習租訂",
+    "title_en": "Squash Court Booking — Lung Sum Avenue Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "squash",
@@ -3224,26 +3217,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "13:00",
-        "end_time": "15:00"
+        "start": "2026-10-03T05:00:00Z",
+        "end": "2026-10-03T07:00:00Z"
       }
     ],
-    "cost": "HKD 27–54 / 30 mins",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "North",
+      "venue": "Lung Sum Avenue Sports Centre",
+      "address": "Lung Sum Avenue, Sheung Shui"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#299"
   },
   {
     "id": "act-113",
-    "title": "Badminton Court Booking — Po Wing Road Sports Centre",
-    "title_alt": "保榮路體育館羽毛球場租訂",
-    "description": "Standard public recreational facility provided by LCSD at Po Wing Road Sports Centre in North. Air-conditioned indoor badminton courts bookable 7 days in advance via SmartPLAY during standard opening hours (07:00–23:00).",
-    "description_alt": "康文署於North保榮路體育館提供的標準康體設施。設有空調的室內羽毛球場，可於開放時間（07:00–23:00）透過 SmartPLAY 系統提前7天預約。",
-    "lang": "bilingual",
-    "district": "North",
-    "location": "Po Wing Road Sports Centre, 19 Po Wing Road, Sheung Shui",
-    "location_alt": "上水保榮路19號保榮路體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#1147",
+    "title": "保榮路體育館羽毛球場租訂",
+    "title_en": "Badminton Court Booking — Po Wing Road Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "badminton",
@@ -3253,26 +3246,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "14:00",
-        "end_time": "16:00"
+        "start": "2026-10-04T06:00:00Z",
+        "end": "2026-10-04T08:00:00Z"
       }
     ],
-    "cost": "HKD 59–118 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "North",
+      "venue": "Po Wing Road Sports Centre",
+      "address": "19 Po Wing Road, Sheung Shui"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#1147"
   },
   {
     "id": "act-114",
-    "title": "Indoor Basketball & Sports Hall Session — Wo Hing Sports Centre",
-    "title_alt": "和興體育館室內體育主場籃球時段",
-    "description": "Standard public recreational facility provided by LCSD at Wo Hing Sports Centre in North. Multi-purpose sports hall configured for basketball during scheduled public sessions or club booking via SmartPLAY.",
-    "description_alt": "康文署於North和興體育館提供的標準康體設施。多用途室內主場，設有標準木地板及籃球設施，可透過 SmartPLAY 預訂時段進行練球或比賽。",
-    "lang": "bilingual",
-    "district": "North",
-    "location": "Wo Hing Sports Centre, 8 Wo Ming Lane, Fanling",
-    "location_alt": "粉嶺和鳴里8號和興體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#349",
+    "title": "和興體育館室內體育主場籃球時段",
+    "title_en": "Indoor Basketball & Sports Hall Session — Wo Hing Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "basketball",
@@ -3282,26 +3275,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "09:00",
-        "end_time": "11:00"
+        "start": "2026-10-03T01:00:00Z",
+        "end": "2026-10-03T03:00:00Z"
       }
     ],
-    "cost": "HKD 148–296 / hr (Full court booking)",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "North",
+      "venue": "Wo Hing Sports Centre",
+      "address": "8 Wo Ming Lane, Fanling"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#349"
   },
   {
     "id": "act-115",
-    "title": "Badminton Court Booking — Tai Po Sports Centre",
-    "title_alt": "大埔體育館羽毛球場租訂",
-    "description": "Standard public recreational facility provided by LCSD at Tai Po Sports Centre in Tai Po. Air-conditioned indoor badminton courts bookable 7 days in advance via SmartPLAY during standard opening hours (07:00–23:00).",
-    "description_alt": "康文署於Tai Po大埔體育館提供的標準康體設施。設有空調的室內羽毛球場，可於開放時間（07:00–23:00）透過 SmartPLAY 系統提前7天預約。",
-    "lang": "bilingual",
-    "district": "Tai Po",
-    "location": "Tai Po Sports Centre, 13 Ting Kok Road, Tai Po",
-    "location_alt": "大埔汀角路13號大埔體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#95",
+    "title": "大埔體育館羽毛球場租訂",
+    "title_en": "Badminton Court Booking — Tai Po Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "badminton",
@@ -3311,26 +3304,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "10:00",
-        "end_time": "12:00"
+        "start": "2026-10-04T02:00:00Z",
+        "end": "2026-10-04T04:00:00Z"
       }
     ],
-    "cost": "HKD 59–118 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Tai Po",
+      "venue": "Tai Po Sports Centre",
+      "address": "13 Ting Kok Road, Tai Po"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#95"
   },
   {
     "id": "act-116",
-    "title": "Table Tennis Practice Session — Fu Heng Sports Centre",
-    "title_alt": "富亨體育館乒乓球室切磋時段",
-    "description": "Standard public recreational facility provided by LCSD at Fu Heng Sports Centre in Tai Po. Standard indoor table tennis tables bookable via SmartPLAY during venue operating hours.",
-    "description_alt": "康文署於Tai Po富亨體育館提供的標準康體設施。配備標準球枱的室內乒乓球室，可於場館開放時間透過 SmartPLAY 預約租用進行切磋練習。",
-    "lang": "bilingual",
-    "district": "Tai Po",
-    "location": "Fu Heng Sports Centre, Fu Heng Shopping Centre, Tai Po",
-    "location_alt": "大埔富亨商場富亨體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#82",
+    "title": "富亨體育館乒乓球室切磋時段",
+    "title_en": "Table Tennis Practice Session — Fu Heng Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "table-tennis",
@@ -3340,26 +3333,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "11:00",
-        "end_time": "13:00"
+        "start": "2026-10-03T03:00:00Z",
+        "end": "2026-10-03T05:00:00Z"
       }
     ],
-    "cost": "HKD 14–28 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Tai Po",
+      "venue": "Fu Heng Sports Centre",
+      "address": "Fu Heng Shopping Centre, Tai Po"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#82"
   },
   {
     "id": "act-117",
-    "title": "Badminton Court Booking — Tai Po Hui Sports Centre",
-    "title_alt": "大埔墟體育館羽毛球場租訂",
-    "description": "Standard public recreational facility provided by LCSD at Tai Po Hui Sports Centre in Tai Po. Air-conditioned indoor badminton courts bookable 7 days in advance via SmartPLAY during standard opening hours (07:00–23:00).",
-    "description_alt": "康文署於Tai Po大埔墟體育館提供的標準康體設施。設有空調的室內羽毛球場，可於開放時間（07:00–23:00）透過 SmartPLAY 系統提前7天預約。",
-    "lang": "bilingual",
-    "district": "Tai Po",
-    "location": "Tai Po Hui Sports Centre, 8 Heung Sze Wui Street, Tai Po",
-    "location_alt": "大埔鄉事會街8號大埔墟體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#93",
+    "title": "大埔墟體育館羽毛球場租訂",
+    "title_en": "Badminton Court Booking — Tai Po Hui Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "badminton",
@@ -3369,26 +3362,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "12:00",
-        "end_time": "14:00"
+        "start": "2026-10-04T04:00:00Z",
+        "end": "2026-10-04T06:00:00Z"
       }
     ],
-    "cost": "HKD 59–118 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Tai Po",
+      "venue": "Tai Po Hui Sports Centre",
+      "address": "8 Heung Sze Wui Street, Tai Po"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#93"
   },
   {
     "id": "act-118",
-    "title": "Table Tennis Practice Session — Ma On Shan Sports Centre",
-    "title_alt": "馬鞍山體育館乒乓球室切磋時段",
-    "description": "Standard public recreational facility provided by LCSD at Ma On Shan Sports Centre in Sha Tin. Standard indoor table tennis tables bookable via SmartPLAY during venue operating hours.",
-    "description_alt": "康文署於Sha Tin馬鞍山體育館提供的標準康體設施。配備標準球枱的室內乒乓球室，可於場館開放時間透過 SmartPLAY 預約租用進行切磋練習。",
-    "lang": "bilingual",
-    "district": "Sha Tin",
-    "location": "Ma On Shan Sports Centre, 14 On Chun Street, Ma On Shan",
-    "location_alt": "馬鞍山鞍駿街14號馬鞍山體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#411",
+    "title": "馬鞍山體育館乒乓球室切磋時段",
+    "title_en": "Table Tennis Practice Session — Ma On Shan Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "table-tennis",
@@ -3398,26 +3391,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "13:00",
-        "end_time": "15:00"
+        "start": "2026-10-03T05:00:00Z",
+        "end": "2026-10-03T07:00:00Z"
       }
     ],
-    "cost": "HKD 14–28 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Sha Tin",
+      "venue": "Ma On Shan Sports Centre",
+      "address": "14 On Chun Street, Ma On Shan"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#411"
   },
   {
     "id": "act-119",
-    "title": "Indoor Basketball & Sports Hall Session — Yuen Wo Road Sports Centre",
-    "title_alt": "源禾路體育館室內體育主場籃球時段",
-    "description": "Standard public recreational facility provided by LCSD at Yuen Wo Road Sports Centre in Sha Tin. Multi-purpose sports hall configured for basketball during scheduled public sessions or club booking via SmartPLAY.",
-    "description_alt": "康文署於Sha Tin源禾路體育館提供的標準康體設施。多用途室內主場，設有標準木地板及籃球設施，可透過 SmartPLAY 預訂時段進行練球或比賽。",
-    "lang": "bilingual",
-    "district": "Sha Tin",
-    "location": "Yuen Wo Road Sports Centre, 8 Yuen Wo Road, Sha Tin",
-    "location_alt": "沙田源禾路8號源禾路體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#448",
+    "title": "源禾路體育館室內體育主場籃球時段",
+    "title_en": "Indoor Basketball & Sports Hall Session — Yuen Wo Road Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "basketball",
@@ -3427,26 +3420,26 @@
     ],
     "parts": [
       {
-        "day_of_week": "sunday",
-        "start_time": "14:00",
-        "end_time": "16:00"
+        "start": "2026-10-04T06:00:00Z",
+        "end": "2026-10-04T08:00:00Z"
       }
     ],
-    "cost": "HKD 148–296 / hr (Full court booking)",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Sha Tin",
+      "venue": "Yuen Wo Road Sports Centre",
+      "address": "8 Yuen Wo Road, Sha Tin"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#448"
   },
   {
     "id": "act-120",
-    "title": "Badminton Court Booking — Hin Keng Sports Centre",
-    "title_alt": "顯徑體育館羽毛球場租訂",
-    "description": "Standard public recreational facility provided by LCSD at Hin Keng Sports Centre in Sha Tin. Air-conditioned indoor badminton courts bookable 7 days in advance via SmartPLAY during standard opening hours (07:00–23:00).",
-    "description_alt": "康文署於Sha Tin顯徑體育館提供的標準康體設施。設有空調的室內羽毛球場，可於開放時間（07:00–23:00）透過 SmartPLAY 系統提前7天預約。",
-    "lang": "bilingual",
-    "district": "Sha Tin",
-    "location": "Hin Keng Sports Centre, Hin Keng Estate, Sha Tin",
-    "location_alt": "沙田顯徑邨顯徑體育館",
-    "source": "LCSD",
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#396",
+    "title": "顯徑體育館羽毛球場租訂",
+    "title_en": "Badminton Court Booking — Hin Keng Sports Centre",
+    "lang": "zh",
     "tags": [
       "sports",
       "badminton",
@@ -3456,12 +3449,19 @@
     ],
     "parts": [
       {
-        "day_of_week": "saturday",
-        "start_time": "09:00",
-        "end_time": "11:00"
+        "start": "2026-10-03T01:00:00Z",
+        "end": "2026-10-03T03:00:00Z"
       }
     ],
-    "cost": "HKD 59–118 / hr",
-    "is_guide": false
+    "source": {
+      "name": "Leisure and Cultural Services Department",
+      "url": "https://www.lcsd.gov.hk/"
+    },
+    "location": {
+      "district": "Sha Tin",
+      "venue": "Hin Keng Sports Centre",
+      "address": "Hin Keng Estate, Sha Tin"
+    },
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#396"
   }
 ]
