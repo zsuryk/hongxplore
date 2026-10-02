@@ -6,20 +6,126 @@
     Roboto,
     sans-serif;
   color: #1a1a2e;
-  background: #f7f7fb;
+  background: #f2f4f8;
 }
 
 body {
   margin: 0;
-  padding: 3rem 2rem;
+  min-width: 320px;
 }
 
 .app {
-  max-width: 40rem;
-  margin: 0 auto;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100dvh;
 }
 
-.app h1 {
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
+.app__header {
+  align-items: center;
+  background: #ffffff;
+  border-bottom: 1px solid #dce1eb;
+  display: flex;
+  gap: 1.5rem;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+}
+
+.app__header h1,
+.app__header p,
+.board-guide h2,
+.board-guide p {
+  margin: 0;
+}
+
+.app__header h1 {
+  font-size: 1.25rem;
+}
+
+.app__header p {
+  color: #606a7c;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.viewport-controls {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.viewport-controls button {
+  background: #ffffff;
+  border: 1px solid #cbd3e1;
+  border-radius: 0.4rem;
+  color: #1a1a2e;
+  cursor: pointer;
+  font: inherit;
+  min-height: 2.25rem;
+  padding: 0.25rem 0.625rem;
+}
+
+.viewport-controls button:hover {
+  background: #f2f4f8;
+}
+
+.viewport-controls output {
+  color: #606a7c;
+  font-size: 0.875rem;
+  min-width: 4.5rem;
+  text-align: center;
+}
+
+.board {
+  background-color: #f8f9fc;
+  background-image:
+    linear-gradient(to right, rgb(84 97 122 / 12%) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(84 97 122 / 12%) 1px, transparent 1px);
+  cursor: grab;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+  touch-action: none;
+}
+
+.board--dragging {
+  cursor: grabbing;
+}
+
+.board__world {
+  inset: 0;
+  position: absolute;
+  transform-origin: 0 0;
+}
+
+.board-guide {
+  background: #ffffff;
+  border: 1px solid #dce1eb;
+  border-radius: 1rem;
+  box-shadow: 0 1rem 3rem rgb(33 43 61 / 10%);
+  box-sizing: border-box;
+  padding: 2rem;
+  position: absolute;
+}
+
+.board-guide h2 {
+  font-size: 1.5rem;
+}
+
+.board-guide p {
+  color: #606a7c;
+  line-height: 1.5;
+  margin-top: 0.75rem;
+}
+
+@media (width <= 640px) {
+  .app__header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+
+  .viewport-controls {
+    flex-wrap: wrap;
+  }
 }
