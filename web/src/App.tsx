@@ -1,4 +1,7 @@
 import { type PointerEvent, type WheelEvent, useMemo, useRef, useState } from 'react';
+import agentResponse from '../../docs/examples/agent-response.json';
+import { ActivityCard } from './ActivityCard';
+import type { components } from './api/schema';
 import {
   BOARD_GUIDE_BODY,
   BOARD_GUIDE_TITLE,
@@ -24,7 +27,13 @@ import {
 const GRID_SIZE = 40;
 const FIT_PADDING = 96;
 const ZOOM_STEP = 1.2;
-const CONTENT_BOUNDS = { x: -280, y: -160, width: 560, height: 320 };
+const CONTENT_BOUNDS = { x: -560, y: -300, width: 1120, height: 600 };
+const fixtureResponse = agentResponse as components['schemas']['AgentResponse'];
+const cardPositions = [
+  { x: -520, y: 80 },
+  { x: -160, y: 80 },
+  { x: 200, y: 80 },
+];
 
 type DragState = {
   pointerId: number;
@@ -211,10 +220,19 @@ export function App() {
           className="board__world"
           style={{ transform: `translate3d(${viewport.x}px, ${viewport.y}px, 0) scale(${viewport.scale})` }}
         >
-          <section className="board-guide" style={CONTENT_BOUNDS}>
+          <section className="board-guide">
             <h2>{BOARD_GUIDE_TITLE}</h2>
             <p>{BOARD_GUIDE_BODY}</p>
           </section>
+          <div className="board__cards">
+            {fixtureResponse.matches.map((match, index) => (
+              <ActivityCard
+                key={match.activity.id}
+                match={match}
+                style={{ left: cardPositions[index]?.x, top: cardPositions[index]?.y }}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </main>
