@@ -157,20 +157,23 @@ def parse_intent_response(
     data = extract_json_payload(raw_text)
 
     query_echo = query or str(data.get("query", ""))
-    matched_indices = data.get("matched_slot_indices", [])
-    if not isinstance(matched_indices, list):
-        matched_indices = []
+    raw_indices = data.get("matched_slot_indices")
+    matched_indices: list[int] = (
+        [idx for idx in raw_indices if isinstance(idx, int)]
+        if isinstance(raw_indices, list)
+        else []
+    )
 
     target_slots: list[FreeSlot] = []
     if free_slots:
         for idx in matched_indices:
-            if isinstance(idx, int) and 0 <= idx < len(free_slots):
+            if 0 <= idx < len(free_slots):
                 target_slots.append(free_slots[idx])
 
     payload = {
         **data,
         "query": query_echo,
-        "matched_slot_indices": [i for i in matched_indices if isinstance(i, int)],
+        "matched_slot_indices": matched_indices,
         "target_slots": target_slots,
     }
 

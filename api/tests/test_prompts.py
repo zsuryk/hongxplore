@@ -68,7 +68,7 @@ def test_intent_template_rendering_with_agent_request() -> None:
     )
     system, user = render_intent_prompt(request)
 
-    assert "Hongxplore's intent parsing engine" in system
+    assert "intent parsing engine" in system
     assert "Target JSON Schema:" in system
     assert request.query in user
     assert "Slot [0]:" in user
@@ -151,7 +151,7 @@ def test_rationale_template_rendering(sample_activity: Activity) -> None:
         activity=sample_activity,
         free_slots=[slot],
     )
-    assert "Hongxplore's activity match rationalizer" in system
+    assert "activity match rationalizer" in system
     assert sample_activity.id in user
     assert sample_activity.title in user
     assert sample_activity.location.district in user

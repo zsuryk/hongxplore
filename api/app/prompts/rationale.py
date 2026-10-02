@@ -10,7 +10,7 @@ from app.prompts.intent import extract_json_payload, format_timerange_hkt
 from app.prompts.models import PromptParseError
 
 RATIONALE_SYSTEM_PROMPT_V1 = """\
-You are Hongxplore's activity match rationalizer for Hong Kong weekend explorers.
+You are an activity match rationalizer for Hong Kong weekend explorers.
 Produce a concise, compelling 1-2 sentence match rationale explaining why an Activity fits
 the user's query and schedule.
 
