@@ -15,8 +15,8 @@ from app.services.llm import LLMClient, OpenAILLMClient
 def test_implements_llm_client_protocol() -> None:
     """OpenAILLMClient satisfies the LLMClient protocol structurally."""
     cfg = Settings(openai_api_key="test-key", openai_model="test-model")
-    client = OpenAILLMClient(config=cfg)
-    assert isinstance(client, LLMClient)
+    client: LLMClient = OpenAILLMClient(config=cfg)
+    assert callable(client.complete)
 
 
 @pytest.mark.anyio
@@ -163,5 +163,6 @@ def test_client_timeout_and_retries_configured_from_settings() -> None:
         openai_model="model",
     )
     client = OpenAILLMClient(config=cfg)
-    assert client._client.timeout == 45.0
-    assert client._client.max_retries == 4
+    underlying = client._get_client()
+    assert underlying.timeout == 45.0
+    assert underlying.max_retries == 4
