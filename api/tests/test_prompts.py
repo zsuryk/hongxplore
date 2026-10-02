@@ -18,6 +18,7 @@ from app.models import (
     MatchedActivity,
 )
 from app.prompts import (
+    HONG_KONG_DISTRICTS,
     INTENT_PROMPT_V1,
     RATIONALE_PROMPT_V1,
     SAMPLE_INTENT_FIXTURES,
@@ -25,6 +26,7 @@ from app.prompts import (
     PromptParseError,
     build_matched_activity,
     format_timerange_hkt,
+    normalize_district,
     parse_intent_response,
     parse_rationale_response,
     render_intent_prompt,
@@ -230,3 +232,76 @@ def test_format_timerange_hkt() -> None:
     end = datetime(2026, 10, 3, 10, 0, tzinfo=UTC)
     formatted = format_timerange_hkt(start, end)
     assert formatted == "2026-10-03 (Saturday) 14:00 - 18:00 HKT"
+
+
+def test_intent_parsing_ignores_extra_keys() -> None:
+    """Assert extra keys from LLM completions (e.g. confidence, reasoning) do not fail parsing."""
+    raw = (
+        "{\n"
+        '  "search_query": "badminton Wan Chai",\n'
+        '  "categories": ["sport"],\n'
+        '  "districts": ["Wan Chai"],\n'
+        '  "free_only": false,\n'
+        '  "english_friendly": false,\n'
+        '  "temporal_expression": null,\n'
+        '  "matched_slot_indices": [],\n'
+        '  "summary": "sport, Wan Chai",\n'
+        '  "confidence": 0.95,\n'
+        '  "reasoning": "User asked for badminton in Wan Chai"\n'
+        "}\n"
+    )
+    parsed = parse_intent_response(raw, query="badminton Wan Chai")
+    assert parsed.search_query == "badminton Wan Chai"
+    assert parsed.summary == "sport, Wan Chai"
+
+
+def test_intent_parsing_normalizes_districts() -> None:
+    """Assert non-canonical district spelling ('Central and Western', lowercase) normalizes."""
+    raw = (
+        "{\n"
+        '  "search_query": "art gallery Central",\n'
+        '  "categories": ["art"],\n'
+        '  "districts": ["Central and Western", "wan chai", "UNKNOWN_DISTRICT"],\n'
+        '  "free_only": false,\n'
+        '  "english_friendly": false,\n'
+        '  "temporal_expression": null,\n'
+        '  "matched_slot_indices": [],\n'
+        '  "summary": "art, Central & Western"\n'
+        "}\n"
+    )
+    parsed = parse_intent_response(raw, query="art gallery Central")
+    assert parsed.districts == ["Central & Western", "Wan Chai", "UNKNOWN_DISTRICT"]
+
+
+def test_parsed_intent_to_log_message_avoids_double_prefix() -> None:
+    """Assert to_log_message handles both bare and pre-prefixed summaries without double prefix."""
+    intent_bare = ParsedIntent(
+        query="test",
+        search_query="test",
+        summary="culture, Kowloon",
+    )
+    assert intent_bare.to_log_message() == "Parsed intent: culture, Kowloon"
+
+    intent_prefixed = ParsedIntent(
+        query="test",
+        search_query="test",
+        summary="Parsed intent: culture, Kowloon",
+    )
+    assert intent_prefixed.to_log_message() == "Parsed intent: culture, Kowloon"
+
+    intent_lowercase_prefixed = ParsedIntent(
+        query="test",
+        search_query="test",
+        summary="parsed intent: culture, Kowloon",
+    )
+    assert intent_lowercase_prefixed.to_log_message() == "Parsed intent: culture, Kowloon"
+
+
+def test_canonical_hong_kong_districts() -> None:
+    """Assert canonical HK districts list has 18 districts with Central & Western."""
+    assert len(HONG_KONG_DISTRICTS) == 18
+    assert "Central & Western" in HONG_KONG_DISTRICTS
+    assert "Central and Western" not in HONG_KONG_DISTRICTS
+    assert normalize_district("Central and Western") == "Central & Western"
+    assert normalize_district("central and western") == "Central & Western"
+    assert normalize_district("Wan Chai") == "Wan Chai"

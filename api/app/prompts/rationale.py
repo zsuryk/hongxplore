@@ -17,12 +17,12 @@ the user's query and schedule.
 Rules:
 1. Length: Exactly 1 to 2 sentences (typically 15 to 35 words).
 2. Explicitly cite key matching factors: district/neighbourhood, time fit with the user's
-   free slot (displayed in HKT), price (e.g., 'Free'), or activity tags.
+   free slot (displayed in HKT), or activity tags.
 3. Keep the tone natural, helpful, and direct. Avoid generic filler such as
    'This activity matches because...' or 'Recommended for you:'.
-4. If outputting JSON, use:
-{"match_rationale": "Free, in Tsim Sha Tsui, and the 2pm start sits inside your Saturday slot."}
-Otherwise, output the 1-2 sentences directly.
+4. Output valid JSON only:
+{"match_rationale": "In Tsim Sha Tsui, and the 2pm start sits inside your Saturday slot."}
+Do not include markdown commentary or extraneous text.
 """
 
 RATIONALE_USER_TEMPLATE_V1 = """\

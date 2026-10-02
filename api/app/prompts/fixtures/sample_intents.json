@@ -65,7 +65,7 @@
       ],
       "districts": [
         "Wan Chai",
-        "Central and Western"
+        "Central & Western"
       ],
       "free_only": false,
       "english_friendly": false,
@@ -81,7 +81,7 @@
       ],
       "summary": "badminton, Wan Chai / Central, Sunday morning"
     },
-    "sample_llm_response": "{\n  \"search_query\": \"badminton court booking indoor sports centre Wan Chai Central\",\n  \"categories\": [\"sport\", \"badminton\", \"facility\", \"indoor\"],\n  \"districts\": [\"Wan Chai\", \"Central and Western\"],\n  \"free_only\": false,\n  \"english_friendly\": false,\n  \"temporal_expression\": \"Sunday morning\",\n  \"matched_slot_indices\": [0],\n  \"summary\": \"badminton, Wan Chai / Central, Sunday morning\"\n}"
+    "sample_llm_response": "{\n  \"search_query\": \"badminton court booking indoor sports centre Wan Chai Central\",\n  \"categories\": [\"sport\", \"badminton\", \"facility\", \"indoor\"],\n  \"districts\": [\"Wan Chai\", \"Central & Western\"],\n  \"free_only\": false,\n  \"english_friendly\": false,\n  \"temporal_expression\": \"Sunday morning\",\n  \"matched_slot_indices\": [0],\n  \"summary\": \"badminton, Wan Chai / Central, Sunday morning\"\n}"
   },
   {
     "id": "art-exhibition-hkisland-friday",
@@ -104,7 +104,7 @@
         "museum"
       ],
       "districts": [
-        "Central and Western",
+        "Central & Western",
         "Wan Chai",
         "Eastern",
         "Southern"
@@ -123,7 +123,7 @@
       ],
       "summary": "art exhibition, Hong Kong Island, Friday evening"
     },
-    "sample_llm_response": "{\n  \"search_query\": \"art exhibition museum tour Hong Kong Island\",\n  \"categories\": [\"art\", \"exhibition\", \"museum\"],\n  \"districts\": [\"Central and Western\", \"Wan Chai\", \"Eastern\", \"Southern\"],\n  \"free_only\": false,\n  \"english_friendly\": false,\n  \"temporal_expression\": \"Friday evening\",\n  \"matched_slot_indices\": [0],\n  \"summary\": \"art exhibition, Hong Kong Island, Friday evening\"\n}"
+    "sample_llm_response": "{\n  \"search_query\": \"art exhibition museum tour Hong Kong Island\",\n  \"categories\": [\"art\", \"exhibition\", \"museum\"],\n  \"districts\": [\"Central & Western\", \"Wan Chai\", \"Eastern\", \"Southern\"],\n  \"free_only\": false,\n  \"english_friendly\": false,\n  \"temporal_expression\": \"Friday evening\",\n  \"matched_slot_indices\": [0],\n  \"summary\": \"art exhibition, Hong Kong Island, Friday evening\"\n}"
   },
   {
     "id": "hiking-photography-saikung",

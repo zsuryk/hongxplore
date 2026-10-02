@@ -22,7 +22,7 @@ Target JSON Schema:
 {
   "search_query": "string — high-signal search keywords (e.g. 'cultural tour Kowloon')",
   "categories": ["string — tags: 'culture', 'sport', 'art', 'museum', 'hiking', etc."],
-  "districts": ["string — HK districts, e.g. 'Wan Chai', 'Yau Tsim Mong', 'Sai Kung']",
+  "districts": ["string — HK districts, e.g. 'Wan Chai', 'Central & Western', 'Sai Kung']",
   "free_only": true/false,
   "english_friendly": true/false,
   "temporal_expression": "string or null — e.g. 'Saturday afternoon', null",
@@ -32,13 +32,18 @@ Target JSON Schema:
 
 Guidelines:
 1. "search_query" should be concise keywords for web/facility search.
-2. "districts" should use standard HK district names (e.g. 'Wan Chai', 'Sham Shui Po').
+2. "districts" must only use standard HK district names from this canonical list:
+   - Hong Kong Island: 'Central & Western', 'Wan Chai', 'Eastern', 'Southern'
+   - Kowloon: 'Yau Tsim Mong', 'Sham Shui Po', 'Kowloon City', 'Wong Tai Sin', 'Kwun Tong'
+   - New Territories: 'Kwai Tsing', 'Tsuen Wan', 'Tuen Mun', 'Yuen Long', 'North',
+     'Tai Po', 'Sha Tin', 'Sai Kung', 'Islands'
    If user says 'Kowloon', expand to key Kowloon districts.
    If 'Hong Kong Island', expand to Island districts.
+   Always use 'Central & Western' (with '&', not 'and').
 3. "free_only" is true only if the user explicitly asks for free/no-cost activities.
 4. "english_friendly" is true if user requests English-friendly or bilingual events.
 5. "matched_slot_indices" lists 0-based indices of provided free slots that overlap.
-6. "summary" is a compact summary: "Parsed intent: <summary>".
+6. "summary" is a compact summary (e.g. 'culture, Kowloon, Saturday afternoon, free').
 7. Output valid JSON only without markdown commentary.
 """
 
@@ -48,6 +53,40 @@ User query: "{query}"
 Available free slots (Hong Kong Time):
 {slots_text}
 """
+
+
+HONG_KONG_DISTRICTS: tuple[str, ...] = (
+    # Hong Kong Island
+    "Central & Western",
+    "Wan Chai",
+    "Eastern",
+    "Southern",
+    # Kowloon
+    "Yau Tsim Mong",
+    "Sham Shui Po",
+    "Kowloon City",
+    "Wong Tai Sin",
+    "Kwun Tong",
+    # New Territories
+    "Kwai Tsing",
+    "Tsuen Wan",
+    "Tuen Mun",
+    "Yuen Long",
+    "North",
+    "Tai Po",
+    "Sha Tin",
+    "Sai Kung",
+    "Islands",
+)
+
+_DISTRICT_LOOKUP: dict[str, str] = {d.lower(): d for d in HONG_KONG_DISTRICTS}
+_DISTRICT_LOOKUP["central and western"] = "Central & Western"
+
+
+def normalize_district(name: str) -> str:
+    """Normalize district name to standard Hong Kong district spelling."""
+    clean = name.strip()
+    return _DISTRICT_LOOKUP.get(clean.lower(), clean)
 
 
 def format_timerange_hkt(start: datetime, end: datetime) -> str:
@@ -170,12 +209,24 @@ def parse_intent_response(
             if 0 <= idx < len(free_slots):
                 target_slots.append(free_slots[idx])
 
-    payload = {
-        **data,
-        "query": query_echo,
-        "matched_slot_indices": matched_indices,
-        "target_slots": target_slots,
-    }
+    # Whitelist known fields to gracefully ignore unexpected completion keys
+    valid_fields = set(ParsedIntent.model_fields.keys())
+    payload: dict[str, Any] = {k: v for k, v in data.items() if k in valid_fields}
+
+    # Normalize district names if provided
+    raw_districts = data.get("districts")
+    if isinstance(raw_districts, list):
+        normalized_districts: list[str] = []
+        for d in raw_districts:
+            if isinstance(d, str):
+                norm = normalize_district(d)
+                if norm and norm not in normalized_districts:
+                    normalized_districts.append(norm)
+        payload["districts"] = normalized_districts
+
+    payload["query"] = query_echo
+    payload["matched_slot_indices"] = matched_indices
+    payload["target_slots"] = target_slots
 
     try:
         return ParsedIntent.model_validate(payload)

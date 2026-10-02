@@ -1,5 +1,7 @@
 """Data models for prompt inputs, structured outputs, and parsing errors."""
 
+from pydantic import ConfigDict
+
 from app.models import ContractModel, FreeSlot
 
 
@@ -12,6 +14,8 @@ class ParsedIntent(ContractModel):
 
     Conforms to issue #4 canonical contract models and feeds search providers and agent logging.
     """
+
+    model_config = ConfigDict(extra="ignore")
 
     query: str
     search_query: str
@@ -26,4 +30,9 @@ class ParsedIntent(ContractModel):
 
     def to_log_message(self) -> str:
         """Format as message for AgentLogEntry in AgentResponse.log."""
-        return f"Parsed intent: {self.summary}"
+        summary = self.summary.strip()
+        prefix = "parsed intent:"
+        if summary.lower().startswith(prefix):
+            remainder = summary[len(prefix) :].strip()
+            return f"Parsed intent: {remainder}"
+        return f"Parsed intent: {summary}"
