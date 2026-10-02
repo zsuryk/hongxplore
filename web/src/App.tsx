@@ -1,4 +1,4 @@
-import { type PointerEvent, type WheelEvent, useMemo, useRef, useState } from 'react';
+import { type PointerEvent, type WheelEvent, useEffect, useMemo, useRef, useState } from 'react';
 import agentResponse from '../../docs/examples/agent-response.json';
 import { ActivityCard } from './ActivityCard';
 import type { components } from './api/schema';
@@ -9,11 +9,14 @@ import {
   FIT_VIEW_LABEL,
   HEADING,
   TAGLINE,
+  TIMELINE_LABEL,
+  TIMELINE_SLOTS,
   ZOOM_CONTROL_LABEL,
   ZOOM_IN_LABEL,
   ZOOM_OUT_LABEL,
   zoomPercentage,
 } from './copy';
+import { useBoardStore } from './state/boardStore';
 import {
   fitViewport,
   initialViewport,
@@ -46,12 +49,28 @@ type PinchState = {
   viewport: Viewport;
 };
 
+type CardDragState = {
+  cardId: string;
+  pointerId: number;
+  screenPoint: Point;
+  worldPoint: Point;
+};
+
 export function App() {
   const boardRef = useRef<HTMLDivElement>(null);
   const activePointersRef = useRef(new Map<number, Point>());
+  const timelineSlots = useBoardStore((state) => state.timelineSlots);
+  const dockCard = useBoardStore((state) => state.dockCard);
+  const setTimelineSlots = useBoardStore((state) => state.setTimelineSlots);
   const [viewport, setViewport] = useState<Viewport>(initialViewport);
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [pinchState, setPinchState] = useState<PinchState | null>(null);
+  const [cardDragState, setCardDragState] = useState<CardDragState | null>(null);
+  const [dragPosition, setDragPosition] = useState<Point | null>(null);
+
+  useEffect(() => {
+    setTimelineSlots(TIMELINE_SLOTS.map((slot) => ({ ...slot, activityId: null })));
+  }, [setTimelineSlots]);
 
   const gridStyle = useMemo(() => {
     const gridSize = GRID_SIZE * viewport.scale;
@@ -72,6 +91,9 @@ export function App() {
   }
 
   function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
+    if (event.target instanceof Element && event.target.closest('[data-activity-card]')) {
+      return;
+    }
     const screenPoint = screenPointFromClient(event.clientX, event.clientY);
     if (!screenPoint) {
       return;
@@ -96,6 +118,58 @@ export function App() {
         viewport,
       });
     }
+  }
+
+  function handleCardPointerDown(event: PointerEvent<HTMLDivElement>, cardId: string, index: number) {
+    const screenPoint = screenPointFromClient(event.clientX, event.clientY);
+    if (!screenPoint) {
+      return;
+    }
+
+    event.stopPropagation();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setCardDragState({
+      cardId,
+      pointerId: event.pointerId,
+      screenPoint,
+      worldPoint: cardPositions[index] ?? { x: 0, y: 0 },
+    });
+  }
+
+  function handleCardPointerMove(event: PointerEvent<HTMLDivElement>) {
+    if (!cardDragState || cardDragState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const screenPoint = screenPointFromClient(event.clientX, event.clientY);
+    if (!screenPoint) {
+      return;
+    }
+
+    setDragPosition({
+      x: cardDragState.worldPoint.x + (screenPoint.x - cardDragState.screenPoint.x) / viewport.scale,
+      y: cardDragState.worldPoint.y + (screenPoint.y - cardDragState.screenPoint.y) / viewport.scale,
+    });
+  }
+
+  function finishCardDrag(event: PointerEvent<HTMLDivElement>) {
+    if (!cardDragState || cardDragState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const slotId = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>('[data-timeline-slot]')
+      ?.dataset.timelineSlot;
+    if (slotId) {
+      dockCard(cardDragState.cardId, slotId);
+    }
+
+    setCardDragState(null);
+    setDragPosition(null);
+  }
+
+  function cancelCardDrag() {
+    setCardDragState(null);
+    setDragPosition(null);
   }
 
   function handlePointerMove(event: PointerEvent<HTMLDivElement>) {
@@ -216,6 +290,21 @@ export function App() {
         role="application"
         style={gridStyle}
       >
+        <section aria-label={TIMELINE_LABEL} className="timeline">
+          <h2>{TIMELINE_LABEL}</h2>
+          <div className="timeline__slots">
+            {timelineSlots.map((slot) => {
+              const match = fixtureResponse.matches.find((candidate) => candidate.activity.id === slot.activityId);
+
+              return (
+                <div className="timeline__slot" data-timeline-slot={slot.id} key={slot.id}>
+                  <span>{TIMELINE_SLOTS.find((definition) => definition.id === slot.id)?.label}</span>
+                  {match ? <ActivityCard match={match} state="spawning" /> : null}
+                </div>
+              );
+            })}
+          </div>
+        </section>
         <div
           className="board__world"
           style={{ transform: `translate3d(${viewport.x}px, ${viewport.y}px, 0) scale(${viewport.scale})` }}
@@ -225,13 +314,30 @@ export function App() {
             <p>{BOARD_GUIDE_BODY}</p>
           </section>
           <div className="board__cards">
-            {fixtureResponse.matches.map((match, index) => (
-              <ActivityCard
-                key={match.activity.id}
-                match={match}
-                style={{ left: cardPositions[index]?.x, top: cardPositions[index]?.y }}
-              />
-            ))}
+            {fixtureResponse.matches
+              .filter((match) => !timelineSlots.some((slot) => slot.activityId === match.activity.id))
+              .map((match) => {
+                const index = fixtureResponse.matches.findIndex(
+                  (candidate) => candidate.activity.id === match.activity.id,
+                );
+                const position =
+                  cardDragState?.cardId === match.activity.id && dragPosition ? dragPosition : cardPositions[index];
+
+                return (
+                  <div
+                    className={`board__card${cardDragState?.cardId === match.activity.id ? ' board__card--dragging' : ''}`}
+                    data-activity-card
+                    key={match.activity.id}
+                    onPointerCancel={cancelCardDrag}
+                    onPointerDown={(event) => handleCardPointerDown(event, match.activity.id, index)}
+                    onPointerMove={handleCardPointerMove}
+                    onPointerUp={finishCardDrag}
+                    style={{ left: position?.x, top: position?.y }}
+                  >
+                    <ActivityCard match={match} />
+                  </div>
+                );
+              })}
           </div>
         </div>
       </div>

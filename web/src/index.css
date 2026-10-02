@@ -124,6 +124,60 @@ body {
   position: absolute;
 }
 
+.board__card {
+  cursor: grab;
+  position: absolute;
+}
+
+.board__card--dragging {
+  cursor: grabbing;
+  z-index: 2;
+}
+
+.timeline {
+  background: rgb(255 255 255 / 96%);
+  border: 1px solid #dce1eb;
+  border-radius: 0.75rem;
+  bottom: 1rem;
+  padding: 0.75rem;
+  position: absolute;
+  right: 1rem;
+  width: min(44rem, calc(100% - 2rem));
+  z-index: 3;
+}
+
+.timeline h2 {
+  font-size: 0.875rem;
+  margin: 0 0 0.5rem;
+}
+
+.timeline__slots {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.timeline__slot {
+  border: 1px dashed #9ba7bb;
+  border-radius: 0.5rem;
+  min-height: 5rem;
+  padding: 0.5rem;
+}
+
+.timeline__slot > span {
+  color: #606a7c;
+  display: block;
+  font-size: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.timeline__slot .activity-card {
+  box-shadow: none;
+  padding: 0.75rem;
+  position: static;
+  width: 100%;
+}
+
 .activity-card {
   animation: activity-card-spawn 280ms ease-out both;
   background: #ffffff;
