@@ -124,6 +124,16 @@ body {
   position: absolute;
 }
 
+.board__card {
+  cursor: grab;
+  position: absolute;
+}
+
+.board__card--dragging {
+  cursor: grabbing;
+  z-index: 1;
+}
+
 .activity-card {
   animation: activity-card-spawn 280ms ease-out both;
   background: #ffffff;
@@ -200,6 +210,66 @@ body {
 
 .activity-card__source a {
   color: inherit;
+}
+
+.activity-card__similar-button {
+  background: #eef2ff;
+  border: 1px solid #b9c6ff;
+  border-radius: 0.4rem;
+  color: #2d4f9e;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-top: 1rem;
+  padding: 0.45rem 0.65rem;
+}
+
+.discard-bin {
+  align-items: center;
+  background: rgb(255 255 255 / 92%);
+  border: 2px dashed #9ba7bb;
+  border-radius: 0.75rem;
+  bottom: 1.25rem;
+  color: #46536a;
+  display: flex;
+  flex-direction: column;
+  font-size: 0.75rem;
+  gap: 0.25rem;
+  padding: 0.75rem 1rem;
+  position: absolute;
+  right: 1.25rem;
+  text-align: center;
+  width: 12rem;
+  z-index: 2;
+}
+
+.discard-bin--active {
+  background: #fff2f3;
+  border-color: #c95466;
+  color: #8d2738;
+}
+
+.board__empty-state,
+.board__confirmation {
+  background: #ffffff;
+  border: 1px solid #dce1eb;
+  border-radius: 0.5rem;
+  color: #46536a;
+  left: 50%;
+  margin: 0;
+  padding: 0.75rem 1rem;
+  position: absolute;
+  text-align: center;
+  transform: translateX(-50%);
+}
+
+.board__empty-state {
+  top: 1rem;
+}
+
+.board__confirmation {
+  bottom: 1rem;
 }
 
 .sr-only {

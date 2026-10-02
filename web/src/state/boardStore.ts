@@ -16,11 +16,14 @@ export type TimelineSlot = {
   activityId: string | null;
 };
 
-type BoardStore = {
+export type BoardStore = {
   cards: ActivityCard[];
+  discardedCards: ActivityCard[];
   viewport: BoardViewport;
   timelineSlots: TimelineSlot[];
   agentLog: AgentLogEntry[];
+  discardCard: (activityId: string) => void;
+  findSimilar: (card: ActivityCard, client?: AgentClient) => Promise<void>;
   loadAgentResponse: (request: AgentRequest, client?: AgentClient) => Promise<void>;
   setTimelineSlots: (timelineSlots: TimelineSlot[]) => void;
   setViewport: (viewport: BoardViewport) => void;
@@ -28,11 +31,44 @@ type BoardStore = {
 
 const initialViewport: BoardViewport = { x: 0, y: 0, scale: 1 };
 
-export const useBoardStore = create<BoardStore>((set) => ({
+export function similarActivityRequest(card: ActivityCard): AgentRequest {
+  const title = card.activity.title_en ?? card.activity.title;
+  const tags = card.activity.tags.join(', ');
+
+  return {
+    query: `Find activities similar to ${title} in ${card.activity.location.district}: ${tags}`,
+  };
+}
+
+export const useBoardStore = create<BoardStore>((set, get) => ({
   cards: [],
+  discardedCards: [],
   viewport: initialViewport,
   timelineSlots: [],
   agentLog: [],
+  discardCard(activityId) {
+    set((state) => {
+      const card = state.cards.find((candidate) => candidate.activity.id === activityId);
+
+      if (!card) {
+        return state;
+      }
+
+      return {
+        cards: state.cards.filter((candidate) => candidate.activity.id !== activityId),
+        discardedCards: [...state.discardedCards, card],
+      };
+    });
+  },
+  async findSimilar(card, client = fixtureAgentClient) {
+    const response = await client.requestAgent(similarActivityRequest(card));
+    const discardedIds = new Set(get().discardedCards.map((discardedCard) => discardedCard.activity.id));
+
+    set((state) => ({
+      agentLog: response.log,
+      cards: mergeCards(state.cards, response.matches, discardedIds),
+    }));
+  },
   async loadAgentResponse(request, client = fixtureAgentClient) {
     const response = await client.requestAgent(request);
     set({ cards: response.matches, agentLog: response.log });
@@ -44,3 +80,16 @@ export const useBoardStore = create<BoardStore>((set) => ({
     set({ viewport });
   },
 }));
+
+function mergeCards(
+  currentCards: ActivityCard[],
+  incomingCards: ActivityCard[],
+  discardedIds: Set<string>,
+): ActivityCard[] {
+  const existingIds = new Set(currentCards.map((card) => card.activity.id));
+
+  return [
+    ...currentCards,
+    ...incomingCards.filter((card) => !existingIds.has(card.activity.id) && !discardedIds.has(card.activity.id)),
+  ];
+}

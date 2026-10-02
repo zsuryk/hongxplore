@@ -1,19 +1,23 @@
-import { type PointerEvent, type WheelEvent, useMemo, useRef, useState } from 'react';
-import agentResponse from '../../docs/examples/agent-response.json';
+import { type PointerEvent, type WheelEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityCard } from './ActivityCard';
-import type { components } from './api/schema';
 import {
   BOARD_GUIDE_BODY,
   BOARD_GUIDE_TITLE,
   BOARD_LABEL,
+  BOARD_EMPTY_STATE,
+  DISCARD_BIN_HINT,
+  DISCARD_BIN_LABEL,
   FIT_VIEW_LABEL,
   HEADING,
+  INITIAL_ACTIVITY_QUERY,
   TAGLINE,
   ZOOM_CONTROL_LABEL,
   ZOOM_IN_LABEL,
   ZOOM_OUT_LABEL,
+  findSimilarConfirmation,
   zoomPercentage,
 } from './copy';
+import { type ActivityCard as BoardActivityCard, useBoardStore } from './state/boardStore';
 import {
   fitViewport,
   initialViewport,
@@ -28,7 +32,6 @@ const GRID_SIZE = 40;
 const FIT_PADDING = 96;
 const ZOOM_STEP = 1.2;
 const CONTENT_BOUNDS = { x: -560, y: -300, width: 1120, height: 600 };
-const fixtureResponse = agentResponse as components['schemas']['AgentResponse'];
 const cardPositions = [
   { x: -520, y: 80 },
   { x: -160, y: 80 },
@@ -46,12 +49,32 @@ type PinchState = {
   viewport: Viewport;
 };
 
+type CardDragState = {
+  cardId: string;
+  pointerId: number;
+  screenPoint: Point;
+  worldPoint: Point;
+};
+
 export function App() {
   const boardRef = useRef<HTMLDivElement>(null);
+  const discardBinRef = useRef<HTMLElement>(null);
   const activePointersRef = useRef(new Map<number, Point>());
+  const cards = useBoardStore((state) => state.cards);
+  const discardCard = useBoardStore((state) => state.discardCard);
+  const findSimilar = useBoardStore((state) => state.findSimilar);
+  const loadAgentResponse = useBoardStore((state) => state.loadAgentResponse);
   const [viewport, setViewport] = useState<Viewport>(initialViewport);
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [pinchState, setPinchState] = useState<PinchState | null>(null);
+  const [cardDragState, setCardDragState] = useState<CardDragState | null>(null);
+  const [cardPositionsById, setCardPositionsById] = useState<Record<string, Point>>({});
+  const [discardingCardId, setDiscardingCardId] = useState<string | null>(null);
+  const [confirmation, setConfirmation] = useState<string | null>(null);
+
+  useEffect(() => {
+    void loadAgentResponse({ query: INITIAL_ACTIVITY_QUERY });
+  }, [loadAgentResponse]);
 
   const gridStyle = useMemo(() => {
     const gridSize = GRID_SIZE * viewport.scale;
@@ -72,6 +95,10 @@ export function App() {
   }
 
   function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
+    if (event.target instanceof Element && event.target.closest('[data-activity-card]')) {
+      return;
+    }
+
     const screenPoint = screenPointFromClient(event.clientX, event.clientY);
     if (!screenPoint) {
       return;
@@ -152,6 +179,82 @@ export function App() {
     }
   }
 
+  function handleCardPointerDown(event: PointerEvent<HTMLElement>, card: BoardActivityCard, index: number) {
+    const screenPoint = screenPointFromClient(event.clientX, event.clientY);
+    if (!screenPoint) {
+      return;
+    }
+
+    event.stopPropagation();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setCardDragState({
+      cardId: card.activity.id,
+      pointerId: event.pointerId,
+      screenPoint,
+      worldPoint: cardPosition(card, index),
+    });
+  }
+
+  function handleCardPointerMove(event: PointerEvent<HTMLElement>) {
+    if (!cardDragState || cardDragState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const screenPoint = screenPointFromClient(event.clientX, event.clientY);
+    if (!screenPoint) {
+      return;
+    }
+
+    setCardPositionsById((positions) => ({
+      ...positions,
+      [cardDragState.cardId]: {
+        x: cardDragState.worldPoint.x + (screenPoint.x - cardDragState.screenPoint.x) / viewport.scale,
+        y: cardDragState.worldPoint.y + (screenPoint.y - cardDragState.screenPoint.y) / viewport.scale,
+      },
+    }));
+  }
+
+  function handleCardPointerUp(event: PointerEvent<HTMLElement>) {
+    if (!cardDragState || cardDragState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const discardedCardId = cardDragState.cardId;
+    setCardDragState(null);
+
+    if (isOverDiscardBin(event.clientX, event.clientY)) {
+      setDiscardingCardId(discardedCardId);
+      window.setTimeout(() => {
+        discardCard(discardedCardId);
+        setDiscardingCardId(null);
+      }, 220);
+    }
+  }
+
+  function handleCardPointerCancel(event: PointerEvent<HTMLElement>) {
+    if (cardDragState?.pointerId === event.pointerId) {
+      setCardDragState(null);
+    }
+  }
+
+  async function handleFindSimilar(card: BoardActivityCard) {
+    const title = card.activity.title_en ?? card.activity.title;
+    await findSimilar(card);
+    setConfirmation(findSimilarConfirmation(title));
+  }
+
+  function cardPosition(card: BoardActivityCard, index: number): Point {
+    return cardPositionsById[card.activity.id] ?? cardPositions[index] ?? { x: 0, y: 80 };
+  }
+
+  function isOverDiscardBin(clientX: number, clientY: number): boolean {
+    const bounds = discardBinRef.current?.getBoundingClientRect();
+
+    return Boolean(
+      bounds && clientX >= bounds.left && clientX <= bounds.right && clientY >= bounds.top && clientY <= bounds.bottom,
+    );
+  }
+
   function handleWheel(event: WheelEvent<HTMLDivElement>) {
     const screenPoint = screenPointFromClient(event.clientX, event.clientY);
     if (!screenPoint) {
@@ -216,6 +319,14 @@ export function App() {
         role="application"
         style={gridStyle}
       >
+        <aside
+          aria-label={DISCARD_BIN_LABEL}
+          className={`discard-bin${cardDragState ? ' discard-bin--active' : ''}`}
+          ref={discardBinRef}
+        >
+          <strong>{DISCARD_BIN_LABEL}</strong>
+          <span>{DISCARD_BIN_HINT}</span>
+        </aside>
         <div
           className="board__world"
           style={{ transform: `translate3d(${viewport.x}px, ${viewport.y}px, 0) scale(${viewport.scale})` }}
@@ -225,14 +336,32 @@ export function App() {
             <p>{BOARD_GUIDE_BODY}</p>
           </section>
           <div className="board__cards">
-            {fixtureResponse.matches.map((match, index) => (
-              <ActivityCard
-                key={match.activity.id}
-                match={match}
-                style={{ left: cardPositions[index]?.x, top: cardPositions[index]?.y }}
-              />
-            ))}
+            {cards.map((match, index) => {
+              const position = cardPosition(match, index);
+              const isDiscarding = discardingCardId === match.activity.id;
+
+              return (
+                <div
+                  className={`board__card${cardDragState?.cardId === match.activity.id ? ' board__card--dragging' : ''}`}
+                  data-activity-card
+                  key={match.activity.id}
+                  onPointerCancel={handleCardPointerCancel}
+                  onPointerDown={(event) => handleCardPointerDown(event, match, index)}
+                  onPointerMove={handleCardPointerMove}
+                  onPointerUp={handleCardPointerUp}
+                  style={{ left: position.x, top: position.y }}
+                >
+                  <ActivityCard
+                    match={match}
+                    onFindSimilar={handleFindSimilar}
+                    state={isDiscarding ? 'discarding' : 'spawning'}
+                  />
+                </div>
+              );
+            })}
           </div>
+          {cards.length === 0 ? <p className="board__empty-state">{BOARD_EMPTY_STATE}</p> : null}
+          {confirmation ? <p className="board__confirmation">{confirmation}</p> : null}
         </div>
       </div>
     </main>
