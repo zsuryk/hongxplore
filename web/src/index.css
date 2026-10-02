@@ -237,7 +237,6 @@ body {
     animation-duration: 1ms;
   }
 }
-
 @media (width <= 640px) {
   .app__header {
     align-items: flex-start;
