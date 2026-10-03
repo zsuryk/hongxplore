@@ -264,12 +264,12 @@ Binding role-separation rules. These make it structurally hard for zsuryk, kORNk
 
 | Zone | Owner | Files | Everyone else |
 | --- | --- | --- | --- |
-| API surface | zsuryk | `api/app/routes/`, `api/app/models/`, `api/app/config.py`, `api/tests/`, `.github/`, root docs (`README`, `AGENTS.md`, `CONTRIBUTING.md`, `docs/PLAN.md`, `docs/adr/`) | open an issue / PR; `zone-guard` enforces the owner's approval |
-| AI & data | kORNkin | `api/app/services/`, `api/app/prompts/`, `data/` (seed JSON) | no edits without kORNkin's ack on the issue |
+| API surface | zsuryk | `api/app/routes/`, `api/app/models/`, `api/app/config.py`, `api/tests/` **except** `api/tests/prompts/` and `api/tests/services/`, `.github/`, root docs (`README`, `AGENTS.md`, `CONTRIBUTING.md`, `docs/PLAN.md`, `docs/adr/`) | open an issue / PR; `zone-guard` enforces the owner's approval |
+| AI & data | kORNkin | `api/app/services/`, `api/app/prompts/`, `api/tests/prompts/`, `api/tests/services/`, `data/` (seed JSON) | no edits without kORNkin's ack on the issue |
 | Frontend | sweetpinejam | `web/**` | no edits without sweetpinejam's ack on the issue |
 | Shared contract | zsuryk defines in #4; **owned jointly after freeze** | `api/app/models/` Activity + generated web types | changes require an issue comment + ack from zsuryk AND the affected consumer |
 
-`.github/CODEOWNERS` is the machine-readable copy; `zone-guard` CI enforces it per path.
+`.github/CODEOWNERS` is the machine-readable copy; `zone-guard` CI enforces it per path. **Test placement rule:** a test lives under the zone root of the module it covers — `api/tests/prompts/` and `api/tests/services/` are kORNkin's; everything else under `api/tests/` stays zsuryk's. Adding a test for another zone's module needs no second approval.
 
 ### A2. Dependency edges
 
