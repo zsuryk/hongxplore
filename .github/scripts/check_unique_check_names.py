@@ -6,13 +6,15 @@ Two jobs with the same effective name produce duplicate, contradictory rows
 in a PR's checks list and confuse required-status branch rules. Static and
 offline: scans .github/workflows/*.yml only.
 """
+
 import sys
+from collections.abc import Iterator
 from pathlib import Path
 
 WORKFLOWS = Path(__file__).resolve().parents[1] / "workflows"
 
 
-def iter_jobs(path):
+def iter_jobs(path: Path) -> Iterator[tuple[str, str]]:
     text = path.read_text()
     in_jobs = False
     job_id = None
@@ -40,12 +42,12 @@ def iter_jobs(path):
             yield job_id, name or job_id
             job_id, name = stripped[:-1], None
         elif job_id is not None and indent > job_indent and stripped.startswith("name:"):
-            name = stripped.split(":", 1)[1].strip().strip("'\"")
+            name = stripped.split(":", 1)[1].split("#", 1)[0].strip().strip("'\"")
     if job_id is not None:
         yield job_id, name or job_id
 
 
-def main():
+def main() -> None:
     seen = {}
     duplicates = []
     for wf in sorted(WORKFLOWS.glob("*.yml")) + sorted(WORKFLOWS.glob("*.yaml")):
