@@ -54,6 +54,6 @@ def load_rules(text: str) -> list:
 
 
 @pytest.mark.parametrize("path,expected", sorted(EXPECTED.items()))
-def test_codeowners_mapping(path: str, expected: list[str]) -> None:
-    rules = load_rules((ROOT / ".github" / "CODEOWNERS").read_text())
+def test_codeowners_mapping(path: str, expected: list[str], repo_root: Path) -> None:
+    rules = load_rules((repo_root / ".github" / "CODEOWNERS").read_text())
     assert owners_of(path, rules, OWNER) == expected
