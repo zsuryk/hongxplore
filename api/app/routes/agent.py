@@ -1,29 +1,28 @@
-"""`POST /api/agent` — contract stub; the happy path lands with issue #9."""
+"""`POST /api/agent` — AI agent activity discovery endpoint (issue #9)."""
 
-from fastapi import APIRouter, HTTPException, status
+from typing import Annotated
+
+from fastapi import APIRouter, Depends
 
 from app.models import AgentRequest, AgentResponse
+from app.services.agent import AgentOrchestrator
 
 router = APIRouter(prefix="/api", tags=["agent"])
+
+
+def get_agent_orchestrator() -> AgentOrchestrator:
+    """Dependency provider for the agent pipeline orchestrator."""
+    return AgentOrchestrator()
 
 
 @router.post(
     "/agent",
     name="agent",
     response_model=AgentResponse,
-    responses={
-        status.HTTP_501_NOT_IMPLEMENTED: {
-            "description": "Not implemented — the happy path lands with issue #9.",
-        }
-    },
 )
-def agent(payload: AgentRequest) -> AgentResponse:
-    """Parse intent → search → normalise → rank → translate → respond (contract stub).
-
-    The route exists from issue #4 so the request and response envelopes are part of
-    the OpenAPI contract; issue #9 replaces this body with the real orchestration.
-    """
-    raise HTTPException(
-        status_code=status.HTTP_501_NOT_IMPLEMENTED,
-        detail="POST /api/agent is not implemented yet — see issue #9",
-    )
+async def agent(
+    payload: AgentRequest,
+    orchestrator: Annotated[AgentOrchestrator, Depends(get_agent_orchestrator)],
+) -> AgentResponse:
+    """Parse intent → search (or seed in DEMO_MODE) → rank → match rationale → respond."""
+    return await orchestrator.run(payload)
