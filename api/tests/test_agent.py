@@ -1,6 +1,7 @@
 """Unit tests for the agent orchestration pipeline (issue #9).
 
-Verifies DEMO_MODE zero-network execution and mocked live path.
+Verifies DEMO_MODE zero-network execution, mocked live path, edge cases,
+Chinese bilingual support, and error resilience.
 """
 
 from __future__ import annotations
@@ -14,6 +15,8 @@ import pytest
 from app.config import Settings
 from app.models import Activity, AgentRequest, FreeSlot
 from app.services.agent import AgentOrchestrator
+from app.services.agent.orchestrator import _parse_intent_offline
+from app.services.agent.seed import is_free_activity
 from app.services.ports import LLMClient, SearchProvider
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -78,6 +81,97 @@ async def test_demo_mode_matches_sai_kung_hiking() -> None:
     assert first_match.location.district == "Sai Kung" or "hiking" in [
         t.lower() for t in first_match.tags
     ]
+
+
+@pytest.mark.anyio
+async def test_offline_intent_extraction_avoids_fixture_hijack() -> None:
+    """Short keyword queries like 'hiking' or 'free' must not be hijacked by fixture overrides."""
+    intent_hiking = _parse_intent_offline("hiking", [])
+    assert intent_hiking.categories == ["hiking"]
+    # Should not lock districts to Sai Kung when not requested
+    assert intent_hiking.districts == []
+
+    intent_free = _parse_intent_offline("free", [])
+    assert intent_free.free_only is True
+    # Should not lock districts to Kowloon when not requested
+    assert intent_free.districts == []
+
+
+@pytest.mark.anyio
+async def test_free_only_mode_returns_only_free_activities() -> None:
+    """When free_only is true, all returned activities must have zero admission/booking cost."""
+    settings = Settings(demo_mode=True)
+    orchestrator = AgentOrchestrator(settings=settings)
+
+    request = AgentRequest(query="free cultural activities in Central & Western")
+    response = await orchestrator.run(request)
+
+    assert response.status == "ok"
+    assert len(response.matches) > 0
+    for match in response.matches:
+        assert is_free_activity(match.activity)
+        assert "Free" in match.match_rationale
+
+
+@pytest.mark.anyio
+async def test_chinese_bilingual_query_matching() -> None:
+    """Chinese queries like '西貢 行山' should parse intent and surface relevant activities."""
+    settings = Settings(demo_mode=True)
+    orchestrator = AgentOrchestrator(settings=settings)
+
+    request = AgentRequest(query="西貢 行山")
+    response = await orchestrator.run(request)
+
+    assert response.status == "ok"
+    assert len(response.matches) > 0
+    top_act = response.matches[0].activity
+    assert top_act.location.district == "Sai Kung"
+    assert any(tag in ["hiking", "outdoors"] for tag in top_act.tags)
+
+
+@pytest.mark.anyio
+async def test_cross_week_time_slot_matching() -> None:
+    """Free slots on a different calendar week should match weekend activities by weekday/time."""
+    settings = Settings(demo_mode=True)
+    orchestrator = AgentOrchestrator(settings=settings)
+
+    # Sunday morning on a different week (e.g. Oct 11, 2026, 01:00-04:00 UTC = 09:00-12:00 HKT)
+    slot = FreeSlot(
+        start=datetime(2026, 10, 11, 1, 0, tzinfo=UTC),
+        end=datetime(2026, 10, 11, 4, 0, tzinfo=UTC),
+    )
+    request = AgentRequest(
+        query="sports or badminton in Central this Sunday morning",
+        free_slots=[slot],
+    )
+    response = await orchestrator.run(request)
+
+    assert response.status == "ok"
+    assert len(response.matches) > 0
+    assert any("session fits" in match.match_rationale for match in response.matches)
+
+
+@pytest.mark.anyio
+async def test_live_intent_llm_failure_falls_back_gracefully() -> None:
+    """If live LLM intent parsing fails, orchestrator gracefully falls back to offline parser."""
+
+    class FailingLLM(LLMClient):
+        async def complete(self, *, system: str, user: str) -> str:
+            raise RuntimeError("OpenAI rate limit exceeded")
+
+    settings = Settings(demo_mode=False, openai_api_key="mock-key")
+    orchestrator = AgentOrchestrator(
+        llm_client=FailingLLM(),
+        settings=settings,
+    )
+
+    request = AgentRequest(query="hiking in Sai Kung")
+    response = await orchestrator.run(request)
+
+    assert response.status == "ok"
+    assert len(response.matches) > 0
+    log_messages = [entry.message for entry in response.log]
+    assert any("Live intent parsing unavailable" in msg for msg in log_messages)
 
 
 @pytest.mark.anyio
