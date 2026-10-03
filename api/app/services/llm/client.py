@@ -32,13 +32,9 @@ class OpenAILLMClient:
         self.config = config or settings
 
         # Timeouts and retries come from config if present, or explicit args, never magic numbers
-        self._timeout = (
-            timeout if timeout is not None else getattr(self.config, "openai_timeout_seconds", None)
-        )
+        self._timeout = timeout if timeout is not None else self.config.openai_timeout_seconds
         self._max_retries = (
-            max_retries
-            if max_retries is not None
-            else getattr(self.config, "openai_max_retries", None)
+            max_retries if max_retries is not None else self.config.openai_max_retries
         )
         self._http_client = http_client
         self._client: AsyncOpenAI | None = None
@@ -53,10 +49,8 @@ class OpenAILLMClient:
             }
             if self.config.openai_base_url:
                 client_kwargs["base_url"] = self.config.openai_base_url
-            if self._timeout is not None:
-                client_kwargs["timeout"] = self._timeout
-            if self._max_retries is not None:
-                client_kwargs["max_retries"] = self._max_retries
+            client_kwargs["timeout"] = self._timeout
+            client_kwargs["max_retries"] = self._max_retries
             if self._http_client is not None:
                 client_kwargs["http_client"] = self._http_client
 

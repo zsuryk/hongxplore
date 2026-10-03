@@ -21,6 +21,8 @@ class Settings(BaseSettings):
     openai_api_key: str = ""
     openai_base_url: str | None = None
     openai_model: str = ""
+    openai_timeout_seconds: float = 30.0
+    openai_max_retries: int = 2
     tavily_api_key: str = ""
     demo_mode: bool = True
 
