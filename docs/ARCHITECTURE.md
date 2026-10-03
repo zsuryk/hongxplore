@@ -44,7 +44,7 @@ All three come from env via `api/app/config.py` (pydantic-settings). **Never har
 | `config.py` | pydantic-settings: `OPENAI_*`, `TAVILY_*`, `DEMO_MODE`, cross-cutting policy (retries, timeouts, logging) | zsuryk |
 | `services/` | Search, LLM, ranking, normalisation — behind `ports.py` Protocol interfaces | kORNkin |
 | `prompts/` | Prompt templates (intent parsing, match rationale) | kORNkin |
-| `tests/` | Backend tests (pytest) | zsuryk |
+| `tests/` | Backend tests (pytest) — zsuryk's, **except** `tests/prompts/` and `tests/services/`, which follow the module they cover and are kORNkin's | zsuryk (`prompts/`, `services/` subdirs: kORNkin) |
 
 **Service seam:** `api/app/services/ports.py` holds `Protocol` interfaces (`SearchProvider`, `LLMClient`, `ActivityCache`) drafted by zsuryk alongside issue #4 and implemented by kORNkin. Route code depends only on the ports; the route never imports a concrete service. Cross-cutting policy (retries, timeouts, HTTP error mapping) is zsuryk's, defaulted in `config.py`; strategy inside a service (search approach, prompt sequencing, cache TTL semantics, ranking weights) is kORNkin's.
 
