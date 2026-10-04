@@ -15,6 +15,11 @@ export const ACTIVITY_CARD_LANGUAGE_CHINESE = 'Chinese';
 export const ACTIVITY_CARD_TIME_UNAVAILABLE = 'Time to be confirmed';
 export const ACTIVITY_CARD_SOURCE_LABEL = 'Source';
 export const ACTIVITY_CARD_MATCH_RATIONALE_LABEL = 'Why it matches';
+export const FIND_SIMILAR_LABEL = 'Find similar';
+export const DISCARD_BIN_LABEL = 'Discard bin';
+export const DISCARD_BIN_HINT = 'Drop a card here to remove it from the board.';
+export const BOARD_EMPTY_STATE = 'Your board is clear. Find similar activities to explore more.';
+export const INITIAL_ACTIVITY_QUERY = 'free saturday afternoon, something cultural in Kowloon, English friendly';
 
 export function activityCardAccessibleLabel(title: string): string {
   return `${ACTIVITY_CARD_LABEL}: ${title}`;
@@ -22,6 +27,10 @@ export function activityCardAccessibleLabel(title: string): string {
 
 export function activityCardLocation(venue: string | null | undefined, district: string): string {
   return venue ? `${venue}, ${district}` : district;
+}
+
+export function findSimilarConfirmation(title: string): string {
+  return `Looking for activities similar to ${title}.`;
 }
 
 export function zoomPercentage(value: number): string {

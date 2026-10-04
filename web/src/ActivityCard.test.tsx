@@ -23,4 +23,10 @@ describe('ActivityCard', () => {
 
     expect(markup).toContain('activity-card--discarding');
   });
+
+  it('renders the find similar action when provided', () => {
+    const markup = renderToStaticMarkup(<ActivityCard match={response.matches[0]} onFindSimilar={() => undefined} />);
+
+    expect(markup).toContain('Find similar');
+  });
 });

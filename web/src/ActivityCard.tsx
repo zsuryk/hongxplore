@@ -7,6 +7,7 @@ import {
   ACTIVITY_CARD_ORIGINAL_TITLE_LABEL,
   ACTIVITY_CARD_SOURCE_LABEL,
   ACTIVITY_CARD_TIME_UNAVAILABLE,
+  FIND_SIMILAR_LABEL,
   activityCardAccessibleLabel,
   activityCardLocation,
 } from './copy';
@@ -16,6 +17,7 @@ type MatchedActivity = components['schemas']['MatchedActivity'];
 
 type ActivityCardProps = {
   match: MatchedActivity;
+  onFindSimilar?: (match: MatchedActivity) => void;
   state?: 'spawning' | 'discarding';
   style?: CSSProperties;
 };
@@ -29,7 +31,7 @@ const hktDateFormatter = new Intl.DateTimeFormat('en-HK', {
   weekday: 'short',
 });
 
-export function ActivityCard({ match, state = 'spawning', style }: ActivityCardProps) {
+export function ActivityCard({ match, onFindSimilar, state = 'spawning', style }: ActivityCardProps) {
   const { activity, match_rationale: matchRationale } = match;
   const language = activity.lang === 'en' ? ACTIVITY_CARD_LANGUAGE_ENGLISH : ACTIVITY_CARD_LANGUAGE_CHINESE;
   const time = formatActivityTime(activity.parts[0]?.start);
@@ -72,6 +74,16 @@ export function ActivityCard({ match, state = 'spawning', style }: ActivityCardP
           activity.source.name
         )}
       </p>
+      {onFindSimilar ? (
+        <button
+          className="activity-card__similar-button"
+          onClick={() => onFindSimilar(match)}
+          onPointerDown={(event) => event.stopPropagation()}
+          type="button"
+        >
+          {FIND_SIMILAR_LABEL}
+        </button>
+      ) : null}
     </article>
   );
 }
