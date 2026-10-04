@@ -5,6 +5,9 @@
 
 /api/              @zsuryk       # routes/models/config/tests (api zone)
 /api/app/services/ @kORNkin      # services zone (last match wins)
+/api/app/prompts/  @kORNkin      # prompts zone (last match wins)
+/api/tests/prompts/ @kORNkin     # cross-zone tests for the prompts zone
+/api/tests/services/ @kORNkin    # cross-zone tests for the services zone
 /web/              @sweetpinejam
 /data/             @kORNkin
 /docs/             @zsuryk

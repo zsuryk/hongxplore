@@ -31,6 +31,7 @@ CI runs `commitlint` on both the branch's commit range and the PR title. Local p
 - CI must be green: `api`, `web`, `commitlint`, `zone-guard`.
 - Fill in the PR template (what/why, checklist). New dependencies must be noted in the PR body.
 - One issue ↔ one PR ↔ one branch.
+- **Stuck gate escape hatch:** if `zone-guard` (or any check) is genuinely stuck — for example the PR was approved while the gate was mid-evaluation and a flake left it red — rerun it from the Actions tab on that PR (Actions → the failed `zone-guard` run → "Re-run jobs"). A conversation comment with `zone-guard bypass` from the repo owner remains the bypass path that skips the check entirely.
 
 ## Definition of Done
 

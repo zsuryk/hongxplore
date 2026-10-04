@@ -9,12 +9,14 @@
     "build": "tsc -b && vite build",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
+    "test": "vitest run",
     "typecheck": "tsc -b",
     "gen:types": "openapi-typescript ../docs/openapi.json -o src/api/schema.ts"
   },
   "dependencies": {
     "react": "^19.3.0",
-    "react-dom": "^19.3.0"
+    "react-dom": "^19.3.0",
+    "zustand": "^5.0.15"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.3",
@@ -31,6 +33,7 @@
     "prettier": "^3.9.9",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.70.1",
-    "vite": "^8.3.1"
+    "vite": "^8.3.1",
+    "vitest": "^5.0.3"
   }
 }
