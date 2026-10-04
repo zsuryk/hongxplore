@@ -15,6 +15,76 @@ export const TIMELINE_SLOTS = [
   { id: 'saturday-evening', label: 'Saturday evening' },
   { id: 'sunday-afternoon', label: 'Sunday afternoon' },
 ] as const;
+
+export type FreeSlotChipDefinition = {
+  id: string;
+  label: string;
+  start: string;
+  end: string;
+};
+
+export const FREE_TIME_SLOTS: readonly FreeSlotChipDefinition[] = [
+  {
+    id: 'saturday-morning',
+    label: 'Sat Morning',
+    start: '2026-10-10T01:00:00Z',
+    end: '2026-10-10T04:00:00Z',
+  },
+  {
+    id: 'saturday-afternoon',
+    label: 'Sat Afternoon',
+    start: '2026-10-10T05:00:00Z',
+    end: '2026-10-10T10:00:00Z',
+  },
+  {
+    id: 'saturday-evening',
+    label: 'Sat Evening',
+    start: '2026-10-10T10:00:00Z',
+    end: '2026-10-10T14:00:00Z',
+  },
+  {
+    id: 'sunday-morning',
+    label: 'Sun Morning',
+    start: '2026-10-11T01:00:00Z',
+    end: '2026-10-11T04:00:00Z',
+  },
+  {
+    id: 'sunday-afternoon',
+    label: 'Sun Afternoon',
+    start: '2026-10-11T05:00:00Z',
+    end: '2026-10-11T10:00:00Z',
+  },
+  {
+    id: 'sunday-evening',
+    label: 'Sun Evening',
+    start: '2026-10-11T10:00:00Z',
+    end: '2026-10-11T14:00:00Z',
+  },
+] as const;
+
+export const SEARCH_INPUT_LABEL = 'Search query';
+export const SEARCH_INPUT_PLACEHOLDER =
+  'What are you looking to do? (e.g. cultural walk in Kowloon, hiking in Sai Kung...)';
+export const SEARCH_SUBMIT_LABEL = 'Ask Agent';
+export const SEARCH_SUBMIT_LOADING = 'Researching...';
+export const FREE_SLOTS_LABEL = 'Select your free slots';
+export const AGENT_STATUS_TITLE = 'Agent status';
+export const AGENT_STATUS_IDLE = 'Agent ready';
+export const AGENT_STATUS_SEARCHING = 'Agent is researching and ranking activities...';
+export function agentStatusResults(count: number): string {
+  return `Found ${count} activities`;
+}
+export const AGENT_STATUS_ERROR =
+  'Could not reach the activity agent. Please check your connection or try the demo seed data.';
+export const AGENT_LOG_LABEL = 'Agent log';
+export const AGENT_LOG_EMPTY = 'No agent steps recorded yet.';
+export const AGENT_LOG_SHOW = 'Show agent log';
+export const AGENT_LOG_HIDE = 'Hide agent log';
+export const AGENT_USE_DEMO = 'Load mock data';
+export const DATA_SOURCE_LABEL = 'Data source mode';
+export const DATA_SOURCE_LIVE = 'Live API';
+export const DATA_SOURCE_MOCK = 'Mock Data';
+
 export const ACTIVITY_CARD_LABEL = 'Activity card';
 export const ACTIVITY_CARD_ORIGINAL_TITLE_LABEL = 'Original title';
 export const ACTIVITY_CARD_LANGUAGE_LABEL = 'Language';
@@ -45,5 +115,20 @@ export function zoomPercentage(value: number): string {
   return `Zoom: ${Math.round(value * 100)}%`;
 }
 
-export const HEADING = 'Hongxplore — scaffold';
+export function formatLogTimestamp(isoString: string): string {
+  try {
+    const date = new Date(isoString);
+    return date.toLocaleTimeString('en-GB', {
+      timeZone: 'Asia/Hong_Kong',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    });
+  } catch {
+    return isoString;
+  }
+}
+
+export const HEADING = 'Hongxplore';
 export const TAGLINE = 'Infinite whiteboard + AI activity agent for students in Hong Kong.';

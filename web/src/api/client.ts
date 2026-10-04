@@ -13,7 +13,7 @@ type Fetch = typeof fetch;
 
 const fixtureAgentResponse = fixtureResponse as AgentResponse;
 
-export function createAgentClient(mode: AgentClientMode = 'fixture', fetchImplementation: Fetch = fetch): AgentClient {
+export function createAgentClient(mode: AgentClientMode = 'live', fetchImplementation: Fetch = fetch): AgentClient {
   return {
     async requestAgent(request) {
       if (mode === 'fixture') {
@@ -27,7 +27,7 @@ export function createAgentClient(mode: AgentClientMode = 'fixture', fetchImplem
       });
 
       if (!response.ok) {
-        throw new Error(`Agent request failed with ${response.status}`);
+        throw new Error(`Agent request failed with status ${response.status}`);
       }
 
       return (await response.json()) as AgentResponse;
@@ -35,4 +35,6 @@ export function createAgentClient(mode: AgentClientMode = 'fixture', fetchImplem
   };
 }
 
-export const fixtureAgentClient = createAgentClient();
+export const fixtureAgentClient = createAgentClient('fixture');
+export const liveAgentClient = createAgentClient('live');
+export const defaultAgentClient = liveAgentClient;
