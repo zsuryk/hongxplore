@@ -15,9 +15,16 @@ import type { components } from './api/schema';
 
 type MatchedActivity = components['schemas']['MatchedActivity'];
 
-type ActivityCardProps = {
+/**
+ * `canvas` — a node on the zoomable whiteboard.
+ * `docked`  — a card parked in a timeline slot, in screen space at a fixed size.
+ */
+export type ActivityCardSize = 'canvas' | 'docked';
+
+export type ActivityCardProps = {
   match: MatchedActivity;
   onFindSimilar?: (match: MatchedActivity) => void;
+  size?: ActivityCardSize;
   state?: 'spawning' | 'discarding';
   style?: CSSProperties;
 };
@@ -31,24 +38,28 @@ const hktDateFormatter = new Intl.DateTimeFormat('en-HK', {
   weekday: 'short',
 });
 
-export function ActivityCard({ match, onFindSimilar, state = 'spawning', style }: ActivityCardProps) {
+export function ActivityCard({ match, onFindSimilar, size = 'canvas', state = 'spawning', style }: ActivityCardProps) {
   const { activity, match_rationale: matchRationale } = match;
   const language = activity.lang === 'en' ? ACTIVITY_CARD_LANGUAGE_ENGLISH : ACTIVITY_CARD_LANGUAGE_CHINESE;
-  const time = formatActivityTime(activity.parts[0]?.start);
+  const start = activity.parts[0]?.start;
   const title = activity.title_en ?? activity.title;
   const hasTranslatedTitle = activity.title_en && activity.title_en !== activity.title;
 
   return (
     <article
       aria-label={activityCardAccessibleLabel(title)}
-      className={`activity-card activity-card--${state}`}
+      className={`activity-card activity-card--${size} activity-card--${state}`}
       style={style}
     >
       <div className="activity-card__topline">
         <span className="activity-card__language">
           {ACTIVITY_CARD_LANGUAGE_LABEL}: {language}
         </span>
-        <time>{time}</time>
+        {start ? (
+          <time dateTime={start}>{formatActivityTime(start)}</time>
+        ) : (
+          <span>{ACTIVITY_CARD_TIME_UNAVAILABLE}</span>
+        )}
       </div>
       <h2>{title}</h2>
       {hasTranslatedTitle ? (
@@ -61,11 +72,11 @@ export function ActivityCard({ match, onFindSimilar, state = 'spawning', style }
         {activityCardLocation(activity.location.venue, activity.location.district)}
       </p>
       <p className="activity-card__rationale">
-        <span>{ACTIVITY_CARD_MATCH_RATIONALE_LABEL}</span>
+        <span className="activity-card__rationale-label">{ACTIVITY_CARD_MATCH_RATIONALE_LABEL}</span>
         {matchRationale}
       </p>
       <p className="activity-card__source">
-        <span>{ACTIVITY_CARD_SOURCE_LABEL}: </span>
+        <span className="activity-card__source-label">{ACTIVITY_CARD_SOURCE_LABEL}: </span>
         {activity.source.url ? (
           <a href={activity.source.url} rel="noreferrer" target="_blank">
             {activity.source.name}
@@ -76,7 +87,7 @@ export function ActivityCard({ match, onFindSimilar, state = 'spawning', style }
       </p>
       {onFindSimilar ? (
         <button
-          className="activity-card__similar-button"
+          className="btn btn--sm activity-card__similar-button"
           onClick={() => onFindSimilar(match)}
           onPointerDown={(event) => event.stopPropagation()}
           type="button"
@@ -88,6 +99,6 @@ export function ActivityCard({ match, onFindSimilar, state = 'spawning', style }
   );
 }
 
-function formatActivityTime(start: string | undefined): string {
-  return start ? hktDateFormatter.format(new Date(start)) : ACTIVITY_CARD_TIME_UNAVAILABLE;
+function formatActivityTime(start: string): string {
+  return hktDateFormatter.format(new Date(start));
 }

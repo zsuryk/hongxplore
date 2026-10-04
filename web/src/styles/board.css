@@ -1,0 +1,180 @@
+/**
+ * The infinite canvas.
+ *
+ * Zoom model — two nested layers, and the split matters:
+ *   .board__pan    screen space. Carries the pan offset as a transform and nothing else.
+ *   .board__world  world space. Carries `zoom`, so the browser re-lays-out and
+ *                  re-rasterises text, borders and shadows at the new scale instead of
+ *                  stretching a bitmap. World (0,0) lands on screen (pan-x, pan-y).
+ * Because `zoom` lives on the inner layer and the outer layer carries only a transform,
+ * every screen-space offset stays in real pixels and every world-space length stays in
+ * world units — no ambiguity, and `getBoundingClientRect()` agrees with `viewport.ts`.
+ *
+ * `.board__drag` mirrors that structure so the card a user lifts is the same rendered
+ * size as the card it replaces.
+ */
+
+.board {
+  background-color: var(--color-canvas);
+  background-image:
+    linear-gradient(to right, var(--color-grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--color-grid-line) 1px, transparent 1px);
+  background-position: var(--board-pan-x) var(--board-pan-y);
+  background-size: var(--board-grid-size) var(--board-grid-size);
+  cursor: grab;
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+  touch-action: none;
+  transition:
+    background-position var(--motion-duration-base) var(--motion-ease),
+    background-size var(--motion-duration-base) var(--motion-ease);
+}
+
+.board--dragging {
+  cursor: grabbing;
+}
+
+.board:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: calc(-1 * var(--focus-ring-width));
+}
+
+/* While a pointer gesture is live the viewport follows the finger: no transitions, or
+   the board would lag behind the pointer. Discrete steps (buttons, keyboard, fit) animate. */
+.board--gesturing {
+  transition: none;
+}
+
+.board__pan,
+.board__world {
+  transition:
+    transform var(--motion-duration-base) var(--motion-ease),
+    zoom var(--motion-duration-base) var(--motion-ease);
+}
+
+.board--gesturing .board__pan,
+.board--gesturing .board__world,
+.board--gesturing .board__drag-scale {
+  transition: none;
+}
+
+.board__pan {
+  inset: 0;
+  position: absolute;
+  transform: translate3d(var(--board-pan-x), var(--board-pan-y), 0);
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+.board__world {
+  /* Sized in world units so that, once `zoom` is applied, the layer covers the board
+     exactly — world 0,0 still sits under the top-left corner the pan moves. */
+  height: calc(100% / var(--board-zoom));
+  position: relative;
+  width: calc(100% / var(--board-zoom));
+  zoom: var(--board-zoom);
+}
+
+.board__cards {
+  inset: 0;
+  position: absolute;
+}
+
+.board__card {
+  cursor: grab;
+  position: absolute;
+  touch-action: none;
+  user-select: none;
+  width: var(--card-width);
+}
+
+.board__card:hover,
+.board__card:focus-within {
+  translate: 0 calc(-1 * var(--card-hover-lift));
+  z-index: 5;
+}
+
+.board__card--ghost {
+  opacity: 0.35;
+}
+
+/* ---- Drag overlay (screen space, mirrors the card's rendered size) ---- */
+
+.board__drag {
+  pointer-events: none;
+  position: absolute;
+  z-index: 1000;
+}
+
+.board__drag-scale {
+  filter: drop-shadow(var(--shadow-drag));
+  rotate: 1.5deg;
+  transition: zoom var(--motion-duration-base) var(--motion-ease);
+  width: var(--card-width);
+  zoom: var(--board-zoom);
+}
+
+/* ---- Screen-space layers: guide, empty state, toast ---- */
+
+.board__layer {
+  display: flex;
+  justify-content: center;
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  z-index: 2;
+}
+
+.board__layer--center {
+  align-items: center;
+  top: 0;
+  bottom: 0;
+}
+
+.board__layer--top {
+  padding: var(--space-5) var(--space-4) 0;
+}
+
+.board__panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  box-sizing: border-box;
+  color: var(--color-text-muted);
+  max-width: calc(100% - var(--space-8));
+  padding: var(--space-5);
+  text-align: center;
+  width: min(34rem, 100%);
+}
+
+.board__panel h2 {
+  color: var(--color-text);
+  font-size: var(--text-lg);
+  line-height: var(--leading-tight);
+}
+
+.board__panel p {
+  margin-top: var(--space-2);
+}
+
+.board__panel p + p {
+  color: var(--color-text-subtle);
+  font-size: var(--text-sm);
+}
+
+.board__toast {
+  background: var(--color-surface);
+  border: 1px solid var(--color-accent-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  max-width: calc(100% - var(--space-8));
+  padding: var(--space-3) var(--space-4);
+  text-align: center;
+  width: fit-content;
+}

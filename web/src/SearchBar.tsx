@@ -5,6 +5,7 @@ import {
   INITIAL_ACTIVITY_QUERY,
   SEARCH_INPUT_LABEL,
   SEARCH_INPUT_PLACEHOLDER,
+  SEARCH_PANEL_LABEL,
   SEARCH_SUBMIT_LABEL,
   SEARCH_SUBMIT_LOADING,
 } from './copy';
@@ -48,13 +49,13 @@ export function SearchBar({
   }
 
   return (
-    <form className="search-bar" onSubmit={handleSubmit}>
+    <form aria-label={SEARCH_PANEL_LABEL} className="search-bar" onSubmit={handleSubmit}>
       <div className="search-bar__input-row">
         <label className="sr-only" htmlFor="search-input">
           {SEARCH_INPUT_LABEL}
         </label>
         <input
-          className="search-bar__input"
+          className="field search-bar__input"
           disabled={isSearching}
           id="search-input"
           onChange={(event) => setQuery(event.target.value)}
@@ -62,7 +63,7 @@ export function SearchBar({
           type="text"
           value={query}
         />
-        <button className="search-bar__submit" disabled={isSearching || !query.trim()} type="submit">
+        <button className="btn btn--primary search-bar__submit" disabled={isSearching || !query.trim()} type="submit">
           {isSearching ? SEARCH_SUBMIT_LOADING : SEARCH_SUBMIT_LABEL}
         </button>
       </div>
@@ -73,7 +74,7 @@ export function SearchBar({
           return (
             <button
               aria-pressed={isSelected}
-              className={`search-bar__chip${isSelected ? ' search-bar__chip--selected' : ''}`}
+              className={`chip search-bar__chip${isSelected ? ' chip--selected search-bar__chip--selected' : ''}`}
               key={slot.id}
               onClick={() => toggleFreeSlot(slot.id)}
               type="button"
