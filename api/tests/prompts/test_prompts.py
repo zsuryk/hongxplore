@@ -33,14 +33,12 @@ from app.prompts import (
     render_rationale_prompt,
 )
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-DOCS_FIXTURE = REPO_ROOT / "docs" / "examples" / "agent-response.json"
-
 
 @pytest.fixture
-def sample_activity() -> Activity:
+def sample_activity(repo_root: Path) -> Activity:
     """Load the first activity from the canonical docs fixture."""
-    data = json.loads(DOCS_FIXTURE.read_text(encoding="utf-8"))
+    fixture = repo_root / "docs" / "examples" / "agent-response.json"
+    data = json.loads(fixture.read_text(encoding="utf-8"))
     return Activity.model_validate(data["matches"][0]["activity"])
 
 

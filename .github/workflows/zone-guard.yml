@@ -1,6 +1,7 @@
 name: zone-guard
 
 on:
+  pull_request:
   pull_request_review:
     types: [submitted, dismissed]
   issue_comment:
@@ -13,6 +14,7 @@ concurrency:
 jobs:
   zone-guard:
     if: >-
+      github.event_name == 'pull_request' ||
       (github.event_name == 'pull_request_review' && github.event.pull_request.state == 'open') ||
       (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && github.event.issue.state == 'open')
     runs-on: ubuntu-latest
