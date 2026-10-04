@@ -55,10 +55,15 @@ def test_openapi_snapshot_matches_the_models(repo_root: Path) -> None:
     assert actual == expected, REGEN_HINT
 
 
-def test_agent_route_is_a_contract_stub() -> None:
+def test_agent_route_returns_ok_contract_shape() -> None:
     response = client.post("/api/agent", json={"query": "weekend markets"})
-    assert response.status_code == 501
-    assert "issue #9" in response.json()["detail"]
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "ok"
+    assert payload["query"] == "weekend markets"
+    assert len(payload["matches"]) > 0
+    assert len(payload["log"]) > 0
+    assert payload["error"] is None
 
 
 def test_agent_route_rejects_an_empty_query() -> None:

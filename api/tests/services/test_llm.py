@@ -154,13 +154,11 @@ async def test_client_respects_custom_base_url() -> None:
 def test_client_timeout_and_retries_configured_from_settings() -> None:
     """Timeouts and retries can be injected via config without magic numbers."""
 
-    class ExtendedSettings(Settings):
-        openai_timeout_seconds: float = 45.0
-        openai_max_retries: int = 4
-
-    cfg = ExtendedSettings(
+    cfg = Settings(
         openai_api_key="key",
         openai_model="model",
+        openai_timeout_seconds=45.0,
+        openai_max_retries=4,
     )
     client = OpenAILLMClient(config=cfg)
     underlying = client._get_client()

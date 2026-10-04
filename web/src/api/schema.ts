@@ -35,10 +35,7 @@ export interface paths {
         put?: never;
         /**
          * Agent
-         * @description Parse intent → search → normalise → rank → translate → respond (contract stub).
-         *
-         *     The route exists from issue #4 so the request and response envelopes are part of
-         *     the OpenAPI contract; issue #9 replaces this body with the real orchestration.
+         * @description Parse intent → search (or seed in DEMO_MODE) → rank → match rationale → respond.
          */
         post: operations["agent_api_agent_post"];
         delete?: never;
@@ -313,13 +310,6 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
                 };
-            };
-            /** @description Not implemented — the happy path lands with issue #9. */
-            501: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
             };
         };
     };

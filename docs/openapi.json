@@ -35,7 +35,7 @@
           "agent"
         ],
         "summary": "Agent",
-        "description": "Parse intent → search → normalise → rank → translate → respond (contract stub).\n\nThe route exists from issue #4 so the request and response envelopes are part of\nthe OpenAPI contract; issue #9 replaces this body with the real orchestration.",
+        "description": "Parse intent → search (or seed in DEMO_MODE) → rank → match rationale → respond.",
         "operationId": "agent_api_agent_post",
         "requestBody": {
           "content": {
@@ -57,9 +57,6 @@
                 }
               }
             }
-          },
-          "501": {
-            "description": "Not implemented — the happy path lands with issue #9."
           },
           "422": {
             "description": "Validation Error",
