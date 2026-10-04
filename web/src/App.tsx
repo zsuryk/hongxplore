@@ -1,4 +1,14 @@
-import { type PointerEvent, type WheelEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  type CSSProperties,
+  type KeyboardEvent,
+  type PointerEvent,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { ActivityCard } from './ActivityCard';
 import { AgentStatusPanel } from './AgentStatusPanel';
 import { SearchBar } from './SearchBar';
@@ -6,12 +16,15 @@ import {
   BOARD_EMPTY_STATE,
   BOARD_GUIDE_BODY,
   BOARD_GUIDE_TITLE,
+  BOARD_KEYBOARD_HINT,
+  BOARD_KEYBOARD_SHORTCUTS,
   BOARD_LABEL,
   DISCARD_BIN_HINT,
   DISCARD_BIN_LABEL,
   FIT_VIEW_LABEL,
   HEADING,
   INITIAL_ACTIVITY_QUERY,
+  RESET_ZOOM_LABEL,
   TAGLINE,
   TIMELINE_LABEL,
   TIMELINE_SLOT_EMPTY,
@@ -23,32 +36,45 @@ import {
   findSimilarConfirmation,
   zoomPercentage,
 } from './copy';
+import {
+  BOARD_FIT_PADDING,
+  BOARD_GRID_SIZE,
+  CARD_DISCARD_DURATION_MS,
+  CARD_MIN_HEIGHT,
+  CARD_WIDTH,
+  contentBounds,
+  defaultCardPosition,
+} from './boardLayout';
 import { type ActivityCard as BoardActivityCard, useBoardStore } from './state/boardStore';
 import {
+  KEYBOARD_PAN_STEP,
+  KEYBOARD_PAN_STEP_FAST,
+  type Point,
+  type Rect,
+  type Viewport,
+  canZoomIn,
+  canZoomOut,
   fitViewport,
   initialViewport,
+  nextZoomLevel,
   panViewport,
   pinchViewport,
-  type Point,
+  preserveViewportCenter,
   screenToWorld,
-  type Viewport,
   zoomAtScreenPoint,
 } from './viewport';
 
-const GRID_SIZE = 40;
-const FIT_PADDING = 96;
-const ZOOM_STEP = 1.2;
-const CONTENT_BOUNDS = { x: -560, y: -300, width: 1120, height: 600 };
+/** Zoom ratio applied per notch of a scroll wheel or trackpad. */
+const WHEEL_ZOOM_STEP = 1.15;
+/** How long after the last wheel event the viewport stops counting as "gesturing". */
+const GESTURE_SETTLE_MS = 160;
+/** How long the "looking for similar activities" confirmation stays on the board. */
+const CONFIRMATION_MS = 4000;
 
-function getDefaultCardPosition(index: number): Point {
-  const col = index % 3;
-  const row = Math.floor(index / 3);
-
-  return {
-    x: -520 + col * 360,
-    y: 80 + row * 400,
-  };
-}
+type Size = {
+  width: number;
+  height: number;
+};
 
 type DragState = {
   pointerId: number;
@@ -74,6 +100,10 @@ export function App() {
   const boardRef = useRef<HTMLDivElement>(null);
   const discardBinRef = useRef<HTMLElement>(null);
   const activePointersRef = useRef(new Map<number, Point>());
+  const contentBoundsRef = useRef<Rect>(contentBounds([]));
+  const hasAdjustedRef = useRef(false);
+  const previousSizeRef = useRef<Size>({ width: 0, height: 0 });
+  const gestureTimerRef = useRef<number | null>(null);
 
   const cards = useBoardStore((state) => state.cards);
   const timelineSlots = useBoardStore((state) => state.timelineSlots);
@@ -85,55 +115,188 @@ export function App() {
   const setTimelineSlots = useBoardStore((state) => state.setTimelineSlots);
 
   const [viewport, setViewport] = useState<Viewport>(initialViewport);
+  const [boardSize, setBoardSize] = useState<Size>({ width: 0, height: 0 });
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [pinchState, setPinchState] = useState<PinchState | null>(null);
   const [cardDragState, setCardDragState] = useState<CardDragState | null>(null);
+  const [isGesturing, setIsGesturing] = useState(false);
   const [hoveredSlotId, setHoveredSlotId] = useState<string | null>(null);
   const [cardPositionsById, setCardPositionsById] = useState<Record<string, Point>>({});
   const [discardingCardId, setDiscardingCardId] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<string | null>(null);
 
-  const fitContent = useCallback(() => {
-    const bounds = boardRef.current?.getBoundingClientRect();
-    if (!bounds) {
-      return;
-    }
+  const availableCards = useMemo(
+    () => cards.filter((match) => !timelineSlots.some((slot) => slot.activityId === match.activity.id)),
+    [cards, timelineSlots],
+  );
 
-    setViewport(fitViewport(CONTENT_BOUNDS, { x: 0, y: 0, width: bounds.width, height: bounds.height }, FIT_PADDING));
-  }, []);
+  const placedCards = useMemo(
+    () =>
+      availableCards.map((match, index) => ({
+        position: cardPositionsById[match.activity.id] ?? defaultCardPosition(index),
+      })),
+    [availableCards, cardPositionsById],
+  );
 
   useEffect(() => {
     setTimelineSlots(TIMELINE_SLOTS.map((slot) => ({ ...slot, activityId: null })));
     void loadAgentResponse({ query: INITIAL_ACTIVITY_QUERY });
+  }, [loadAgentResponse, setTimelineSlots]);
 
-    const rafId = requestAnimationFrame(() => {
-      fitContent();
+  // The confirmation is a transient status, not a permanent fixture on the board.
+  useEffect(() => {
+    if (!confirmation) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => setConfirmation(null), CONFIRMATION_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [confirmation]);
+
+  /** Records that the user has taken over the viewport, so auto-framing stops for good. */
+  const markAdjusted = useCallback(() => {
+    hasAdjustedRef.current = true;
+  }, []);
+
+  const fitContent = useCallback(() => {
+    const { width, height } = previousSizeRef.current;
+
+    if (width <= 0 || height <= 0) {
+      return;
+    }
+
+    setViewport(fitViewport(contentBoundsRef.current, { x: 0, y: 0, width, height }, BOARD_FIT_PADDING));
+  }, []);
+
+  // Observe the board element rather than `window`: resizing the window must not throw
+  // away the user's pan and zoom.
+  useLayoutEffect(() => {
+    const element = boardRef.current;
+
+    if (!element) {
+      return;
+    }
+
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+
+      if (!entry) {
+        return;
+      }
+
+      const { width, height } = entry.contentRect;
+      setBoardSize((current) => (current.width === width && current.height === height ? current : { width, height }));
     });
 
-    window.addEventListener('resize', fitContent);
+    observer.observe(element);
 
-    return () => {
-      cancelAnimationFrame(rafId);
-      window.removeEventListener('resize', fitContent);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (boardSize.width <= 0 || boardSize.height <= 0) {
+      return;
+    }
+
+    const previousSize = previousSizeRef.current;
+    previousSizeRef.current = boardSize;
+
+    // Before the user takes over, keep re-framing the board as it grows.
+    if (!hasAdjustedRef.current) {
+      fitContent();
+      return;
+    }
+
+    // Afterwards a resize must not throw their pan and zoom away: hold the centre point.
+    if (previousSize.width > 0 && previousSize.height > 0) {
+      setViewport((current) => preserveViewportCenter(current, previousSize, boardSize));
+    }
+  }, [boardSize, fitContent]);
+
+  useEffect(() => {
+    contentBoundsRef.current = contentBounds(placedCards);
+
+    // Cards arrive asynchronously, so framing the board once on layout would frame an
+    // empty board. Keep framing until the user takes over, then never move it again.
+    if (!hasAdjustedRef.current) {
+      fitContent();
+    }
+  }, [fitContent, placedCards]);
+
+  const markGesture = useCallback(() => {
+    setIsGesturing(true);
+
+    if (gestureTimerRef.current !== null) {
+      window.clearTimeout(gestureTimerRef.current);
+    }
+
+    gestureTimerRef.current = window.setTimeout(() => {
+      gestureTimerRef.current = null;
+      setIsGesturing(false);
+    }, GESTURE_SETTLE_MS);
+  }, []);
+
+  useEffect(
+    () => () => {
+      if (gestureTimerRef.current !== null) {
+        window.clearTimeout(gestureTimerRef.current);
+      }
+    },
+    [],
+  );
+
+  // React registers `wheel` passively at the root, so `preventDefault()` from an
+  // onWheel handler is ignored. Only a native non-passive listener keeps the page from
+  // scrolling while zooming.
+  useEffect(() => {
+    const element = boardRef.current;
+
+    if (!element) {
+      return;
+    }
+
+    const handleNativeWheel = (event: globalThis.WheelEvent) => {
+      const screenPoint = screenPointWithin(element.getBoundingClientRect(), event.clientX, event.clientY);
+
+      event.preventDefault();
+      markGesture();
+      markAdjusted();
+      setViewport((current) =>
+        zoomAtScreenPoint(
+          current,
+          screenPoint,
+          current.scale * (event.deltaY < 0 ? WHEEL_ZOOM_STEP : 1 / WHEEL_ZOOM_STEP),
+        ),
+      );
     };
-  }, [fitContent, loadAgentResponse, setTimelineSlots]);
 
-  const gridStyle = useMemo(() => {
-    const gridSize = GRID_SIZE * viewport.scale;
+    element.addEventListener('wheel', handleNativeWheel, { passive: false });
 
-    return {
-      backgroundPosition: `${viewport.x % gridSize}px ${viewport.y % gridSize}px`,
-      backgroundSize: `${gridSize}px ${gridSize}px`,
-    };
-  }, [viewport.scale, viewport.x, viewport.y]);
+    return () => element.removeEventListener('wheel', handleNativeWheel);
+  }, [markAdjusted, markGesture]);
+
+  const boardStyle = useMemo(
+    () =>
+      ({
+        '--board-grid-size': `${BOARD_GRID_SIZE * viewport.scale}px`,
+        '--board-pan-x': `${viewport.x}px`,
+        '--board-pan-y': `${viewport.y}px`,
+        '--board-zoom': viewport.scale,
+        '--card-min-height': `${CARD_MIN_HEIGHT}px`,
+        '--card-width': `${CARD_WIDTH}px`,
+      }) as CSSProperties,
+    [viewport],
+  );
 
   function screenPointFromClient(clientX: number, clientY: number): Point | null {
     const bounds = boardRef.current?.getBoundingClientRect();
-    if (!bounds) {
-      return null;
-    }
 
-    return { x: clientX - bounds.left, y: clientY - bounds.top };
+    return bounds ? screenPointWithin(bounds, clientX, clientY) : null;
+  }
+
+  function boardCentre(): Point {
+    return { x: boardSize.width / 2, y: boardSize.height / 2 };
   }
 
   function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
@@ -158,6 +321,8 @@ export function App() {
 
     if (activePointers.length === 1) {
       setDragState({ pointerId: event.pointerId, screenPoint });
+      markGesture();
+      markAdjusted();
       return;
     }
 
@@ -170,10 +335,12 @@ export function App() {
         screenPoint: midpoint,
         viewport,
       });
+      markGesture();
+      markAdjusted();
     }
   }
 
-  function handleBoardCardPointerDown(event: PointerEvent<HTMLElement>, card: BoardActivityCard) {
+  function handleCardPointerDown(event: PointerEvent<HTMLElement>, card: BoardActivityCard, from?: { slotId: string }) {
     if (event.target instanceof Element && (event.target.closest('button') || event.target.closest('a'))) {
       return;
     }
@@ -184,57 +351,21 @@ export function App() {
       return;
     }
 
-    const screenPoint = {
-      x: event.clientX - boardBounds.left,
-      y: event.clientY - boardBounds.top,
-    };
-    const grabOffset = {
-      x: event.clientX - cardBounds.left,
-      y: event.clientY - cardBounds.top,
-    };
-
     event.stopPropagation();
     event.currentTarget.setPointerCapture(event.pointerId);
+    markGesture();
+    markAdjusted();
 
     setCardDragState({
       card,
-      source: 'board',
+      source: from ? 'timeline' : 'board',
+      fromSlotId: from?.slotId,
       pointerId: event.pointerId,
-      screenPoint,
-      grabOffset,
-    });
-  }
-
-  function handleTimelineCardPointerDown(event: PointerEvent<HTMLElement>, card: BoardActivityCard, slotId: string) {
-    if (event.target instanceof Element && (event.target.closest('button') || event.target.closest('a'))) {
-      return;
-    }
-
-    const boardBounds = boardRef.current?.getBoundingClientRect();
-    const cardBounds = event.currentTarget.getBoundingClientRect();
-    if (!boardBounds) {
-      return;
-    }
-
-    const screenPoint = {
-      x: event.clientX - boardBounds.left,
-      y: event.clientY - boardBounds.top,
-    };
-    const grabOffset = {
-      x: event.clientX - cardBounds.left,
-      y: event.clientY - cardBounds.top,
-    };
-
-    event.stopPropagation();
-    event.currentTarget.setPointerCapture(event.pointerId);
-
-    setCardDragState({
-      card,
-      source: 'timeline',
-      fromSlotId: slotId,
-      pointerId: event.pointerId,
-      screenPoint,
-      grabOffset,
+      screenPoint: screenPointWithin(boardBounds, event.clientX, event.clientY),
+      grabOffset: {
+        x: event.clientX - cardBounds.left,
+        y: event.clientY - cardBounds.top,
+      },
     });
   }
 
@@ -248,12 +379,9 @@ export function App() {
       return;
     }
 
-    const screenPoint = {
-      x: event.clientX - boardBounds.left,
-      y: event.clientY - boardBounds.top,
-    };
-
-    setCardDragState((prev) => (prev ? { ...prev, screenPoint } : null));
+    setCardDragState((prev) =>
+      prev ? { ...prev, screenPoint: screenPointWithin(boardBounds, event.clientX, event.clientY) } : null,
+    );
 
     const slotId = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>('[data-timeline-slot]')
       ?.dataset.timelineSlot;
@@ -291,7 +419,7 @@ export function App() {
       window.setTimeout(() => {
         discardCard(cardId);
         setDiscardingCardId(null);
-      }, 220);
+      }, CARD_DISCARD_DURATION_MS);
     } else {
       if (source === 'timeline' && fromSlotId) {
         undockCard(fromSlotId);
@@ -300,11 +428,7 @@ export function App() {
         x: screenPoint.x - grabOffset.x,
         y: screenPoint.y - grabOffset.y,
       };
-      const worldPos = screenToWorld(cardScreenPoint, viewport);
-      setCardPositionsById((prev) => ({
-        ...prev,
-        [cardId]: worldPos,
-      }));
+      setCardPositionsById((prev) => ({ ...prev, [cardId]: screenToWorld(cardScreenPoint, viewport) }));
     }
 
     setCardDragState(null);
@@ -324,10 +448,6 @@ export function App() {
     setConfirmation(findSimilarConfirmation(title));
   }
 
-  function cardPosition(card: BoardActivityCard, index: number): Point {
-    return cardPositionsById[card.activity.id] ?? getDefaultCardPosition(index);
-  }
-
   function handlePointerMove(event: PointerEvent<HTMLDivElement>) {
     const screenPoint = screenPointFromClient(event.clientX, event.clientY);
     if (!screenPoint) {
@@ -339,12 +459,11 @@ export function App() {
 
     if (pinchState && activePointers.length === 2) {
       const [firstPointer, secondPointer] = activePointers;
-      const midpoint = midpointBetween(firstPointer, secondPointer);
       setViewport(
         pinchViewport(
           pinchState.viewport,
           pinchState.screenPoint,
-          midpoint,
+          midpointBetween(firstPointer, secondPointer),
           distanceBetween(firstPointer, secondPointer) / pinchState.distance,
         ),
       );
@@ -382,30 +501,65 @@ export function App() {
     }
   }
 
-  function handleWheel(event: WheelEvent<HTMLDivElement>) {
-    const screenPoint = screenPointFromClient(event.clientX, event.clientY);
-    if (!screenPoint) {
+  function stepZoom(direction: 1 | -1) {
+    markAdjusted();
+    setViewport((current) => {
+      const next = nextZoomLevel(current.scale, direction);
+
+      return next === current.scale ? current : zoomAtScreenPoint(current, boardCentre(), next);
+    });
+  }
+
+  function resetZoom() {
+    markAdjusted();
+    setViewport((current) => zoomAtScreenPoint(current, boardCentre(), 1));
+  }
+
+  function handleBoardKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    // Only when the canvas itself holds focus, so a focused button keeps its own keys.
+    if (event.target !== event.currentTarget) {
       return;
     }
 
-    event.preventDefault();
-    const zoomFactor = event.deltaY < 0 ? ZOOM_STEP : 1 / ZOOM_STEP;
-    setViewport((currentViewport) =>
-      zoomAtScreenPoint(currentViewport, screenPoint, currentViewport.scale * zoomFactor),
-    );
-  }
+    const panStep = event.shiftKey ? KEYBOARD_PAN_STEP_FAST : KEYBOARD_PAN_STEP;
+    const panKeys: Record<string, Point> = {
+      ArrowDown: { x: 0, y: panStep },
+      ArrowLeft: { x: panStep, y: 0 },
+      ArrowRight: { x: -panStep, y: 0 },
+      ArrowUp: { x: 0, y: -panStep },
+    };
+    const pan = panKeys[event.key];
 
-  function zoomFromCenter(factor: number) {
-    const bounds = boardRef.current?.getBoundingClientRect();
-    if (!bounds) {
+    if (pan) {
+      event.preventDefault();
+      markAdjusted();
+      setViewport((current) => panViewport(current, pan));
       return;
     }
 
-    const center = { x: bounds.width / 2, y: bounds.height / 2 };
-    setViewport((currentViewport) => zoomAtScreenPoint(currentViewport, center, currentViewport.scale * factor));
+    switch (event.key) {
+      case '+':
+      case '=':
+        event.preventDefault();
+        stepZoom(1);
+        break;
+      case '-':
+      case '_':
+        event.preventDefault();
+        stepZoom(-1);
+        break;
+      case '0':
+        event.preventDefault();
+        fitContent();
+        break;
+      case '1':
+        event.preventDefault();
+        resetZoom();
+        break;
+      default:
+        break;
+    }
   }
-
-  const availableCards = cards.filter((match) => !timelineSlots.some((slot) => slot.activityId === match.activity.id));
 
   return (
     <main className="app">
@@ -417,31 +571,60 @@ export function App() {
         <div className="app__header-search">
           <SearchBar />
         </div>
-        <div aria-label={ZOOM_CONTROL_LABEL} className="viewport-controls">
-          <button aria-label={ZOOM_OUT_LABEL} onClick={() => zoomFromCenter(1 / ZOOM_STEP)} type="button">
-            −
+        <div aria-label={ZOOM_CONTROL_LABEL} className="viewport-controls" role="group">
+          <div className="viewport-controls__zoom">
+            <button
+              aria-label={ZOOM_OUT_LABEL}
+              className="btn btn--sm btn--icon"
+              disabled={!canZoomOut(viewport.scale)}
+              onClick={() => stepZoom(-1)}
+              type="button"
+            >
+              &minus;
+            </button>
+            <output aria-live="polite">{zoomPercentage(viewport.scale)}</output>
+            <button
+              aria-label={ZOOM_IN_LABEL}
+              className="btn btn--sm btn--icon"
+              disabled={!canZoomIn(viewport.scale)}
+              onClick={() => stepZoom(1)}
+              type="button"
+            >
+              +
+            </button>
+          </div>
+          <button
+            aria-label={RESET_ZOOM_LABEL}
+            className="btn btn--sm"
+            disabled={Math.abs(viewport.scale - 1) < 0.001}
+            onClick={resetZoom}
+            type="button"
+          >
+            100%
           </button>
-          <output>{zoomPercentage(viewport.scale)}</output>
-          <button aria-label={ZOOM_IN_LABEL} onClick={() => zoomFromCenter(ZOOM_STEP)} type="button">
-            +
-          </button>
-          <button onClick={fitContent} type="button">
+          <button className="btn btn--sm" onClick={fitContent} type="button">
             {FIT_VIEW_LABEL}
           </button>
         </div>
       </header>
       <AgentStatusPanel />
+      <p className="sr-only" id="board-keyboard-hint">
+        {BOARD_KEYBOARD_HINT}
+      </p>
       <div
+        aria-describedby="board-keyboard-hint"
+        aria-keyshortcuts={BOARD_KEYBOARD_SHORTCUTS}
         aria-label={BOARD_LABEL}
-        className={`board${dragState || pinchState ? ' board--dragging' : ''}`}
+        className={`board${dragState || pinchState ? ' board--dragging' : ''}${isGesturing ? ' board--gesturing' : ''}`}
+        onKeyDown={handleBoardKeyDown}
         onPointerCancel={stopDragging}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={stopDragging}
-        onWheel={handleWheel}
         ref={boardRef}
-        role="application"
-        style={gridStyle}
+        role="region"
+        style={boardStyle}
+        tabIndex={0}
       >
         <section aria-label={TIMELINE_LABEL} className="timeline">
           <h2>{TIMELINE_LABEL}</h2>
@@ -461,11 +644,11 @@ export function App() {
                     {match ? (
                       <button
                         aria-label={UNDOCK_CARD_LABEL}
-                        className="timeline__slot-remove"
+                        className="btn btn--sm btn--icon timeline__slot-remove"
                         onClick={() => undockCard(slot.id)}
                         type="button"
                       >
-                        ✕
+                        &times;
                       </button>
                     ) : null}
                   </div>
@@ -473,11 +656,11 @@ export function App() {
                     <div
                       className={`timeline__docked-card${isDraggingThisCard ? ' timeline__docked-card--ghost' : ''}`}
                       onPointerCancel={handleCardPointerCancel}
-                      onPointerDown={(event) => handleTimelineCardPointerDown(event, match, slot.id)}
+                      onPointerDown={(event) => handleCardPointerDown(event, match, { slotId: slot.id })}
                       onPointerMove={handleCardPointerMove}
                       onPointerUp={handleCardPointerUp}
                     >
-                      <ActivityCard match={match} state="spawning" />
+                      <ActivityCard match={match} size="docked" state="spawning" />
                     </div>
                   ) : (
                     <div className="timeline__slot-empty">{TIMELINE_SLOT_EMPTY}</div>
@@ -495,57 +678,72 @@ export function App() {
           <strong>{DISCARD_BIN_LABEL}</strong>
           <span>{DISCARD_BIN_HINT}</span>
         </aside>
+        {cards.length === 0 ? (
+          <div className="board__layer board__layer--center">
+            <div className="board__panel">
+              <h2>{BOARD_GUIDE_TITLE}</h2>
+              <p>{BOARD_GUIDE_BODY}</p>
+              <p>{BOARD_EMPTY_STATE}</p>
+            </div>
+          </div>
+        ) : null}
+        {confirmation ? (
+          <div className="board__layer board__layer--top">
+            <p className="board__toast">{confirmation}</p>
+          </div>
+        ) : null}
         {cardDragState ? (
           <div
-            className="board__drag-overlay"
+            className="board__drag"
             style={{
               left: cardDragState.screenPoint.x - cardDragState.grabOffset.x,
               top: cardDragState.screenPoint.y - cardDragState.grabOffset.y,
             }}
           >
-            <ActivityCard match={cardDragState.card} state="spawning" />
+            <div className="board__drag-scale">
+              <ActivityCard match={cardDragState.card} size="canvas" state="spawning" />
+            </div>
           </div>
         ) : null}
-        <div
-          className="board__world"
-          style={{ transform: `translate3d(${viewport.x}px, ${viewport.y}px, 0) scale(${viewport.scale})` }}
-        >
-          <section className="board-guide">
-            <h2>{BOARD_GUIDE_TITLE}</h2>
-            <p>{BOARD_GUIDE_BODY}</p>
-          </section>
-          <div className="board__cards">
-            {availableCards.map((match, index) => {
-              const isDragging = cardDragState?.card.activity.id === match.activity.id;
-              const position = cardPosition(match, index);
-              const isDiscarding = discardingCardId === match.activity.id;
+        <div className="board__pan">
+          <div className="board__world">
+            <div className="board__cards">
+              {availableCards.map((match, index) => {
+                const isDragging = cardDragState?.card.activity.id === match.activity.id;
+                const isDiscarding = discardingCardId === match.activity.id;
 
-              return (
-                <div
-                  className={`board__card${isDragging ? ' board__card--ghost' : ''}`}
-                  data-activity-card
-                  key={match.activity.id}
-                  onPointerCancel={handleCardPointerCancel}
-                  onPointerDown={(event) => handleBoardCardPointerDown(event, match)}
-                  onPointerMove={handleCardPointerMove}
-                  onPointerUp={handleCardPointerUp}
-                  style={{ left: position.x, top: position.y }}
-                >
-                  <ActivityCard
-                    match={match}
-                    onFindSimilar={handleFindSimilar}
-                    state={isDiscarding ? 'discarding' : 'spawning'}
-                  />
-                </div>
-              );
-            })}
+                return (
+                  <div
+                    className={`board__card${isDragging ? ' board__card--ghost' : ''}`}
+                    data-activity-card
+                    key={match.activity.id}
+                    onPointerCancel={handleCardPointerCancel}
+                    onPointerDown={(event) => handleCardPointerDown(event, match)}
+                    onPointerMove={handleCardPointerMove}
+                    onPointerUp={handleCardPointerUp}
+                    style={{ left: placedCards[index].position.x, top: placedCards[index].position.y }}
+                  >
+                    <ActivityCard
+                      match={match}
+                      onFindSimilar={handleFindSimilar}
+                      state={isDiscarding ? 'discarding' : 'spawning'}
+                    />
+                  </div>
+                );
+              })}
+            </div>
           </div>
-          {cards.length === 0 ? <p className="board__empty-state">{BOARD_EMPTY_STATE}</p> : null}
-          {confirmation ? <p className="board__confirmation">{confirmation}</p> : null}
         </div>
       </div>
     </main>
   );
+}
+
+function screenPointWithin(bounds: DOMRect, clientX: number, clientY: number): Point {
+  return {
+    x: clientX - bounds.left,
+    y: clientY - bounds.top,
+  };
 }
 
 function distanceBetween(first: Point, second: Point): number {

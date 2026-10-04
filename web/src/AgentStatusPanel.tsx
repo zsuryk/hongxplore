@@ -79,10 +79,10 @@ export function AgentStatusPanel({
           </span>
         </div>
         <div className="agent-status-panel__actions">
-          <div aria-label={DATA_SOURCE_LABEL} className="agent-status-panel__modes" role="group">
+          <div aria-label={DATA_SOURCE_LABEL} className="segmented" role="group">
             <button
               aria-pressed={dataSourceMode === 'live'}
-              className={`agent-status-panel__mode-btn${dataSourceMode === 'live' ? ' agent-status-panel__mode-btn--active' : ''}`}
+              className={`segmented__option${dataSourceMode === 'live' ? ' segmented__option--active' : ''}`}
               onClick={() => handleModeSwitch('live')}
               type="button"
             >
@@ -90,7 +90,7 @@ export function AgentStatusPanel({
             </button>
             <button
               aria-pressed={dataSourceMode === 'mock'}
-              className={`agent-status-panel__mode-btn${dataSourceMode === 'mock' ? ' agent-status-panel__mode-btn--active' : ''}`}
+              className={`segmented__option${dataSourceMode === 'mock' ? ' segmented__option--active' : ''}`}
               onClick={() => handleModeSwitch('mock')}
               type="button"
             >
@@ -98,14 +98,14 @@ export function AgentStatusPanel({
             </button>
           </div>
           {agentStatus === 'error' ? (
-            <button className="agent-status-panel__fallback-btn" onClick={handleUseDemo} type="button">
+            <button className="btn btn--sm btn--danger" onClick={handleUseDemo} type="button">
               {AGENT_USE_DEMO}
             </button>
           ) : null}
           {agentLog.length > 0 ? (
             <button
               aria-expanded={isLogExpanded}
-              className="agent-status-panel__toggle-btn"
+              className="btn btn--sm"
               onClick={() => setIsLogExpanded((prev) => !prev)}
               type="button"
             >
@@ -115,7 +115,7 @@ export function AgentStatusPanel({
         </div>
       </div>
       {isLogExpanded ? (
-        <div aria-label={AGENT_LOG_LABEL} className="agent-status-panel__log">
+        <div aria-label={AGENT_LOG_LABEL} className="agent-status-panel__log" role="log">
           {agentLog.length === 0 ? (
             <p className="agent-status-panel__empty-log">{AGENT_LOG_EMPTY}</p>
           ) : (

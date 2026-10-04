@@ -1,0 +1,130 @@
+/**
+ * Design tokens — the only place a colour, radius, size or duration is allowed to be
+ * written down. Component rules reference these; anything that needs a raw value is a
+ * bug. Geometry that belongs to the board (card width, grid size) is NOT here: it is
+ * owned by `boardLayout.ts` and injected as `--card-*` / `--board-*` from `App`.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* ---- Surfaces ---- */
+  --color-canvas: #f6f7f9;
+  --color-surface: #ffffff;
+  --color-surface-sunken: #f1f5f9;
+  --color-surface-hover: #e8edf3;
+  --color-surface-active: #dde4ec;
+  --color-overlay: rgb(255 255 255 / 92%);
+
+  /* ---- Lines ---- */
+  --color-border: #dfe4ea;
+  --color-border-strong: #7d8798;
+  --color-border-dashed: #9aa5b5;
+  --color-grid-line: rgb(84 97 122 / 14%);
+
+  /* ---- Text (all pairs >= 4.5:1 on their surface) ---- */
+  --color-text: #16202e;
+  --color-text-muted: #4a5568;
+  --color-text-subtle: #5b6678;
+  --color-text-inverse: #ffffff;
+
+  /* ---- Accent: one blue, four steps ---- */
+  --color-accent: #1d4ed8;
+  --color-accent-strong: #1e40af;
+  --color-accent-soft: #eef2ff;
+  --color-accent-border: #c7d2fe;
+
+  /* ---- Status ---- */
+  --color-success: #047857;
+  --color-success-soft: #d1fae5;
+  --color-warning: #92400e;
+  --color-warning-soft: #fef3c7;
+  --color-danger: #991b1b;
+  --color-danger-strong: #b91c1c;
+  --color-danger-soft: #fef2f2;
+  --color-danger-border: #fca5a5;
+  --color-info: #1e40af;
+  --color-info-soft: #dbeafe;
+
+  /* ---- Focus ---- */
+  --color-focus: #1d4ed8;
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+
+  /* ---- Spacing ---- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+
+  /* ---- Radius: four steps, then pill ---- */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-pill: 999px;
+
+  /* ---- Elevation: low alpha so shadows stay quiet at high zoom ---- */
+  --shadow-sm: 0 1px 2px rgb(15 23 42 / 6%);
+  --shadow-md: 0 2px 8px rgb(15 23 42 / 8%);
+  --shadow-lg: 0 8px 24px rgb(15 23 42 / 12%);
+  --shadow-drag: 0 12px 32px rgb(15 23 42 / 24%);
+
+  /* ---- Type ---- */
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --leading-tight: 1.3;
+  --leading-normal: 1.45;
+
+  /* ---- Controls: one height per tier, never below 24px (WCAG 2.5.8) ---- */
+  --control-height-sm: 1.75rem;
+  --control-height: 2.25rem;
+  --control-padding-x: var(--space-3);
+  --control-gap: var(--space-2);
+  --control-font: var(--text-sm);
+  /* Inset between a grouped control's border and its options. */
+  --control-inset: 2px;
+
+  /* ---- Canvas ---- */
+  /* How far a card lifts on hover/focus, in world units. */
+  --card-hover-lift: 2px;
+
+  /* ---- Motion ---- */
+  --motion-duration-fast: 120ms;
+  --motion-duration-base: 180ms;
+  --motion-duration-slow: 280ms;
+  --motion-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* ---- Board geometry defaults; App overwrites these from boardLayout.ts ---- */
+  --board-zoom: 1;
+  --board-pan-x: 0px;
+  --board-pan-y: 0px;
+  --board-grid-size: 40px;
+  --card-width: 320px;
+  --card-min-height: 336px;
+}
+
+/**
+ * One place to neutralise motion. Every animated rule in this codebase animates
+ * opacity/transform/zoom only, so collapsing durations is enough — and it covers
+ * transitions added later without anyone having to remember this file.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}

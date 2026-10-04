@@ -3,8 +3,11 @@
 export const BOARD_LABEL = 'Weekend plan board';
 export const BOARD_GUIDE_TITLE = 'Your weekend plan starts here';
 export const BOARD_GUIDE_BODY = 'Pan the board, zoom in and out, or fit the view.';
+export const BOARD_KEYBOARD_HINT = 'Arrow keys pan the board. Plus and minus zoom. 0 fits the board, 1 resets to 100%.';
+export const BOARD_KEYBOARD_SHORTCUTS = 'ArrowLeft ArrowRight ArrowUp ArrowDown + - 0 1';
 export const ZOOM_IN_LABEL = 'Zoom in';
 export const ZOOM_OUT_LABEL = 'Zoom out';
+export const RESET_ZOOM_LABEL = 'Reset zoom to 100%';
 export const FIT_VIEW_LABEL = 'Fit board to content';
 export const ZOOM_CONTROL_LABEL = 'Viewport controls';
 export const TIMELINE_LABEL = 'Weekend timeline';
@@ -63,6 +66,7 @@ export const FREE_TIME_SLOTS: readonly FreeSlotChipDefinition[] = [
 ] as const;
 
 export const SEARCH_INPUT_LABEL = 'Search query';
+export const SEARCH_PANEL_LABEL = 'Find activities';
 export const SEARCH_INPUT_PLACEHOLDER =
   'What are you looking to do? (e.g. cultural walk in Kowloon, hiking in Sai Kung...)';
 export const SEARCH_SUBMIT_LABEL = 'Ask Agent';
