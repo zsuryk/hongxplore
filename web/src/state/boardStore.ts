@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { defaultAgentClient, fixtureAgentClient, type AgentClient, type AgentRequest } from '../api/client';
 import type { components } from '../api/schema';
-import { FREE_TIME_SLOTS } from '../copy';
+import { FREE_TIME_SLOTS, INITIAL_ACTIVITY_QUERY } from '../copy';
 
 export type ActivityCard = components['schemas']['MatchedActivity'];
 export type AgentLogEntry = components['schemas']['AgentLogEntry'];
@@ -172,6 +172,22 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
         agentError: null,
       });
     } catch (error) {
+      if (activeClient !== fixtureAgentClient && request.query === INITIAL_ACTIVITY_QUERY) {
+        try {
+          const fallback = await fixtureAgentClient.requestAgent(request);
+          set({
+            cards: fallback.matches,
+            agentLog: fallback.log,
+            agentStatus: 'results',
+            agentError: null,
+            dataSourceMode: 'mock',
+          });
+          return;
+        } catch {
+          // fall through to error handling
+        }
+      }
+
       const message = error instanceof Error ? error.message : 'Unknown error';
       set({
         agentStatus: 'error',

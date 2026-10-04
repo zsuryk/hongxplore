@@ -10,6 +10,7 @@ dependencies = [
     "openai>=1.40",
     "pydantic>=2.7",
     "pydantic-settings>=2.4",
+    "tzdata; sys_platform == 'win32'",
     "uvicorn[standard]>=0.30",
 ]
 
