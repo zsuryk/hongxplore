@@ -1,9 +1,11 @@
 import { create } from 'zustand';
-import { fixtureAgentClient, type AgentClient, type AgentRequest } from '../api/client';
+import { defaultAgentClient, fixtureAgentClient, type AgentClient, type AgentRequest } from '../api/client';
 import type { components } from '../api/schema';
+import { FREE_TIME_SLOTS } from '../copy';
 
 export type ActivityCard = components['schemas']['MatchedActivity'];
 export type AgentLogEntry = components['schemas']['AgentLogEntry'];
+export type AgentStatus = 'idle' | 'searching' | 'results' | 'error';
 
 export type BoardViewport = {
   x: number;
@@ -16,17 +18,26 @@ export type TimelineSlot = {
   activityId: string | null;
 };
 
+export type DataSourceMode = 'live' | 'mock';
+
 export type BoardStore = {
   cards: ActivityCard[];
   discardedCards: ActivityCard[];
   viewport: BoardViewport;
   timelineSlots: TimelineSlot[];
   agentLog: AgentLogEntry[];
+  agentStatus: AgentStatus;
+  agentError: string | null;
+  dataSourceMode: DataSourceMode;
+  selectedFreeSlotIds: string[];
   discardCard: (activityId: string) => void;
   dockCard: (activityId: string, timelineSlotId: string) => boolean;
   undockCard: (timelineSlotId: string) => void;
   findSimilar: (card: ActivityCard, client?: AgentClient) => Promise<void>;
   loadAgentResponse: (request: AgentRequest, client?: AgentClient) => Promise<void>;
+  submitSearch: (query: string, client?: AgentClient) => Promise<void>;
+  toggleFreeSlot: (slotId: string) => void;
+  setDataSourceMode: (mode: DataSourceMode) => void;
   setTimelineSlots: (timelineSlots: TimelineSlot[]) => void;
   setViewport: (viewport: BoardViewport) => void;
 };
@@ -48,6 +59,10 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
   viewport: initialViewport,
   timelineSlots: [],
   agentLog: [],
+  agentStatus: 'idle',
+  agentError: null,
+  dataSourceMode: 'live',
+  selectedFreeSlotIds: [],
   discardCard(activityId) {
     set((state) => {
       const card = state.cards.find((candidate) => candidate.activity.id === activityId);
@@ -106,9 +121,63 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
       cards: mergeCards(state.cards, response.matches, discardedIds),
     }));
   },
-  async loadAgentResponse(request, client = fixtureAgentClient) {
-    const response = await client.requestAgent(request);
-    set({ cards: response.matches, agentLog: response.log });
+  toggleFreeSlot(slotId) {
+    set((state) => {
+      const isSelected = state.selectedFreeSlotIds.includes(slotId);
+      return {
+        selectedFreeSlotIds: isSelected
+          ? state.selectedFreeSlotIds.filter((id) => id !== slotId)
+          : [...state.selectedFreeSlotIds, slotId],
+      };
+    });
+  },
+  setDataSourceMode(dataSourceMode) {
+    set({ dataSourceMode });
+  },
+  async submitSearch(query, client) {
+    const selectedSlots = get().selectedFreeSlotIds;
+    const freeSlots = FREE_TIME_SLOTS.filter((slot) => selectedSlots.includes(slot.id)).map((slot) => ({
+      start: slot.start,
+      end: slot.end,
+    }));
+
+    const activeClient = client ?? (get().dataSourceMode === 'mock' ? fixtureAgentClient : defaultAgentClient);
+
+    await get().loadAgentResponse(
+      {
+        query,
+        ...(freeSlots.length > 0 ? { free_slots: freeSlots } : {}),
+      },
+      activeClient,
+    );
+  },
+  async loadAgentResponse(request, client) {
+    const activeClient = client ?? (get().dataSourceMode === 'mock' ? fixtureAgentClient : defaultAgentClient);
+    set({ agentStatus: 'searching', agentError: null });
+    try {
+      const response = await activeClient.requestAgent(request);
+      if (response.status === 'error') {
+        set({
+          agentStatus: 'error',
+          agentError: response.error ?? 'Agent reported an error.',
+          agentLog: response.log ?? [],
+        });
+        return;
+      }
+
+      set({
+        cards: response.matches,
+        agentLog: response.log,
+        agentStatus: 'results',
+        agentError: null,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      set({
+        agentStatus: 'error',
+        agentError: message,
+      });
+    }
   },
   setTimelineSlots(timelineSlots) {
     set({ timelineSlots });

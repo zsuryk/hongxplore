@@ -1,5 +1,7 @@
 import { type PointerEvent, type WheelEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityCard } from './ActivityCard';
+import { AgentStatusPanel } from './AgentStatusPanel';
+import { SearchBar } from './SearchBar';
 import {
   BOARD_EMPTY_STATE,
   BOARD_GUIDE_BODY,
@@ -408,9 +410,12 @@ export function App() {
   return (
     <main className="app">
       <header className="app__header">
-        <div>
+        <div className="app__header-brand">
           <h1>{HEADING}</h1>
           <p>{TAGLINE}</p>
+        </div>
+        <div className="app__header-search">
+          <SearchBar />
         </div>
         <div aria-label={ZOOM_CONTROL_LABEL} className="viewport-controls">
           <button aria-label={ZOOM_OUT_LABEL} onClick={() => zoomFromCenter(1 / ZOOM_STEP)} type="button">
@@ -425,6 +430,7 @@ export function App() {
           </button>
         </div>
       </header>
+      <AgentStatusPanel />
       <div
         aria-label={BOARD_LABEL}
         className={`board${dragState || pinchState ? ' board--dragging' : ''}`}
