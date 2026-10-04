@@ -127,11 +127,132 @@ body {
 .board__card {
   cursor: grab;
   position: absolute;
+  width: 20rem;
+  touch-action: none;
+  user-select: none;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
-.board__card--dragging {
-  cursor: grabbing;
-  z-index: 1;
+.board__card:hover {
+  transform: translateY(-3px);
+  z-index: 5;
+}
+
+.board__card--ghost {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.board__drag-overlay {
+  pointer-events: none;
+  position: absolute;
+  z-index: 1000;
+  width: 20rem;
+  transform: scale(1.04) rotate(1.5deg);
+  transition: transform 0.08s ease;
+  filter: drop-shadow(0 1.25rem 2.5rem rgb(15 23 42 / 28%));
+}
+
+.timeline {
+  background: rgb(255 255 255 / 96%);
+  border: 1px solid #dce1eb;
+  border-radius: 0.75rem;
+  bottom: 1rem;
+  left: 1rem;
+  padding: 0.75rem;
+  position: absolute;
+  width: min(40rem, calc(100% - 15rem));
+  z-index: 3;
+}
+
+.timeline h2 {
+  font-size: 0.875rem;
+  margin: 0 0 0.5rem;
+}
+
+.timeline__slots {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.timeline__slot {
+  background: #f8fafc;
+  border: 1.5px dashed #9ba7bb;
+  border-radius: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 5.5rem;
+  padding: 0.5rem;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.timeline__slot--dragover {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  border-style: solid;
+}
+
+.timeline__slot-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.35rem;
+}
+
+.timeline__slot-header > span {
+  color: #606a7c;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.timeline__slot-remove {
+  background: transparent;
+  border: none;
+  border-radius: 0.25rem;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 0.875rem;
+  line-height: 1;
+  padding: 0.1rem 0.3rem;
+}
+
+.timeline__slot-remove:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.timeline__slot-empty {
+  color: #94a3b8;
+  font-size: 0.75rem;
+  font-style: italic;
+  margin: auto 0;
+  text-align: center;
+}
+
+.timeline__docked-card {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.timeline__docked-card:hover {
+  filter: drop-shadow(0 0.25rem 0.5rem rgb(33 43 61 / 15%));
+}
+
+.timeline__docked-card--ghost {
+  opacity: 0.35;
+}
+
+.timeline__slot .activity-card {
+  box-shadow: none;
+  padding: 0.75rem;
+  position: relative;
+  width: 100%;
 }
 
 .activity-card {
@@ -139,12 +260,12 @@ body {
   background: #ffffff;
   border: 1px solid #dce1eb;
   border-radius: 1rem;
-  box-shadow: 0 1rem 2rem rgb(33 43 61 / 12%);
+  box-shadow: 0 0.75rem 1.5rem rgb(33 43 61 / 10%);
   box-sizing: border-box;
   color: #1a1a2e;
   padding: 1.25rem;
-  position: absolute;
-  width: 20rem;
+  position: relative;
+  width: 100%;
 }
 
 .activity-card--discarding {

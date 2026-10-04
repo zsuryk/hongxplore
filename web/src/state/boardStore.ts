@@ -23,6 +23,8 @@ export type BoardStore = {
   timelineSlots: TimelineSlot[];
   agentLog: AgentLogEntry[];
   discardCard: (activityId: string) => void;
+  dockCard: (activityId: string, timelineSlotId: string) => boolean;
+  undockCard: (timelineSlotId: string) => void;
   findSimilar: (card: ActivityCard, client?: AgentClient) => Promise<void>;
   loadAgentResponse: (request: AgentRequest, client?: AgentClient) => Promise<void>;
   setTimelineSlots: (timelineSlots: TimelineSlot[]) => void;
@@ -57,8 +59,43 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
       return {
         cards: state.cards.filter((candidate) => candidate.activity.id !== activityId),
         discardedCards: [...state.discardedCards, card],
+        timelineSlots: state.timelineSlots.map((slot) =>
+          slot.activityId === activityId ? { ...slot, activityId: null } : slot,
+        ),
       };
     });
+  },
+  dockCard(activityId, timelineSlotId) {
+    let docked = false;
+
+    set((state) => {
+      // A card occupies at most one timeline slot; occupied destinations reject the drop.
+      // This keeps docked cards tied to slot layout, so they reflow when the timeline resizes.
+      const destination = state.timelineSlots.find((slot) => slot.id === timelineSlotId);
+      if (!destination || (destination.activityId && destination.activityId !== activityId)) {
+        return state;
+      }
+
+      docked = true;
+      return {
+        timelineSlots: state.timelineSlots.map((slot) => {
+          if (slot.id === timelineSlotId) {
+            return { ...slot, activityId };
+          }
+
+          return slot.activityId === activityId ? { ...slot, activityId: null } : slot;
+        }),
+      };
+    });
+
+    return docked;
+  },
+  undockCard(timelineSlotId) {
+    set((state) => ({
+      timelineSlots: state.timelineSlots.map((slot) =>
+        slot.id === timelineSlotId ? { ...slot, activityId: null } : slot,
+      ),
+    }));
   },
   async findSimilar(card, client = fixtureAgentClient) {
     const response = await client.requestAgent(similarActivityRequest(card));

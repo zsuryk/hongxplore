@@ -7,6 +7,14 @@ export const ZOOM_IN_LABEL = 'Zoom in';
 export const ZOOM_OUT_LABEL = 'Zoom out';
 export const FIT_VIEW_LABEL = 'Fit board to content';
 export const ZOOM_CONTROL_LABEL = 'Viewport controls';
+export const TIMELINE_LABEL = 'Weekend timeline';
+export const TIMELINE_SLOT_EMPTY = 'Empty slot';
+export const UNDOCK_CARD_LABEL = 'Remove from timeline';
+export const TIMELINE_SLOTS = [
+  { id: 'saturday-afternoon', label: 'Saturday afternoon' },
+  { id: 'saturday-evening', label: 'Saturday evening' },
+  { id: 'sunday-afternoon', label: 'Sunday afternoon' },
+] as const;
 export const ACTIVITY_CARD_LABEL = 'Activity card';
 export const ACTIVITY_CARD_ORIGINAL_TITLE_LABEL = 'Original title';
 export const ACTIVITY_CARD_LANGUAGE_LABEL = 'Language';

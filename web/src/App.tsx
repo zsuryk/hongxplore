@@ -1,16 +1,20 @@
-import { type PointerEvent, type WheelEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { type PointerEvent, type WheelEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityCard } from './ActivityCard';
 import {
+  BOARD_EMPTY_STATE,
   BOARD_GUIDE_BODY,
   BOARD_GUIDE_TITLE,
   BOARD_LABEL,
-  BOARD_EMPTY_STATE,
   DISCARD_BIN_HINT,
   DISCARD_BIN_LABEL,
   FIT_VIEW_LABEL,
   HEADING,
   INITIAL_ACTIVITY_QUERY,
   TAGLINE,
+  TIMELINE_LABEL,
+  TIMELINE_SLOT_EMPTY,
+  TIMELINE_SLOTS,
+  UNDOCK_CARD_LABEL,
   ZOOM_CONTROL_LABEL,
   ZOOM_IN_LABEL,
   ZOOM_OUT_LABEL,
@@ -24,6 +28,7 @@ import {
   panViewport,
   pinchViewport,
   type Point,
+  screenToWorld,
   type Viewport,
   zoomAtScreenPoint,
 } from './viewport';
@@ -32,11 +37,16 @@ const GRID_SIZE = 40;
 const FIT_PADDING = 96;
 const ZOOM_STEP = 1.2;
 const CONTENT_BOUNDS = { x: -560, y: -300, width: 1120, height: 600 };
-const cardPositions = [
-  { x: -520, y: 80 },
-  { x: -160, y: 80 },
-  { x: 200, y: 80 },
-];
+
+function getDefaultCardPosition(index: number): Point {
+  const col = index % 3;
+  const row = Math.floor(index / 3);
+
+  return {
+    x: -520 + col * 360,
+    y: 80 + row * 400,
+  };
+}
 
 type DragState = {
   pointerId: number;
@@ -50,31 +60,61 @@ type PinchState = {
 };
 
 type CardDragState = {
-  cardId: string;
+  card: BoardActivityCard;
+  source: 'board' | 'timeline';
+  fromSlotId?: string;
   pointerId: number;
   screenPoint: Point;
-  worldPoint: Point;
+  grabOffset: Point;
 };
 
 export function App() {
   const boardRef = useRef<HTMLDivElement>(null);
   const discardBinRef = useRef<HTMLElement>(null);
   const activePointersRef = useRef(new Map<number, Point>());
+
   const cards = useBoardStore((state) => state.cards);
+  const timelineSlots = useBoardStore((state) => state.timelineSlots);
   const discardCard = useBoardStore((state) => state.discardCard);
+  const dockCard = useBoardStore((state) => state.dockCard);
+  const undockCard = useBoardStore((state) => state.undockCard);
   const findSimilar = useBoardStore((state) => state.findSimilar);
   const loadAgentResponse = useBoardStore((state) => state.loadAgentResponse);
+  const setTimelineSlots = useBoardStore((state) => state.setTimelineSlots);
+
   const [viewport, setViewport] = useState<Viewport>(initialViewport);
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [pinchState, setPinchState] = useState<PinchState | null>(null);
   const [cardDragState, setCardDragState] = useState<CardDragState | null>(null);
+  const [hoveredSlotId, setHoveredSlotId] = useState<string | null>(null);
   const [cardPositionsById, setCardPositionsById] = useState<Record<string, Point>>({});
   const [discardingCardId, setDiscardingCardId] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<string | null>(null);
 
+  const fitContent = useCallback(() => {
+    const bounds = boardRef.current?.getBoundingClientRect();
+    if (!bounds) {
+      return;
+    }
+
+    setViewport(fitViewport(CONTENT_BOUNDS, { x: 0, y: 0, width: bounds.width, height: bounds.height }, FIT_PADDING));
+  }, []);
+
   useEffect(() => {
+    setTimelineSlots(TIMELINE_SLOTS.map((slot) => ({ ...slot, activityId: null })));
     void loadAgentResponse({ query: INITIAL_ACTIVITY_QUERY });
-  }, [loadAgentResponse]);
+
+    const rafId = requestAnimationFrame(() => {
+      fitContent();
+    });
+
+    window.addEventListener('resize', fitContent);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener('resize', fitContent);
+    };
+  }, [fitContent, loadAgentResponse, setTimelineSlots]);
 
   const gridStyle = useMemo(() => {
     const gridSize = GRID_SIZE * viewport.scale;
@@ -95,7 +135,13 @@ export function App() {
   }
 
   function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
-    if (event.target instanceof Element && event.target.closest('[data-activity-card]')) {
+    if (
+      event.target instanceof Element &&
+      (event.target.closest('[data-activity-card]') ||
+        event.target.closest('[data-timeline-slot]') ||
+        event.target.closest('.timeline') ||
+        event.target.closest('.discard-bin'))
+    ) {
       return;
     }
 
@@ -123,6 +169,161 @@ export function App() {
         viewport,
       });
     }
+  }
+
+  function handleBoardCardPointerDown(event: PointerEvent<HTMLElement>, card: BoardActivityCard) {
+    if (event.target instanceof Element && (event.target.closest('button') || event.target.closest('a'))) {
+      return;
+    }
+
+    const boardBounds = boardRef.current?.getBoundingClientRect();
+    const cardBounds = event.currentTarget.getBoundingClientRect();
+    if (!boardBounds) {
+      return;
+    }
+
+    const screenPoint = {
+      x: event.clientX - boardBounds.left,
+      y: event.clientY - boardBounds.top,
+    };
+    const grabOffset = {
+      x: event.clientX - cardBounds.left,
+      y: event.clientY - cardBounds.top,
+    };
+
+    event.stopPropagation();
+    event.currentTarget.setPointerCapture(event.pointerId);
+
+    setCardDragState({
+      card,
+      source: 'board',
+      pointerId: event.pointerId,
+      screenPoint,
+      grabOffset,
+    });
+  }
+
+  function handleTimelineCardPointerDown(event: PointerEvent<HTMLElement>, card: BoardActivityCard, slotId: string) {
+    if (event.target instanceof Element && (event.target.closest('button') || event.target.closest('a'))) {
+      return;
+    }
+
+    const boardBounds = boardRef.current?.getBoundingClientRect();
+    const cardBounds = event.currentTarget.getBoundingClientRect();
+    if (!boardBounds) {
+      return;
+    }
+
+    const screenPoint = {
+      x: event.clientX - boardBounds.left,
+      y: event.clientY - boardBounds.top,
+    };
+    const grabOffset = {
+      x: event.clientX - cardBounds.left,
+      y: event.clientY - cardBounds.top,
+    };
+
+    event.stopPropagation();
+    event.currentTarget.setPointerCapture(event.pointerId);
+
+    setCardDragState({
+      card,
+      source: 'timeline',
+      fromSlotId: slotId,
+      pointerId: event.pointerId,
+      screenPoint,
+      grabOffset,
+    });
+  }
+
+  function handleCardPointerMove(event: PointerEvent<HTMLElement>) {
+    if (!cardDragState || cardDragState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const boardBounds = boardRef.current?.getBoundingClientRect();
+    if (!boardBounds) {
+      return;
+    }
+
+    const screenPoint = {
+      x: event.clientX - boardBounds.left,
+      y: event.clientY - boardBounds.top,
+    };
+
+    setCardDragState((prev) => (prev ? { ...prev, screenPoint } : null));
+
+    const slotId = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>('[data-timeline-slot]')
+      ?.dataset.timelineSlot;
+    setHoveredSlotId(slotId ?? null);
+  }
+
+  function isOverDiscardBin(clientX: number, clientY: number): boolean {
+    const bounds = discardBinRef.current?.getBoundingClientRect();
+
+    return Boolean(
+      bounds && clientX >= bounds.left && clientX <= bounds.right && clientY >= bounds.top && clientY <= bounds.bottom,
+    );
+  }
+
+  function handleCardPointerUp(event: PointerEvent<HTMLElement>) {
+    if (!cardDragState || cardDragState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const { card, source, fromSlotId, screenPoint, grabOffset } = cardDragState;
+    const cardId = card.activity.id;
+
+    const slotElement = document
+      .elementFromPoint(event.clientX, event.clientY)
+      ?.closest<HTMLElement>('[data-timeline-slot]');
+    const slotId = slotElement?.dataset.timelineSlot;
+
+    if (slotId) {
+      dockCard(cardId, slotId);
+    } else if (isOverDiscardBin(event.clientX, event.clientY)) {
+      if (source === 'timeline' && fromSlotId) {
+        undockCard(fromSlotId);
+      }
+      setDiscardingCardId(cardId);
+      window.setTimeout(() => {
+        discardCard(cardId);
+        setDiscardingCardId(null);
+      }, 220);
+    } else {
+      if (source === 'timeline' && fromSlotId) {
+        undockCard(fromSlotId);
+      }
+      const cardScreenPoint = {
+        x: screenPoint.x - grabOffset.x,
+        y: screenPoint.y - grabOffset.y,
+      };
+      const worldPos = screenToWorld(cardScreenPoint, viewport);
+      setCardPositionsById((prev) => ({
+        ...prev,
+        [cardId]: worldPos,
+      }));
+    }
+
+    setCardDragState(null);
+    setHoveredSlotId(null);
+  }
+
+  function handleCardPointerCancel(event: PointerEvent<HTMLElement>) {
+    if (cardDragState?.pointerId === event.pointerId) {
+      setCardDragState(null);
+      setHoveredSlotId(null);
+    }
+  }
+
+  async function handleFindSimilar(card: BoardActivityCard) {
+    const title = card.activity.title_en ?? card.activity.title;
+    await findSimilar(card);
+    setConfirmation(findSimilarConfirmation(title));
+  }
+
+  function cardPosition(card: BoardActivityCard, index: number): Point {
+    return cardPositionsById[card.activity.id] ?? getDefaultCardPosition(index);
   }
 
   function handlePointerMove(event: PointerEvent<HTMLDivElement>) {
@@ -179,82 +380,6 @@ export function App() {
     }
   }
 
-  function handleCardPointerDown(event: PointerEvent<HTMLElement>, card: BoardActivityCard, index: number) {
-    const screenPoint = screenPointFromClient(event.clientX, event.clientY);
-    if (!screenPoint) {
-      return;
-    }
-
-    event.stopPropagation();
-    event.currentTarget.setPointerCapture(event.pointerId);
-    setCardDragState({
-      cardId: card.activity.id,
-      pointerId: event.pointerId,
-      screenPoint,
-      worldPoint: cardPosition(card, index),
-    });
-  }
-
-  function handleCardPointerMove(event: PointerEvent<HTMLElement>) {
-    if (!cardDragState || cardDragState.pointerId !== event.pointerId) {
-      return;
-    }
-
-    const screenPoint = screenPointFromClient(event.clientX, event.clientY);
-    if (!screenPoint) {
-      return;
-    }
-
-    setCardPositionsById((positions) => ({
-      ...positions,
-      [cardDragState.cardId]: {
-        x: cardDragState.worldPoint.x + (screenPoint.x - cardDragState.screenPoint.x) / viewport.scale,
-        y: cardDragState.worldPoint.y + (screenPoint.y - cardDragState.screenPoint.y) / viewport.scale,
-      },
-    }));
-  }
-
-  function handleCardPointerUp(event: PointerEvent<HTMLElement>) {
-    if (!cardDragState || cardDragState.pointerId !== event.pointerId) {
-      return;
-    }
-
-    const discardedCardId = cardDragState.cardId;
-    setCardDragState(null);
-
-    if (isOverDiscardBin(event.clientX, event.clientY)) {
-      setDiscardingCardId(discardedCardId);
-      window.setTimeout(() => {
-        discardCard(discardedCardId);
-        setDiscardingCardId(null);
-      }, 220);
-    }
-  }
-
-  function handleCardPointerCancel(event: PointerEvent<HTMLElement>) {
-    if (cardDragState?.pointerId === event.pointerId) {
-      setCardDragState(null);
-    }
-  }
-
-  async function handleFindSimilar(card: BoardActivityCard) {
-    const title = card.activity.title_en ?? card.activity.title;
-    await findSimilar(card);
-    setConfirmation(findSimilarConfirmation(title));
-  }
-
-  function cardPosition(card: BoardActivityCard, index: number): Point {
-    return cardPositionsById[card.activity.id] ?? cardPositions[index] ?? { x: 0, y: 80 };
-  }
-
-  function isOverDiscardBin(clientX: number, clientY: number): boolean {
-    const bounds = discardBinRef.current?.getBoundingClientRect();
-
-    return Boolean(
-      bounds && clientX >= bounds.left && clientX <= bounds.right && clientY >= bounds.top && clientY <= bounds.bottom,
-    );
-  }
-
   function handleWheel(event: WheelEvent<HTMLDivElement>) {
     const screenPoint = screenPointFromClient(event.clientX, event.clientY);
     if (!screenPoint) {
@@ -268,15 +393,6 @@ export function App() {
     );
   }
 
-  function fitContent() {
-    const bounds = boardRef.current?.getBoundingClientRect();
-    if (!bounds) {
-      return;
-    }
-
-    setViewport(fitViewport(CONTENT_BOUNDS, { x: 0, y: 0, width: bounds.width, height: bounds.height }, FIT_PADDING));
-  }
-
   function zoomFromCenter(factor: number) {
     const bounds = boardRef.current?.getBoundingClientRect();
     if (!bounds) {
@@ -286,6 +402,8 @@ export function App() {
     const center = { x: bounds.width / 2, y: bounds.height / 2 };
     setViewport((currentViewport) => zoomAtScreenPoint(currentViewport, center, currentViewport.scale * factor));
   }
+
+  const availableCards = cards.filter((match) => !timelineSlots.some((slot) => slot.activityId === match.activity.id));
 
   return (
     <main className="app">
@@ -319,6 +437,50 @@ export function App() {
         role="application"
         style={gridStyle}
       >
+        <section aria-label={TIMELINE_LABEL} className="timeline">
+          <h2>{TIMELINE_LABEL}</h2>
+          <div className="timeline__slots">
+            {timelineSlots.map((slot) => {
+              const match = cards.find((candidate) => candidate.activity.id === slot.activityId);
+              const isDraggingThisCard = cardDragState?.card.activity.id === match?.activity.id;
+
+              return (
+                <div
+                  className={`timeline__slot${hoveredSlotId === slot.id ? ' timeline__slot--dragover' : ''}`}
+                  data-timeline-slot={slot.id}
+                  key={slot.id}
+                >
+                  <div className="timeline__slot-header">
+                    <span>{TIMELINE_SLOTS.find((definition) => definition.id === slot.id)?.label}</span>
+                    {match ? (
+                      <button
+                        aria-label={UNDOCK_CARD_LABEL}
+                        className="timeline__slot-remove"
+                        onClick={() => undockCard(slot.id)}
+                        type="button"
+                      >
+                        ✕
+                      </button>
+                    ) : null}
+                  </div>
+                  {match ? (
+                    <div
+                      className={`timeline__docked-card${isDraggingThisCard ? ' timeline__docked-card--ghost' : ''}`}
+                      onPointerCancel={handleCardPointerCancel}
+                      onPointerDown={(event) => handleTimelineCardPointerDown(event, match, slot.id)}
+                      onPointerMove={handleCardPointerMove}
+                      onPointerUp={handleCardPointerUp}
+                    >
+                      <ActivityCard match={match} state="spawning" />
+                    </div>
+                  ) : (
+                    <div className="timeline__slot-empty">{TIMELINE_SLOT_EMPTY}</div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
         <aside
           aria-label={DISCARD_BIN_LABEL}
           className={`discard-bin${cardDragState ? ' discard-bin--active' : ''}`}
@@ -327,6 +489,17 @@ export function App() {
           <strong>{DISCARD_BIN_LABEL}</strong>
           <span>{DISCARD_BIN_HINT}</span>
         </aside>
+        {cardDragState ? (
+          <div
+            className="board__drag-overlay"
+            style={{
+              left: cardDragState.screenPoint.x - cardDragState.grabOffset.x,
+              top: cardDragState.screenPoint.y - cardDragState.grabOffset.y,
+            }}
+          >
+            <ActivityCard match={cardDragState.card} state="spawning" />
+          </div>
+        ) : null}
         <div
           className="board__world"
           style={{ transform: `translate3d(${viewport.x}px, ${viewport.y}px, 0) scale(${viewport.scale})` }}
@@ -336,17 +509,18 @@ export function App() {
             <p>{BOARD_GUIDE_BODY}</p>
           </section>
           <div className="board__cards">
-            {cards.map((match, index) => {
+            {availableCards.map((match, index) => {
+              const isDragging = cardDragState?.card.activity.id === match.activity.id;
               const position = cardPosition(match, index);
               const isDiscarding = discardingCardId === match.activity.id;
 
               return (
                 <div
-                  className={`board__card${cardDragState?.cardId === match.activity.id ? ' board__card--dragging' : ''}`}
+                  className={`board__card${isDragging ? ' board__card--ghost' : ''}`}
                   data-activity-card
                   key={match.activity.id}
                   onPointerCancel={handleCardPointerCancel}
-                  onPointerDown={(event) => handleCardPointerDown(event, match, index)}
+                  onPointerDown={(event) => handleBoardCardPointerDown(event, match)}
                   onPointerMove={handleCardPointerMove}
                   onPointerUp={handleCardPointerUp}
                   style={{ left: position.x, top: position.y }}
