@@ -56,8 +56,8 @@ jobs:
           cache-dependency-path: web/pnpm-lock.yaml
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Lint, typecheck, build
-        run: pnpm lint && pnpm typecheck && pnpm build
+      - name: Lint, typecheck, test, build
+        run: pnpm lint && pnpm typecheck && pnpm test && pnpm build
 
   commitlint:
     if: github.event_name == 'pull_request'

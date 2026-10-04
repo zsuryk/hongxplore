@@ -38,7 +38,7 @@ The binding ownership matrix is **`docs/PLAN.md` → "Part B — Workstreams & o
 
 ```bash
 cd api && uv run ruff format . && uv run ruff check . && uv run mypy app && uv run pytest -x
-cd web && pnpm lint && pnpm typecheck && pnpm build
+cd web && pnpm lint && pnpm typecheck && pnpm test && pnpm build
 ```
 
 **Contract regen (after ANY change to api models):**

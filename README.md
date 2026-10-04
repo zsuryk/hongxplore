@@ -14,7 +14,7 @@ A standalone HTML prototype from earlier exploration lives in the separate `kult
 
 ## Status
 
-**Scaffold only — no features yet.** The API serves `GET /health`; the web app renders a hello page. Everything else is planned, not built.
+**The demo path works end-to-end with zero network and zero keys.** The api serves `POST /api/agent` (seed-backed in `DEMO_MODE`); the web app is an infinite canvas with activity cards and a weekend timeline. Live search and LLM rationale need keys — see `.env.example`; everything else runs without them.
 
 Start here: [`docs/PLAN.md`](docs/PLAN.md) (phased tickets + ownership) and the [issue backlog](https://github.com/zsuryk/hongxplore/issues).
 
@@ -22,33 +22,34 @@ Start here: [`docs/PLAN.md`](docs/PLAN.md) (phased tickets + ownership) and the 
 
 Prerequisites: Python ≥ 3.12 + [uv](https://docs.astral.sh/uv/), Node ≥ 20 + [pnpm](https://pnpm.io/).
 
-**Backend** (port 8000):
-
 ```bash
-cd api
-uv sync
-cp .env.example .env   # DEMO_MODE=true by default — no keys needed
-uv run uvicorn app.main:app --reload --port 8000
+make install   # one-time: uv sync + pnpm install
+make dev       # api :8000 + web :5173 together; Ctrl-C stops both
 ```
 
-**Frontend** (port 5173):
+`make dev` needs **no API keys** — `DEMO_MODE=true` is the default, so the agent answers from the bundled seed dataset with no outbound requests. Open http://localhost:5173.
+
+Prefer to run the servers separately? Each target is a thin wrapper around the commands in `AGENTS.md`:
 
 ```bash
-cd web
-pnpm install
-pnpm dev
+cp api/.env.example api/.env   # DEMO_MODE=true by default — no keys needed
+```
+
+```bash
+cd api && uv run uvicorn app.main:app --reload --port 8000   # terminal 1
+cd web && pnpm dev                                          # terminal 2
 ```
 
 **Health check:** `curl localhost:8000/health` → `{"status":"ok"}`
 
-**All checks:**
+**All checks:** `make check` — or the underlying commands:
 
 ```bash
 cd api && uv run ruff format . && uv run ruff check . && uv run mypy app && uv run pytest -x
 cd web && pnpm lint && pnpm typecheck && pnpm build
 ```
 
-CI additionally lints commit messages and the PR title (`commitlint` job).
+Run `make help` for the full target list. CI additionally lints commit messages and the PR title (`commitlint` job).
 
 ## Repository structure
 
@@ -56,7 +57,7 @@ CI additionally lints commit messages and the PR title (`commitlint` job).
 | --- | --- |
 | `api/` | FastAPI backend — routes, config, services, tests (Python/uv) |
 | `web/` | React + Vite frontend (TypeScript/pnpm) |
-| `data/` | Seed datasets (arrives with a later ticket) |
+| `data/` | Seed datasets — `activities.json` (bilingual HK activities) + `build_seed.py` |
 | `docs/` | Project documentation |
 | `docs/adr/` | Architecture Decision Records — the decision log (no DECISIONS.md here) |
 | `docs/agents/` | Engineering-skill config: issue tracker, triage labels, domain docs |
