@@ -82,8 +82,8 @@ def _format_deterministic_rationale(
                     )
                     if max(part_secs_start, slot_secs_start) < min(part_secs_end, slot_secs_end):
                         day_name = part_hkt.strftime("%A")
-                        start_time = part_hkt.strftime("%-I:%M %p")
-                        end_time = part_end_hkt.strftime("%-I:%M %p")
+                        start_time = part_hkt.strftime("%I:%M %p").lstrip("0")
+                        end_time = part_end_hkt.strftime("%I:%M %p").lstrip("0")
                         slot_mention = (
                             f" The {day_name} {start_time} – {end_time} session fits"
                             " your weekend availability."
