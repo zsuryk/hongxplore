@@ -55,4 +55,35 @@ describe('ActivityCard', () => {
     expect(wideMarkup).toContain('activity-card--wide');
     expect(tallMarkup).toContain('activity-card--tall');
   });
+
+  it('renders consistent time badges across card variants', () => {
+    const standardMarkup = renderToStaticMarkup(<ActivityCard match={response.matches[0]} />);
+    const dockedMarkup = renderToStaticMarkup(<ActivityCard match={response.matches[0]} size="docked" />);
+
+    expect(standardMarkup).toContain('activity-card__time-badge');
+    expect(dockedMarkup).toContain('activity-card__time-badge');
+    expect(standardMarkup).toContain('Sat, 3 Oct, 2:00 pm');
+  });
+
+  it('renders the recent search highlight glow class when isRecent is true', () => {
+    const glowingMarkup = renderToStaticMarkup(<ActivityCard isRecent match={response.matches[0]} />);
+    const normalMarkup = renderToStaticMarkup(<ActivityCard isRecent={false} match={response.matches[0]} />);
+
+    expect(glowingMarkup).toContain('activity-card--recent');
+    expect(normalMarkup).not.toContain('activity-card--recent');
+  });
+
+  it('accurately badges activity languages', () => {
+    // English activity
+    const enMarkup = renderToStaticMarkup(<ActivityCard match={response.matches[2]} />);
+    expect(enMarkup).toContain('English');
+
+    // Chinese activity with English available tag
+    const enAvailMarkup = renderToStaticMarkup(<ActivityCard match={response.matches[0]} />);
+    expect(enAvailMarkup).toContain('English Available');
+
+    // Authentic local Chinese activity
+    const zhMarkup = renderToStaticMarkup(<ActivityCard match={response.matches[1]} />);
+    expect(zhMarkup).toContain('Chinese');
+  });
 });

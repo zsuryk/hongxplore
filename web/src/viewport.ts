@@ -111,13 +111,17 @@ export function canZoomOut(scale: number): boolean {
  * `MIN_ZOOM` (down to `FIT_MIN_ZOOM`), because a fit that does not fit is a bug the
  * user cannot work around.
  */
-export function fitViewport(content: Rect, container: Rect, padding: number): Viewport {
+export function fitViewport(content: Rect, container: Rect, padding: number, maxScale: number = 1.0): Viewport {
+  if (content.width <= 0 || content.height <= 0) {
+    return { scale: 1, x: 0, y: 0 };
+  }
+
   const availableWidth = Math.max(container.width - padding * 2, 1);
   const availableHeight = Math.max(container.height - padding * 2, 1);
   const scale = clampZoom(
     Math.min(availableWidth / content.width, availableHeight / content.height),
     FIT_MIN_ZOOM,
-    MAX_ZOOM,
+    maxScale,
   );
 
   return {
@@ -140,4 +144,31 @@ export function preserveViewportCenter(
     x: (nextSize.width - previousSize.width) / 2,
     y: (nextSize.height - previousSize.height) / 2,
   });
+}
+
+/**
+ * Tests whether `rect` (in world coordinates) is completely visible within the screen
+ * container at the given `viewport`, leaving at least `padding` pixels of breathing room.
+ */
+export function isRectInViewport(
+  rect: Rect,
+  viewport: Viewport,
+  container: { width: number; height: number },
+  padding: number = 24,
+): boolean {
+  if (container.width <= 0 || container.height <= 0) {
+    return true;
+  }
+
+  const screenLeft = rect.x * viewport.scale + viewport.x;
+  const screenTop = rect.y * viewport.scale + viewport.y;
+  const screenRight = (rect.x + rect.width) * viewport.scale + viewport.x;
+  const screenBottom = (rect.y + rect.height) * viewport.scale + viewport.y;
+
+  return (
+    screenLeft >= padding &&
+    screenTop >= padding &&
+    screenRight <= container.width - padding &&
+    screenBottom <= container.height - padding
+  );
 }

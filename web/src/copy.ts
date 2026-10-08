@@ -9,15 +9,42 @@ export const ZOOM_IN_LABEL = 'Zoom in';
 export const ZOOM_OUT_LABEL = 'Zoom out';
 export const RESET_ZOOM_LABEL = 'Reset zoom to 100%';
 export const FIT_VIEW_LABEL = 'Fit board to content';
+export const AUTO_FIT_LABEL = 'Auto-fit';
 export const ZOOM_CONTROL_LABEL = 'Viewport controls';
 export const TIMELINE_LABEL = 'Weekend timeline';
 export const TIMELINE_SLOT_EMPTY = 'Empty slot';
 export const UNDOCK_CARD_LABEL = 'Remove from timeline';
 export const TIMELINE_SLOTS = [
+  { id: 'saturday-morning', label: 'Saturday morning' },
   { id: 'saturday-afternoon', label: 'Saturday afternoon' },
   { id: 'saturday-evening', label: 'Saturday evening' },
+  { id: 'sunday-morning', label: 'Sunday morning' },
   { id: 'sunday-afternoon', label: 'Sunday afternoon' },
+  { id: 'sunday-evening', label: 'Sunday evening' },
 ] as const;
+
+export const TIMELINE_COLLAPSED_LABEL = 'Weekend Timeline';
+export const TIMELINE_COLLAPSED_HINT = 'Click to expand · Drop cards here';
+export const TIMELINE_EXPAND_LABEL = 'Expand weekend timeline';
+export const TIMELINE_COLLAPSE_LABEL = 'Minimize timeline';
+export function timelinePlannedCount(docked: number, total: number): string {
+  return `${docked}/${total} planned`;
+}
+export const TIMELINE_GUIDE_TOAST =
+  'Weekend timeline: drag activities here to schedule your weekend, or click to expand.';
+export const DISCARD_GUIDE_TOAST = 'Discard bin: drag unwanted cards here to remove them from your board.';
+export const AUTOFIT_GUIDE_TOAST = 'Auto-fit: automatically frames new cards into view.';
+export function timelineSlotMismatchMessage(expectedSlotLabel: string): string {
+  return `This activity is scheduled for ${expectedSlotLabel}. Drop it in that slot!`;
+}
+export const TIMELINE_SLOT_REPLACE_ALERT =
+  'Dropping this activity here will replace the scheduled one and return it to the board.';
+export function timelineSlotReplaceAlert(existingTitle: string): string {
+  return `Dropping here will replace "${existingTitle}" and return it to the board.`;
+}
+export function timelineActivityReplacedConfirmation(oldTitle: string): string {
+  return `Replaced "${oldTitle}" and returned it to the board.`;
+}
 
 export type FreeSlotChipDefinition = {
   id: string;
@@ -116,6 +143,53 @@ export const ACTIVITY_CARD_ORIGINAL_TITLE_LABEL = 'Original title';
 export const ACTIVITY_CARD_LANGUAGE_LABEL = 'Language';
 export const ACTIVITY_CARD_LANGUAGE_ENGLISH = 'English';
 export const ACTIVITY_CARD_LANGUAGE_CHINESE = 'Chinese';
+export const ACTIVITY_CARD_LANGUAGE_BILINGUAL = 'Bilingual';
+export const ACTIVITY_CARD_LANGUAGE_ENGLISH_AVAILABLE = 'English Available';
+
+export function getActivityLanguageBadge(
+  activity: {
+    title?: string;
+    lang?: string;
+    tags?: readonly string[];
+    source?: { name?: string };
+  },
+  rationale?: string,
+): string {
+  const title = activity.title ?? '';
+  const hasChinese = /[\u4e00-\u9fa5]/.test(title);
+  const tags = activity.tags ?? [];
+  const sourceName = activity.source?.name ?? '';
+  const rationaleText = rationale ?? '';
+
+  const hasEnglishTag = tags.some(
+    (t) => t === 'english-available' || t === 'english-guide' || t === 'en-available' || t === 'english-friendly',
+  );
+  const hasBilingualTag = tags.some((t) => t === 'bilingual' || t === 'bilateral' || t === 'language-exchange');
+
+  const rationaleMentionsEnglish = /(?:english (?:guid|avail|tour|friend|support)|bilingual)/i.test(rationaleText);
+
+  // International bilingual arts venues that provide dual English/Cantonese curation
+  const isBilingualVenue = /M\+|Tai Kwun|Fringe Club|Crossroads|CHAT|Language Exchange/i.test(sourceName);
+
+  // Pure English: no Chinese characters, or explicitly declared lang="en" with English text
+  if (activity.lang === 'en' || (!hasChinese && /[a-zA-Z]/.test(title))) {
+    return ACTIVITY_CARD_LANGUAGE_ENGLISH;
+  }
+
+  // Explicit bilingual tag or title has both significant Chinese and English words, or bilingual venue
+  if (hasBilingualTag || (hasChinese && /[a-zA-Z]{4,}/.test(title)) || isBilingualVenue) {
+    return ACTIVITY_CARD_LANGUAGE_BILINGUAL;
+  }
+
+  // Chinese event with English guidance/tour available
+  if (hasEnglishTag || (hasChinese && rationaleMentionsEnglish)) {
+    return ACTIVITY_CARD_LANGUAGE_ENGLISH_AVAILABLE;
+  }
+
+  // Authentic Chinese/Cantonese source
+  return ACTIVITY_CARD_LANGUAGE_CHINESE;
+}
+
 export const ACTIVITY_CARD_TIME_UNAVAILABLE = 'Time to be confirmed';
 export const ACTIVITY_CARD_SOURCE_LABEL = 'Source';
 export const ACTIVITY_CARD_MATCH_RATIONALE_LABEL = 'Why it matches';

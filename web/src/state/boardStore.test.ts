@@ -35,6 +35,15 @@ describe('board store timeline docking', () => {
     expect(useBoardStore.getState().timelineSlots[0]?.activityId).toBe('activity-one');
   });
 
+  it('replaces an occupied timeline slot when replace option is provided', () => {
+    useBoardStore.setState({
+      timelineSlots: [{ id: 'saturday-afternoon', activityId: 'activity-one' }],
+    });
+
+    expect(useBoardStore.getState().dockCard('activity-two', 'saturday-afternoon', { replace: true })).toBe(true);
+    expect(useBoardStore.getState().timelineSlots[0]?.activityId).toBe('activity-two');
+  });
+
   it('moves a docked activity to another available timeline slot', () => {
     useBoardStore.getState().dockCard('activity-one', 'saturday-afternoon');
 
@@ -158,5 +167,31 @@ describe('board store search retrieval and error handling', () => {
     expect(state.agentLog).toHaveLength(1);
     expect(state.agentLog[0].level).toBe('error');
     expect(state.agentLog[0].message).toContain('502');
+  });
+
+  it('exclusively glows newly added cards and excludes cards that already exist', async () => {
+    const client: AgentClient = {
+      requestAgent: vi.fn().mockResolvedValue(response),
+    };
+
+    await useBoardStore.getState().submitSearch('first query', client);
+    expect(useBoardStore.getState().recentCardIds).toEqual(response.matches.map((m) => m.activity.id));
+
+    // Second search returns an existing card PLUS a brand new card
+    const brandNewCard = {
+      ...response.matches[0],
+      activity: { ...response.matches[0].activity, id: 'brand-new-unique-id' },
+    };
+    const secondResponse = {
+      ...response,
+      matches: [response.matches[0], brandNewCard],
+    };
+    const secondClient: AgentClient = {
+      requestAgent: vi.fn().mockResolvedValue(secondResponse),
+    };
+
+    await useBoardStore.getState().submitSearch('second query', secondClient);
+    // Only the brand-new card glows; the already-existing card does NOT glow
+    expect(useBoardStore.getState().recentCardIds).toEqual(['brand-new-unique-id']);
   });
 });
