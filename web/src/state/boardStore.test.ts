@@ -90,4 +90,67 @@ describe('board store discard and similar flows', () => {
     });
     expect(useBoardStore.getState().cards).toHaveLength(response.matches.length);
   });
+
+  it('records an error log entry and updates status when findSimilar fails', async () => {
+    const card = response.matches[0];
+    const client: AgentClient = {
+      requestAgent: vi.fn().mockRejectedValue(new Error('Agent request failed with status 502')),
+    };
+
+    await useBoardStore.getState().findSimilar(card, client);
+
+    const state = useBoardStore.getState();
+    expect(state.agentStatus).toBe('error');
+    expect(state.agentError).toContain('502');
+    expect(state.agentLog.length).toBeGreaterThan(0);
+    expect(state.agentLog.some((entry) => entry.level === 'error' && entry.message.includes('502'))).toBe(true);
+  });
+});
+
+describe('board store search retrieval and error handling', () => {
+  beforeEach(() => {
+    useBoardStore.setState({
+      agentError: null,
+      agentLog: [],
+      agentStatus: 'idle',
+      cards: [],
+      dataSourceMode: 'live',
+      discardedCards: [],
+      timelineSlots: [],
+    });
+  });
+
+  it('merges new search results with existing cards instead of erasing them', async () => {
+    useBoardStore.setState({
+      cards: [response.matches[0]],
+    });
+
+    const client: AgentClient = {
+      requestAgent: vi.fn().mockResolvedValue(response),
+    };
+
+    await useBoardStore.getState().submitSearch('hiking in Kowloon', client);
+
+    const state = useBoardStore.getState();
+    expect(state.agentStatus).toBe('results');
+    // Original card + incoming cards merged without duplicates
+    expect(state.cards).toHaveLength(response.matches.length);
+    expect(state.cards.some((c) => c.activity.id === response.matches[0].activity.id)).toBe(true);
+  });
+
+  it('formats HTTP 502 into a user-friendly error and appends an error log entry', async () => {
+    const client: AgentClient = {
+      requestAgent: vi.fn().mockRejectedValue(new Error('Agent request failed with status 502')),
+    };
+
+    await useBoardStore.getState().submitSearch('bad query', client);
+
+    const state = useBoardStore.getState();
+    expect(state.agentStatus).toBe('error');
+    expect(state.agentError).toContain('502');
+    expect(state.agentError).toContain('Backend service is unavailable');
+    expect(state.agentLog).toHaveLength(1);
+    expect(state.agentLog[0].level).toBe('error');
+    expect(state.agentLog[0].message).toContain('502');
+  });
 });

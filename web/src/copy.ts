@@ -80,6 +80,28 @@ export function agentStatusResults(count: number): string {
 }
 export const AGENT_STATUS_ERROR =
   'Could not reach the activity agent. Please check your connection or try the demo seed data.';
+export const AGENT_CONNECTION_ERROR_502 =
+  'Backend service is unavailable (HTTP 502 Bad Gateway). Please verify the API server is running on port 8000 or switch to Mock Data.';
+export const AGENT_CONNECTION_ERROR_NETWORK =
+  'Unable to connect to the backend server. Please verify the API server is running or switch to Mock Data.';
+export const AGENT_ERROR_LOG_PREFIX = 'Request failed';
+
+export function formatAgentErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    if (error.message.includes('502')) {
+      return AGENT_CONNECTION_ERROR_502;
+    }
+    if (
+      error.message.includes('Failed to fetch') ||
+      error.message.includes('NetworkError') ||
+      error.message.includes('ECONNREFUSED')
+    ) {
+      return AGENT_CONNECTION_ERROR_NETWORK;
+    }
+    return error.message;
+  }
+  return AGENT_STATUS_ERROR;
+}
 export const AGENT_LOG_LABEL = 'Agent log';
 export const AGENT_LOG_EMPTY = 'No agent steps recorded yet.';
 export const AGENT_LOG_SHOW = 'Show agent log';

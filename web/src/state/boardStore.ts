@@ -1,7 +1,13 @@
 import { create } from 'zustand';
 import { defaultAgentClient, fixtureAgentClient, type AgentClient, type AgentRequest } from '../api/client';
 import type { components } from '../api/schema';
-import { FREE_TIME_SLOTS, INITIAL_ACTIVITY_QUERY } from '../copy';
+import {
+  AGENT_ERROR_LOG_PREFIX,
+  AGENT_STATUS_ERROR,
+  formatAgentErrorMessage,
+  FREE_TIME_SLOTS,
+  INITIAL_ACTIVITY_QUERY,
+} from '../copy';
 
 export type ActivityCard = components['schemas']['MatchedActivity'];
 export type AgentLogEntry = components['schemas']['AgentLogEntry'];
@@ -112,14 +118,51 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
       ),
     }));
   },
-  async findSimilar(card, client = fixtureAgentClient) {
-    const response = await client.requestAgent(similarActivityRequest(card));
-    const discardedIds = new Set(get().discardedCards.map((discardedCard) => discardedCard.activity.id));
+  async findSimilar(card, client) {
+    const activeClient = client ?? (get().dataSourceMode === 'mock' ? fixtureAgentClient : defaultAgentClient);
+    set({ agentStatus: 'searching', agentError: null });
+    try {
+      const response = await activeClient.requestAgent(similarActivityRequest(card));
+      if (response.status === 'error') {
+        const errorMsg = response.error ?? AGENT_STATUS_ERROR;
+        set((state) => ({
+          agentStatus: 'error',
+          agentError: errorMsg,
+          agentLog: [
+            ...state.agentLog,
+            {
+              ts: new Date().toISOString(),
+              level: 'error',
+              message: `${AGENT_ERROR_LOG_PREFIX}: ${errorMsg}`,
+            },
+          ],
+        }));
+        return;
+      }
 
-    set((state) => ({
-      agentLog: response.log,
-      cards: mergeCards(state.cards, response.matches, discardedIds),
-    }));
+      const discardedIds = new Set(get().discardedCards.map((discardedCard) => discardedCard.activity.id));
+
+      set((state) => ({
+        cards: mergeCards(state.cards, response.matches, discardedIds),
+        agentLog: response.log,
+        agentStatus: 'results',
+        agentError: null,
+      }));
+    } catch (error) {
+      const message = formatAgentErrorMessage(error);
+      set((state) => ({
+        agentStatus: 'error',
+        agentError: message,
+        agentLog: [
+          ...state.agentLog,
+          {
+            ts: new Date().toISOString(),
+            level: 'error',
+            message: `${AGENT_ERROR_LOG_PREFIX}: ${message}`,
+          },
+        ],
+      }));
+    }
   },
   toggleFreeSlot(slotId) {
     set((state) => {
@@ -157,20 +200,32 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
     try {
       const response = await activeClient.requestAgent(request);
       if (response.status === 'error') {
-        set({
+        const errorMsg = response.error ?? AGENT_STATUS_ERROR;
+        set((state) => ({
           agentStatus: 'error',
-          agentError: response.error ?? 'Agent reported an error.',
-          agentLog: response.log ?? [],
-        });
+          agentError: errorMsg,
+          agentLog: [
+            ...state.agentLog,
+            {
+              ts: new Date().toISOString(),
+              level: 'error',
+              message: `${AGENT_ERROR_LOG_PREFIX}: ${errorMsg}`,
+            },
+          ],
+        }));
         return;
       }
 
-      set({
-        cards: response.matches,
+      const discardedIds = new Set(get().discardedCards.map((discardedCard) => discardedCard.activity.id));
+      set((state) => ({
+        cards:
+          request.query === INITIAL_ACTIVITY_QUERY
+            ? response.matches
+            : mergeCards(state.cards, response.matches, discardedIds),
         agentLog: response.log,
         agentStatus: 'results',
         agentError: null,
-      });
+      }));
     } catch (error) {
       if (activeClient !== fixtureAgentClient && request.query === INITIAL_ACTIVITY_QUERY) {
         try {
@@ -188,11 +243,19 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
         }
       }
 
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      set({
+      const message = formatAgentErrorMessage(error);
+      set((state) => ({
         agentStatus: 'error',
         agentError: message,
-      });
+        agentLog: [
+          ...state.agentLog,
+          {
+            ts: new Date().toISOString(),
+            level: 'error',
+            message: `${AGENT_ERROR_LOG_PREFIX}: ${message}`,
+          },
+        ],
+      }));
     }
   },
   setTimelineSlots(timelineSlots) {
