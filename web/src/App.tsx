@@ -444,8 +444,10 @@ export function App() {
 
   async function handleFindSimilar(card: BoardActivityCard) {
     const title = card.activity.title_en ?? card.activity.title;
-    await findSimilar(card);
-    setConfirmation(findSimilarConfirmation(title));
+    const success = await findSimilar(card);
+    if (success) {
+      setConfirmation(findSimilarConfirmation(title));
+    }
   }
 
   function handlePointerMove(event: PointerEvent<HTMLDivElement>) {

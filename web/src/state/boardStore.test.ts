@@ -80,8 +80,9 @@ describe('board store discard and similar flows', () => {
     const requestAgent = vi.fn().mockResolvedValue(response);
     const client: AgentClient = { requestAgent };
 
-    await useBoardStore.getState().findSimilar(card, client);
+    const result = await useBoardStore.getState().findSimilar(card, client);
 
+    expect(result).toBe(true);
     expect(requestAgent).toHaveBeenCalledWith({
       query: expect.stringContaining('Hong Kong Heritage Discovery Centre guided tour'),
     });
@@ -89,6 +90,7 @@ describe('board store discard and similar flows', () => {
       query: expect.stringContaining('Yau Tsim Mong'),
     });
     expect(useBoardStore.getState().cards).toHaveLength(response.matches.length);
+    expect(useBoardStore.getState().lastMatchCount).toBe(response.matches.length);
   });
 
   it('records an error log entry and updates status when findSimilar fails', async () => {
@@ -97,11 +99,13 @@ describe('board store discard and similar flows', () => {
       requestAgent: vi.fn().mockRejectedValue(new Error('Agent request failed with status 502')),
     };
 
-    await useBoardStore.getState().findSimilar(card, client);
+    const result = await useBoardStore.getState().findSimilar(card, client);
 
+    expect(result).toBe(false);
     const state = useBoardStore.getState();
     expect(state.agentStatus).toBe('error');
     expect(state.agentError).toContain('502');
+    expect(state.lastMatchCount).toBeNull();
     expect(state.agentLog.length).toBeGreaterThan(0);
     expect(state.agentLog.some((entry) => entry.level === 'error' && entry.message.includes('502'))).toBe(true);
   });
@@ -116,6 +120,7 @@ describe('board store search retrieval and error handling', () => {
       cards: [],
       dataSourceMode: 'live',
       discardedCards: [],
+      lastMatchCount: null,
       timelineSlots: [],
     });
   });
@@ -135,6 +140,7 @@ describe('board store search retrieval and error handling', () => {
     expect(state.agentStatus).toBe('results');
     // Original card + incoming cards merged without duplicates
     expect(state.cards).toHaveLength(response.matches.length);
+    expect(state.lastMatchCount).toBe(response.matches.length);
     expect(state.cards.some((c) => c.activity.id === response.matches[0].activity.id)).toBe(true);
   });
 

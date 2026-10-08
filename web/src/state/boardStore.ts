@@ -34,12 +34,13 @@ export type BoardStore = {
   agentLog: AgentLogEntry[];
   agentStatus: AgentStatus;
   agentError: string | null;
+  lastMatchCount: number | null;
   dataSourceMode: DataSourceMode;
   selectedFreeSlotIds: string[];
   discardCard: (activityId: string) => void;
   dockCard: (activityId: string, timelineSlotId: string) => boolean;
   undockCard: (timelineSlotId: string) => void;
-  findSimilar: (card: ActivityCard, client?: AgentClient) => Promise<void>;
+  findSimilar: (card: ActivityCard, client?: AgentClient) => Promise<boolean>;
   loadAgentResponse: (request: AgentRequest, client?: AgentClient) => Promise<void>;
   submitSearch: (query: string, client?: AgentClient) => Promise<void>;
   toggleFreeSlot: (slotId: string) => void;
@@ -67,6 +68,7 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
   agentLog: [],
   agentStatus: 'idle',
   agentError: null,
+  lastMatchCount: null,
   dataSourceMode: 'live',
   selectedFreeSlotIds: [],
   discardCard(activityId) {
@@ -128,6 +130,7 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
         set((state) => ({
           agentStatus: 'error',
           agentError: errorMsg,
+          lastMatchCount: null,
           agentLog: [
             ...state.agentLog,
             {
@@ -137,7 +140,7 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
             },
           ],
         }));
-        return;
+        return false;
       }
 
       const discardedIds = new Set(get().discardedCards.map((discardedCard) => discardedCard.activity.id));
@@ -147,12 +150,15 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
         agentLog: response.log,
         agentStatus: 'results',
         agentError: null,
+        lastMatchCount: response.matches.length,
       }));
+      return true;
     } catch (error) {
       const message = formatAgentErrorMessage(error);
       set((state) => ({
         agentStatus: 'error',
         agentError: message,
+        lastMatchCount: null,
         agentLog: [
           ...state.agentLog,
           {
@@ -162,6 +168,7 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
           },
         ],
       }));
+      return false;
     }
   },
   toggleFreeSlot(slotId) {
@@ -204,6 +211,7 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
         set((state) => ({
           agentStatus: 'error',
           agentError: errorMsg,
+          lastMatchCount: null,
           agentLog: [
             ...state.agentLog,
             {
@@ -225,6 +233,7 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
         agentLog: response.log,
         agentStatus: 'results',
         agentError: null,
+        lastMatchCount: response.matches.length,
       }));
     } catch (error) {
       if (activeClient !== fixtureAgentClient && request.query === INITIAL_ACTIVITY_QUERY) {
@@ -235,6 +244,7 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
             agentLog: fallback.log,
             agentStatus: 'results',
             agentError: null,
+            lastMatchCount: fallback.matches.length,
             dataSourceMode: 'mock',
           });
           return;
@@ -247,6 +257,7 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
       set((state) => ({
         agentStatus: 'error',
         agentError: message,
+        lastMatchCount: null,
         agentLog: [
           ...state.agentLog,
           {
