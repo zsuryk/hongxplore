@@ -7,6 +7,8 @@ import {
   EMPTY_BOARD_BOUNDS,
   contentBounds,
   defaultCardPosition,
+  getCardVariant,
+  tiledCardPosition,
 } from './boardLayout';
 
 describe('default card layout', () => {
@@ -60,5 +62,40 @@ describe('content bounds', () => {
     const bounds = contentBounds([{ position: { x: -1000, y: 1000 } }]);
 
     expect(bounds).toEqual({ x: -1000, y: 1000, width: CARD_WIDTH, height: CARD_FIT_HEIGHT });
+  });
+
+  it('takes card variant dimensions into account', () => {
+    const bounds = contentBounds([
+      { position: { x: 0, y: 0 }, variant: 'compact' },
+      { position: { x: 400, y: 0 }, variant: 'tall' },
+    ]);
+
+    expect(bounds.x).toBe(0);
+    expect(bounds.y).toBe(0);
+    expect(bounds.width).toBe(400 + 320);
+    expect(bounds.height).toBe(480);
+  });
+});
+
+describe('auto-tiling and card variants', () => {
+  it('cycles variants through compact, wide, and tall deterministically', () => {
+    expect(getCardVariant(0)).toBe('compact');
+    expect(getCardVariant(1)).toBe('wide');
+    expect(getCardVariant(2)).toBe('tall');
+    expect(getCardVariant(3)).toBe('compact');
+  });
+
+  it('tiles cards within a cluster without overlapping', () => {
+    const compactPos = tiledCardPosition(0);
+    const widePos = tiledCardPosition(1);
+    const tallPos = tiledCardPosition(2);
+
+    // Compact and wide are in column A, wide stacked under compact
+    expect(compactPos.x).toBe(widePos.x);
+    expect(widePos.y).toBeGreaterThan(compactPos.y);
+
+    // Tall is in column B to the right of column A
+    expect(tallPos.x).toBeGreaterThan(compactPos.x);
+    expect(tallPos.y).toBe(compactPos.y);
   });
 });
