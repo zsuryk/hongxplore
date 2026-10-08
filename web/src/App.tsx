@@ -11,6 +11,7 @@ import {
 } from 'react';
 import { ActivityCard } from './ActivityCard';
 import { AgentStatusPanel } from './AgentStatusPanel';
+import { ResearchCard } from './ResearchCard';
 import { SearchBar } from './SearchBar';
 import {
   BOARD_EMPTY_STATE,
@@ -42,10 +43,12 @@ import {
   CARD_DISCARD_DURATION_MS,
   CARD_MIN_HEIGHT,
   CARD_WIDTH,
+  type PlacedCard,
   contentBounds,
-  defaultCardPosition,
+  getCardVariant,
+  tiledCardPosition,
 } from './boardLayout';
-import { type ActivityCard as BoardActivityCard, useBoardStore } from './state/boardStore';
+import { type ActivityCard as BoardActivityCard, type AgentStatus, useBoardStore } from './state/boardStore';
 import {
   KEYBOARD_PAN_STEP,
   KEYBOARD_PAN_STEP_FAST,
@@ -96,7 +99,11 @@ type CardDragState = {
   grabOffset: Point;
 };
 
-export function App() {
+export type AppProps = {
+  agentStatus?: AgentStatus;
+};
+
+export function App({ agentStatus: propAgentStatus }: AppProps = {}) {
   const boardRef = useRef<HTMLDivElement>(null);
   const discardBinRef = useRef<HTMLElement>(null);
   const activePointersRef = useRef(new Map<number, Point>());
@@ -107,6 +114,8 @@ export function App() {
 
   const cards = useBoardStore((state) => state.cards);
   const timelineSlots = useBoardStore((state) => state.timelineSlots);
+  const storeAgentStatus = useBoardStore((state) => state.agentStatus);
+  const agentStatus = propAgentStatus ?? storeAgentStatus;
   const discardCard = useBoardStore((state) => state.discardCard);
   const dockCard = useBoardStore((state) => state.dockCard);
   const undockCard = useBoardStore((state) => state.undockCard);
@@ -133,9 +142,15 @@ export function App() {
   const placedCards = useMemo(
     () =>
       availableCards.map((match, index) => ({
-        position: cardPositionsById[match.activity.id] ?? defaultCardPosition(index),
+        position: cardPositionsById[match.activity.id] ?? tiledCardPosition(index),
+        variant: getCardVariant(index),
       })),
     [availableCards, cardPositionsById],
+  );
+
+  const researchCardPosition = useMemo(
+    () => (availableCards.length > 0 ? tiledCardPosition(availableCards.length) : tiledCardPosition(0)),
+    [availableCards.length],
   );
 
   useEffect(() => {
@@ -215,14 +230,21 @@ export function App() {
   }, [boardSize, fitContent]);
 
   useEffect(() => {
-    contentBoundsRef.current = contentBounds(placedCards);
+    const cardsToFrame: PlacedCard[] = [...placedCards];
+    if (agentStatus === 'searching') {
+      cardsToFrame.push({
+        position: researchCardPosition,
+        variant: 'standard',
+      });
+    }
+    contentBoundsRef.current = contentBounds(cardsToFrame);
 
     // Cards arrive asynchronously, so framing the board once on layout would frame an
     // empty board. Keep framing until the user takes over, then never move it again.
     if (!hasAdjustedRef.current) {
       fitContent();
     }
-  }, [fitContent, placedCards]);
+  }, [agentStatus, fitContent, placedCards, researchCardPosition]);
 
   const markGesture = useCallback(() => {
     setIsGesturing(true);
@@ -609,7 +631,7 @@ export function App() {
           </button>
         </div>
       </header>
-      <AgentStatusPanel />
+      <AgentStatusPanel status={agentStatus} />
       <p className="sr-only" id="board-keyboard-hint">
         {BOARD_KEYBOARD_HINT}
       </p>
@@ -680,7 +702,7 @@ export function App() {
           <strong>{DISCARD_BIN_LABEL}</strong>
           <span>{DISCARD_BIN_HINT}</span>
         </aside>
-        {cards.length === 0 ? (
+        {cards.length === 0 && agentStatus !== 'searching' ? (
           <div className="board__layer board__layer--center">
             <div className="board__panel">
               <h2>{BOARD_GUIDE_TITLE}</h2>
@@ -696,27 +718,47 @@ export function App() {
         ) : null}
         {cardDragState ? (
           <div
-            className="board__drag"
+            className={`board__drag${cardDragState.source === 'timeline' ? ' board__drag--docked' : ''}`}
             style={{
               left: cardDragState.screenPoint.x - cardDragState.grabOffset.x,
               top: cardDragState.screenPoint.y - cardDragState.grabOffset.y,
             }}
           >
             <div className="board__drag-scale">
-              <ActivityCard match={cardDragState.card} size="canvas" state="spawning" />
+              <ActivityCard
+                match={cardDragState.card}
+                size={cardDragState.source === 'timeline' ? 'docked' : 'canvas'}
+                state="dragging"
+                variant={getCardVariant(
+                  Math.max(
+                    0,
+                    availableCards.findIndex((c) => c.activity.id === cardDragState.card.activity.id),
+                  ),
+                )}
+              />
             </div>
           </div>
         ) : null}
         <div className="board__pan">
           <div className="board__world">
             <div className="board__cards">
+              {agentStatus === 'searching' ? (
+                <div
+                  className="board__card board__card--research"
+                  data-research-card
+                  style={{ left: researchCardPosition.x, top: researchCardPosition.y }}
+                >
+                  <ResearchCard />
+                </div>
+              ) : null}
               {availableCards.map((match, index) => {
                 const isDragging = cardDragState?.card.activity.id === match.activity.id;
                 const isDiscarding = discardingCardId === match.activity.id;
+                const variant = getCardVariant(index);
 
                 return (
                   <div
-                    className={`board__card${isDragging ? ' board__card--ghost' : ''}`}
+                    className={`board__card board__card--${variant}${isDragging ? ' board__card--ghost' : ''}`}
                     data-activity-card
                     key={match.activity.id}
                     onPointerCancel={handleCardPointerCancel}
@@ -729,6 +771,7 @@ export function App() {
                       match={match}
                       onFindSimilar={handleFindSimilar}
                       state={isDiscarding ? 'discarding' : 'spawning'}
+                      variant={variant}
                     />
                   </div>
                 );

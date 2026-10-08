@@ -23,12 +23,32 @@
   min-height: var(--card-min-height);
 }
 
-/* Docked: the slot supplies the frame, so the card drops its own shadow and tightens
-   its type to the panel scale. */
+/* Docked: minimal card view to prevent vertical blowout in timeline slots */
 .activity-card--docked {
   box-shadow: none;
   font-size: var(--text-xs);
-  padding: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+}
+
+.activity-card--docked h2,
+.activity-card__docked-title {
+  display: -webkit-box;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  line-height: var(--leading-tight);
+  margin-top: var(--space-1);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.activity-card--docked .activity-card__location {
+  font-size: var(--text-xs);
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ---- Top line: language + time ---- */
@@ -119,26 +139,173 @@
   margin-top: var(--space-3);
 }
 
-/* ---- Docked type scale ---- */
+/* ---- Canvas Shape Variants (Compact, Wide, Tall) ---- */
 
-.activity-card--docked h2 {
-  font-size: var(--text-sm);
-  margin-top: var(--space-1);
+.activity-card--compact {
+  min-height: var(--card-compact-min-height);
+  padding: var(--space-4);
 }
 
-.activity-card--docked .activity-card__original-title,
-.activity-card--docked .activity-card__location,
-.activity-card--docked .activity-card__rationale {
+.activity-card__compact-badge {
+  align-items: center;
+  background: var(--color-accent-soft);
+  border: 1px solid var(--color-accent-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-accent-strong);
+  display: inline-flex;
+  font-family: var(--font-mono);
   font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  padding: 2px var(--space-2);
 }
 
-.activity-card--docked .activity-card__location {
+.activity-card--compact h2 {
+  font-size: var(--text-md);
+  margin-top: var(--space-2);
+}
+
+.activity-card--compact .activity-card__rationale {
+  display: -webkit-box;
+  font-size: var(--text-xs);
+  line-height: var(--leading-tight);
+  margin-top: var(--space-3);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  padding-left: var(--space-2);
+}
+
+.activity-card--wide {
+  min-height: var(--card-wide-min-height);
+  padding: var(--space-4);
+}
+
+.activity-card--wide h2 {
+  font-size: var(--text-md);
+  margin-top: var(--space-2);
+}
+
+.activity-card--wide .activity-card__rationale {
+  display: -webkit-box;
+  font-size: var(--text-xs);
+  line-height: var(--leading-tight);
+  margin-top: var(--space-3);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.activity-card--tall {
+  min-height: var(--card-tall-min-height);
+}
+
+.activity-card--tall .activity-card__similar-button {
+  margin-top: auto;
+  padding-top: var(--space-3);
+  width: 100%;
+}
+
+/* ---- AI Research Placeholder Card ---- */
+
+.activity-card--researching {
+  background: var(--color-surface);
+  border: 1.5px dashed var(--color-accent-border);
+  box-shadow: var(--shadow-md);
+  min-height: 250px;
+  padding: var(--space-5);
+  position: relative;
+}
+
+.activity-card__research-header {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.activity-card__research-sparkle-wrap {
+  align-items: center;
+  background: var(--color-accent-soft);
+  border-radius: var(--radius-md);
+  color: var(--color-accent);
+  display: inline-flex;
+  height: 2rem;
+  justify-content: center;
+  width: 2rem;
+}
+
+.activity-card__research-sparkle {
+  animation: sparkle-pulse 1.8s var(--motion-ease) infinite;
+  display: inline-block;
+  font-size: var(--text-md);
+}
+
+.activity-card__research-title {
+  color: var(--color-text);
+  font-size: var(--text-md);
+  font-weight: 600;
+  line-height: var(--leading-tight);
   margin-top: var(--space-1);
 }
 
-.activity-card--docked .activity-card__rationale,
-.activity-card--docked .activity-card__source {
-  margin-top: var(--space-2);
+.activity-card__research-subtitle {
+  color: var(--color-text-subtle);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+}
+
+.activity-card__skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+.activity-card__skeleton-line {
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-sunken) 0%,
+    var(--color-surface-hover) 50%,
+    var(--color-surface-sunken) 100%
+  );
+  background-size: 200% 100%;
+  border-radius: var(--radius-sm);
+  height: 0.75rem;
+}
+
+.activity-card__skeleton-line--full {
+  width: 100%;
+}
+
+.activity-card__skeleton-line--medium {
+  width: 75%;
+}
+
+.activity-card__skeleton-line--short {
+  width: 45%;
+}
+
+@keyframes sparkle-pulse {
+  0%,
+  100% {
+    opacity: 0.85;
+    scale: 1;
+  }
+  50% {
+    opacity: 1;
+    scale: 1.25;
+  }
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* ---- Motion: opacity + standalone transform properties only, so nothing is left

@@ -9,18 +9,21 @@
   color-scheme: light;
 
   /* ---- Surfaces ---- */
-  --color-canvas: #f6f7f9;
+  --color-canvas: #f8fafc;
+  --color-canvas-glow: #e0e7ff;
   --color-surface: #ffffff;
   --color-surface-sunken: #f1f5f9;
   --color-surface-hover: #e8edf3;
   --color-surface-active: #dde4ec;
-  --color-overlay: rgb(255 255 255 / 92%);
+  --color-overlay: rgb(255 255 255 / 86%);
+  --backdrop-blur-chrome: blur(12px);
 
   /* ---- Lines ---- */
   --color-border: #dfe4ea;
   --color-border-strong: #7d8798;
   --color-border-dashed: #9aa5b5;
-  --color-grid-line: rgb(84 97 122 / 14%);
+  --color-grid-line: rgb(84 97 122 / 12%);
+  --color-grid-dot: rgb(99 102 241 / 20%);
 
   /* ---- Text (all pairs >= 4.5:1 on their surface) ---- */
   --color-text: #16202e;
@@ -111,6 +114,9 @@
   --board-grid-size: 40px;
   --card-width: 320px;
   --card-min-height: 336px;
+  --card-compact-min-height: 220px;
+  --card-wide-min-height: 200px;
+  --card-tall-min-height: 440px;
 }
 
 /**

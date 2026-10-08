@@ -158,3 +158,7 @@ export function formatLogTimestamp(isoString: string): string {
 
 export const HEADING = 'Hongxplore';
 export const TAGLINE = 'Infinite whiteboard + AI activity agent for students in Hong Kong.';
+
+export const GATHERING_INFO_TITLE = 'Gathering info for you...';
+export const GATHERING_INFO_SUBTITLE = 'Researching and ranking weekend activities...';
+export const GATHERING_INFO_LABEL = 'AI research in progress: gathering activities';

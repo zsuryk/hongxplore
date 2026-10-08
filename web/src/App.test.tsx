@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { App } from './App';
-import { BOARD_LABEL, BOARD_KEYBOARD_HINT, TIMELINE_SLOTS } from './copy';
+import { BOARD_LABEL, BOARD_KEYBOARD_HINT, GATHERING_INFO_TITLE, TIMELINE_SLOTS } from './copy';
 import { CARD_WIDTH } from './boardLayout';
 import { useBoardStore } from './state/boardStore';
 
@@ -78,5 +78,13 @@ describe('App shell', () => {
     expect(markup).toContain('<button aria-label="Reset zoom to 100%" class="btn btn--sm" disabled="" type="button">');
     expect(markup).toContain('<button aria-label="Zoom out" class="btn btn--sm btn--icon" type="button">');
     expect(markup).toContain('<button aria-label="Zoom in" class="btn btn--sm btn--icon" type="button">');
+  });
+
+  it('renders the AI research canvas placeholder when searching', () => {
+    const markup = renderToStaticMarkup(<App agentStatus="searching" />);
+
+    expect(markup).toContain('class="board__card board__card--research"');
+    expect(markup).toContain('activity-card--researching');
+    expect(markup).toContain(GATHERING_INFO_TITLE);
   });
 });
