@@ -1,8 +1,6 @@
 import type { CSSProperties } from 'react';
 import type { CardVariant } from './boardLayout';
 import {
-  ACTIVITY_CARD_LANGUAGE_CHINESE,
-  ACTIVITY_CARD_LANGUAGE_ENGLISH,
   ACTIVITY_CARD_LANGUAGE_LABEL,
   ACTIVITY_CARD_MATCH_RATIONALE_LABEL,
   ACTIVITY_CARD_ORIGINAL_TITLE_LABEL,
@@ -11,6 +9,7 @@ import {
   FIND_SIMILAR_LABEL,
   activityCardAccessibleLabel,
   activityCardLocation,
+  getActivityLanguageBadge,
 } from './copy';
 import type { components } from './api/schema';
 
@@ -23,10 +22,11 @@ type MatchedActivity = components['schemas']['MatchedActivity'];
 export type ActivityCardSize = 'canvas' | 'docked';
 
 export type ActivityCardProps = {
+  isRecent?: boolean;
   match: MatchedActivity;
   onFindSimilar?: (match: MatchedActivity) => void;
   size?: ActivityCardSize;
-  state?: 'spawning' | 'discarding' | 'dragging';
+  state?: 'spawning' | 'discarding' | 'dragging' | 'bouncing';
   style?: CSSProperties;
   variant?: CardVariant;
 };
@@ -40,14 +40,8 @@ const hktDateFormatter = new Intl.DateTimeFormat('en-HK', {
   weekday: 'short',
 });
 
-const hktCompactDateFormatter = new Intl.DateTimeFormat('en-HK', {
-  day: 'numeric',
-  month: 'numeric',
-  timeZone: 'Asia/Hong_Kong',
-  weekday: 'short',
-});
-
 export function ActivityCard({
+  isRecent = false,
   match,
   onFindSimilar,
   size = 'canvas',
@@ -56,13 +50,14 @@ export function ActivityCard({
   variant = 'standard',
 }: ActivityCardProps) {
   const { activity, match_rationale: matchRationale } = match;
-  const language = activity.lang === 'en' ? ACTIVITY_CARD_LANGUAGE_ENGLISH : ACTIVITY_CARD_LANGUAGE_CHINESE;
+  const language = getActivityLanguageBadge(activity, matchRationale);
   const start = activity.parts[0]?.start;
   const title = activity.title_en ?? activity.title;
   const hasTranslatedTitle = activity.title_en && activity.title_en !== activity.title;
 
   const stateClass = state ? ` activity-card--${state}` : '';
   const variantClass = size === 'canvas' ? ` activity-card--${variant}` : '';
+  const recentClass = isRecent ? ' activity-card--recent' : '';
 
   // Minimal view for docked timeline cards to prevent vertical blowout
   if (size === 'docked') {
@@ -73,11 +68,10 @@ export function ActivityCard({
         style={style}
       >
         <div className="activity-card__topline">
-          <span className="activity-card__language">
-            {ACTIVITY_CARD_LANGUAGE_LABEL}: {language}
-          </span>
           {start ? (
-            <time dateTime={start}>{formatActivityTime(start)}</time>
+            <span className="activity-card__time-badge">
+              <time dateTime={start}>{formatActivityTime(start)}</time>
+            </span>
           ) : (
             <span>{ACTIVITY_CARD_TIME_UNAVAILABLE}</span>
           )}
@@ -93,7 +87,7 @@ export function ActivityCard({
   return (
     <article
       aria-label={activityCardAccessibleLabel(title)}
-      className={`activity-card activity-card--${size}${variantClass}${stateClass}`}
+      className={`activity-card activity-card--${size}${variantClass}${stateClass}${recentClass}`}
       style={style}
     >
       <div className="activity-card__topline">
@@ -101,13 +95,12 @@ export function ActivityCard({
           {ACTIVITY_CARD_LANGUAGE_LABEL}: {language}
         </span>
         {start ? (
-          variant === 'compact' ? (
-            <span className="activity-card__compact-badge" title={formatActivityTime(start)}>
-              <time dateTime={start}>{formatCompactDate(start)}</time>
-            </span>
-          ) : (
+          <span
+            className={`activity-card__time-badge${variant === 'compact' ? ' activity-card__compact-badge' : ''}`}
+            title={formatActivityTime(start)}
+          >
             <time dateTime={start}>{formatActivityTime(start)}</time>
-          )
+          </span>
         ) : (
           <span>{ACTIVITY_CARD_TIME_UNAVAILABLE}</span>
         )}
@@ -122,7 +115,7 @@ export function ActivityCard({
       <p className="activity-card__location">
         {activityCardLocation(activity.location.venue, activity.location.district)}
       </p>
-      <p className="activity-card__rationale">
+      <p className="activity-card__rationale" tabIndex={0}>
         <span className="activity-card__rationale-label">{ACTIVITY_CARD_MATCH_RATIONALE_LABEL}</span>
         {matchRationale}
       </p>
@@ -154,8 +147,4 @@ export function ActivityCard({
 
 function formatActivityTime(start: string): string {
   return hktDateFormatter.format(new Date(start));
-}
-
-function formatCompactDate(start: string): string {
-  return hktCompactDateFormatter.format(new Date(start));
 }

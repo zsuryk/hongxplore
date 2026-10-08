@@ -129,6 +129,52 @@ button {
   text-align: center;
 }
 
+.viewport-controls__autofit {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  position: relative;
+}
+
+.viewport-controls__guide-hint {
+  animation: guide-hint-fade 8s var(--motion-ease) forwards;
+  left: 50%;
+  max-width: min(18rem, calc(100vw - var(--space-8)));
+  pointer-events: none;
+  position: absolute;
+  text-align: center;
+  top: calc(100% + var(--space-3));
+  translate: -50% 0;
+  white-space: normal;
+  width: max-content;
+  z-index: 200;
+}
+
+.viewport-controls__autofit-label {
+  align-items: center;
+  color: var(--color-text-subtle);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.65rem;
+  gap: var(--space-1);
+  letter-spacing: 0.02em;
+  line-height: 1;
+  user-select: none;
+}
+
+.viewport-controls__autofit-label:hover {
+  color: var(--color-text);
+}
+
+.viewport-controls__checkbox {
+  accent-color: var(--color-accent);
+  cursor: pointer;
+  height: 0.75rem;
+  margin: 0;
+  width: 0.75rem;
+}
+
 @media (width <= 640px) {
   .app__header {
     align-items: stretch;
@@ -139,5 +185,11 @@ button {
 
   .viewport-controls {
     justify-content: space-between;
+  }
+
+  .viewport-controls__guide-hint {
+    left: auto;
+    right: 0;
+    translate: 0 0;
   }
 }

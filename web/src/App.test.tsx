@@ -1,7 +1,17 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { App } from './App';
-import { BOARD_LABEL, BOARD_KEYBOARD_HINT, GATHERING_INFO_TITLE, TIMELINE_SLOTS } from './copy';
+import {
+  AUTO_FIT_LABEL,
+  AUTOFIT_GUIDE_TOAST,
+  BOARD_LABEL,
+  BOARD_KEYBOARD_HINT,
+  DISCARD_GUIDE_TOAST,
+  GATHERING_INFO_TITLE,
+  TIMELINE_COLLAPSED_LABEL,
+  TIMELINE_GUIDE_TOAST,
+  TIMELINE_SLOTS,
+} from './copy';
 import { CARD_WIDTH } from './boardLayout';
 import { useBoardStore } from './state/boardStore';
 
@@ -63,10 +73,10 @@ describe('App shell', () => {
     // `.board__pan` is the root of the zoomed subtree; timeline, discard bin and the
     // empty-state panel all sit before it, so they stay in screen space and never blur
     // or drift as the board is panned and zoomed.
-    expect(markup).toContain('class="timeline"');
+    expect(markup).toContain('class="timeline');
     expect(markup).toContain('class="discard-bin"');
     expect(markup).toContain('class="board__layer board__layer--center"');
-    expect(markup.indexOf('class="timeline"')).toBeLessThan(panIndex);
+    expect(markup.indexOf('class="timeline')).toBeLessThan(panIndex);
     expect(markup.indexOf('class="discard-bin"')).toBeLessThan(panIndex);
     expect(markup.indexOf('class="board__layer board__layer--center"')).toBeLessThan(panIndex);
   });
@@ -86,5 +96,23 @@ describe('App shell', () => {
     expect(markup).toContain('class="board__card board__card--research"');
     expect(markup).toContain('activity-card--researching');
     expect(markup).toContain(GATHERING_INFO_TITLE);
+  });
+
+  it('renders collapsed timeline dock and floating guide hints on load', () => {
+    const markup = renderToStaticMarkup(<App />);
+
+    expect(markup).toContain('timeline--collapsed');
+    expect(markup).toContain(TIMELINE_COLLAPSED_LABEL);
+    expect(markup).toContain(TIMELINE_GUIDE_TOAST);
+    expect(markup).toContain(DISCARD_GUIDE_TOAST);
+    expect(markup).toContain(AUTOFIT_GUIDE_TOAST);
+  });
+
+  it('renders the Auto-fit toggle checkbox near the fit button', () => {
+    const markup = renderToStaticMarkup(<App />);
+
+    expect(markup).toContain('class="viewport-controls__autofit"');
+    expect(markup).toContain('class="viewport-controls__checkbox"');
+    expect(markup).toContain(AUTO_FIT_LABEL);
   });
 });

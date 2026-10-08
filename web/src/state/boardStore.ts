@@ -37,8 +37,9 @@ export type BoardStore = {
   lastMatchCount: number | null;
   dataSourceMode: DataSourceMode;
   selectedFreeSlotIds: string[];
+  recentCardIds: string[];
   discardCard: (activityId: string) => void;
-  dockCard: (activityId: string, timelineSlotId: string) => boolean;
+  dockCard: (activityId: string, timelineSlotId: string, options?: { replace?: boolean }) => boolean;
   undockCard: (timelineSlotId: string) => void;
   findSimilar: (card: ActivityCard, client?: AgentClient) => Promise<boolean>;
   loadAgentResponse: (request: AgentRequest, client?: AgentClient) => Promise<void>;
@@ -71,6 +72,7 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
   lastMatchCount: null,
   dataSourceMode: 'live',
   selectedFreeSlotIds: [],
+  recentCardIds: [],
   discardCard(activityId) {
     set((state) => {
       const card = state.cards.find((candidate) => candidate.activity.id === activityId);
@@ -88,14 +90,13 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
       };
     });
   },
-  dockCard(activityId, timelineSlotId) {
+  dockCard(activityId, timelineSlotId, options) {
     let docked = false;
 
     set((state) => {
-      // A card occupies at most one timeline slot; occupied destinations reject the drop.
-      // This keeps docked cards tied to slot layout, so they reflow when the timeline resizes.
+      // A card occupies at most one timeline slot; occupied destinations reject the drop unless replace=true.
       const destination = state.timelineSlots.find((slot) => slot.id === timelineSlotId);
-      if (!destination || (destination.activityId && destination.activityId !== activityId)) {
+      if (!destination || (!options?.replace && destination.activityId && destination.activityId !== activityId)) {
         return state;
       }
 
@@ -144,6 +145,10 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
       }
 
       const discardedIds = new Set(get().discardedCards.map((discardedCard) => discardedCard.activity.id));
+      const existingIds = new Set(get().cards.map((card) => card.activity.id));
+      const newlyAddedMatches = response.matches.filter(
+        (match) => !existingIds.has(match.activity.id) && !discardedIds.has(match.activity.id),
+      );
 
       set((state) => ({
         cards: mergeCards(state.cards, response.matches, discardedIds),
@@ -151,6 +156,7 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
         agentStatus: 'results',
         agentError: null,
         lastMatchCount: response.matches.length,
+        recentCardIds: newlyAddedMatches.map((match) => match.activity.id),
       }));
       return true;
     } catch (error) {
@@ -225,15 +231,24 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
       }
 
       const discardedIds = new Set(get().discardedCards.map((discardedCard) => discardedCard.activity.id));
+      const existingIds = new Set(get().cards.map((card) => card.activity.id));
+      const newlyAddedMatches = response.matches.filter(
+        (match) => !existingIds.has(match.activity.id) && !discardedIds.has(match.activity.id),
+      );
+
       set((state) => ({
         cards:
-          request.query === INITIAL_ACTIVITY_QUERY
+          request.query === INITIAL_ACTIVITY_QUERY && state.cards.length === 0
             ? response.matches
             : mergeCards(state.cards, response.matches, discardedIds),
         agentLog: response.log,
         agentStatus: 'results',
         agentError: null,
         lastMatchCount: response.matches.length,
+        recentCardIds:
+          request.query === INITIAL_ACTIVITY_QUERY && state.cards.length === 0
+            ? []
+            : newlyAddedMatches.map((match) => match.activity.id),
       }));
     } catch (error) {
       if (activeClient !== fixtureAgentClient && request.query === INITIAL_ACTIVITY_QUERY) {
@@ -245,6 +260,7 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
             agentStatus: 'results',
             agentError: null,
             lastMatchCount: fallback.matches.length,
+            recentCardIds: [],
             dataSourceMode: 'mock',
           });
           return;

@@ -45,7 +45,6 @@ export function AgentStatusPanel({
   const storeError = useBoardStore((state) => state.agentError);
   const storeLog = useBoardStore((state) => state.agentLog);
   const storeCards = useBoardStore((state) => state.cards);
-  const storeLastMatchCount = useBoardStore((state) => state.lastMatchCount);
   const dataSourceMode = useBoardStore((state) => state.dataSourceMode);
   const setDataSourceMode = useBoardStore((state) => state.setDataSourceMode);
   const loadAgentResponse = useBoardStore((state) => state.loadAgentResponse);
@@ -54,7 +53,7 @@ export function AgentStatusPanel({
   const agentError = propError ?? storeError;
   const agentLog = propLog ?? storeLog;
   const cards = propCards ?? storeCards;
-  const resultCount = propCards !== undefined ? propCards.length : (storeLastMatchCount ?? cards.length);
+  const resultCount = propCards !== undefined ? propCards.length : cards.length;
 
   function handleModeSwitch(mode: DataSourceMode) {
     setDataSourceMode(mode);

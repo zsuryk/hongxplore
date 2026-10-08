@@ -6,6 +6,7 @@ import {
   canZoomIn,
   canZoomOut,
   fitViewport,
+  isRectInViewport,
   nextZoomLevel,
   panViewport,
   preserveViewportCenter,
@@ -91,5 +92,15 @@ describe('zoom ladder', () => {
     expect(canZoomIn(1)).toBe(true);
     expect(canZoomOut(MIN_ZOOM)).toBe(false);
     expect(canZoomOut(1)).toBe(true);
+  });
+
+  it('determines if a rect is visible in viewport frame with padding', () => {
+    const vp = { x: 0, y: 0, scale: 1 };
+    const container = { width: 1000, height: 800 };
+
+    expect(isRectInViewport({ x: 100, y: 100, width: 200, height: 200 }, vp, container, 24)).toBe(true);
+    expect(isRectInViewport({ x: 900, y: 100, width: 200, height: 200 }, vp, container, 24)).toBe(false);
+    expect(isRectInViewport({ x: -50, y: 100, width: 200, height: 200 }, vp, container, 24)).toBe(false);
+    expect(isRectInViewport({ x: 10, y: 10, width: 100, height: 100 }, vp, container, 24)).toBe(false);
   });
 });
