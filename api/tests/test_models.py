@@ -1,11 +1,19 @@
 """Validation rules of the contract models (issue #4)."""
 
+from decimal import Decimal
 from typing import Any
 
 import pytest
 from pydantic import ValidationError
 
-from app.models import Activity, ActivityPart, AgentRequest, AgentResponse, MatchedActivity
+from app.models import (
+    Activity,
+    ActivityPart,
+    AgentRequest,
+    AgentResponse,
+    MatchedActivity,
+    Price,
+)
 
 
 def make_activity(**overrides: Any) -> dict[str, Any]:
@@ -67,6 +75,76 @@ def test_part_rejects_end_before_start() -> None:
         ActivityPart.model_validate(
             {"start": "2026-10-03T07:30:00Z", "end": "2026-10-03T06:00:00Z"}
         )
+
+
+def test_price_and_listed_at_default_to_absent() -> None:
+    activity = Activity.model_validate(make_activity())
+    assert activity.price is None
+    assert activity.listed_at is None
+
+
+def test_activity_accepts_an_explicit_free_price() -> None:
+    activity = Activity.model_validate(make_activity(price={"is_free": True}))
+    assert activity.price is not None
+    assert activity.price.is_free is True
+    assert activity.price.amount is None
+    assert activity.price.currency == "HKD"
+
+
+def test_activity_accepts_a_priced_amount() -> None:
+    activity = Activity.model_validate(make_activity(price={"amount": "48.00"}))
+    assert activity.price is not None
+    assert activity.price.amount == Decimal("48.00")
+    assert activity.price.currency == "HKD"
+    assert activity.price.is_free is False
+
+
+def test_activity_accepts_a_listed_at_instant() -> None:
+    activity = Activity.model_validate(make_activity(listed_at="2026-09-28T14:00:00+08:00"))
+    assert activity.listed_at is not None
+    assert activity.listed_at.isoformat() == "2026-09-28T06:00:00+00:00"
+
+
+def test_activity_rejects_a_naive_listed_at() -> None:
+    with pytest.raises(ValidationError, match="timezone-aware"):
+        Activity.model_validate(make_activity(listed_at="2026-09-28T14:00:00"))
+
+
+def test_price_rejects_a_free_flag_with_an_amount() -> None:
+    with pytest.raises(ValidationError, match="amount must be null when `is_free` is true"):
+        Price.model_validate({"amount": "48.00", "is_free": True})
+
+
+def test_price_rejects_a_zero_amount_even_when_free() -> None:
+    """Free is spelled `is_free` alone — a zero amount is never valid."""
+    with pytest.raises(ValidationError, match="amount"):
+        Price.model_validate({"amount": 0, "is_free": True})
+
+
+def test_price_rejects_a_negative_amount() -> None:
+    with pytest.raises(ValidationError, match="amount"):
+        Price.model_validate({"amount": "-1.00"})
+
+
+def test_price_rejects_a_zero_amount_without_the_free_flag() -> None:
+    with pytest.raises(ValidationError, match="amount"):
+        Price.model_validate({"amount": 0})
+
+
+def test_price_rejects_a_blank_currency() -> None:
+    with pytest.raises(ValidationError, match="currency"):
+        Price.model_validate({"currency": ""})
+
+
+def test_price_rejects_unknown_fields() -> None:
+    with pytest.raises(ValidationError, match="extra_forbidden"):
+        Price.model_validate({"amount": "48.00", "per": "session"})
+
+
+def test_price_rejects_an_unknown_state() -> None:
+    """Absent means unknown; a present price must say free or priced."""
+    with pytest.raises(ValidationError, match="amount or `is_free`"):
+        Price.model_validate({"currency": "HKD"})
 
 
 def test_request_requires_a_non_empty_query() -> None:
