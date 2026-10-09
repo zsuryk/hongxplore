@@ -56,11 +56,10 @@ import {
   CARD_WIDTH,
   type PlacedCard,
   areAnyCardsOutOfFrame,
-  cardBounds,
   contentBounds,
+  findBestSquareSlot,
   getActivityMatchingSlotId,
   getCardVariant,
-  rectsOverlap,
   tiledCardPosition,
 } from './boardLayout';
 import { type ActivityCard as BoardActivityCard, type AgentStatus, useBoardStore } from './state/boardStore';
@@ -175,7 +174,7 @@ export function App({ agentStatus: propAgentStatus }: AppProps = {}) {
   const [showGuideHints, setShowGuideHints] = useState(true);
   const [bouncingCardId, setBouncingCardId] = useState<string | null>(null);
   const [dragParticles, setDragParticles] = useState<DragParticle[]>([]);
-  const [autoFitEnabled, setAutoFitEnabled] = useState(false);
+  const [autoFitEnabled, setAutoFitEnabled] = useState(true);
 
   useLayoutEffect(() => {
     cardDragStateRef.current = cardDragState;
@@ -187,42 +186,22 @@ export function App({ agentStatus: propAgentStatus }: AppProps = {}) {
   );
 
   const placedCards = useMemo(() => {
-    const customPositions = new Map<string, Point>();
-    const occupiedRects: Rect[] = [];
-
-    // 1. Collect all custom user-dragged card locations first
-    for (const match of availableCards) {
-      const custom = cardPositionsById[match.activity.id];
-      if (custom) {
-        customPositions.set(match.activity.id, custom);
-        occupiedRects.push(cardBounds(custom, 'standard'));
-      }
-    }
-
-    // 2. Position cards without colliding into existing user-dragged cards
     const results: PlacedCard[] = [];
-    let autoIndex = 0;
 
     for (let index = 0; index < availableCards.length; index++) {
       const match = availableCards[index];
       const variant = getCardVariant(index);
-      const custom = customPositions.get(match.activity.id);
+      const custom = cardPositionsById[match.activity.id];
 
       if (custom) {
         results.push({ position: custom, variant });
       } else {
-        let pos = tiledCardPosition(autoIndex, availableCards.length);
-        let bounds = cardBounds(pos, variant);
+        // Initial cards (first 6) form the coherent baseline cluster layout.
+        // Newly arriving cards dynamically find the best non-colliding slot that
+        // balances the overall bounding box toward a 1:1 square.
+        const pos = results.length < 6 ? tiledCardPosition(index) : findBestSquareSlot(variant, results);
 
-        while (occupiedRects.some((occ) => rectsOverlap(occ, bounds, 20))) {
-          autoIndex += 1;
-          pos = tiledCardPosition(autoIndex, availableCards.length + autoIndex);
-          bounds = cardBounds(pos, variant);
-        }
-
-        occupiedRects.push(bounds);
         results.push({ position: pos, variant });
-        autoIndex += 1;
       }
     }
 
@@ -230,11 +209,8 @@ export function App({ agentStatus: propAgentStatus }: AppProps = {}) {
   }, [availableCards, cardPositionsById]);
 
   const researchCardPosition = useMemo(
-    () =>
-      availableCards.length > 0
-        ? tiledCardPosition(availableCards.length, availableCards.length + 1)
-        : tiledCardPosition(0, 1),
-    [availableCards.length],
+    () => (availableCards.length > 0 ? findBestSquareSlot('standard', placedCards) : tiledCardPosition(0)),
+    [availableCards.length, placedCards],
   );
 
   useEffect(() => {
@@ -434,7 +410,7 @@ export function App({ agentStatus: propAgentStatus }: AppProps = {}) {
       gestureTimerRef.current = null;
       setIsGesturing(false);
     }, GESTURE_SETTLE_MS);
-  }, []);
+  }, [setIsGesturing]);
 
   useEffect(
     () => () => {

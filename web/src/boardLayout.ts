@@ -202,6 +202,107 @@ export function contentBounds(cards: readonly PlacedCard[]): Rect {
 }
 
 /**
+ * Best-Fit Squareness Slot Seeking (Approach 2):
+ * Dynamically finds the optimal non-colliding placement slot for an incoming card of
+ * `variant` relative to all currently placed cards on the board (including user-dragged ones).
+ * Evaluates candidate slots adjacent to existing cards, ensuring zero collision
+ * and minimizing the aspect ratio error |Width - Height| of the resulting bounding box.
+ */
+export function findBestSquareSlot(
+  variant: CardVariant,
+  existingCards: readonly PlacedCard[],
+  origin: Point = BOARD_GRID_ORIGIN,
+): Point {
+  if (existingCards.length === 0) {
+    return origin;
+  }
+
+  const dimensions = CARD_VARIANT_DIMENSIONS[variant];
+  const newW = dimensions.width;
+  const newH = dimensions.fitHeight;
+  const currBounds = contentBounds(existingCards);
+  const center = {
+    x: currBounds.x + currBounds.width / 2,
+    y: currBounds.y + currBounds.height / 2,
+  };
+
+  const GAP_X = 56;
+  const GAP_Y = 56;
+  const candidates: Point[] = [];
+
+  for (const card of existingCards) {
+    const cDim = CARD_VARIANT_DIMENSIONS[card.variant ?? 'standard'];
+    const cW = card.width ?? cDim.width;
+    const cH = card.height ?? cDim.fitHeight;
+
+    // Right of card
+    candidates.push({ x: card.position.x + cW + GAP_X, y: card.position.y });
+    // Left of card
+    candidates.push({ x: card.position.x - newW - GAP_X, y: card.position.y });
+    // Below card
+    candidates.push({ x: card.position.x, y: card.position.y + cH + GAP_Y });
+    // Above card
+    candidates.push({ x: card.position.x, y: card.position.y - newH - GAP_Y });
+    // Diagonal bottom-right
+    candidates.push({ x: card.position.x + cW + GAP_X, y: card.position.y + cH + GAP_Y });
+
+    // When card above is Compact, place Wide comfortably stacked underneath
+    if (card.variant === 'compact') {
+      candidates.push({ x: card.position.x, y: card.position.y + 310 });
+    }
+  }
+
+  let bestPoint: Point | null = null;
+  let bestScore = Infinity;
+
+  for (const pt of candidates) {
+    const candRect: Rect = { x: pt.x, y: pt.y, width: newW, height: newH };
+
+    // Avoid colliding with any existing card (allow 10px breathing room)
+    const collides = existingCards.some((other) => {
+      const otherRect = cardBounds(other.position, other.variant ?? 'standard');
+      return rectsOverlap(candRect, otherRect, 10);
+    });
+
+    if (collides) {
+      continue;
+    }
+
+    const nextMinX = Math.min(currBounds.x, pt.x);
+    const nextMaxX = Math.max(currBounds.x + currBounds.width, pt.x + newW);
+    const nextMinY = Math.min(currBounds.y, pt.y);
+    const nextMaxY = Math.max(currBounds.y + currBounds.height, pt.y + newH);
+    const nextW = nextMaxX - nextMinX;
+    const nextH = nextMaxY - nextMinY;
+
+    // Squareness penalty: deviation from 1:1 aspect ratio
+    const squarenessPenalty = Math.abs(nextW - nextH);
+
+    // Distance penalty: keep within the center of content mass
+    const cardCenterX = pt.x + newW / 2;
+    const cardCenterY = pt.y + newH / 2;
+    const distFromCenter = Math.hypot(cardCenterX - center.x, cardCenterY - center.y);
+
+    const score = squarenessPenalty * 1.0 + distFromCenter * 0.35;
+
+    if (score < bestScore) {
+      bestScore = score;
+      bestPoint = pt;
+    }
+  }
+
+  // Fallback if all adjacent slots were obstructed
+  if (!bestPoint) {
+    if (currBounds.width >= currBounds.height) {
+      return { x: currBounds.x, y: currBounds.y + currBounds.height + GAP_Y };
+    }
+    return { x: currBounds.x + currBounds.width + GAP_X, y: currBounds.y };
+  }
+
+  return bestPoint;
+}
+
+/**
  * Checks if any of the given placed cards are currently outside the screen container
  * bounds (or partially cut off) at the current viewport.
  */
