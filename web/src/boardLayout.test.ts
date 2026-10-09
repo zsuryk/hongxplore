@@ -6,12 +6,16 @@ import {
   CARD_WIDTH,
   EMPTY_BOARD_BOUNDS,
   areAnyCardsOutOfFrame,
+  cardBounds,
   contentBounds,
   defaultCardPosition,
+  findBestSquareSlot,
   getActivityMatchingSlotId,
   getCardVariant,
   getClustersPerRow,
+  rectsOverlap,
   tiledCardPosition,
+  type PlacedCard,
 } from './boardLayout';
 
 describe('default card layout', () => {
@@ -167,5 +171,62 @@ describe('getActivityMatchingSlotId', () => {
     expect(areAnyCardsOutOfFrame(outOfFrameCards, vp, container, 32)).toBe(true);
 
     expect(areAnyCardsOutOfFrame([], vp, container, 32)).toBe(false);
+  });
+});
+
+describe('findBestSquareSlot', () => {
+  it('returns origin on empty board', () => {
+    expect(findBestSquareSlot('standard', [])).toEqual(BOARD_GRID_ORIGIN);
+    expect(findBestSquareSlot('wide', [], { x: 100, y: 200 })).toEqual({ x: 100, y: 200 });
+  });
+
+  it('places newly added card without colliding with existing cards', () => {
+    const existing: PlacedCard[] = [
+      { position: { x: 0, y: 0 }, variant: 'compact' },
+      { position: { x: 0, y: 310 }, variant: 'wide' },
+      { position: { x: 376, y: 0 }, variant: 'tall' },
+    ];
+    const newSlot = findBestSquareSlot('standard', existing);
+    const newRect = cardBounds(newSlot, 'standard');
+    for (const card of existing) {
+      const existingRect = cardBounds(card.position, card.variant);
+      expect(rectsOverlap(newRect, existingRect, 10)).toBe(false);
+    }
+  });
+
+  it('favors slots that preserve a compact aspect ratio over linear expansion', () => {
+    // 3 cards laid horizontally in a row
+    const existing: PlacedCard[] = [
+      { position: { x: 0, y: 0 }, variant: 'standard' },
+      { position: { x: 376, y: 0 }, variant: 'standard' },
+      { position: { x: 752, y: 0 }, variant: 'standard' },
+    ];
+    const newSlot = findBestSquareSlot('standard', existing);
+    const newRect = cardBounds(newSlot, 'standard');
+
+    // Should NOT collide
+    for (const card of existing) {
+      const existingRect = cardBounds(card.position, card.variant);
+      expect(rectsOverlap(newRect, existingRect, 10)).toBe(false);
+    }
+
+    // Rather than continuing horizontally at x >= 1100, it should balance vertically
+    expect(newSlot.y).not.toBe(0);
+    const combined = contentBounds([...existing, { position: newSlot, variant: 'standard' }]);
+    expect(Math.abs(combined.width - combined.height)).toBeLessThan(1200);
+  });
+
+  it('adapts around custom user-dragged card coordinates', () => {
+    const dragged: PlacedCard[] = [
+      { position: { x: 250, y: 150 }, variant: 'tall' },
+      { position: { x: -100, y: -50 }, variant: 'compact' },
+    ];
+    const slot = findBestSquareSlot('wide', dragged);
+    const slotRect = cardBounds(slot, 'wide');
+
+    for (const card of dragged) {
+      const existingRect = cardBounds(card.position, card.variant);
+      expect(rectsOverlap(slotRect, existingRect, 10)).toBe(false);
+    }
   });
 });
