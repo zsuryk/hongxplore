@@ -625,12 +625,11 @@ export function App({
       if (matchingSlotId && matchingSlotId !== slotId) {
         const expectedSlot = TIMELINE_SLOTS.find((definition) => definition.id === matchingSlotId);
         setConfirmation(timelineSlotMismatchMessage(expectedSlot?.label ?? matchingSlotId));
-        if (source !== 'timeline' || !fromSlotId) {
-          const cardScreenPoint = {
-            x: screenPoint.x - grabOffset.x,
-            y: screenPoint.y - grabOffset.y,
-          };
-          setCardPositionsById((prev) => ({ ...prev, [cardId]: screenToWorld(cardScreenPoint, viewport) }));
+        if (source === 'board') {
+          const originalCardPos = cardPositionsById[cardId] ?? boardLayout.positionsById[cardId];
+          if (originalCardPos) {
+            setCardPositionsById((prev) => ({ ...prev, [cardId]: originalCardPos }));
+          }
         }
       } else {
         const targetSlot = timelineSlots.find((s) => s.id === slotId);
@@ -673,15 +672,25 @@ export function App({
         setDiscardingCardId(null);
       }, CARD_DISCARD_DURATION_MS);
     } else {
-      if (source === 'timeline' && fromSlotId) {
-        undockCard(fromSlotId);
+      const isOverTimeline = Boolean(document.elementFromPoint(event.clientX, event.clientY)?.closest('.timeline'));
+      if (isOverTimeline) {
+        if (source === 'board') {
+          const originalCardPos = cardPositionsById[cardId] ?? boardLayout.positionsById[cardId];
+          if (originalCardPos) {
+            setCardPositionsById((prev) => ({ ...prev, [cardId]: originalCardPos }));
+          }
+        }
+      } else {
+        if (source === 'timeline' && fromSlotId) {
+          undockCard(fromSlotId);
+        }
+        const cardScreenPoint = {
+          x: screenPoint.x - grabOffset.x,
+          y: screenPoint.y - grabOffset.y,
+        };
+        setCardPositionsById((prev) => ({ ...prev, [cardId]: screenToWorld(cardScreenPoint, viewport) }));
+        cardJustLandedRef.current = true;
       }
-      const cardScreenPoint = {
-        x: screenPoint.x - grabOffset.x,
-        y: screenPoint.y - grabOffset.y,
-      };
-      setCardPositionsById((prev) => ({ ...prev, [cardId]: screenToWorld(cardScreenPoint, viewport) }));
-      cardJustLandedRef.current = true;
     }
 
     setCardDragState(null);
