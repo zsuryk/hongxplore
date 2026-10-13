@@ -7,14 +7,17 @@ import {
   EMPTY_BOARD_BOUNDS,
   areAnyCardsOutOfFrame,
   cardBounds,
+  computeBoardLayout,
   contentBounds,
   defaultCardPosition,
   findBestSquareSlot,
   getActivityMatchingSlotId,
   getCardVariant,
+  getCardVariantFromContent,
   getClustersPerRow,
   rectsOverlap,
   tiledCardPosition,
+  type ActivityMatch,
   type PlacedCard,
 } from './boardLayout';
 
@@ -228,5 +231,161 @@ describe('findBestSquareSlot', () => {
       const existingRect = cardBounds(card.position, card.variant);
       expect(rectsOverlap(slotRect, existingRect, 10)).toBe(false);
     }
+  });
+});
+
+describe('content-driven card shapes and pure board layout (Issue #76)', () => {
+  const makeMockCard = (id: string, rationale: string, tags: string[] = ['culture']): ActivityMatch => ({
+    activity: {
+      id,
+      title: `Activity ${id}`,
+      title_en: `Activity ${id} EN`,
+      tags,
+    },
+    match_rationale: rationale,
+  });
+
+  it('guarantees that two cards with equal content share the exact same shape', () => {
+    const cardA = makeMockCard('card-a', 'Identical short rationale for culture', ['museum']);
+    const cardB = makeMockCard('card-b', 'Identical short rationale for culture', ['museum']);
+
+    expect(getCardVariantFromContent(cardA)).toBe(getCardVariantFromContent(cardB));
+    expect(getCardVariant(cardA)).toBe(getCardVariant(cardB));
+  });
+
+  it('assigns compact, wide, or tall based on content density', () => {
+    const shortCard = makeMockCard('short', 'Short rationale');
+    const mediumCard = makeMockCard(
+      'med',
+      'Medium rationale that has moderate details and explanation for this activity',
+      ['fun', 'weekend'],
+    );
+    const longCard = makeMockCard(
+      'long',
+      'Extremely long and comprehensive rationale explaining why this activity is uniquely matched to the weekend slot with all sorts of details and specifics.',
+      ['culture', 'food', 'market', 'history', 'photography'],
+    );
+
+    expect(getCardVariantFromContent(shortCard)).toBe('compact');
+    expect(getCardVariantFromContent(mediumCard)).toBe('wide');
+    expect(getCardVariantFromContent(longCard)).toBe('tall');
+  });
+
+  describe('pure board layout across dock, undock, add, and remove', () => {
+    const initialCards: ActivityMatch[] = [
+      makeMockCard('c0', 'Rationale 0'),
+      makeMockCard('c1', 'Rationale 1 with extra details', ['a', 'b', 'c']),
+      makeMockCard('c2', 'Very long rationale 2 with a lot of words to explain the match thoroughly', [
+        'x',
+        'y',
+        'z',
+        'w',
+      ]),
+      makeMockCard('c3', 'Rationale 3'),
+      makeMockCard('c4', 'Rationale 4'),
+      makeMockCard('c5', 'Rationale 5'),
+    ];
+
+    it('preserves place and shape of every card when another card docks into timeline', () => {
+      const initialLayout = computeBoardLayout({ cards: initialCards });
+
+      const c1OriginalPos = initialLayout.positionsById['c1'];
+      const c1OriginalVariant = initialLayout.variantsById['c1'];
+      const c2OriginalPos = initialLayout.positionsById['c2'];
+      const c2OriginalVariant = initialLayout.variantsById['c2'];
+
+      expect(initialLayout.canvasCards.map((c) => c.card.activity.id)).toContain('c0');
+
+      // Dock c0 into timeline
+      const layoutAfterDock = computeBoardLayout({
+        cards: initialCards,
+        dockedCardIds: ['c0'],
+        assignedPositions: initialLayout.positionsById,
+      });
+
+      // c0 is no longer on the canvas
+      expect(layoutAfterDock.canvasCards.map((c) => c.card.activity.id)).not.toContain('c0');
+
+      // c1, c2, c3, c4, c5 must keep their EXACT same positions and shapes
+      expect(layoutAfterDock.positionsById['c1']).toEqual(c1OriginalPos);
+      expect(layoutAfterDock.variantsById['c1']).toBe(c1OriginalVariant);
+      expect(layoutAfterDock.positionsById['c2']).toEqual(c2OriginalPos);
+      expect(layoutAfterDock.variantsById['c2']).toBe(c2OriginalVariant);
+
+      const c1CanvasCard = layoutAfterDock.canvasCards.find((c) => c.card.activity.id === 'c1');
+      expect(c1CanvasCard?.position).toEqual(c1OriginalPos);
+      expect(c1CanvasCard?.variant).toBe(c1OriginalVariant);
+    });
+
+    it('preserves place and shape of every card when a docked card is undocked', () => {
+      const initialLayout = computeBoardLayout({ cards: initialCards });
+      const c0OriginalPos = initialLayout.positionsById['c0'];
+      const c1OriginalPos = initialLayout.positionsById['c1'];
+
+      // Dock c0
+      const dockedLayout = computeBoardLayout({
+        cards: initialCards,
+        dockedCardIds: ['c0'],
+        assignedPositions: initialLayout.positionsById,
+      });
+
+      // Undock c0
+      const undockedLayout = computeBoardLayout({
+        cards: initialCards,
+        dockedCardIds: [],
+        assignedPositions: dockedLayout.positionsById,
+      });
+
+      expect(undockedLayout.canvasCards.map((c) => c.card.activity.id)).toContain('c0');
+      expect(undockedLayout.positionsById['c0']).toEqual(c0OriginalPos);
+      expect(undockedLayout.positionsById['c1']).toEqual(c1OriginalPos);
+    });
+
+    it('preserves existing cards when a new card is added', () => {
+      const initialLayout = computeBoardLayout({ cards: initialCards });
+      const newCard = makeMockCard('c6', 'Brand new arriving card');
+
+      const afterAddLayout = computeBoardLayout({
+        cards: [...initialCards, newCard],
+        assignedPositions: initialLayout.positionsById,
+      });
+
+      // All initial cards retain their exact positions and variants
+      for (const card of initialCards) {
+        expect(afterAddLayout.positionsById[card.activity.id]).toEqual(initialLayout.positionsById[card.activity.id]);
+        expect(afterAddLayout.variantsById[card.activity.id]).toBe(initialLayout.variantsById[card.activity.id]);
+      }
+
+      // New card gets placed in an available slot
+      expect(afterAddLayout.positionsById['c6']).toBeDefined();
+    });
+
+    it('preserves remaining cards when a card is removed (discarded)', () => {
+      const initialLayout = computeBoardLayout({ cards: initialCards });
+      const c1Pos = initialLayout.positionsById['c1'];
+      const c2Pos = initialLayout.positionsById['c2'];
+
+      // Discard c0
+      const afterDiscardLayout = computeBoardLayout({
+        cards: initialCards.filter((c) => c.activity.id !== 'c0'),
+        discardedCards: [initialCards[0]],
+        assignedPositions: initialLayout.positionsById,
+      });
+
+      expect(afterDiscardLayout.canvasCards.map((c) => c.card.activity.id)).not.toContain('c0');
+      expect(afterDiscardLayout.positionsById['c1']).toEqual(c1Pos);
+      expect(afterDiscardLayout.positionsById['c2']).toEqual(c2Pos);
+    });
+
+    it('re-running an identical search produces identical layout with zero displacement', () => {
+      const firstRun = computeBoardLayout({ cards: initialCards });
+      const secondRun = computeBoardLayout({
+        cards: [...initialCards],
+        assignedPositions: firstRun.positionsById,
+      });
+
+      expect(secondRun.positionsById).toEqual(firstRun.positionsById);
+      expect(secondRun.variantsById).toEqual(firstRun.variantsById);
+    });
   });
 });
