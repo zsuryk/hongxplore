@@ -21,7 +21,7 @@ import {
   BOARD_KEYBOARD_SHORTCUTS,
   BOARD_LABEL,
   AUTO_FIT_LABEL,
-  AUTOFIT_GUIDE_TOAST,
+  AUTO_FIT_DESCRIPTION,
   DISCARD_BIN_HINT,
   DISCARD_BIN_LABEL,
   DISCARD_GUIDE_TOAST,
@@ -892,20 +892,22 @@ export function App({ agentStatus: propAgentStatus }: AppProps = {}) {
             100%
           </button>
           <div className="viewport-controls__autofit">
-            {showGuideHints ? (
-              <div className="viewport-controls__guide-hint board__toast">{AUTOFIT_GUIDE_TOAST}</div>
-            ) : null}
             <button className="btn btn--sm" onClick={() => fitContent(1.0)} type="button">
               {FIT_VIEW_LABEL}
             </button>
-            <label className="viewport-controls__autofit-label">
+            <label className="viewport-controls__autofit-label" htmlFor="viewport-autofit-toggle">
               <input
+                aria-describedby="autofit-description"
                 checked={autoFitEnabled}
                 className="viewport-controls__checkbox"
+                id="viewport-autofit-toggle"
                 onChange={(event) => setAutoFitEnabled(event.target.checked)}
                 type="checkbox"
               />
               <span>{AUTO_FIT_LABEL}</span>
+              <span className="viewport-controls__tooltip" id="autofit-description" role="tooltip">
+                {AUTO_FIT_DESCRIPTION}
+              </span>
             </label>
           </div>
         </div>
