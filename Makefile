@@ -38,10 +38,20 @@ preflight:
 # Foreground: Ctrl-C stops both. The URLs print only once both servers actually
 # answer, so seeing them means the run is live; if either server dies the script says
 # which one and stops the other, rather than hanging on `wait` in silence.
+#
+# No `set -m` here on purpose. Job control gives every foreground child its own
+# process group and hands the terminal to it, which moves THIS shell into a
+# background group -- so Ctrl-C's SIGINT never arrives and the trap below cannot
+# fire (the old recipe spun forever). It also puts the servers in background
+# groups, where any tty read stops them with SIGTTIN (vite ended up in `T`, and a
+# stopped process will not act on a queued SIGTERM). Without job control this
+# shell stays in the terminal's foreground group, so the trap fires; the servers
+# then inherit SIGINT/SIGQUIT ignored, so the trap forwards SIGTERM to them.
 dev: preflight ## Run api (:8000) and web (:5173) together; Ctrl-C stops both
-	@set -m; \
-	trap 'interrupted=1; kill -- -$$API_PID -$$WEB_PID 2>/dev/null || true' HUP INT TERM; \
-	trap 'kill -- -$$API_PID -$$WEB_PID 2>/dev/null || true' EXIT; \
+	@kill_tree() { for c in $$(pgrep -P $$1 2>/dev/null); do kill_tree $$c; done; \
+	                kill -CONT $$1 2>/dev/null || true; kill -TERM $$1 2>/dev/null || true; }; \
+	trap 'kill_tree "$$API_PID"; kill_tree "$$WEB_PID"' EXIT; \
+	trap 'interrupted=1' HUP INT TERM; \
 	( cd api && exec uv run uvicorn app.main:app --reload --port 8000 ) & API_PID=$$!; \
 	( cd web && exec pnpm exec vite --port 5173 --strictPort ) & WEB_PID=$$!; \
 	ready=0; \
