@@ -7,6 +7,7 @@ import {
   formatAgentErrorMessage,
   FREE_TIME_SLOTS,
   INITIAL_ACTIVITY_QUERY,
+  TIMELINE_SLOTS,
 } from '../copy';
 
 export type ActivityCard = components['schemas']['MatchedActivity'];
@@ -65,7 +66,7 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
   cards: [],
   discardedCards: [],
   viewport: initialViewport,
-  timelineSlots: [],
+  timelineSlots: TIMELINE_SLOTS.map((slot) => ({ id: slot.id, activityId: null })),
   agentLog: [],
   agentStatus: 'idle',
   agentError: null,

@@ -681,9 +681,10 @@ export function App({
           }
         }
 
+        setIsTimelineExpanded(true);
         dockCard(cardId, slotId, { replace: true });
         setSettlingSlotId(slotId);
-        window.setTimeout(() => setSettlingSlotId((current) => (current === slotId ? null : current)), 800);
+        window.setTimeout(() => setSettlingSlotId((current) => (current === slotId ? null : current)), 1000);
       }
     } else if (isOverDiscardBin(event.clientX, event.clientY)) {
       if (source === 'timeline' && fromSlotId) {
@@ -980,7 +981,17 @@ export function App({
             role="button"
             tabIndex={0}
           >
-            {showGuideHints ? <div className="timeline__guide-hint board__toast">{TIMELINE_GUIDE_TOAST}</div> : null}
+            {confirmation ? (
+              <div
+                aria-live="polite"
+                className="timeline__guide-hint timeline__confirmation-toast board__toast"
+                role="status"
+              >
+                {confirmation}
+              </div>
+            ) : showGuideHints ? (
+              <div className="timeline__guide-hint board__toast">{TIMELINE_GUIDE_TOAST}</div>
+            ) : null}
             <div className="timeline__collapsed-content">
               <div className="timeline__collapsed-header">
                 <span className="timeline__collapsed-badge">
@@ -993,7 +1004,15 @@ export function App({
           </section>
         ) : (
           <section aria-label={TIMELINE_LABEL} className="timeline timeline--expanded">
-            {isReplacingHoveredSlot && hoveredExistingCard ? (
+            {confirmation ? (
+              <div
+                aria-live="polite"
+                className="timeline__guide-hint timeline__confirmation-toast board__toast"
+                role="status"
+              >
+                {confirmation}
+              </div>
+            ) : isReplacingHoveredSlot && hoveredExistingCard ? (
               <div className="timeline__guide-hint timeline__replace-toast board__toast">
                 {timelineSlotReplaceAlert(hoveredExistingCard.activity.title_en ?? hoveredExistingCard.activity.title)}
               </div>

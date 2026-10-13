@@ -178,6 +178,15 @@
   opacity: 1;
 }
 
+.timeline__confirmation-toast {
+  animation: none;
+  background: var(--color-surface);
+  border-color: var(--color-accent);
+  box-shadow: 0 4px 20px var(--color-accent-soft);
+  color: var(--color-text);
+  opacity: 1;
+}
+
 @keyframes slot-replace-alert {
   from {
     border-color: #f59e0b;
@@ -204,12 +213,12 @@
   0% {
     background-color: var(--color-accent-soft);
     border-color: var(--color-accent);
-    box-shadow: 0 0 16px var(--color-accent-soft);
-    scale: 0.97;
+    box-shadow: 0 0 20px var(--color-accent);
+    scale: 0.95;
   }
   50% {
-    scale: 1.02;
-    box-shadow: 0 0 12px var(--color-accent-soft);
+    scale: 1.04;
+    box-shadow: 0 0 16px var(--color-accent-soft);
   }
   100% {
     scale: 1;
@@ -266,15 +275,20 @@
 }
 
 @keyframes docked-card-snap {
-  from {
-    opacity: 0.6;
-    translate: 0 -4px;
-    scale: 0.96;
+  0% {
+    opacity: 0.4;
+    scale: 0.88;
+    translate: 0 -12px;
   }
-  to {
+  60% {
     opacity: 1;
-    translate: 0 0;
+    scale: 1.03;
+    translate: 0 2px;
+  }
+  100% {
+    opacity: 1;
     scale: 1;
+    translate: 0 0;
   }
 }
 
