@@ -47,6 +47,10 @@ export function timelineActivityReplacedConfirmation(oldTitle: string): string {
   return `Replaced "${oldTitle}" and returned it to the board.`;
 }
 
+export function timelineActivityDockedConfirmation(slotLabel: string): string {
+  return `Added to ${slotLabel}`;
+}
+
 export type FreeSlotChipDefinition = {
   id: string;
   label: string;

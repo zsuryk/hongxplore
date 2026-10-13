@@ -43,6 +43,7 @@ import {
   ZOOM_OUT_LABEL,
   findSimilarConfirmation,
   timelineActivityReplacedConfirmation,
+  timelineActivityDockedConfirmation,
   timelinePlannedCount,
   timelineSlotMismatchMessage,
   timelineSlotReplaceAlert,
@@ -63,7 +64,12 @@ import {
   getCardVariant,
   tiledCardPosition,
 } from './boardLayout';
-import { type ActivityCard as BoardActivityCard, type AgentStatus, useBoardStore } from './state/boardStore';
+import {
+  type ActivityCard as BoardActivityCard,
+  type AgentStatus,
+  type TimelineSlot,
+  useBoardStore,
+} from './state/boardStore';
 import {
   KEYBOARD_PAN_STEP,
   KEYBOARD_PAN_STEP_FAST,
@@ -131,9 +137,19 @@ const PARTICLE_COLORS = ['#38bdf8', '#818cf8', '#c084fc', '#f472b6', '#e0e7ff', 
 
 export type AppProps = {
   agentStatus?: AgentStatus;
+  cards?: BoardActivityCard[];
+  initialConfirmation?: string;
+  initialTimelineExpanded?: boolean;
+  timelineSlots?: TimelineSlot[];
 };
 
-export function App({ agentStatus: propAgentStatus }: AppProps = {}) {
+export function App({
+  agentStatus: propAgentStatus,
+  cards: propCards,
+  initialConfirmation,
+  initialTimelineExpanded,
+  timelineSlots: propTimelineSlots,
+}: AppProps = {}) {
   const boardRef = useRef<HTMLDivElement>(null);
   const discardBinRef = useRef<HTMLElement>(null);
   const activePointersRef = useRef(new Map<number, Point>());
@@ -144,14 +160,19 @@ export function App({ agentStatus: propAgentStatus }: AppProps = {}) {
   const previousSizeRef = useRef<Size>({ width: 0, height: 0 });
   const gestureTimerRef = useRef<number | null>(null);
   const previousCardsLengthRef = useRef(0);
-  const previousPlacedCountRef = useRef(0);
   const cardJustLandedRef = useRef(false);
   const particleIdRef = useRef(0);
   const particleCleanupTimerRef = useRef<number | null>(null);
 
-  const cards = useBoardStore((state) => state.cards);
+  const storeCards = useBoardStore((state) => state.cards);
+  const cards = propCards ?? storeCards;
   const discardedCards = useBoardStore((state) => state.discardedCards);
-  const timelineSlots = useBoardStore((state) => state.timelineSlots);
+  const storeTimelineSlots = useBoardStore((state) => state.timelineSlots);
+  const timelineSlots =
+    propTimelineSlots ??
+    (storeTimelineSlots.length > 0
+      ? storeTimelineSlots
+      : TIMELINE_SLOTS.map((slot) => ({ id: slot.id, activityId: null })));
   const storeAgentStatus = useBoardStore((state) => state.agentStatus);
   const agentStatus = propAgentStatus ?? storeAgentStatus;
   const discardCard = useBoardStore((state) => state.discardCard);
@@ -171,10 +192,10 @@ export function App({ agentStatus: propAgentStatus }: AppProps = {}) {
   const [hoveredSlotId, setHoveredSlotId] = useState<string | null>(null);
   const [cardPositionsById, setCardPositionsById] = useState<Record<string, Point>>({});
   const [discardingCardId, setDiscardingCardId] = useState<string | null>(null);
-  const [confirmation, setConfirmation] = useState<string | null>(null);
-  const [isTimelineExpanded, setIsTimelineExpanded] = useState(false);
+  const [confirmation, setConfirmation] = useState<string | null>(initialConfirmation ?? null);
+  const [isTimelineExpanded, setIsTimelineExpanded] = useState(initialTimelineExpanded ?? false);
   const [showGuideHints, setShowGuideHints] = useState(true);
-  const [bouncingCardId, setBouncingCardId] = useState<string | null>(null);
+  const [settlingSlotId, setSettlingSlotId] = useState<string | null>(null);
   const [dragParticles, setDragParticles] = useState<DragParticle[]>([]);
   const [autoFitEnabled, setAutoFitEnabled] = useState(true);
 
@@ -320,32 +341,19 @@ export function App({ agentStatus: propAgentStatus }: AppProps = {}) {
       return;
     }
 
-    const cardsAdded =
-      cards.length > previousCardsLengthRef.current || canvasCards.length > previousPlacedCountRef.current;
+    const cardsAdded = cards.length > previousCardsLengthRef.current;
     previousCardsLengthRef.current = cards.length;
-    previousPlacedCountRef.current = canvasCards.length;
 
     const outOfFrame = areAnyCardsOutOfFrame(cardsToFrame, viewport, boardSize);
 
     // When autoFitEnabled is TRUE:
-    // - New cards are added (search query results, find-similar, undock)
-    // - A replaced card bounces back (bouncingCardId !== null)
+    // - New cards are added from search queries
     // - A card was just landed (dropped) and any card is out of the frame
-    if (autoFitEnabled && (cardsAdded || bouncingCardId !== null || (cardJustLandedRef.current && outOfFrame))) {
+    if (autoFitEnabled && (cardsAdded || (cardJustLandedRef.current && outOfFrame))) {
       fitContent(1.0);
     }
     cardJustLandedRef.current = false;
-  }, [
-    agentStatus,
-    autoFitEnabled,
-    boardSize,
-    bouncingCardId,
-    canvasCards,
-    cards.length,
-    fitContent,
-    researchCardPosition,
-    viewport,
-  ]);
+  }, [agentStatus, autoFitEnabled, boardSize, canvasCards, cards.length, fitContent, researchCardPosition, viewport]);
 
   // Continuous particle bleed emitter while dragging: continuously drops glowing stardust
   const isDraggingAnyCard = Boolean(cardDragState);
@@ -617,13 +625,11 @@ export function App({ agentStatus: propAgentStatus }: AppProps = {}) {
       if (matchingSlotId && matchingSlotId !== slotId) {
         const expectedSlot = TIMELINE_SLOTS.find((definition) => definition.id === matchingSlotId);
         setConfirmation(timelineSlotMismatchMessage(expectedSlot?.label ?? matchingSlotId));
-        if (source !== 'timeline' || !fromSlotId) {
-          const cardScreenPoint = {
-            x: screenPoint.x - grabOffset.x,
-            y: screenPoint.y - grabOffset.y,
-          };
-          setCardPositionsById((prev) => ({ ...prev, [cardId]: screenToWorld(cardScreenPoint, viewport) }));
-          cardJustLandedRef.current = true;
+        if (source === 'board') {
+          const originalCardPos = cardPositionsById[cardId] ?? boardLayout.positionsById[cardId];
+          if (originalCardPos) {
+            setCardPositionsById((prev) => ({ ...prev, [cardId]: originalCardPos }));
+          }
         }
       } else {
         const targetSlot = timelineSlots.find((s) => s.id === slotId);
@@ -632,26 +638,29 @@ export function App({ agentStatus: propAgentStatus }: AppProps = {}) {
 
         if (replacedCardId) {
           const displacedCard = cards.find((c) => c.activity.id === replacedCardId);
-          // Place displaced card back onto the board canvas with visible bounce
-          const bouncePosition = screenToWorld(
-            { x: Math.max(80, screenPoint.x - 340), y: Math.max(80, screenPoint.y - 120) },
-            viewport,
-          );
-          setCardPositionsById((prev) => ({
-            ...prev,
-            [replacedCardId]: bouncePosition,
-          }));
-          cardJustLandedRef.current = true;
-          setBouncingCardId(replacedCardId);
-          window.setTimeout(() => setBouncingCardId(null), 700);
+          const originalReplacedPos = cardPositionsById[replacedCardId] ?? boardLayout.positionsById[replacedCardId];
+          if (originalReplacedPos) {
+            setCardPositionsById((prev) => ({
+              ...prev,
+              [replacedCardId]: originalReplacedPos,
+            }));
+          }
 
           if (displacedCard) {
             const displacedTitle = displacedCard.activity.title_en ?? displacedCard.activity.title;
             setConfirmation(timelineActivityReplacedConfirmation(displacedTitle));
           }
+        } else {
+          const slotDef = TIMELINE_SLOTS.find((definition) => definition.id === slotId);
+          if (slotDef) {
+            setConfirmation(timelineActivityDockedConfirmation(slotDef.label));
+          }
         }
 
+        setIsTimelineExpanded(true);
         dockCard(cardId, slotId, { replace: true });
+        setSettlingSlotId(slotId);
+        window.setTimeout(() => setSettlingSlotId((current) => (current === slotId ? null : current)), 1000);
       }
     } else if (isOverDiscardBin(event.clientX, event.clientY)) {
       if (source === 'timeline' && fromSlotId) {
@@ -663,15 +672,25 @@ export function App({ agentStatus: propAgentStatus }: AppProps = {}) {
         setDiscardingCardId(null);
       }, CARD_DISCARD_DURATION_MS);
     } else {
-      if (source === 'timeline' && fromSlotId) {
-        undockCard(fromSlotId);
+      const isOverTimeline = Boolean(document.elementFromPoint(event.clientX, event.clientY)?.closest('.timeline'));
+      if (isOverTimeline) {
+        if (source === 'board') {
+          const originalCardPos = cardPositionsById[cardId] ?? boardLayout.positionsById[cardId];
+          if (originalCardPos) {
+            setCardPositionsById((prev) => ({ ...prev, [cardId]: originalCardPos }));
+          }
+        }
+      } else {
+        if (source === 'timeline' && fromSlotId) {
+          undockCard(fromSlotId);
+        }
+        const cardScreenPoint = {
+          x: screenPoint.x - grabOffset.x,
+          y: screenPoint.y - grabOffset.y,
+        };
+        setCardPositionsById((prev) => ({ ...prev, [cardId]: screenToWorld(cardScreenPoint, viewport) }));
+        cardJustLandedRef.current = true;
       }
-      const cardScreenPoint = {
-        x: screenPoint.x - grabOffset.x,
-        y: screenPoint.y - grabOffset.y,
-      };
-      setCardPositionsById((prev) => ({ ...prev, [cardId]: screenToWorld(cardScreenPoint, viewport) }));
-      cardJustLandedRef.current = true;
     }
 
     setCardDragState(null);
@@ -992,9 +1011,15 @@ export function App({ agentStatus: propAgentStatus }: AppProps = {}) {
                   if (isHovered && !isIncompatibleHover) slotClass += ' timeline__slot--dragover';
                   if (isIncompatibleHover) slotClass += ' timeline__slot--incompatible';
                 }
+                if (match) {
+                  slotClass += ' timeline__slot--docked';
+                }
+                if (settlingSlotId === slot.id) {
+                  slotClass += ' timeline__slot--settling';
+                }
 
                 return (
-                  <div className={slotClass} data-timeline-slot={slot.id} key={slot.id}>
+                  <div aria-live="polite" className={slotClass} data-timeline-slot={slot.id} key={slot.id}>
                     <div className="timeline__slot-header">
                       <span>{TIMELINE_SLOTS.find((definition) => definition.id === slot.id)?.label}</span>
                       {match ? (
@@ -1047,7 +1072,9 @@ export function App({ agentStatus: propAgentStatus }: AppProps = {}) {
         ) : null}
         {confirmation ? (
           <div className="board__layer board__layer--top">
-            <p className="board__toast">{confirmation}</p>
+            <p aria-live="polite" className="board__toast" role="status">
+              {confirmation}
+            </p>
           </div>
         ) : null}
         {cardDragState ? (
@@ -1107,7 +1134,6 @@ export function App({ agentStatus: propAgentStatus }: AppProps = {}) {
               {canvasCards.map(({ card: match, position, variant }) => {
                 const isDragging = cardDragState?.card.activity.id === match.activity.id;
                 const isDiscarding = discardingCardId === match.activity.id;
-                const isBouncing = bouncingCardId === match.activity.id;
 
                 return (
                   <div
@@ -1124,7 +1150,7 @@ export function App({ agentStatus: propAgentStatus }: AppProps = {}) {
                       isRecent={recentCardIds.includes(match.activity.id)}
                       match={match}
                       onFindSimilar={handleFindSimilar}
-                      state={isDiscarding ? 'discarding' : isBouncing ? 'bouncing' : 'spawning'}
+                      state={isDiscarding ? 'discarding' : 'spawning'}
                       variant={variant}
                     />
                   </div>

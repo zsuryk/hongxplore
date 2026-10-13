@@ -157,6 +157,18 @@
   box-shadow: 0 0 16px rgb(245 158 11 / 30%);
 }
 
+.timeline__slot--docked {
+  border-color: var(--color-border-strong);
+  border-style: solid;
+}
+
+.timeline__slot--settling {
+  animation: slot-settle 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent);
+  border-style: solid;
+}
+
 .timeline__replace-toast {
   animation: none;
   background: var(--color-surface);
@@ -185,6 +197,23 @@
   to {
     border-color: var(--color-accent-strong);
     box-shadow: 0 0 14px var(--color-accent-soft);
+  }
+}
+
+@keyframes slot-settle {
+  0% {
+    background-color: var(--color-accent-soft);
+    border-color: var(--color-accent);
+    box-shadow: 0 0 20px var(--color-accent);
+    scale: 0.95;
+  }
+  50% {
+    scale: 1.04;
+    box-shadow: 0 0 16px var(--color-accent-soft);
+  }
+  100% {
+    scale: 1;
+    box-shadow: none;
   }
 }
 
@@ -229,10 +258,29 @@
 }
 
 .timeline__docked-card {
+  animation: docked-card-snap 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   cursor: grab;
   min-width: 0;
   touch-action: none;
   user-select: none;
+}
+
+@keyframes docked-card-snap {
+  0% {
+    opacity: 0.4;
+    scale: 0.88;
+    translate: 0 -12px;
+  }
+  60% {
+    opacity: 1;
+    scale: 1.03;
+    translate: 0 2px;
+  }
+  100% {
+    opacity: 1;
+    scale: 1;
+    translate: 0 0;
+  }
 }
 
 .timeline__docked-card--ghost {
