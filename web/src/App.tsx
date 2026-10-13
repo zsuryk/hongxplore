@@ -117,7 +117,6 @@ type CardDragState = {
   card: BoardActivityCard;
   source: 'board' | 'timeline';
   fromSlotId?: string;
-  originalPosition?: Point;
   pointerId: number;
   screenPoint: Point;
   grabOffset: Point;
@@ -161,7 +160,6 @@ export function App({
   const previousSizeRef = useRef<Size>({ width: 0, height: 0 });
   const gestureTimerRef = useRef<number | null>(null);
   const previousCardsLengthRef = useRef(0);
-  const previousPlacedCountRef = useRef(0);
   const cardJustLandedRef = useRef(false);
   const particleIdRef = useRef(0);
   const particleCleanupTimerRef = useRef<number | null>(null);
@@ -197,7 +195,6 @@ export function App({
   const [confirmation, setConfirmation] = useState<string | null>(initialConfirmation ?? null);
   const [isTimelineExpanded, setIsTimelineExpanded] = useState(initialTimelineExpanded ?? false);
   const [showGuideHints, setShowGuideHints] = useState(true);
-  const [bouncingCardId, setBouncingCardId] = useState<string | null>(null);
   const [settlingSlotId, setSettlingSlotId] = useState<string | null>(null);
   const [dragParticles, setDragParticles] = useState<DragParticle[]>([]);
   const [autoFitEnabled, setAutoFitEnabled] = useState(true);
@@ -344,15 +341,13 @@ export function App({
       return;
     }
 
-    const cardsAdded =
-      cards.length > previousCardsLengthRef.current || canvasCards.length > previousPlacedCountRef.current;
+    const cardsAdded = cards.length > previousCardsLengthRef.current;
     previousCardsLengthRef.current = cards.length;
-    previousPlacedCountRef.current = canvasCards.length;
 
     const outOfFrame = areAnyCardsOutOfFrame(cardsToFrame, viewport, boardSize);
 
     // When autoFitEnabled is TRUE:
-    // - New cards are added (search query results, find-similar, undock)
+    // - New cards are added from search queries
     // - A card was just landed (dropped) and any card is out of the frame
     if (autoFitEnabled && (cardsAdded || (cardJustLandedRef.current && outOfFrame))) {
       fitContent(1.0);
@@ -540,12 +535,10 @@ export function App({
     markAdjusted();
 
     const screenPoint = screenPointWithin(boardBounds, event.clientX, event.clientY);
-    const originalPosition = cardPositionsById[card.activity.id] ?? boardLayout.positionsById[card.activity.id];
     setCardDragState({
       card,
       source: from ? 'timeline' : 'board',
       fromSlotId: from?.slotId,
-      originalPosition,
       pointerId: event.pointerId,
       screenPoint,
       grabOffset: {
@@ -619,7 +612,7 @@ export function App({
       return;
     }
 
-    const { card, source, fromSlotId, originalPosition, screenPoint, grabOffset } = cardDragState;
+    const { card, source, fromSlotId, screenPoint, grabOffset } = cardDragState;
     const cardId = card.activity.id;
 
     const slotElement = document
@@ -632,12 +625,12 @@ export function App({
       if (matchingSlotId && matchingSlotId !== slotId) {
         const expectedSlot = TIMELINE_SLOTS.find((definition) => definition.id === matchingSlotId);
         setConfirmation(timelineSlotMismatchMessage(expectedSlot?.label ?? matchingSlotId));
-        if (source === 'board') {
-          if (originalPosition) {
-            setCardPositionsById((prev) => ({ ...prev, [cardId]: originalPosition }));
-          }
-          setBouncingCardId(cardId);
-          window.setTimeout(() => setBouncingCardId((current) => (current === cardId ? null : current)), 700);
+        if (source !== 'timeline' || !fromSlotId) {
+          const cardScreenPoint = {
+            x: screenPoint.x - grabOffset.x,
+            y: screenPoint.y - grabOffset.y,
+          };
+          setCardPositionsById((prev) => ({ ...prev, [cardId]: screenToWorld(cardScreenPoint, viewport) }));
         }
       } else {
         const targetSlot = timelineSlots.find((s) => s.id === slotId);
@@ -646,18 +639,13 @@ export function App({
 
         if (replacedCardId) {
           const displacedCard = cards.find((c) => c.activity.id === replacedCardId);
-          // Place displaced card back onto the board canvas with visible bounce
-          const bouncePosition = screenToWorld(
-            { x: Math.max(80, screenPoint.x - 340), y: Math.max(80, screenPoint.y - 120) },
-            viewport,
-          );
-          setCardPositionsById((prev) => ({
-            ...prev,
-            [replacedCardId]: bouncePosition,
-          }));
-          cardJustLandedRef.current = true;
-          setBouncingCardId(replacedCardId);
-          window.setTimeout(() => setBouncingCardId(null), 700);
+          const originalReplacedPos = cardPositionsById[replacedCardId] ?? boardLayout.positionsById[replacedCardId];
+          if (originalReplacedPos) {
+            setCardPositionsById((prev) => ({
+              ...prev,
+              [replacedCardId]: originalReplacedPos,
+            }));
+          }
 
           if (displacedCard) {
             const displacedTitle = displacedCard.activity.title_en ?? displacedCard.activity.title;
@@ -685,26 +673,15 @@ export function App({
         setDiscardingCardId(null);
       }, CARD_DISCARD_DURATION_MS);
     } else {
-      const isOverTimeline = Boolean(document.elementFromPoint(event.clientX, event.clientY)?.closest('.timeline'));
-      if (isOverTimeline) {
-        if (source === 'board') {
-          if (originalPosition) {
-            setCardPositionsById((prev) => ({ ...prev, [cardId]: originalPosition }));
-          }
-          setBouncingCardId(cardId);
-          window.setTimeout(() => setBouncingCardId((current) => (current === cardId ? null : current)), 700);
-        }
-      } else {
-        if (source === 'timeline' && fromSlotId) {
-          undockCard(fromSlotId);
-        }
-        const cardScreenPoint = {
-          x: screenPoint.x - grabOffset.x,
-          y: screenPoint.y - grabOffset.y,
-        };
-        setCardPositionsById((prev) => ({ ...prev, [cardId]: screenToWorld(cardScreenPoint, viewport) }));
-        cardJustLandedRef.current = true;
+      if (source === 'timeline' && fromSlotId) {
+        undockCard(fromSlotId);
       }
+      const cardScreenPoint = {
+        x: screenPoint.x - grabOffset.x,
+        y: screenPoint.y - grabOffset.y,
+      };
+      setCardPositionsById((prev) => ({ ...prev, [cardId]: screenToWorld(cardScreenPoint, viewport) }));
+      cardJustLandedRef.current = true;
     }
 
     setCardDragState(null);
@@ -1148,7 +1125,6 @@ export function App({
               {canvasCards.map(({ card: match, position, variant }) => {
                 const isDragging = cardDragState?.card.activity.id === match.activity.id;
                 const isDiscarding = discardingCardId === match.activity.id;
-                const isBouncing = bouncingCardId === match.activity.id;
 
                 return (
                   <div
@@ -1165,7 +1141,7 @@ export function App({
                       isRecent={recentCardIds.includes(match.activity.id)}
                       match={match}
                       onFindSimilar={handleFindSimilar}
-                      state={isDiscarding ? 'discarding' : isBouncing ? 'bouncing' : 'spawning'}
+                      state={isDiscarding ? 'discarding' : 'spawning'}
                       variant={variant}
                     />
                   </div>
