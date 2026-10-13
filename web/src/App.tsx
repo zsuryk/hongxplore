@@ -56,6 +56,7 @@ import {
   CARD_WIDTH,
   type PlacedCard,
   areAnyCardsOutOfFrame,
+  computeBoardLayout,
   contentBounds,
   findBestSquareSlot,
   getActivityMatchingSlotId,
@@ -149,6 +150,7 @@ export function App({ agentStatus: propAgentStatus }: AppProps = {}) {
   const particleCleanupTimerRef = useRef<number | null>(null);
 
   const cards = useBoardStore((state) => state.cards);
+  const discardedCards = useBoardStore((state) => state.discardedCards);
   const timelineSlots = useBoardStore((state) => state.timelineSlots);
   const storeAgentStatus = useBoardStore((state) => state.agentStatus);
   const agentStatus = propAgentStatus ?? storeAgentStatus;
@@ -180,37 +182,27 @@ export function App({ agentStatus: propAgentStatus }: AppProps = {}) {
     cardDragStateRef.current = cardDragState;
   }, [cardDragState]);
 
-  const availableCards = useMemo(
-    () => cards.filter((match) => !timelineSlots.some((slot) => slot.activityId === match.activity.id)),
-    [cards, timelineSlots],
+  const dockedCardIds = useMemo(
+    () => new Set(timelineSlots.map((slot) => slot.activityId).filter((id): id is string => Boolean(id))),
+    [timelineSlots],
   );
 
-  const placedCards = useMemo(() => {
-    const results: PlacedCard[] = [];
+  const boardLayout = useMemo(
+    () =>
+      computeBoardLayout({
+        cards,
+        discardedCards,
+        dockedCardIds,
+        customPositions: cardPositionsById,
+      }),
+    [cards, discardedCards, dockedCardIds, cardPositionsById],
+  );
 
-    for (let index = 0; index < availableCards.length; index++) {
-      const match = availableCards[index];
-      const variant = getCardVariant(index);
-      const custom = cardPositionsById[match.activity.id];
-
-      if (custom) {
-        results.push({ position: custom, variant });
-      } else {
-        // Initial cards (first 6) form the coherent baseline cluster layout.
-        // Newly arriving cards dynamically find the best non-colliding slot that
-        // balances the overall bounding box toward a 1:1 square.
-        const pos = results.length < 6 ? tiledCardPosition(index) : findBestSquareSlot(variant, results);
-
-        results.push({ position: pos, variant });
-      }
-    }
-
-    return results;
-  }, [availableCards, cardPositionsById]);
+  const canvasCards = boardLayout.canvasCards;
 
   const researchCardPosition = useMemo(
-    () => (availableCards.length > 0 ? findBestSquareSlot('standard', placedCards) : tiledCardPosition(0)),
-    [availableCards.length, placedCards],
+    () => (canvasCards.length > 0 ? findBestSquareSlot('standard', canvasCards) : tiledCardPosition(0)),
+    [canvasCards],
   );
 
   useEffect(() => {
@@ -247,15 +239,15 @@ export function App({ agentStatus: propAgentStatus }: AppProps = {}) {
       const height =
         boardSize.height || previousSizeRef.current.height || boardRef.current?.clientHeight || window.innerHeight || 0;
 
-      if (width <= 0 || height <= 0 || placedCards.length === 0) {
+      if (width <= 0 || height <= 0 || canvasCards.length === 0) {
         return;
       }
 
-      const bounds = contentBounds(placedCards);
+      const bounds = contentBounds(canvasCards);
       contentBoundsRef.current = bounds;
       setViewport(fitViewport(bounds, { x: 0, y: 0, width, height }, BOARD_FIT_PADDING, maxScale));
     },
-    [boardSize.height, boardSize.width, placedCards],
+    [boardSize.height, boardSize.width, canvasCards],
   );
 
   // Observe the board element rather than `window`: resizing the window must not throw
@@ -299,7 +291,7 @@ export function App({ agentStatus: propAgentStatus }: AppProps = {}) {
 
   // One-time initial load framing: automatically fits the cards once on initial load as soon as cards arrive on the board
   useEffect(() => {
-    if (initialFramedRef.current || placedCards.length === 0) {
+    if (initialFramedRef.current || canvasCards.length === 0) {
       return;
     }
 
@@ -307,15 +299,15 @@ export function App({ agentStatus: propAgentStatus }: AppProps = {}) {
     const height = boardSize.height || boardRef.current?.clientHeight || window.innerHeight || 0;
 
     if (width > 0 && height > 0) {
-      const bounds = contentBounds(placedCards);
+      const bounds = contentBounds(canvasCards);
       contentBoundsRef.current = bounds;
       setViewport(fitViewport(bounds, { x: 0, y: 0, width, height }, BOARD_FIT_PADDING, 1.0));
       initialFramedRef.current = true;
     }
-  }, [boardSize.height, boardSize.width, placedCards]);
+  }, [boardSize.height, boardSize.width, canvasCards]);
 
   useEffect(() => {
-    const cardsToFrame: PlacedCard[] = [...placedCards];
+    const cardsToFrame: PlacedCard[] = [...canvasCards];
     if (agentStatus === 'searching') {
       cardsToFrame.push({
         position: researchCardPosition,
@@ -329,9 +321,9 @@ export function App({ agentStatus: propAgentStatus }: AppProps = {}) {
     }
 
     const cardsAdded =
-      cards.length > previousCardsLengthRef.current || placedCards.length > previousPlacedCountRef.current;
+      cards.length > previousCardsLengthRef.current || canvasCards.length > previousPlacedCountRef.current;
     previousCardsLengthRef.current = cards.length;
-    previousPlacedCountRef.current = placedCards.length;
+    previousPlacedCountRef.current = canvasCards.length;
 
     const outOfFrame = areAnyCardsOutOfFrame(cardsToFrame, viewport, boardSize);
 
@@ -348,9 +340,9 @@ export function App({ agentStatus: propAgentStatus }: AppProps = {}) {
     autoFitEnabled,
     boardSize,
     bouncingCardId,
+    canvasCards,
     cards.length,
     fitContent,
-    placedCards,
     researchCardPosition,
     viewport,
   ]);
@@ -1072,12 +1064,7 @@ export function App({ agentStatus: propAgentStatus }: AppProps = {}) {
                 match={cardDragState.card}
                 size={cardDragState.source === 'timeline' ? 'docked' : 'canvas'}
                 state="dragging"
-                variant={getCardVariant(
-                  Math.max(
-                    0,
-                    availableCards.findIndex((c) => c.activity.id === cardDragState.card.activity.id),
-                  ),
-                )}
+                variant={boardLayout.variantsById[cardDragState.card.activity.id] ?? getCardVariant(cardDragState.card)}
               />
             </div>
           </div>
@@ -1117,11 +1104,10 @@ export function App({ agentStatus: propAgentStatus }: AppProps = {}) {
                   <ResearchCard />
                 </div>
               ) : null}
-              {availableCards.map((match, index) => {
+              {canvasCards.map(({ card: match, position, variant }) => {
                 const isDragging = cardDragState?.card.activity.id === match.activity.id;
                 const isDiscarding = discardingCardId === match.activity.id;
                 const isBouncing = bouncingCardId === match.activity.id;
-                const variant = getCardVariant(index);
 
                 return (
                   <div
@@ -1132,7 +1118,7 @@ export function App({ agentStatus: propAgentStatus }: AppProps = {}) {
                     onPointerDown={(event) => handleCardPointerDown(event, match)}
                     onPointerMove={handleCardPointerMove}
                     onPointerUp={handleCardPointerUp}
-                    style={{ left: placedCards[index].position.x, top: placedCards[index].position.y }}
+                    style={{ left: position.x, top: position.y }}
                   >
                     <ActivityCard
                       isRecent={recentCardIds.includes(match.activity.id)}

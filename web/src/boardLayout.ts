@@ -66,15 +66,50 @@ export const CARD_VARIANT_DIMENSIONS: Record<CardVariant, { width: number; minHe
   tall: { width: 320, minHeight: 440, fitHeight: 480 },
 };
 
+export type ActivityMatch = {
+  activity: {
+    id: string;
+    title: string;
+    title_en?: string | null;
+    tags?: string[];
+    [key: string]: unknown;
+  };
+  match_rationale?: string;
+  [key: string]: unknown;
+};
+
 /**
- * Assigns a visual variant according to index to achieve an organic collage/auto-tiling
- * feel matching the whiteboard sketch.
+ * Derives a card's visual variant ('compact' | 'wide' | 'tall') strictly from its content.
+ * Guarantees that any two cards with equal content share the exact same shape
+ * regardless of where they sit on the board or what list index they occupy.
  */
-export function getCardVariant(index: number): CardVariant {
-  const mod = index % 3;
-  if (mod === 0) return 'compact';
-  if (mod === 1) return 'wide';
+export function getCardVariantFromContent(card: ActivityMatch): CardVariant {
+  const rationale = card.match_rationale ?? '';
+  const tags = card.activity.tags ?? [];
+  const title = card.activity.title_en ?? card.activity.title ?? '';
+  const contentScore = rationale.length + tags.length * 8 + title.length;
+
+  if (contentScore < 80) {
+    return 'compact';
+  }
+  if (contentScore < 160) {
+    return 'wide';
+  }
   return 'tall';
+}
+
+/**
+ * Assigns a visual variant according to index or card content.
+ * When given an activity match, derives the shape purely from its content.
+ */
+export function getCardVariant(input: number | ActivityMatch): CardVariant {
+  if (typeof input === 'number') {
+    const mod = input % 3;
+    if (mod === 0) return 'compact';
+    if (mod === 1) return 'wide';
+    return 'tall';
+  }
+  return getCardVariantFromContent(input);
 }
 
 /** Default grid slot for the card at `index`. Cards keep this position until dragged. */
@@ -361,4 +396,119 @@ export function getActivityMatchingSlotId(startIso?: string | null): string | nu
   } catch {
     return null;
   }
+}
+
+export type PlacedBoardCard<T extends ActivityMatch = ActivityMatch> = {
+  card: T;
+  position: Point;
+  variant: CardVariant;
+  isDocked: boolean;
+};
+
+export type ComputeBoardLayoutOptions<T extends ActivityMatch = ActivityMatch> = {
+  /** The cards currently active on the board. */
+  cards: readonly T[];
+  /** IDs of cards currently docked in the timeline. */
+  dockedCardIds?: ReadonlySet<string> | readonly string[];
+  /** Custom dragged positions by activity ID. */
+  customPositions?: Readonly<Record<string, Point>>;
+  /** Previously assigned or pinned layout positions by activity ID. */
+  assignedPositions?: Readonly<Record<string, Point>>;
+  /** Discarded cards that were previously on the board, to preserve slot indices. */
+  discardedCards?: readonly T[];
+};
+
+export type ComputeBoardLayoutResult<T extends ActivityMatch = ActivityMatch> = {
+  /** All placed cards (both docked and undocked). */
+  allPlacedCards: PlacedBoardCard<T>[];
+  /** Only undocked cards that should render on the canvas. */
+  canvasCards: PlacedBoardCard<T>[];
+  /** Complete map of card positions by activity ID. */
+  positionsById: Record<string, Point>;
+  /** Complete map of card variants by activity ID. */
+  variantsById: Record<string, CardVariant>;
+};
+
+/**
+ * Pure board layout computation:
+ * Maps cards to non-colliding positions and variants such that:
+ * 1. Docking, undocking, dragging, adding or discarding any card leaves every other card
+ *    in its exact same position and shape.
+ * 2. Two cards with identical content share the exact same shape.
+ * 3. Newly arriving cards seek non-colliding slots that steer toward a 1:1 square footprint.
+ */
+export function computeBoardLayout<T extends ActivityMatch>({
+  cards,
+  dockedCardIds = [],
+  customPositions = {},
+  assignedPositions = {},
+  discardedCards = [],
+}: ComputeBoardLayoutOptions<T>): ComputeBoardLayoutResult<T> {
+  const dockedSet = dockedCardIds instanceof Set ? dockedCardIds : new Set(dockedCardIds);
+  const positionsById: Record<string, Point> = { ...assignedPositions };
+  const variantsById: Record<string, CardVariant> = {};
+  const allPlacedCards: PlacedBoardCard<T>[] = [];
+  const canvasCards: PlacedBoardCard<T>[] = [];
+
+  // Reconstruct introduced cards sequence to ensure stable slot indices even if some are discarded
+  const knownCardsMap = new Map<string, T>();
+  for (const card of cards) {
+    knownCardsMap.set(card.activity.id, card);
+  }
+  for (const card of discardedCards) {
+    if (!knownCardsMap.has(card.activity.id)) {
+      knownCardsMap.set(card.activity.id, card);
+    }
+  }
+
+  // Accumulate occupied rects for collision-free placement of newly added cards
+  const existingUndockedPlaced: PlacedCard[] = [];
+
+  let initialSlotIndex = 0;
+  for (const [cardId, card] of knownCardsMap.entries()) {
+    const isDocked = dockedSet.has(cardId);
+    const isDiscarded = !cards.some((c) => c.activity.id === cardId);
+    const variant = getCardVariantFromContent(card);
+    variantsById[cardId] = variant;
+
+    let position: Point;
+    if (customPositions[cardId]) {
+      position = customPositions[cardId];
+    } else if (positionsById[cardId]) {
+      position = positionsById[cardId];
+    } else {
+      if (initialSlotIndex < 6) {
+        position = tiledCardPosition(initialSlotIndex);
+      } else {
+        position = findBestSquareSlot(variant, existingUndockedPlaced);
+      }
+      positionsById[cardId] = position;
+    }
+    initialSlotIndex += 1;
+
+    const placedCard: PlacedBoardCard<T> = {
+      card,
+      position,
+      variant,
+      isDocked,
+    };
+
+    if (!isDiscarded) {
+      allPlacedCards.push(placedCard);
+      if (!isDocked) {
+        canvasCards.push(placedCard);
+        existingUndockedPlaced.push({
+          position,
+          variant,
+        });
+      }
+    }
+  }
+
+  return {
+    allPlacedCards,
+    canvasCards,
+    positionsById,
+    variantsById,
+  };
 }
