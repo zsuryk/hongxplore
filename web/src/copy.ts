@@ -34,6 +34,7 @@ export const TIMELINE_GUIDE_TOAST =
   'Weekend timeline: drag activities here to schedule your weekend, or click to expand.';
 export const DISCARD_GUIDE_TOAST = 'Discard bin: drag unwanted cards here to remove them from your board.';
 export const AUTOFIT_GUIDE_TOAST = 'Auto-fit: automatically frames new cards into view.';
+export const AUTO_FIT_DESCRIPTION = 'Automatically frames new cards into view.';
 export function timelineSlotMismatchMessage(expectedSlotLabel: string): string {
   return `This activity is scheduled for ${expectedSlotLabel}. Drop it in that slot!`;
 }

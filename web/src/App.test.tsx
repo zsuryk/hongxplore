@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { App } from './App';
 import {
   AUTO_FIT_LABEL,
-  AUTOFIT_GUIDE_TOAST,
+  AUTO_FIT_DESCRIPTION,
   BOARD_LABEL,
   BOARD_KEYBOARD_HINT,
   DISCARD_GUIDE_TOAST,
@@ -98,21 +98,24 @@ describe('App shell', () => {
     expect(markup).toContain(GATHERING_INFO_TITLE);
   });
 
-  it('renders collapsed timeline dock and floating guide hints on load', () => {
+  it('renders collapsed timeline dock and remaining floating guide hints on load without autofit bubble', () => {
     const markup = renderToStaticMarkup(<App />);
 
     expect(markup).toContain('timeline--collapsed');
     expect(markup).toContain(TIMELINE_COLLAPSED_LABEL);
     expect(markup).toContain(TIMELINE_GUIDE_TOAST);
     expect(markup).toContain(DISCARD_GUIDE_TOAST);
-    expect(markup).toContain(AUTOFIT_GUIDE_TOAST);
+    expect(markup).not.toContain('viewport-controls__guide-hint');
   });
 
-  it('renders the Auto-fit toggle checkbox near the fit button', () => {
+  it('renders the Auto-fit toggle checkbox with accessible tooltip description', () => {
     const markup = renderToStaticMarkup(<App />);
 
     expect(markup).toContain('class="viewport-controls__autofit"');
     expect(markup).toContain('class="viewport-controls__checkbox"');
     expect(markup).toContain(AUTO_FIT_LABEL);
+    expect(markup).toContain('aria-describedby="autofit-description"');
+    expect(markup).toContain('id="autofit-description"');
+    expect(markup).toContain(AUTO_FIT_DESCRIPTION);
   });
 });
