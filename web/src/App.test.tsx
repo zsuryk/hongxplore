@@ -11,6 +11,9 @@ import {
   TIMELINE_COLLAPSED_LABEL,
   TIMELINE_GUIDE_TOAST,
   TIMELINE_SLOTS,
+  timelineActivityDockedConfirmation,
+  timelineActivityReplacedConfirmation,
+  timelineSlotMismatchMessage,
 } from './copy';
 import { CARD_WIDTH } from './boardLayout';
 import { useBoardStore } from './state/boardStore';
@@ -117,5 +120,68 @@ describe('App shell', () => {
     expect(markup).toContain('aria-describedby="autofit-description"');
     expect(markup).toContain('id="autofit-description"');
     expect(markup).toContain(AUTO_FIT_DESCRIPTION);
+  });
+
+  it('renders successful dock confirmation on the accessible board toast surface', () => {
+    const dockMessage = timelineActivityDockedConfirmation('Saturday afternoon');
+    const markup = renderToStaticMarkup(<App initialConfirmation={dockMessage} />);
+
+    expect(markup).toContain('class="board__toast"');
+    expect(markup).toContain('role="status"');
+    expect(markup).toContain('aria-live="polite"');
+    expect(markup).toContain(dockMessage);
+  });
+
+  it('renders slot mismatch and replace confirmations on the same accessible toast surface', () => {
+    const mismatchMessage = timelineSlotMismatchMessage('Saturday morning');
+    const mismatchMarkup = renderToStaticMarkup(<App initialConfirmation={mismatchMessage} />);
+
+    expect(mismatchMarkup).toContain('class="board__toast"');
+    expect(mismatchMarkup).toContain('role="status"');
+    expect(mismatchMarkup).toContain('aria-live="polite"');
+    expect(mismatchMarkup).toContain(mismatchMessage);
+
+    const replaceMessage = timelineActivityReplacedConfirmation('Art Workshop');
+    const replaceMarkup = renderToStaticMarkup(<App initialConfirmation={replaceMessage} />);
+
+    expect(replaceMarkup).toContain('class="board__toast"');
+    expect(replaceMarkup).toContain('role="status"');
+    expect(replaceMarkup).toContain('aria-live="polite"');
+    expect(replaceMarkup).toContain('Art Workshop');
+    expect(replaceMarkup).toContain('Replaced');
+  });
+
+  it('renders expanded timeline slots with aria-live="polite" and handles docked slot states', () => {
+    const mockCards = [
+      {
+        activity: {
+          id: 'docked-test-activity',
+          title: 'Test Docked Activity',
+          title_en: 'Test Docked Activity',
+          lang: 'en' as const,
+          url: 'https://example.com',
+          tags: ['culture'],
+          parts: [{ start: '2026-10-10T06:00:00Z', end: '2026-10-10T08:00:00Z' }],
+          source: { name: 'Source' },
+          location: { district: 'Central', venue: 'Venue' },
+        },
+        match_rationale: 'Perfect cultural fit',
+      },
+    ];
+
+    const mockSlots = [
+      { id: 'saturday-afternoon', activityId: 'docked-test-activity' },
+      ...TIMELINE_SLOTS.filter((s) => s.id !== 'saturday-afternoon').map((slot) => ({ ...slot, activityId: null })),
+    ];
+
+    const markup = renderToStaticMarkup(
+      <App cards={mockCards} initialTimelineExpanded={true} timelineSlots={mockSlots} />,
+    );
+
+    expect(markup).toContain('timeline--expanded');
+    expect(markup).toContain('data-timeline-slot="saturday-afternoon"');
+    expect(markup).toContain('timeline__slot--docked');
+    expect(markup).toContain('aria-live="polite"');
+    expect(markup).toContain('Test Docked Activity');
   });
 });
