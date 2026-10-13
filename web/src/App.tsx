@@ -353,23 +353,12 @@ export function App({
 
     // When autoFitEnabled is TRUE:
     // - New cards are added (search query results, find-similar, undock)
-    // - A replaced card bounces back (bouncingCardId !== null)
     // - A card was just landed (dropped) and any card is out of the frame
-    if (autoFitEnabled && (cardsAdded || bouncingCardId !== null || (cardJustLandedRef.current && outOfFrame))) {
+    if (autoFitEnabled && (cardsAdded || (cardJustLandedRef.current && outOfFrame))) {
       fitContent(1.0);
     }
     cardJustLandedRef.current = false;
-  }, [
-    agentStatus,
-    autoFitEnabled,
-    boardSize,
-    bouncingCardId,
-    canvasCards,
-    cards.length,
-    fitContent,
-    researchCardPosition,
-    viewport,
-  ]);
+  }, [agentStatus, autoFitEnabled, boardSize, canvasCards, cards.length, fitContent, researchCardPosition, viewport]);
 
   // Continuous particle bleed emitter while dragging: continuously drops glowing stardust
   const isDraggingAnyCard = Boolean(cardDragState);
@@ -981,17 +970,7 @@ export function App({
             role="button"
             tabIndex={0}
           >
-            {confirmation ? (
-              <div
-                aria-live="polite"
-                className="timeline__guide-hint timeline__confirmation-toast board__toast"
-                role="status"
-              >
-                {confirmation}
-              </div>
-            ) : showGuideHints ? (
-              <div className="timeline__guide-hint board__toast">{TIMELINE_GUIDE_TOAST}</div>
-            ) : null}
+            {showGuideHints ? <div className="timeline__guide-hint board__toast">{TIMELINE_GUIDE_TOAST}</div> : null}
             <div className="timeline__collapsed-content">
               <div className="timeline__collapsed-header">
                 <span className="timeline__collapsed-badge">
@@ -1004,15 +983,7 @@ export function App({
           </section>
         ) : (
           <section aria-label={TIMELINE_LABEL} className="timeline timeline--expanded">
-            {confirmation ? (
-              <div
-                aria-live="polite"
-                className="timeline__guide-hint timeline__confirmation-toast board__toast"
-                role="status"
-              >
-                {confirmation}
-              </div>
-            ) : isReplacingHoveredSlot && hoveredExistingCard ? (
+            {isReplacingHoveredSlot && hoveredExistingCard ? (
               <div className="timeline__guide-hint timeline__replace-toast board__toast">
                 {timelineSlotReplaceAlert(hoveredExistingCard.activity.title_en ?? hoveredExistingCard.activity.title)}
               </div>

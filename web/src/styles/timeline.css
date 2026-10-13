@@ -178,15 +178,6 @@
   opacity: 1;
 }
 
-.timeline__confirmation-toast {
-  animation: none;
-  background: var(--color-surface);
-  border-color: var(--color-accent);
-  box-shadow: 0 4px 20px var(--color-accent-soft);
-  color: var(--color-text);
-  opacity: 1;
-}
-
 @keyframes slot-replace-alert {
   from {
     border-color: #f59e0b;
