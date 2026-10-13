@@ -117,6 +117,7 @@ type CardDragState = {
   card: BoardActivityCard;
   source: 'board' | 'timeline';
   fromSlotId?: string;
+  originalPosition?: Point;
   pointerId: number;
   screenPoint: Point;
   grabOffset: Point;
@@ -550,10 +551,12 @@ export function App({
     markAdjusted();
 
     const screenPoint = screenPointWithin(boardBounds, event.clientX, event.clientY);
+    const originalPosition = cardPositionsById[card.activity.id] ?? boardLayout.positionsById[card.activity.id];
     setCardDragState({
       card,
       source: from ? 'timeline' : 'board',
       fromSlotId: from?.slotId,
+      originalPosition,
       pointerId: event.pointerId,
       screenPoint,
       grabOffset: {
@@ -627,7 +630,7 @@ export function App({
       return;
     }
 
-    const { card, source, fromSlotId, screenPoint, grabOffset } = cardDragState;
+    const { card, source, fromSlotId, originalPosition, screenPoint, grabOffset } = cardDragState;
     const cardId = card.activity.id;
 
     const slotElement = document
@@ -640,13 +643,12 @@ export function App({
       if (matchingSlotId && matchingSlotId !== slotId) {
         const expectedSlot = TIMELINE_SLOTS.find((definition) => definition.id === matchingSlotId);
         setConfirmation(timelineSlotMismatchMessage(expectedSlot?.label ?? matchingSlotId));
-        if (source !== 'timeline' || !fromSlotId) {
-          const cardScreenPoint = {
-            x: screenPoint.x - grabOffset.x,
-            y: screenPoint.y - grabOffset.y,
-          };
-          setCardPositionsById((prev) => ({ ...prev, [cardId]: screenToWorld(cardScreenPoint, viewport) }));
-          cardJustLandedRef.current = true;
+        if (source === 'board') {
+          if (originalPosition) {
+            setCardPositionsById((prev) => ({ ...prev, [cardId]: originalPosition }));
+          }
+          setBouncingCardId(cardId);
+          window.setTimeout(() => setBouncingCardId((current) => (current === cardId ? null : current)), 700);
         }
       } else {
         const targetSlot = timelineSlots.find((s) => s.id === slotId);
@@ -693,15 +695,26 @@ export function App({
         setDiscardingCardId(null);
       }, CARD_DISCARD_DURATION_MS);
     } else {
-      if (source === 'timeline' && fromSlotId) {
-        undockCard(fromSlotId);
+      const isOverTimeline = Boolean(document.elementFromPoint(event.clientX, event.clientY)?.closest('.timeline'));
+      if (isOverTimeline) {
+        if (source === 'board') {
+          if (originalPosition) {
+            setCardPositionsById((prev) => ({ ...prev, [cardId]: originalPosition }));
+          }
+          setBouncingCardId(cardId);
+          window.setTimeout(() => setBouncingCardId((current) => (current === cardId ? null : current)), 700);
+        }
+      } else {
+        if (source === 'timeline' && fromSlotId) {
+          undockCard(fromSlotId);
+        }
+        const cardScreenPoint = {
+          x: screenPoint.x - grabOffset.x,
+          y: screenPoint.y - grabOffset.y,
+        };
+        setCardPositionsById((prev) => ({ ...prev, [cardId]: screenToWorld(cardScreenPoint, viewport) }));
+        cardJustLandedRef.current = true;
       }
-      const cardScreenPoint = {
-        x: screenPoint.x - grabOffset.x,
-        y: screenPoint.y - grabOffset.y,
-      };
-      setCardPositionsById((prev) => ({ ...prev, [cardId]: screenToWorld(cardScreenPoint, viewport) }));
-      cardJustLandedRef.current = true;
     }
 
     setCardDragState(null);
