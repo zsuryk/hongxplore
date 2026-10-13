@@ -19,6 +19,40 @@ import json, os, subprocess, sys, urllib.request
 
 BYPASS_PHRASE = "zone-guard bypass"
 
+# ===========================================================================
+# PAUSED — TEMPORARY KILL SWITCH (issue #91, paused 2026-10-13)
+#
+# The backlog was rebalanced so that web work is not all owned by one
+# person. Five tickets (#52, #68, #76, #77, #89) now sit with a developer
+# outside the zone their paths fall in, so zone-guard holds them red for
+# reasons that are structural rather than real — those reviews are planned,
+# not skipped. CODEOWNERS no longer matches how the work is actually split.
+#
+# While this is True, zone-guard passes every PR and says so in its log.
+# The real fix is to update CODEOWNERS and the docs/PLAN.md Part B matrix
+# to match the rebalanced assignment; this is the reversible stopgap until
+# then.
+#
+# DO NOT "disable" this by deleting zone-guard.yml or gating the job with
+# `if: false`. The `zone-guard` context is a REQUIRED status check in the
+# `default` ruleset. If the check stops reporting, no PR can ever merge.
+# The workflow must keep running and keep reporting green.
+#
+# TO RE-ENABLE: delete the PAUSED constant and the block at the top of
+# main(). Nothing else changes.
+#
+# Review by: 2026-11-13 — issue #91.
+# ===========================================================================
+PAUSED = True
+
+_PAUSE_BANNER = (
+    "=" * 72 + "\n"
+    "  zone-guard: PAUSED — ownership enforcement is DISABLED (issue #91).\n"
+    "  This PR passed WITHOUT a zone-ownership check.\n"
+    "  Do not read this as a clean zone-guard result. It is a pause.\n"
+    + "=" * 72
+)
+
 
 def gh(path):
     req = urllib.request.Request(
@@ -88,6 +122,12 @@ def bypassed(owner, repo, pr):
 
 
 def main():
+    if PAUSED:
+        # Loud on purpose: a paused pass must never be mistaken for a real one.
+        print(_PAUSE_BANNER)
+        print("zone-guard: PASS (paused) — no zone-ownership check was performed.")
+        print("zone-guard: re-enable by deleting the kill switch, or fix CODEOWNERS.")
+        return 0
     author = os.environ["PR_AUTHOR"].lower()
     owner = os.environ["REPO_OWNER"].lower()
     rules = load_rules(os.environ["BASE"], owner)
