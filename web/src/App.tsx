@@ -446,23 +446,7 @@ export function App({
     }
   }, [boardSize]);
 
-  // One-time initial load framing: automatically fits the cards once on initial load as soon as cards arrive on the board
-  useEffect(() => {
-    if (initialFramedRef.current || canvasCards.length === 0) {
-      return;
-    }
-
-    const width = boardSize.width || boardRef.current?.clientWidth || window.innerWidth || 0;
-    const height = boardSize.height || boardRef.current?.clientHeight || window.innerHeight || 0;
-
-    if (width > 0 && height > 0) {
-      const bounds = contentBounds(canvasCards);
-      contentBoundsRef.current = bounds;
-      setViewport(fitViewport(bounds, { x: 0, y: 0, width, height }, BOARD_FIT_PADDING, 1.0));
-      initialFramedRef.current = true;
-    }
-  }, [boardSize.height, boardSize.width, canvasCards]);
-
+  // Unified framing effect: frames on initial card load, and when autoFitEnabled is true for search additions or out-of-frame drops
   useEffect(() => {
     const cardsToFrame: PlacedCard[] = [...canvasCards];
     if (agentStatus === 'searching') {
@@ -480,11 +464,15 @@ export function App({
     const cardsAdded = cards.length > previousCardsLengthRef.current;
     previousCardsLengthRef.current = cards.length;
 
+    // One-time initial framing when cards first arrive on canvas
+    if (!initialFramedRef.current && canvasCards.length > 0) {
+      fitContent(1.0);
+      initialFramedRef.current = true;
+      return;
+    }
+
     const outOfFrame = areAnyCardsOutOfFrame(cardsToFrame, viewportRef.current, boardSize);
 
-    // When autoFitEnabled is TRUE:
-    // - New cards are added from search queries
-    // - A card was just landed (dropped) and any card is out of the frame
     if (autoFitEnabled && (cardsAdded || (cardJustLandedRef.current && outOfFrame))) {
       fitContent(1.0);
     }
@@ -897,7 +885,8 @@ export function App({
           x: screenPoint.x - grabOffset.x,
           y: screenPoint.y - grabOffset.y,
         };
-        setCardPositionsById((prev) => ({ ...prev, [cardId]: screenToWorld(cardScreenPoint, viewport) }));
+        const newPos = screenToWorld(cardScreenPoint, viewport);
+        setCardPositionsById((prev) => ({ ...prev, [cardId]: newPos }));
         cardJustLandedRef.current = true;
       }
     }
