@@ -50,12 +50,14 @@ import {
 } from './copy';
 import {
   BOARD_FIT_PADDING,
+  BOARD_GRID_ORIGIN,
   BOARD_GRID_SIZE,
   CARD_DISCARD_DURATION_MS,
   CARD_MIN_HEIGHT,
   CARD_WIDTH,
   type PlacedCard,
   areAnyCardsOutOfFrame,
+  autoTileBoard,
   computeBoardLayout,
   contentBounds,
   findBestSquareSlot,
@@ -135,6 +137,8 @@ type DragParticle = {
 
 const PARTICLE_COLORS = ['#38bdf8', '#818cf8', '#c084fc', '#f472b6', '#e0e7ff', '#34d399'];
 
+const EMPTY_CARD_POSITIONS: Record<string, Point> = {};
+
 export type AppProps = {
   agentStatus?: AgentStatus;
   cards?: BoardActivityCard[];
@@ -168,6 +172,7 @@ export function App({
   const cardJustLandedRef = useRef(false);
   const particleIdRef = useRef(0);
   const particleCleanupTimerRef = useRef<number | null>(null);
+  const tilingTimerRef = useRef<number | null>(null);
 
   const storeCards = useBoardStore((state) => state.cards);
   const cards = propCards ?? storeCards;
@@ -190,17 +195,24 @@ export function App({
   const requestClearBoard = useBoardStore((state) => state.requestClearBoard);
   const cancelClearBoard = useBoardStore((state) => state.cancelClearBoard);
   const confirmClearBoard = useBoardStore((state) => state.confirmClearBoard);
+  const storeCardPositions = useBoardStore((state) => state.cardPositions);
+  const cardPositionsById = storeCardPositions ?? EMPTY_CARD_POSITIONS;
+  const setCardPosition = useBoardStore((state) => state.setCardPosition);
+  const setCardPositions = useBoardStore((state) => state.setCardPositions);
   const storeIsClearConfirmOpen = useBoardStore((state) => state.isClearConfirmOpen);
   const isClearConfirmOpen = initialClearConfirmOpen ?? storeIsClearConfirmOpen;
 
   const [viewport, setViewport] = useState<Viewport>(initialViewport);
+  const viewportRef = useRef<Viewport>(viewport);
+  useLayoutEffect(() => {
+    viewportRef.current = viewport;
+  }, [viewport]);
   const [boardSize, setBoardSize] = useState<Size>({ width: 0, height: 0 });
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [pinchState, setPinchState] = useState<PinchState | null>(null);
   const [cardDragState, setCardDragState] = useState<CardDragState | null>(null);
   const [isGesturing, setIsGesturing] = useState(false);
   const [hoveredSlotId, setHoveredSlotId] = useState<string | null>(null);
-  const [cardPositionsById, setCardPositionsById] = useState<Record<string, Point>>({});
   const [cardHeightsById, setCardHeightsById] = useState<Record<string, number>>({});
   const [discardingCardId, setDiscardingCardId] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<string | null>(initialConfirmation ?? null);
@@ -210,6 +222,7 @@ export function App({
   const [settlingSlotId, setSettlingSlotId] = useState<string | null>(null);
   const [dragParticles, setDragParticles] = useState<DragParticle[]>([]);
   const [autoFitEnabled, setAutoFitEnabled] = useState(true);
+  const [isTiling, setIsTiling] = useState(false);
 
   useLayoutEffect(() => {
     cardDragStateRef.current = cardDragState;
@@ -298,6 +311,60 @@ export function App({
     [boardSize.height, boardSize.width, canvasCards],
   );
 
+  const handleAutoTile = useCallback(() => {
+    if (canvasCards.length === 0) {
+      return;
+    }
+
+    const newPositions = autoTileBoard(canvasCards, {
+      origin: BOARD_GRID_ORIGIN,
+    });
+
+    if (tilingTimerRef.current !== null) {
+      window.clearTimeout(tilingTimerRef.current);
+    }
+
+    setIsTiling(true);
+    setCardPositions(newPositions);
+
+    const prefersReducedMotion =
+      typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const settleDuration = prefersReducedMotion ? 0 : 300;
+
+    tilingTimerRef.current = window.setTimeout(() => {
+      setIsTiling(false);
+      tilingTimerRef.current = null;
+
+      if (autoFitEnabled) {
+        const updatedCanvasCards = canvasCards.map((c) => ({
+          ...c,
+          position: newPositions[c.card.activity.id] ?? c.position,
+        }));
+        const bounds = contentBounds(updatedCanvasCards);
+        contentBoundsRef.current = bounds;
+        const width =
+          boardSize.width || previousSizeRef.current.width || boardRef.current?.clientWidth || window.innerWidth || 0;
+        const height =
+          boardSize.height ||
+          previousSizeRef.current.height ||
+          boardRef.current?.clientHeight ||
+          window.innerHeight ||
+          0;
+        if (width > 0 && height > 0) {
+          setViewport(fitViewport(bounds, { x: 0, y: 0, width, height }, BOARD_FIT_PADDING, 1.0));
+        }
+      }
+    }, settleDuration);
+  }, [canvasCards, autoFitEnabled, boardSize.height, boardSize.width, setCardPositions]);
+
+  useEffect(() => {
+    return () => {
+      if (tilingTimerRef.current !== null) {
+        window.clearTimeout(tilingTimerRef.current);
+      }
+    };
+  }, []);
+
   // Observe the board element rather than `window`: resizing the window must not throw
   // away the user's pan and zoom.
   useLayoutEffect(() => {
@@ -322,6 +389,8 @@ export function App({
 
     return () => observer.disconnect();
   }, []);
+
+  const cardIdsKey = cards.map((c) => c.activity.id).join(',');
 
   // Measure rendered heights of canvas cards to drive content-driven layout and collision avoidance
   useLayoutEffect(() => {
@@ -350,7 +419,8 @@ export function App({
         setCardHeightsById((prev) => {
           let changed = false;
           for (const [k, v] of Object.entries(updates)) {
-            if (prev[k] !== v) {
+            // Ignore minor subpixel rounding (<3px) caused by browser zoom
+            if (Math.abs((prev[k] ?? 0) - v) > 3) {
               changed = true;
               break;
             }
@@ -362,7 +432,7 @@ export function App({
 
     cardElements.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
-  }, [canvasCards]);
+  }, [cardIdsKey]);
 
   // Resizing must not throw away their pan and zoom: hold the centre point.
   useEffect(() => {
@@ -378,23 +448,7 @@ export function App({
     }
   }, [boardSize]);
 
-  // One-time initial load framing: automatically fits the cards once on initial load as soon as cards arrive on the board
-  useEffect(() => {
-    if (initialFramedRef.current || canvasCards.length === 0) {
-      return;
-    }
-
-    const width = boardSize.width || boardRef.current?.clientWidth || window.innerWidth || 0;
-    const height = boardSize.height || boardRef.current?.clientHeight || window.innerHeight || 0;
-
-    if (width > 0 && height > 0) {
-      const bounds = contentBounds(canvasCards);
-      contentBoundsRef.current = bounds;
-      setViewport(fitViewport(bounds, { x: 0, y: 0, width, height }, BOARD_FIT_PADDING, 1.0));
-      initialFramedRef.current = true;
-    }
-  }, [boardSize.height, boardSize.width, canvasCards]);
-
+  // Unified framing effect: frames on initial card load, and when autoFitEnabled is true for search additions or out-of-frame drops
   useEffect(() => {
     const cardsToFrame: PlacedCard[] = [...canvasCards];
     if (agentStatus === 'searching') {
@@ -412,16 +466,20 @@ export function App({
     const cardsAdded = cards.length > previousCardsLengthRef.current;
     previousCardsLengthRef.current = cards.length;
 
-    const outOfFrame = areAnyCardsOutOfFrame(cardsToFrame, viewport, boardSize);
+    // One-time initial framing when cards first arrive on canvas
+    if (!initialFramedRef.current && canvasCards.length > 0) {
+      fitContent(1.0);
+      initialFramedRef.current = true;
+      return;
+    }
 
-    // When autoFitEnabled is TRUE:
-    // - New cards are added from search queries
-    // - A card was just landed (dropped) and any card is out of the frame
+    const outOfFrame = areAnyCardsOutOfFrame(cardsToFrame, viewportRef.current, boardSize);
+
     if (autoFitEnabled && (cardsAdded || (cardJustLandedRef.current && outOfFrame))) {
       fitContent(1.0);
     }
     cardJustLandedRef.current = false;
-  }, [agentStatus, autoFitEnabled, boardSize, canvasCards, cards.length, fitContent, researchCardPosition, viewport]);
+  }, [agentStatus, autoFitEnabled, boardSize, canvasCards, cards.length, fitContent, researchCardPosition]);
 
   // Continuous particle bleed emitter while dragging: continuously drops glowing stardust
   const isDraggingAnyCard = Boolean(cardDragState);
@@ -568,7 +626,9 @@ export function App({
       (event.target.closest('[data-activity-card]') ||
         event.target.closest('[data-timeline-slot]') ||
         event.target.closest('.timeline') ||
-        event.target.closest('.discard-bin'))
+        event.target.closest('.discard-bin') ||
+        event.target.closest('.board-toolbar') ||
+        event.target.closest('.board-modal'))
     ) {
       return;
     }
@@ -622,7 +682,7 @@ export function App({
     if (!from) {
       const currentPos = cardPositionsById[cardId] ?? boardLayout.positionsById[cardId];
       if (currentPos && !cardPositionsById[cardId]) {
-        setCardPositionsById((prev) => ({ ...prev, [cardId]: currentPos }));
+        setCardPosition(cardId, currentPos);
       }
     }
 
@@ -760,14 +820,14 @@ export function App({
         if (source === 'board') {
           const originalCardPos = cardPositionsById[cardId] ?? boardLayout.positionsById[cardId];
           if (originalCardPos) {
-            setCardPositionsById((prev) => ({ ...prev, [cardId]: originalCardPos }));
+            setCardPosition(cardId, originalCardPos);
           }
         }
       } else {
         if (source === 'board') {
           const originalCardPos = cardPositionsById[cardId] ?? boardLayout.positionsById[cardId];
           if (originalCardPos) {
-            setCardPositionsById((prev) => ({ ...prev, [cardId]: originalCardPos }));
+            setCardPosition(cardId, originalCardPos);
           }
         }
 
@@ -779,10 +839,7 @@ export function App({
           const displacedCard = cards.find((c) => c.activity.id === replacedCardId);
           const originalReplacedPos = cardPositionsById[replacedCardId] ?? boardLayout.positionsById[replacedCardId];
           if (originalReplacedPos) {
-            setCardPositionsById((prev) => ({
-              ...prev,
-              [replacedCardId]: originalReplacedPos,
-            }));
+            setCardPosition(replacedCardId, originalReplacedPos);
           }
 
           if (displacedCard) {
@@ -816,7 +873,7 @@ export function App({
         if (source === 'board') {
           const originalCardPos = cardPositionsById[cardId] ?? boardLayout.positionsById[cardId];
           if (originalCardPos) {
-            setCardPositionsById((prev) => ({ ...prev, [cardId]: originalCardPos }));
+            setCardPosition(cardId, originalCardPos);
           }
         }
       } else {
@@ -827,7 +884,8 @@ export function App({
           x: screenPoint.x - grabOffset.x,
           y: screenPoint.y - grabOffset.y,
         };
-        setCardPositionsById((prev) => ({ ...prev, [cardId]: screenToWorld(cardScreenPoint, viewport) }));
+        const newPos = screenToWorld(cardScreenPoint, viewport);
+        setCardPosition(cardId, newPos);
         cardJustLandedRef.current = true;
       }
     }
@@ -976,6 +1034,11 @@ export function App({
       case '1':
         event.preventDefault();
         resetZoom();
+        break;
+      case 't':
+      case 'T':
+        event.preventDefault();
+        handleAutoTile();
         break;
       default:
         break;
@@ -1157,12 +1220,14 @@ export function App({
         </aside>
         <BoardToolbar
           autoFitEnabled={autoFitEnabled}
+          canAutoTile={canvasCards.length > 0}
           canClearBoard={cards.length > 0 || timelineSlots.some((s) => Boolean(s.activityId))}
           canFitContent={canvasCards.length > 0}
           canResetZoom={Math.abs(viewport.scale - 1) >= 0.001}
           canZoomIn={canZoomIn(viewport.scale)}
           canZoomOut={canZoomOut(viewport.scale)}
           isDragging={Boolean(cardDragState)}
+          onAutoTile={handleAutoTile}
           onClearBoard={requestClearBoard}
           onFitContent={() => fitContent(1.0)}
           onResetZoom={resetZoom}
@@ -1231,7 +1296,7 @@ export function App({
         ) : null}
         <div className="board__pan">
           <div className="board__world">
-            <div className="board__cards">
+            <div className={`board__cards${isTiling ? ' board__cards--tiling' : ''}`}>
               {agentStatus === 'searching' ? (
                 <div
                   className="board__card board__card--research"
@@ -1291,7 +1356,6 @@ export function App({
                 className="btn btn--sm btn--danger"
                 onClick={() => {
                   confirmClearBoard();
-                  setCardPositionsById({});
                   hasAdjustedRef.current = false;
                   initialFramedRef.current = false;
                 }}

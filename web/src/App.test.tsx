@@ -4,6 +4,7 @@ import { App } from './App';
 import {
   AUTO_FIT_LABEL,
   AUTO_FIT_DESCRIPTION,
+  AUTO_TILE_LABEL,
   BOARD_LABEL,
   BOARD_KEYBOARD_HINT,
   CLEAR_BOARD_CONFIRM_TITLE,
@@ -228,5 +229,30 @@ describe('App shell', () => {
     expect(markup).toContain('class="board-modal-backdrop"');
     expect(markup).toContain('role="alertdialog"');
     expect(markup).toContain(CLEAR_BOARD_CONFIRM_TITLE);
+  });
+
+  it('renders the auto-tile button in the board toolbar, enabled with cards and disabled when empty', () => {
+    const emptyMarkup = renderToStaticMarkup(<App cards={[]} />);
+    expect(emptyMarkup).toContain(`<button aria-label="${AUTO_TILE_LABEL}" class="btn btn--sm" disabled=""`);
+
+    const mockCards = [
+      {
+        activity: {
+          id: 'test-card-1',
+          title: 'Test Card',
+          title_en: 'Test Card',
+          lang: 'en' as const,
+          url: 'https://example.com',
+          tags: ['culture'],
+          parts: [{ start: '2026-10-10T06:00:00Z', end: '2026-10-10T08:00:00Z' }],
+          source: { name: 'Source' },
+          location: { district: 'Central', venue: 'Venue' },
+        },
+        match_rationale: 'Perfect fit',
+      },
+    ];
+    const cardsMarkup = renderToStaticMarkup(<App cards={mockCards} />);
+    expect(cardsMarkup).toContain(`<button aria-label="${AUTO_TILE_LABEL}" class="btn btn--sm"`);
+    expect(cardsMarkup).not.toContain(`<button aria-label="${AUTO_TILE_LABEL}" class="btn btn--sm" disabled=""`);
   });
 });

@@ -6,6 +6,7 @@ import {
   CARD_WIDTH,
   EMPTY_BOARD_BOUNDS,
   areAnyCardsOutOfFrame,
+  autoTileBoard,
   calculateContentCardHeight,
   cardBounds,
   computeBoardLayout,
@@ -13,6 +14,7 @@ import {
   defaultCardPosition,
   findBestSquareSlot,
   getActivityMatchingSlotId,
+  getAutoTileColumnCount,
   getCardVariant,
   getCardVariantFromContent,
   getClustersPerRow,
@@ -457,6 +459,121 @@ describe('content-driven card shapes and pure board layout (Issue #76)', () => {
       // contentBounds uses the cards' measured heights
       const bounds = contentBounds(layout.canvasCards);
       expect(bounds.height).toBeGreaterThanOrEqual(420);
+    });
+  });
+
+  describe('autoTileBoard', () => {
+    it('returns an empty mapping when the board is empty', () => {
+      expect(autoTileBoard([])).toEqual({});
+    });
+
+    it('places a single card at the grid origin', () => {
+      const singleCard = { id: 'only-card', height: 350 };
+      const positions = autoTileBoard([singleCard]);
+
+      expect(positions).toEqual({
+        'only-card': BOARD_GRID_ORIGIN,
+      });
+    });
+
+    it('is strictly deterministic: identical cards produce identical layout', () => {
+      const cards = [
+        makeMockCard('c0', 'Rationale 0'),
+        makeMockCard('c1', 'Rationale 1'),
+        makeMockCard('c2', 'Rationale 2'),
+        makeMockCard('c3', 'Rationale 3'),
+      ];
+
+      const run1 = autoTileBoard(cards);
+      const run2 = autoTileBoard(cards);
+
+      expect(run1).toEqual(run2);
+      expect(Object.keys(run1)).toHaveLength(4);
+    });
+
+    it('positions cards with mixed variable heights without overlaps', () => {
+      const mixedCards = [
+        { id: 'short-1', height: 210 },
+        { id: 'tall-1', height: 520 },
+        { id: 'medium-1', height: 340 },
+        { id: 'tall-2', height: 480 },
+        { id: 'short-2', height: 230 },
+        { id: 'medium-2', height: 360 },
+      ];
+
+      const positions = autoTileBoard(mixedCards);
+      const placedRects = mixedCards.map((c) => cardBounds(positions[c.id], 'standard', c.height));
+
+      // Assert zero pairwise overlap with margin
+      for (let i = 0; i < placedRects.length; i++) {
+        for (let j = i + 1; j < placedRects.length; j++) {
+          expect(rectsOverlap(placedRects[i], placedRects[j])).toBe(false);
+        }
+      }
+    });
+
+    it('guarantees zero overlap between any two cards across the entire board', () => {
+      const variedCards = Array.from({ length: 9 }, (_, index) => ({
+        id: `card-${index}`,
+        height: 200 + (index % 4) * 90, // heights: 200, 290, 380, 470...
+      }));
+
+      const positions = autoTileBoard(variedCards);
+      const boundsList = variedCards.map((c) => cardBounds(positions[c.id], 'standard', c.height));
+
+      for (let i = 0; i < boundsList.length; i++) {
+        for (let j = i + 1; j < boundsList.length; j++) {
+          const overlap = rectsOverlap(boundsList[i], boundsList[j]);
+          expect(overlap).toBe(false);
+        }
+      }
+    });
+
+    it('yields a tight, roughly square board rather than a sparse scatter', () => {
+      const cards = Array.from({ length: 6 }, (_, index) => ({
+        id: `c-${index}`,
+        height: 350,
+      }));
+
+      const positions = autoTileBoard(cards);
+      const placed = cards.map((c) => ({
+        position: positions[c.id],
+        height: c.height,
+        width: CARD_WIDTH,
+      }));
+
+      const bounds = contentBounds(placed);
+      const aspectRatio = bounds.width / bounds.height;
+
+      // With 6 cards packed in 3 columns x 2 rows, ratio is ~1.4, well within balanced square bounds [0.7, 1.6]
+      expect(aspectRatio).toBeGreaterThan(0.7);
+      expect(aspectRatio).toBeLessThan(1.7);
+      expect(getAutoTileColumnCount(6)).toBe(3);
+    });
+
+    it('handles cards with very different heights correctly', () => {
+      const veryDifferentCards = [
+        { id: 'tiny', height: 180 },
+        { id: 'giant', height: 600 },
+        { id: 'mid', height: 320 },
+        { id: 'huge', height: 550 },
+      ];
+
+      const positions = autoTileBoard(veryDifferentCards);
+
+      // In column 0: tiny (height 180) -> mid should be placed cleanly below tiny
+      // tiny at origin.y, mid at origin.y + 180 + gap
+      expect(positions['mid'].y).toBe(BOARD_GRID_ORIGIN.y + 180 + 40);
+      // In column 1: giant (height 600) -> huge should be placed below giant
+      expect(positions['huge'].y).toBe(BOARD_GRID_ORIGIN.y + 600 + 40);
+
+      // Pairwise overlap check
+      const rects = veryDifferentCards.map((c) => cardBounds(positions[c.id], 'standard', c.height));
+      for (let i = 0; i < rects.length; i++) {
+        for (let j = i + 1; j < rects.length; j++) {
+          expect(rectsOverlap(rects[i], rects[j])).toBe(false);
+        }
+      }
     });
   });
 });

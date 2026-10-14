@@ -513,15 +513,13 @@ export function computeBoardLayout<T extends ActivityMatch>({
       position = customPositions[cardId];
     } else if (positionsById[cardId]) {
       position = positionsById[cardId];
+    } else if (initialSlotIndex < 6) {
+      const compactHeight = initialSlotIndex % 3 === 1 ? existingPlaced[initialSlotIndex - 1]?.height : undefined;
+      position = tiledCardPosition(initialSlotIndex, undefined, compactHeight);
     } else {
-      if (initialSlotIndex < 6) {
-        const compactHeight = initialSlotIndex % 3 === 1 ? existingPlaced[initialSlotIndex - 1]?.height : undefined;
-        position = tiledCardPosition(initialSlotIndex, undefined, compactHeight);
-      } else {
-        position = findBestSquareSlot(variant, existingPlaced, BOARD_GRID_ORIGIN, height);
-      }
-      positionsById[cardId] = position;
+      position = findBestSquareSlot(variant, existingPlaced, BOARD_GRID_ORIGIN, height);
     }
+    positionsById[cardId] = position;
     initialSlotIndex += 1;
 
     const placedCard: PlacedBoardCard<T> = {
@@ -553,4 +551,122 @@ export function computeBoardLayout<T extends ActivityMatch>({
     variantsById,
     heightsById,
   };
+}
+
+export type AutoTileOptions = {
+  origin?: Point;
+  gapX?: number;
+  gapY?: number;
+  columnCount?: number;
+};
+
+/**
+ * Calculates the optimal number of columns for auto-tiling `cardCount` cards.
+ * Balances horizontal and vertical extents so the board packs into a tight,
+ * roughly square aspect ratio rather than an awkward ribbon.
+ */
+export function getAutoTileColumnCount(cardCount: number): number {
+  if (cardCount <= 1) return 1;
+  if (cardCount <= 4) return 2;
+  if (cardCount <= 9) return 3;
+  if (cardCount <= 16) return 4;
+  return Math.max(4, Math.ceil(Math.sqrt(cardCount)));
+}
+
+/**
+ * Extracts card identification and dimension metadata cleanly from varied card shapes.
+ */
+function resolveTileCardInfo(
+  card: unknown,
+  index: number,
+): { id: string; height: number; width: number; variant: CardVariant } {
+  const item = (card ?? {}) as Record<string, unknown>;
+  const rawCard = (item.card ?? item) as Record<string, unknown>;
+  const rawActivity = (rawCard.activity ?? item.activity) as
+    { id?: string; tags?: string[]; title?: string; title_en?: string | null } | undefined;
+
+  const id =
+    (typeof item.id === 'string' && item.id) ||
+    (typeof rawCard.id === 'string' && rawCard.id) ||
+    (typeof rawActivity?.id === 'string' && rawActivity.id) ||
+    `card-${index}`;
+
+  const resolvedActivity: ActivityMatch['activity'] | undefined = rawActivity
+    ? {
+        id: rawActivity.id ?? id,
+        title: rawActivity.title ?? '',
+        title_en: rawActivity.title_en,
+        tags: rawActivity.tags ?? [],
+      }
+    : undefined;
+
+  const variant: CardVariant =
+    (item.variant as CardVariant) ||
+    (rawCard.variant as CardVariant) ||
+    (resolvedActivity
+      ? getCardVariantFromContent({
+          activity: resolvedActivity,
+          match_rationale: (rawCard.match_rationale as string) ?? '',
+        })
+      : 'standard');
+
+  const width =
+    (typeof item.width === 'number' && item.width) ||
+    (typeof rawCard.width === 'number' && rawCard.width) ||
+    CARD_VARIANT_DIMENSIONS[variant]?.width ||
+    CARD_WIDTH;
+
+  let height =
+    (typeof item.height === 'number' && item.height) || (typeof rawCard.height === 'number' && rawCard.height);
+
+  if (!height) {
+    if (resolvedActivity) {
+      height = calculateContentCardHeight(
+        { activity: resolvedActivity, match_rationale: (rawCard.match_rationale as string) ?? '' },
+        variant,
+      );
+    } else {
+      height = CARD_VARIANT_DIMENSIONS[variant]?.fitHeight ?? CARD_FIT_HEIGHT;
+    }
+  }
+
+  return { id, height, width, variant };
+}
+
+/**
+ * Deterministic variable-height auto-tiling algorithm:
+ * Re-packs cards into non-overlapping, balanced columns yielding a tight,
+ * roughly 1:1 square board footprint.
+ *
+ * Guarantees:
+ * 1. Zero overlaps between any two cards regardless of differing heights.
+ * 2. 100% deterministic: identical cards and order produce identical positions.
+ * 3. Empty input produces empty output `{}`; single card is placed at `origin`.
+ * 4. Extent of each column is driven by the heights of the cards placed within it.
+ */
+export function autoTileBoard<T>(cards: readonly T[], options: AutoTileOptions = {}): Record<string, Point> {
+  if (cards.length === 0) {
+    return {};
+  }
+
+  const origin = options.origin ?? BOARD_GRID_ORIGIN;
+  const gapX = options.gapX ?? CARD_COLUMN_GAP;
+  const gapY = options.gapY ?? CARD_ROW_GAP;
+  const columnCount = options.columnCount ?? getAutoTileColumnCount(cards.length);
+
+  const columnYs = new Array(columnCount).fill(origin.y);
+  const positionsById: Record<string, Point> = {};
+
+  for (let i = 0; i < cards.length; i++) {
+    const { id, height, width } = resolveTileCardInfo(cards[i], i);
+    const col = i % columnCount;
+
+    const posX = origin.x + col * (width + gapX);
+    const posY = columnYs[col];
+
+    positionsById[id] = { x: posX, y: posY };
+    columnYs[col] += height + gapY;
+  }
+
+  return positionsById;
 }

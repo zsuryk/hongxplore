@@ -103,6 +103,18 @@
   width: var(--card-width);
 }
 
+.board__cards--tiling .board__card {
+  transition:
+    left var(--motion-duration-slow) var(--motion-ease),
+    top var(--motion-duration-slow) var(--motion-ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .board__cards--tiling .board__card {
+    transition: none !important;
+  }
+}
+
 .board__card--compact {
   min-height: var(--card-compact-min-height);
 }
