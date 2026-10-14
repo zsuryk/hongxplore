@@ -8,7 +8,10 @@ import {
   BOARD_KEYBOARD_HINT,
   DISCARD_GUIDE_TOAST,
   GATHERING_INFO_TITLE,
+  TIMELINE_COLLAPSE_LABEL,
   TIMELINE_COLLAPSED_LABEL,
+  TIMELINE_DRAG_COLLAPSE_HINT,
+  TIMELINE_EXPAND_LABEL,
   TIMELINE_GUIDE_TOAST,
   TIMELINE_SLOTS,
   timelineActivityDockedConfirmation,
@@ -101,14 +104,38 @@ describe('App shell', () => {
     expect(markup).toContain(GATHERING_INFO_TITLE);
   });
 
-  it('renders collapsed timeline dock and remaining floating guide hints on load without autofit bubble', () => {
+  it('renders collapsed timeline dock as accessible button with aria-expanded="false" and guide hints', () => {
     const markup = renderToStaticMarkup(<App />);
 
-    expect(markup).toContain('timeline--collapsed');
+    expect(markup).toContain('class="timeline timeline--collapsed"');
+    expect(markup).toContain(`aria-label="${TIMELINE_EXPAND_LABEL}"`);
+    expect(markup).toContain('aria-expanded="false"');
     expect(markup).toContain(TIMELINE_COLLAPSED_LABEL);
     expect(markup).toContain(TIMELINE_GUIDE_TOAST);
     expect(markup).toContain(DISCARD_GUIDE_TOAST);
     expect(markup).not.toContain('viewport-controls__guide-hint');
+    expect(markup).not.toContain('role="button"');
+  });
+
+  it('renders user-expanded timeline with slot labels, planned count, and collapse button', () => {
+    const markup = renderToStaticMarkup(<App initialTimelineExpanded={true} />);
+
+    expect(markup).toContain('class="timeline timeline--expanded"');
+    expect(markup).toContain(`aria-label="${TIMELINE_COLLAPSE_LABEL}"`);
+    expect(markup).toContain('aria-expanded="true"');
+    expect(markup).toContain('timeline__count-badge');
+    expect(markup).toContain('Saturday morning');
+    expect(markup).toContain('Sunday evening');
+  });
+
+  it('renders hover-expanded timeline with slot labels and planned count', () => {
+    const markup = renderToStaticMarkup(<App initialHoverExpanded={true} />);
+
+    expect(markup).toContain('class="timeline timeline--expanded timeline--hover-expanded"');
+    expect(markup).toContain(TIMELINE_DRAG_COLLAPSE_HINT);
+    expect(markup).toContain('timeline__count-badge');
+    expect(markup).toContain('Saturday morning');
+    expect(markup).toContain('Sunday evening');
   });
 
   it('renders the Auto-fit toggle checkbox with accessible tooltip description', () => {

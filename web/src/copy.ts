@@ -27,6 +27,7 @@ export const TIMELINE_COLLAPSED_LABEL = 'Weekend Timeline';
 export const TIMELINE_COLLAPSED_HINT = 'Click to expand · Drop cards here';
 export const TIMELINE_EXPAND_LABEL = 'Expand weekend timeline';
 export const TIMELINE_COLLAPSE_LABEL = 'Minimize timeline';
+export const TIMELINE_DRAG_COLLAPSE_HINT = 'Press Esc or click _ to minimize';
 export function timelinePlannedCount(docked: number, total: number): string {
   return `${docked}/${total} planned`;
 }
