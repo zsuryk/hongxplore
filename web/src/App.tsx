@@ -611,40 +611,36 @@ export function App({
       ?.dataset.timelineSlot;
     setHoveredSlotId(slotId ?? null);
 
+    const timelineElement = typeof document !== 'undefined' ? document.querySelector<HTMLElement>('.timeline') : null;
+    let nearTimeline = false;
+    if (timelineElement) {
+      if (document.elementFromPoint(event.clientX, event.clientY)?.closest('.timeline')) {
+        nearTimeline = true;
+      } else {
+        const bounds = timelineElement.getBoundingClientRect();
+        const proximityPadding = 72;
+        const cursorNear =
+          event.clientX >= bounds.left - proximityPadding &&
+          event.clientX <= bounds.right + proximityPadding &&
+          event.clientY >= bounds.top - proximityPadding &&
+          event.clientY <= bounds.bottom + proximityPadding;
+
+        const cardClientLeft = boardBounds.left + cardLeft;
+        const cardClientTop = boardBounds.top + cardTop;
+        const cardClientRight = cardClientLeft + cardW;
+        const cardClientBottom = cardClientTop + cardH;
+        const cardNear =
+          cardClientRight >= bounds.left - proximityPadding &&
+          cardClientLeft <= bounds.right + proximityPadding &&
+          cardClientBottom >= bounds.top - proximityPadding &&
+          cardClientTop <= bounds.bottom + proximityPadding;
+
+        nearTimeline = cursorNear || cardNear;
+      }
+    }
+
     if (!userCollapsedDuringDragRef.current && !isTimelineExpanded) {
-      const timelineElement = typeof document !== 'undefined' ? document.querySelector<HTMLElement>('.timeline') : null;
-      let nearTimeline = false;
-      if (timelineElement) {
-        if (document.elementFromPoint(event.clientX, event.clientY)?.closest('.timeline')) {
-          nearTimeline = true;
-        } else {
-          const bounds = timelineElement.getBoundingClientRect();
-          nearTimeline =
-            event.clientX >= bounds.left - 56 &&
-            event.clientX <= bounds.right + 56 &&
-            event.clientY >= bounds.top - 56 &&
-            event.clientY <= bounds.bottom + 56;
-        }
-      }
       setIsHoverExpanded(nearTimeline);
-    } else if (!userCollapsedDuringDragRef.current && isHoverExpanded) {
-      const timelineElement = typeof document !== 'undefined' ? document.querySelector<HTMLElement>('.timeline') : null;
-      let nearTimeline = false;
-      if (timelineElement) {
-        if (document.elementFromPoint(event.clientX, event.clientY)?.closest('.timeline')) {
-          nearTimeline = true;
-        } else {
-          const bounds = timelineElement.getBoundingClientRect();
-          nearTimeline =
-            event.clientX >= bounds.left - 56 &&
-            event.clientX <= bounds.right + 56 &&
-            event.clientY >= bounds.top - 56 &&
-            event.clientY <= bounds.bottom + 56;
-        }
-      }
-      if (!nearTimeline) {
-        setIsHoverExpanded(false);
-      }
     }
   }
 
