@@ -33,6 +33,7 @@ import {
   TIMELINE_COLLAPSE_LABEL,
   TIMELINE_COLLAPSED_HINT,
   TIMELINE_COLLAPSED_LABEL,
+  TIMELINE_EXPAND_LABEL,
   TIMELINE_GUIDE_TOAST,
   TIMELINE_LABEL,
   TIMELINE_SLOT_EMPTY,
@@ -139,6 +140,7 @@ export type AppProps = {
   agentStatus?: AgentStatus;
   cards?: BoardActivityCard[];
   initialConfirmation?: string;
+  initialHoverExpanded?: boolean;
   initialTimelineExpanded?: boolean;
   timelineSlots?: TimelineSlot[];
 };
@@ -147,11 +149,13 @@ export function App({
   agentStatus: propAgentStatus,
   cards: propCards,
   initialConfirmation,
+  initialHoverExpanded,
   initialTimelineExpanded,
   timelineSlots: propTimelineSlots,
 }: AppProps = {}) {
   const boardRef = useRef<HTMLDivElement>(null);
   const discardBinRef = useRef<HTMLElement>(null);
+  const userCollapsedDuringDragRef = useRef(false);
   const activePointersRef = useRef(new Map<number, Point>());
   const contentBoundsRef = useRef<Rect>(contentBounds([]));
   const hasAdjustedRef = useRef(false);
@@ -194,6 +198,7 @@ export function App({
   const [discardingCardId, setDiscardingCardId] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<string | null>(initialConfirmation ?? null);
   const [isTimelineExpanded, setIsTimelineExpanded] = useState(initialTimelineExpanded ?? false);
+  const [isHoverExpanded, setIsHoverExpanded] = useState(initialHoverExpanded ?? false);
   const [showGuideHints, setShowGuideHints] = useState(true);
   const [settlingSlotId, setSettlingSlotId] = useState<string | null>(null);
   const [dragParticles, setDragParticles] = useState<DragParticle[]>([]);
@@ -541,6 +546,7 @@ export function App({
       }
     }
 
+    userCollapsedDuringDragRef.current = false;
     const screenPoint = screenPointWithin(boardBounds, event.clientX, event.clientY);
     setCardDragState({
       card,
@@ -604,6 +610,42 @@ export function App({
     const slotId = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>('[data-timeline-slot]')
       ?.dataset.timelineSlot;
     setHoveredSlotId(slotId ?? null);
+
+    if (!userCollapsedDuringDragRef.current && !isTimelineExpanded) {
+      const timelineElement = typeof document !== 'undefined' ? document.querySelector<HTMLElement>('.timeline') : null;
+      let nearTimeline = false;
+      if (timelineElement) {
+        if (document.elementFromPoint(event.clientX, event.clientY)?.closest('.timeline')) {
+          nearTimeline = true;
+        } else {
+          const bounds = timelineElement.getBoundingClientRect();
+          nearTimeline =
+            event.clientX >= bounds.left - 56 &&
+            event.clientX <= bounds.right + 56 &&
+            event.clientY >= bounds.top - 56 &&
+            event.clientY <= bounds.bottom + 56;
+        }
+      }
+      setIsHoverExpanded(nearTimeline);
+    } else if (!userCollapsedDuringDragRef.current && isHoverExpanded) {
+      const timelineElement = typeof document !== 'undefined' ? document.querySelector<HTMLElement>('.timeline') : null;
+      let nearTimeline = false;
+      if (timelineElement) {
+        if (document.elementFromPoint(event.clientX, event.clientY)?.closest('.timeline')) {
+          nearTimeline = true;
+        } else {
+          const bounds = timelineElement.getBoundingClientRect();
+          nearTimeline =
+            event.clientX >= bounds.left - 56 &&
+            event.clientX <= bounds.right + 56 &&
+            event.clientY >= bounds.top - 56 &&
+            event.clientY <= bounds.bottom + 56;
+        }
+      }
+      if (!nearTimeline) {
+        setIsHoverExpanded(false);
+      }
+    }
   }
 
   function isOverDiscardBin(clientX: number, clientY: number): boolean {
@@ -615,6 +657,9 @@ export function App({
   }
 
   function handleCardPointerUp(event: PointerEvent<HTMLElement>) {
+    setIsHoverExpanded(false);
+    userCollapsedDuringDragRef.current = false;
+
     if (!cardDragState || cardDragState.pointerId !== event.pointerId) {
       return;
     }
@@ -721,6 +766,8 @@ export function App({
 
   function handleCardPointerCancel(event: PointerEvent<HTMLElement>) {
     if (cardDragState?.pointerId === event.pointerId) {
+      setIsHoverExpanded(false);
+      userCollapsedDuringDragRef.current = false;
       setCardDragState(null);
       setHoveredSlotId(null);
 
@@ -855,7 +902,7 @@ export function App({
     }
   }
 
-  const isTimelineVisible = isTimelineExpanded || cardDragState !== null;
+  const isTimelineVisible = isTimelineExpanded || isHoverExpanded;
   const dockedCount = timelineSlots.filter((slot) => Boolean(slot.activityId)).length;
   const activeMatchingSlotId = cardDragState
     ? getActivityMatchingSlotId(cardDragState.card.activity.parts[0]?.start)
@@ -957,18 +1004,12 @@ export function App({
         tabIndex={0}
       >
         {!isTimelineVisible ? (
-          <section
-            aria-label={TIMELINE_LABEL}
+          <button
+            aria-expanded={false}
+            aria-label={TIMELINE_EXPAND_LABEL}
             className="timeline timeline--collapsed"
             onClick={() => setIsTimelineExpanded(true)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                setIsTimelineExpanded(true);
-              }
-            }}
-            role="button"
-            tabIndex={0}
+            type="button"
           >
             {showGuideHints ? <div className="timeline__guide-hint board__toast">{TIMELINE_GUIDE_TOAST}</div> : null}
             <div className="timeline__collapsed-content">
@@ -980,9 +1021,12 @@ export function App({
               </div>
               <p className="timeline__collapsed-hint">{TIMELINE_COLLAPSED_HINT}</p>
             </div>
-          </section>
+          </button>
         ) : (
-          <section aria-label={TIMELINE_LABEL} className="timeline timeline--expanded">
+          <section
+            aria-label={TIMELINE_LABEL}
+            className={`timeline timeline--expanded${isHoverExpanded ? ' timeline--hover-expanded' : ''}`}
+          >
             {isReplacingHoveredSlot && hoveredExistingCard ? (
               <div className="timeline__guide-hint timeline__replace-toast board__toast">
                 {timelineSlotReplaceAlert(hoveredExistingCard.activity.title_en ?? hoveredExistingCard.activity.title)}
@@ -998,9 +1042,14 @@ export function App({
                 </span>
               </div>
               <button
+                aria-expanded={true}
                 aria-label={TIMELINE_COLLAPSE_LABEL}
                 className="timeline__minimize-button"
-                onClick={() => setIsTimelineExpanded(false)}
+                onClick={() => {
+                  setIsTimelineExpanded(false);
+                  setIsHoverExpanded(false);
+                  userCollapsedDuringDragRef.current = true;
+                }}
                 title={TIMELINE_COLLAPSE_LABEL}
                 type="button"
               >

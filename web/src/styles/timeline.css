@@ -19,7 +19,13 @@
 }
 
 .timeline--collapsed {
+  border-style: solid;
+  color: inherit;
   cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  text-align: left;
   transition:
     background-color var(--motion-duration-fast) var(--motion-ease),
     border-color var(--motion-duration-fast) var(--motion-ease),
