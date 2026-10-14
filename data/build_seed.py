@@ -5,7 +5,7 @@ Every activity has an authentic, verified, 1-to-1 matching official URL.
 import json
 import re
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 DATA_DIR = Path(__file__).resolve().parent
@@ -1950,21 +1950,46 @@ SOURCE_REGISTRY = {
     },
 }
 
-DAY_TO_DATE = {
-    "monday": "2026-10-05",
-    "tuesday": "2026-10-06",
-    "wednesday": "2026-10-07",
-    "thursday": "2026-10-01",
-    "friday": "2026-10-02",
-    "saturday": "2026-10-03",
-    "sunday": "2026-10-04",
-}
+def compute_upcoming_weekend_dates(ref_date: date | None = None) -> dict[str, str]:
+    """Derive upcoming weekend and adjacent weekday dates in HKT dynamically (issue #78).
+
+    - Mon–Fri: upcoming Saturday and Sunday.
+    - Sat: Saturday is today, Sunday is tomorrow.
+    - Sun: Saturday is yesterday, Sunday is today.
+    - Mon rolls over to next weekend.
+    """
+    if ref_date is None:
+        ref_date = datetime.now(timezone(timedelta(hours=8))).date()
+
+    weekday = ref_date.weekday()  # Mon=0, ..., Sat=5, Sun=6
+    if weekday == 6:  # Sunday
+        sat_date = ref_date - timedelta(days=1)
+    else:
+        days_to_sat = 5 - weekday
+        sat_date = ref_date + timedelta(days=days_to_sat)
+
+    sun_date = sat_date + timedelta(days=1)
+
+    return {
+        "monday": (sat_date - timedelta(days=5)).isoformat(),
+        "tuesday": (sat_date - timedelta(days=4)).isoformat(),
+        "wednesday": (sat_date - timedelta(days=3)).isoformat(),
+        "thursday": (sat_date - timedelta(days=2)).isoformat(),
+        "friday": (sat_date - timedelta(days=1)).isoformat(),
+        "saturday": sat_date.isoformat(),
+        "sunday": sun_date.isoformat(),
+    }
+
+
+DAY_TO_DATE = compute_upcoming_weekend_dates()
 
 HKT = timezone(timedelta(hours=8))
 
 
-def transform_to_canonical(raw: dict) -> dict:
+def transform_to_canonical(raw: dict, day_to_date: dict[str, str] | None = None) -> dict:
     """Transform raw seed activity dictionary into canonical Activity schema (issue #4 / PR #28)."""
+    mapping = day_to_date if day_to_date is not None else DAY_TO_DATE
+
     # 1. Title & language
     # Cantonese / Traditional Chinese title is primary in 'zh' mode, with English in title_en
     if raw.get("title_alt"):
@@ -1988,7 +2013,7 @@ def transform_to_canonical(raw: dict) -> dict:
             parts.append({"start": p["start"], "end": p["end"]})
         else:
             day = p.get("day_of_week", "saturday").lower()
-            date_str = DAY_TO_DATE.get(day, "2026-10-03")
+            date_str = mapping.get(day, mapping["saturday"])
             start_time = p.get("start_time", "10:00")
             end_time = p.get("end_time", "12:00")
 
@@ -2175,14 +2200,15 @@ def verify_dataset(items: list[dict], parsed_facilities: dict) -> None:
 
 
 def main() -> None:
-    canonical_activities = [transform_to_canonical(a) for a in all_activities]
+    day_to_date = compute_upcoming_weekend_dates()
+    canonical_activities = [transform_to_canonical(a, day_to_date) for a in all_activities]
     verify_dataset(canonical_activities, PARSED_FACILITIES)
     OUTPUT_FILE.write_text(
         json.dumps(canonical_activities, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
     print(
-        f"Successfully generated {OUTPUT_FILE} with {len(canonical_activities)} items."
+        f"Successfully generated {OUTPUT_FILE} with {len(canonical_activities)} items on weekend {day_to_date['saturday']} / {day_to_date['sunday']}."
     )
 
 
