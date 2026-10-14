@@ -112,3 +112,14 @@ class Activity(ContractModel):
         default=None,
         description="When the source published or last confirmed this listing (UTC).",
     )
+    description: str | None = Field(
+        default=None,
+        description=(
+            "Longer prose about the Activity, in the language given by `lang`; "
+            "absent when the source publishes none."
+        ),
+    )
+    description_en: str | None = Field(
+        default=None,
+        description="English translation of `description`; filled by the agent's translate step.",
+    )

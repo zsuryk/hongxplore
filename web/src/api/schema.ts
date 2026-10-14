@@ -103,6 +103,16 @@ export interface components {
              * @description When the source published or last confirmed this listing (UTC).
              */
             listed_at?: string | null;
+            /**
+             * Description
+             * @description Longer prose about the Activity, in the language given by `lang`; absent when the source publishes none.
+             */
+            description?: string | null;
+            /**
+             * Description En
+             * @description English translation of `description`; filled by the agent's translate step.
+             */
+            description_en?: string | null;
         };
         /**
          * ActivityPart

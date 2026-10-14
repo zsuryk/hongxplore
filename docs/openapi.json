@@ -176,6 +176,30 @@
             ],
             "title": "Listed At",
             "description": "When the source published or last confirmed this listing (UTC)."
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Longer prose about the Activity, in the language given by `lang`; absent when the source publishes none."
+          },
+          "description_en": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description En",
+            "description": "English translation of `description`; filled by the agent's translate step."
           }
         },
         "additionalProperties": false,

@@ -80,6 +80,20 @@ def test_fixture_shows_freshness_present_and_absent(repo_root: Path) -> None:
         assert activity.listed_at.utcoffset() == timedelta(0), "stored UTC, displayed HKT"
 
 
+def test_fixture_shows_description_present_and_absent(repo_root: Path) -> None:
+    """`description` is optional: prose where the source publishes it, absent otherwise."""
+    activities = [match.activity for match in load_fixture(repo_root).matches]
+
+    described = [a for a in activities if a.description is not None]
+    undescribed = [a for a in activities if a.description is None]
+
+    assert described, "the fixture must show an activity carrying a description"
+    assert undescribed, "the fixture must show an activity whose source published no description"
+    for activity in described:
+        assert activity.description is not None
+        assert activity.description.strip(), "a present description is never blank"
+
+
 def test_agent_envelopes_are_in_the_openapi_snapshot() -> None:
     spec = app.openapi()
     assert "/api/agent" in spec["paths"], ENVELOPE_HINT
