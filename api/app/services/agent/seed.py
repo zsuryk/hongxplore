@@ -122,6 +122,8 @@ def _has_time_overlap(
 
 def is_free_activity(activity: Activity) -> bool:
     """Determine if an activity has zero admission/booking cost."""
+    if activity.price is not None:
+        return activity.price.is_free
     act_tags = {t.lower() for t in activity.tags}
     if "free" in act_tags:
         return True

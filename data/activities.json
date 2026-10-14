@@ -26,7 +26,13 @@
       "venue": "Hong Kong Park Sports Centre",
       "address": "29 Cotton Tree Drive, Central"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#121"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#121",
+    "price": {
+      "amount": "59.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-002",
@@ -54,7 +60,13 @@
       "venue": "Hong Kong Squash Centre",
       "address": "23 Cotton Tree Drive, Central"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#122"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#122",
+    "price": {
+      "amount": "27.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-003",
@@ -82,7 +94,13 @@
       "venue": "Sun Yat Sen Memorial Park Swimming Pool",
       "address": "16 Eastern Street North, Sai Ying Pun"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Swimming.do?swpId=40"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Swimming.do?swpId=40",
+    "price": {
+      "amount": "17.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-004",
@@ -110,7 +128,13 @@
       "venue": "Lockhart Road Municipal Services Building",
       "address": "225 Hennessy Road, Wan Chai"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#922"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#922",
+    "price": {
+      "amount": "14.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-005",
@@ -138,7 +162,13 @@
       "venue": "Victoria Park",
       "address": "1 Hing Fat Street, Causeway Bay"
     },
-    "url": "https://www.lcsd.gov.hk/en/parks/vp/index.html"
+    "url": "https://www.lcsd.gov.hk/en/parks/vp/index.html",
+    "price": {
+      "amount": "42.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-006",
@@ -166,7 +196,13 @@
       "venue": "Island East Sports Centre",
       "address": "52 Lei King Road, Sai Wan Ho"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#469"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#469",
+    "price": {
+      "amount": null,
+      "currency": "HKD",
+      "is_free": true
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-007",
@@ -195,7 +231,13 @@
       "venue": "High Island Reservoir West Dam",
       "address": "Sai Kung"
     },
-    "url": "https://www.lcsd.gov.hk/en/watersport/index/inde_chong.html"
+    "url": "https://www.lcsd.gov.hk/en/watersport/index/inde_chong.html",
+    "price": {
+      "amount": "35.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-008",
@@ -224,7 +266,13 @@
       "venue": "Southorn Playground",
       "address": "130 Hennessy Road, Wan Chai"
     },
-    "url": "https://www.lcsd.gov.hk/en/facilities/facilitieslist/facilities.php?fid=562"
+    "url": "https://www.lcsd.gov.hk/en/facilities/facilitieslist/facilities.php?fid=562",
+    "price": {
+      "amount": null,
+      "currency": "HKD",
+      "is_free": true
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-009",
@@ -253,7 +301,13 @@
       "venue": "Kowloon Park Swimming Pool",
       "address": "22 Austin Road, Tsim Sha Tsui, Kowloon"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Swimming.do?swpId=11"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Swimming.do?swpId=11",
+    "price": {
+      "amount": "17.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-010",
@@ -282,7 +336,13 @@
       "venue": "Sha Tin Jockey Club Swimming Pool",
       "address": "10 Yuen Wo Road, Sha Tin"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Swimming.do?swpId=32"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Swimming.do?swpId=32",
+    "price": {
+      "amount": "17.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-011",
@@ -310,7 +370,13 @@
       "venue": "Pei Ho Street Municipal Services Building",
       "address": "333 Ki Lung Street, Sham Shui Po"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#671"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#671",
+    "price": {
+      "amount": "14.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-012",
@@ -338,7 +404,13 @@
       "venue": "Wai Tsuen Sports Centre",
       "address": "63 Miaokang Street, Tsuen Wan"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#638"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#638",
+    "price": {
+      "amount": "59.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-013",
@@ -366,7 +438,13 @@
       "venue": "Aberdeen Municipal Services Building",
       "address": "203 Aberdeen Main Road"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#545"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#545",
+    "price": {
+      "amount": "27.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-014",
@@ -395,7 +473,13 @@
       "venue": "Kowloon Bay Sports Ground",
       "address": "1 Kai Lok Street, Kowloon Bay"
     },
-    "url": "https://www.lcsd.gov.hk/en/facilities/facilitieslist/facilities.php?fid=641"
+    "url": "https://www.lcsd.gov.hk/en/facilities/facilitieslist/facilities.php?fid=641",
+    "price": {
+      "amount": null,
+      "currency": "HKD",
+      "is_free": true
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-015",
@@ -423,7 +507,13 @@
       "venue": "Ngau Chi Wan Municipal Services Building",
       "address": "11 Clear Water Bay Road"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#753"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#753",
+    "price": {
+      "amount": "35.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-016",
@@ -452,7 +542,13 @@
       "venue": "Victoria Park",
       "address": "Causeway Bay"
     },
-    "url": "https://www.lcsd.gov.hk/en/parks/vp/index.html"
+    "url": "https://www.lcsd.gov.hk/en/parks/vp/index.html",
+    "price": {
+      "amount": null,
+      "currency": "HKD",
+      "is_free": true
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-017",
@@ -481,7 +577,13 @@
       "venue": "Lam Tin South Sports Centre",
       "address": "170 Pik Wan Road, Lam Tin, Kwun Tong"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#977"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#977",
+    "price": {
+      "amount": "27.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-018",
@@ -509,7 +611,13 @@
       "venue": "Po Kong Village Road Sports Centre",
       "address": "120 Po Kong Village Road, Diamond Hill"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#754"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#754",
+    "price": {
+      "amount": "59.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-019",
@@ -538,7 +646,13 @@
       "venue": "Golden Beach",
       "address": "Castle Peak Road, Tuen Mun"
     },
-    "url": "https://www.lcsd.gov.hk/en/beach/index.html"
+    "url": "https://www.lcsd.gov.hk/en/beach/index.html",
+    "price": {
+      "amount": null,
+      "currency": "HKD",
+      "is_free": true
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-020",
@@ -568,7 +682,13 @@
       "venue": "Tung Chung Swimming Pool",
       "address": "5 Tat Tung Road, Tung Chung, Lantau Island"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Swimming.do?swpId=38"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Swimming.do?swpId=38",
+    "price": {
+      "amount": "17.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-021",
@@ -597,7 +717,13 @@
       "venue": "West Kowloon Cultural District",
       "address": "38 Museum Drive, Kowloon"
     },
-    "url": "https://www.mplus.org.hk/en/"
+    "url": "https://www.mplus.org.hk/en/",
+    "price": {
+      "amount": "120.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-20T00:00:00Z"
   },
   {
     "id": "act-022",
@@ -626,7 +752,13 @@
       "venue": null,
       "address": "8 Museum Drive, West Kowloon Cultural District"
     },
-    "url": "https://www.hkpm.org.hk/en/"
+    "url": "https://www.hkpm.org.hk/en/",
+    "price": {
+      "amount": "60.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-20T00:00:00Z"
   },
   {
     "id": "act-023",
@@ -655,7 +787,13 @@
       "venue": "Tai Kwun",
       "address": "10 Hollywood Road, Central"
     },
-    "url": "https://www.taikwun.hk/en/"
+    "url": "https://www.taikwun.hk/en/",
+    "price": {
+      "amount": null,
+      "currency": "HKD",
+      "is_free": true
+    },
+    "listed_at": "2026-09-20T00:00:00Z"
   },
   {
     "id": "act-024",
@@ -684,7 +822,13 @@
       "venue": null,
       "address": "35 Aberdeen Street, Central"
     },
-    "url": "https://www.pmq.org.hk/"
+    "url": "https://www.pmq.org.hk/",
+    "price": {
+      "amount": null,
+      "currency": "HKD",
+      "is_free": true
+    },
+    "listed_at": "2026-09-20T00:00:00Z"
   },
   {
     "id": "act-025",
@@ -713,7 +857,12 @@
       "venue": null,
       "address": "10 Salisbury Road, Tsim Sha Tsui"
     },
-    "url": "https://hk.art.museum/en/"
+    "url": "https://hk.art.museum/en/",
+    "price": {
+      "amount": null,
+      "currency": "HKD",
+      "is_free": true
+    }
   },
   {
     "id": "act-026",
@@ -742,7 +891,13 @@
       "venue": null,
       "address": "12 Oil Street, North Point"
     },
-    "url": "https://www.apo.hk/en/web/apo/oi.html"
+    "url": "https://www.apo.hk/en/web/apo/oi.html",
+    "price": {
+      "amount": null,
+      "currency": "HKD",
+      "is_free": true
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-027",
@@ -771,7 +926,12 @@
       "venue": null,
       "address": "63 Ma Tau Kok Road, To Kwa Wan"
     },
-    "url": "https://www.amo.gov.hk/en/index.html"
+    "url": "https://www.amo.gov.hk/en/index.html",
+    "price": {
+      "amount": null,
+      "currency": "HKD",
+      "is_free": true
+    }
   },
   {
     "id": "act-028",
@@ -828,7 +988,13 @@
       "venue": null,
       "address": "1 Man Lam Road, Sha Tin"
     },
-    "url": "https://www.heritagemuseum.gov.hk/en/"
+    "url": "https://www.heritagemuseum.gov.hk/en/",
+    "price": {
+      "amount": null,
+      "currency": "HKD",
+      "is_free": true
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-030",
@@ -857,7 +1023,12 @@
       "venue": null,
       "address": "2 Lower Albert Road, Central"
     },
-    "url": "https://www.hkfringeclub.com/en"
+    "url": "https://www.hkfringeclub.com/en",
+    "price": {
+      "amount": "100.00",
+      "currency": "HKD",
+      "is_free": false
+    }
   },
   {
     "id": "act-031",
@@ -886,7 +1057,13 @@
       "venue": "Starts at To Tei Wan",
       "address": "Shek O Road (Bus 9 from Shau Kei Wan MTR)"
     },
-    "url": "https://www.hiking.gov.hk/"
+    "url": "https://www.hiking.gov.hk/",
+    "price": {
+      "amount": null,
+      "currency": "HKD",
+      "is_free": true
+    },
+    "listed_at": "2026-09-18T00:00:00Z"
   },
   {
     "id": "act-032",
@@ -915,7 +1092,13 @@
       "venue": "Lion Rock Country Park",
       "address": "Wong Tai Sin"
     },
-    "url": "https://www.hiking.gov.hk/"
+    "url": "https://www.hiking.gov.hk/",
+    "price": {
+      "amount": null,
+      "currency": "HKD",
+      "is_free": true
+    },
+    "listed_at": "2026-09-18T00:00:00Z"
   },
   {
     "id": "act-033",
@@ -944,7 +1127,12 @@
       "venue": "High Island Reservoir East Dam",
       "address": "Sai Kung"
     },
-    "url": "https://www.geopark.gov.hk/en"
+    "url": "https://www.geopark.gov.hk/en",
+    "price": {
+      "amount": null,
+      "currency": "HKD",
+      "is_free": true
+    }
   },
   {
     "id": "act-034",
@@ -973,7 +1161,12 @@
       "venue": "Ferry from Central Pier 4 to Yung Shue Wan",
       "address": null
     },
-    "url": "https://www.discoverhongkong.com/eng/explore/great-outdoors/lamma-island.html"
+    "url": "https://www.discoverhongkong.com/eng/explore/great-outdoors/lamma-island.html",
+    "price": {
+      "amount": null,
+      "currency": "HKD",
+      "is_free": true
+    }
   },
   {
     "id": "act-035",
@@ -1031,7 +1224,13 @@
       "venue": "Shing Mun Country Park",
       "address": "Tsuen Wan"
     },
-    "url": "https://www.hiking.gov.hk/"
+    "url": "https://www.hiking.gov.hk/",
+    "price": {
+      "amount": null,
+      "currency": "HKD",
+      "is_free": true
+    },
+    "listed_at": "2026-09-18T00:00:00Z"
   },
   {
     "id": "act-037",
@@ -1060,7 +1259,13 @@
       "venue": "Lantau South Country Park",
       "address": "starting from Pak Kung Au"
     },
-    "url": "https://www.hiking.gov.hk/"
+    "url": "https://www.hiking.gov.hk/",
+    "price": {
+      "amount": null,
+      "currency": "HKD",
+      "is_free": true
+    },
+    "listed_at": "2026-09-18T00:00:00Z"
   },
   {
     "id": "act-038",
@@ -1089,7 +1294,13 @@
       "venue": "Plover Cove Country Park",
       "address": "Bride's Pool Road, Tai Po"
     },
-    "url": "https://www.hiking.gov.hk/"
+    "url": "https://www.hiking.gov.hk/",
+    "price": {
+      "amount": null,
+      "currency": "HKD",
+      "is_free": true
+    },
+    "listed_at": "2026-09-18T00:00:00Z"
   },
   {
     "id": "act-039",
@@ -1118,7 +1329,12 @@
       "venue": "Lugard Road",
       "address": "The Peak, Hong Kong Island"
     },
-    "url": "https://www.discoverhongkong.com/eng/explore/great-outdoors/the-peak.html"
+    "url": "https://www.discoverhongkong.com/eng/explore/great-outdoors/the-peak.html",
+    "price": {
+      "amount": null,
+      "currency": "HKD",
+      "is_free": true
+    }
   },
   {
     "id": "act-040",
@@ -1147,7 +1363,12 @@
       "venue": "Tai Tam Country Park",
       "address": "Tai Tam Reservoir Road"
     },
-    "url": "https://www.wsd.gov.hk/en/home/index.html"
+    "url": "https://www.wsd.gov.hk/en/home/index.html",
+    "price": {
+      "amount": null,
+      "currency": "HKD",
+      "is_free": true
+    }
   },
   {
     "id": "act-041",
@@ -1205,7 +1426,12 @@
       "venue": "St. James' Creation",
       "address": "85 Stone Nullah Lane, Wan Chai"
     },
-    "url": "https://sjc.sjs.org.hk/"
+    "url": "https://sjc.sjs.org.hk/",
+    "price": {
+      "amount": "280.00",
+      "currency": "HKD",
+      "is_free": false
+    }
   },
   {
     "id": "act-043",
@@ -1234,7 +1460,12 @@
       "venue": "Jolly Thinkers",
       "address": "11/F, 240 Sai Yeung Choi Street South, Mong Kok"
     },
-    "url": "https://www.facebook.com/jollythinkers/"
+    "url": "https://www.facebook.com/jollythinkers/",
+    "price": {
+      "amount": "75.00",
+      "currency": "HKD",
+      "is_free": false
+    }
   },
   {
     "id": "act-044",
@@ -1263,7 +1494,12 @@
       "venue": "Lung Kwu Tan Beach",
       "address": "Tuen Mun"
     },
-    "url": "https://www.opcf.org.hk/"
+    "url": "https://www.opcf.org.hk/",
+    "price": {
+      "amount": null,
+      "currency": "HKD",
+      "is_free": true
+    }
   },
   {
     "id": "act-045",
@@ -1292,7 +1528,12 @@
       "venue": "Kwun Tong Industrial Centre",
       "address": "436 Kwun Tong Road"
     },
-    "url": "https://www.instagram.com/myosotis_flower/"
+    "url": "https://www.instagram.com/myosotis_flower/",
+    "price": {
+      "amount": "320.00",
+      "currency": "HKD",
+      "is_free": false
+    }
   },
   {
     "id": "act-046",
@@ -1321,7 +1562,12 @@
       "venue": "The Mills",
       "address": "45 Pak Tin Par Street, Tsuen Wan"
     },
-    "url": "https://www.makerbay.org/"
+    "url": "https://www.makerbay.org/",
+    "price": {
+      "amount": "150.00",
+      "currency": "HKD",
+      "is_free": false
+    }
   },
   {
     "id": "act-047",
@@ -1350,7 +1596,12 @@
       "venue": "Crossroads Village",
       "address": "2 Castle Peak Road, Tuen Mun"
     },
-    "url": "https://www.crossroads.org.hk/"
+    "url": "https://www.crossroads.org.hk/",
+    "price": {
+      "amount": null,
+      "currency": "HKD",
+      "is_free": true
+    }
   },
   {
     "id": "act-048",
@@ -1379,7 +1630,12 @@
       "venue": null,
       "address": "66 Causeway Road, Causeway Bay"
     },
-    "url": "https://www.hkpl.gov.hk/"
+    "url": "https://www.hkpl.gov.hk/",
+    "price": {
+      "amount": null,
+      "currency": "HKD",
+      "is_free": true
+    }
   },
   {
     "id": "act-049",
@@ -1408,7 +1664,12 @@
       "venue": null,
       "address": "45 Pak Tin Par Street, Tsuen Wan"
     },
-    "url": "https://www.mill6chat.org/"
+    "url": "https://www.mill6chat.org/",
+    "price": {
+      "amount": null,
+      "currency": "HKD",
+      "is_free": true
+    }
   },
   {
     "id": "act-050",
@@ -1437,7 +1698,12 @@
       "venue": "Verm City",
       "address": "4/F, Kodak House II, 321 Java Road, Quarry Bay"
     },
-    "url": "https://vermcity.com/"
+    "url": "https://vermcity.com/",
+    "price": {
+      "amount": "200.00",
+      "currency": "HKD",
+      "is_free": false
+    }
   },
   {
     "id": "act-051",
@@ -1524,7 +1790,12 @@
       "venue": null,
       "address": "2 Chuk Yuen Village, Wong Tai Sin"
     },
-    "url": "https://www.siksikyuen.org.hk/"
+    "url": "https://www.siksikyuen.org.hk/",
+    "price": {
+      "amount": null,
+      "currency": "HKD",
+      "is_free": true
+    }
   },
   {
     "id": "act-054",
@@ -1611,7 +1882,12 @@
       "venue": "Flower Market Road",
       "address": "Prince Edward, Mong Kok"
     },
-    "url": "https://www.discoverhongkong.com/"
+    "url": "https://www.discoverhongkong.com/",
+    "price": {
+      "amount": null,
+      "currency": "HKD",
+      "is_free": true
+    }
   },
   {
     "id": "act-057",
@@ -1640,7 +1916,13 @@
       "venue": "Tung Tsing Road",
       "address": "Kowloon City"
     },
-    "url": "https://www.lcsd.gov.hk/en/parks/kwcp/index.html"
+    "url": "https://www.lcsd.gov.hk/en/parks/kwcp/index.html",
+    "price": {
+      "amount": null,
+      "currency": "HKD",
+      "is_free": true
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-058",
@@ -1669,7 +1951,12 @@
       "venue": "Starts at Tsui Sing Lau Pagoda",
       "address": "Tin Shui Wai MTR Station Exit E3"
     },
-    "url": "https://www.amo.gov.hk/en/heritage-trails/ping-shan-heritage-trail/index.html"
+    "url": "https://www.amo.gov.hk/en/heritage-trails/ping-shan-heritage-trail/index.html",
+    "price": {
+      "amount": null,
+      "currency": "HKD",
+      "is_free": true
+    }
   },
   {
     "id": "act-059",
@@ -1754,7 +2041,13 @@
       "venue": "Online portal & District SmartPLAY kiosks",
       "address": null
     },
-    "url": "https://www.smartplay.lcsd.gov.hk/"
+    "url": "https://www.smartplay.lcsd.gov.hk/",
+    "price": {
+      "amount": null,
+      "currency": "HKD",
+      "is_free": true
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-062",
@@ -1782,7 +2075,12 @@
       "venue": "Any Hong Kong Public Library branch",
       "address": null
     },
-    "url": "https://www.hkpl.gov.hk/"
+    "url": "https://www.hkpl.gov.hk/",
+    "price": {
+      "amount": null,
+      "currency": "HKD",
+      "is_free": true
+    }
   },
   {
     "id": "act-063",
@@ -1810,7 +2108,13 @@
       "venue": "All HK Country Parks",
       "address": null
     },
-    "url": "https://www.hiking.gov.hk/"
+    "url": "https://www.hiking.gov.hk/",
+    "price": {
+      "amount": null,
+      "currency": "HKD",
+      "is_free": true
+    },
+    "listed_at": "2026-09-18T00:00:00Z"
   },
   {
     "id": "act-064",
@@ -1838,7 +2142,12 @@
       "venue": "Online via MTR Student Travel Scheme App",
       "address": null
     },
-    "url": "https://www.mtr.com.hk/en/customer/tickets/student_travel_scheme.html"
+    "url": "https://www.mtr.com.hk/en/customer/tickets/student_travel_scheme.html",
+    "price": {
+      "amount": "90.00",
+      "currency": "HKD",
+      "is_free": false
+    }
   },
   {
     "id": "act-065",
@@ -1867,7 +2176,13 @@
       "venue": "Hong Kong Park Sports Centre",
       "address": "29 Cotton Tree Drive, Central"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#121"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#121",
+    "price": {
+      "amount": "59.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-066",
@@ -1896,7 +2211,13 @@
       "venue": "Hong Kong Squash Centre",
       "address": "23 Cotton Tree Drive, Central"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#122"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#122",
+    "price": {
+      "amount": "27.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-067",
@@ -1925,7 +2246,13 @@
       "venue": "Sheung Wan Sports Centre",
       "address": "345 Queen's Road Central"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#140"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#140",
+    "price": {
+      "amount": "27.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-068",
@@ -1954,7 +2281,13 @@
       "venue": "Smithfield Sports Centre",
       "address": "12K Smithfield, Kennedy Town"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#141"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#141",
+    "price": {
+      "amount": "14.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-069",
@@ -1983,7 +2316,13 @@
       "venue": "Sun Yat Sen Memorial Park Sports Centre",
       "address": "18 Eastern Street North, Sai Ying Pun"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#144"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#144",
+    "price": {
+      "amount": "148.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-070",
@@ -2012,7 +2351,13 @@
       "venue": "Lockhart Road Sports Centre",
       "address": "225 Hennessy Road, Wan Chai"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#922"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#922",
+    "price": {
+      "amount": "59.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-071",
@@ -2041,7 +2386,13 @@
       "venue": "Harbour Road Sports Centre",
       "address": "27 Harbour Road, Wan Chai"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#916"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#916",
+    "price": {
+      "amount": "14.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-072",
@@ -2070,7 +2421,13 @@
       "venue": "Wong Nai Chung Sports Centre",
       "address": "2 Yuk Sau Street, Happy Valley"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#935"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#935",
+    "price": {
+      "amount": "27.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-073",
@@ -2099,7 +2456,13 @@
       "venue": "Island East Sports Centre",
       "address": "52 Lei King Road, Sai Wan Ho"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#469"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#469",
+    "price": {
+      "amount": "59.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-074",
@@ -2128,7 +2491,13 @@
       "venue": "Chai Wan Sports Centre",
       "address": "Yee Shun Lane, Chai Wan Road"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#461"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#461",
+    "price": {
+      "amount": "148.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-075",
@@ -2157,7 +2526,13 @@
       "venue": "Java Road Sports Centre",
       "address": "99 Java Road, North Point"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#471"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#471",
+    "price": {
+      "amount": "59.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-076",
@@ -2186,7 +2561,13 @@
       "venue": "Quarry Bay Sports Centre",
       "address": "38 Quarry Bay Street"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#481"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#481",
+    "price": {
+      "amount": "14.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-077",
@@ -2215,7 +2596,13 @@
       "venue": "Sai Wan Ho Sports Centre",
       "address": "111 Shau Kei Wan Road"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#482"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#482",
+    "price": {
+      "amount": "27.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-078",
@@ -2244,7 +2631,13 @@
       "venue": "Aberdeen Sports Centre",
       "address": "203 Aberdeen Main Road"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#545"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#545",
+    "price": {
+      "amount": "14.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-079",
@@ -2273,7 +2666,13 @@
       "venue": "Stanley Sports Centre",
       "address": "6 Stanley Market Road"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#573"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#573",
+    "price": {
+      "amount": "14.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-080",
@@ -2302,7 +2701,13 @@
       "venue": "Wong Chuk Hang Sports Centre",
       "address": "168 Wong Chuk Hang Road"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#584"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#584",
+    "price": {
+      "amount": "59.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-081",
@@ -2331,7 +2736,13 @@
       "venue": "Ap Lei Chau Sports Centre",
       "address": "8 Hung Shing Street, Ap Lei Chau"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#557"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#557",
+    "price": {
+      "amount": "14.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-082",
@@ -2360,7 +2771,13 @@
       "venue": "Kowloon Park Sports Centre",
       "address": "22 Austin Road, Tsim Sha Tsui"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#524"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#524",
+    "price": {
+      "amount": "14.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-083",
@@ -2389,7 +2806,13 @@
       "venue": "Boundary Street Sports Centre No. 1",
       "address": "200 Sai Yee Street, Mong Kok"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#504"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#504",
+    "price": {
+      "amount": "59.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-084",
@@ -2418,7 +2841,13 @@
       "venue": "Fa Yuen Street Sports Centre",
       "address": "123A Fa Yuen Street, Mong Kok"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#512"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#512",
+    "price": {
+      "amount": "148.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-085",
@@ -2447,7 +2876,13 @@
       "venue": "Tai Kok Tsui Sports Centre",
       "address": "63 Fuk Tsun Street, Tai Kok Tsui"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#537"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#537",
+    "price": {
+      "amount": "59.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-086",
@@ -2476,7 +2911,13 @@
       "venue": "Pei Ho Street Sports Centre",
       "address": "333 Ki Lung Street, Sham Shui Po"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#671"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#671",
+    "price": {
+      "amount": "14.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-087",
@@ -2505,7 +2946,13 @@
       "venue": "Lai Chi Kok Park Sports Centre",
       "address": "1 Lai Wan Road, Lai Chi Kok"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#666"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#666",
+    "price": {
+      "amount": "27.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-088",
@@ -2534,7 +2981,13 @@
       "venue": "Po On Road Sports Centre",
       "address": "325-329 Po On Road, Sham Shui Po"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#677"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#677",
+    "price": {
+      "amount": "14.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-089",
@@ -2563,7 +3016,13 @@
       "venue": "Shek Kip Mei Park Sports Centre",
       "address": "17 Wai Chi Street, Shek Kip Mei"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#693"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#693",
+    "price": {
+      "amount": "59.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-090",
@@ -2592,7 +3051,13 @@
       "venue": "Kowloon City Sports Centre",
       "address": "100 Nga Tsin Wai Road, Kowloon City"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#38"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#38",
+    "price": {
+      "amount": "59.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-091",
@@ -2621,7 +3086,13 @@
       "venue": "Ho Man Tin Sports Centre",
       "address": "1 Chung Yee Street, Ho Man Tin"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#18"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#18",
+    "price": {
+      "amount": "14.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-092",
@@ -2650,7 +3121,13 @@
       "venue": "Hung Hom Municipal Services Building Sports Centre",
       "address": "11 Ma Tau Wai Road, Hung Hom"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#22"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#22",
+    "price": {
+      "amount": "27.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-093",
@@ -2679,7 +3156,13 @@
       "venue": "To Kwa Wan Sports Centre",
       "address": "66 Ha Heung Road, To Kwa Wan"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#76"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#76",
+    "price": {
+      "amount": "14.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-094",
@@ -2708,7 +3191,13 @@
       "venue": "Po Kong Village Road Sports Centre",
       "address": "120 Po Kong Village Road, Diamond Hill"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#754"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#754",
+    "price": {
+      "amount": "148.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-095",
@@ -2737,7 +3226,13 @@
       "venue": "Ngau Chi Wan Sports Centre",
       "address": "11 Clear Water Bay Road"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#753"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#753",
+    "price": {
+      "amount": "59.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-096",
@@ -2766,7 +3261,13 @@
       "venue": "Morse Park Sports Centre",
       "address": "Morse Park No. 3, Fung Mo Street"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#749"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#749",
+    "price": {
+      "amount": "14.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-097",
@@ -2795,7 +3296,13 @@
       "venue": "Chuk Yuen Sports Centre",
       "address": "Chuk Yuen Estate, Wong Tai Sin"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#720"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#720",
+    "price": {
+      "amount": "27.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-098",
@@ -2824,7 +3331,13 @@
       "venue": "Lam Tin South Sports Centre",
       "address": "170 Pik Wan Road, Lam Tin"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#977"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#977",
+    "price": {
+      "amount": "14.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-099",
@@ -2853,7 +3366,13 @@
       "venue": "Chun Wah Road Sports Centre",
       "address": "50 Chun Wah Road, Ngau Tau Kok"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#936"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#936",
+    "price": {
+      "amount": "14.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-100",
@@ -2882,7 +3401,13 @@
       "venue": "Hiu Kwong Street Sports Centre",
       "address": "2 Hiu Kwong Street, Kwun Tong"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#939"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#939",
+    "price": {
+      "amount": "59.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-101",
@@ -2911,7 +3436,13 @@
       "venue": "Kowloon Bay Sports Centre",
       "address": "1 Kai Lok Street, Kowloon Bay"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#960"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#960",
+    "price": {
+      "amount": "14.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-102",
@@ -2940,7 +3471,13 @@
       "venue": "Wai Tsuen Sports Centre",
       "address": "63 Miaokang Street, Tsuen Wan"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#638"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#638",
+    "price": {
+      "amount": "27.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-103",
@@ -2969,7 +3506,13 @@
       "venue": "Tsuen Wan Sports Centre",
       "address": "53 Wing Shun Street, Tsuen Wan"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#2117"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#2117",
+    "price": {
+      "amount": "14.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-104",
@@ -2998,7 +3541,13 @@
       "venue": "Yeung Uk Road Sports Centre",
       "address": "45 Yeung Uk Road, Tsuen Wan"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#639"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#639",
+    "price": {
+      "amount": "148.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-105",
@@ -3027,7 +3576,13 @@
       "venue": "Tsuen King Circuit Sports Centre",
       "address": "38 Mei Wan Street, Tsuen Wan"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#623"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#623",
+    "price": {
+      "amount": "59.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-106",
@@ -3056,7 +3611,13 @@
       "venue": "Tai Hing Sports Centre",
       "address": "38 Tsing Chung Koon Road, Tuen Mun"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#239"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#239",
+    "price": {
+      "amount": "14.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-107",
@@ -3085,7 +3646,13 @@
       "venue": "Yau Oi Sports Centre",
       "address": "Hing On Lane, Yau Oi Estate, Tuen Mun"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#272"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#272",
+    "price": {
+      "amount": "27.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-108",
@@ -3114,7 +3681,13 @@
       "venue": "The Jockey Club Tuen Mun Butterfly Beach Sports Centre",
       "address": "Butterfly Beach, Tuen Mun"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#242"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#242",
+    "price": {
+      "amount": "14.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-109",
@@ -3143,7 +3716,13 @@
       "venue": "Tin Shui Wai Sports Centre",
       "address": "1 Tin Pak Road, Tin Shui Wai"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#195"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#195",
+    "price": {
+      "amount": "148.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-110",
@@ -3172,7 +3751,13 @@
       "venue": "Fung Kam Street Sports Centre",
       "address": "Fung Kam Street, Yuen Long"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#149"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#149",
+    "price": {
+      "amount": "14.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-111",
@@ -3201,7 +3786,13 @@
       "venue": "Tin Fai Road Sports Centre",
       "address": "5 Tin Fai Road, Tin Shui Wai"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#1174"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#1174",
+    "price": {
+      "amount": "14.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-112",
@@ -3230,7 +3821,13 @@
       "venue": "Lung Sum Avenue Sports Centre",
       "address": "Lung Sum Avenue, Sheung Shui"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#299"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#299",
+    "price": {
+      "amount": "27.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-113",
@@ -3259,7 +3856,13 @@
       "venue": "Po Wing Road Sports Centre",
       "address": "19 Po Wing Road, Sheung Shui"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#1147"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#1147",
+    "price": {
+      "amount": "59.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-114",
@@ -3288,7 +3891,13 @@
       "venue": "Wo Hing Sports Centre",
       "address": "8 Wo Ming Lane, Fanling"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#349"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#349",
+    "price": {
+      "amount": "148.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-115",
@@ -3317,7 +3926,13 @@
       "venue": "Tai Po Sports Centre",
       "address": "13 Ting Kok Road, Tai Po"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#95"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#95",
+    "price": {
+      "amount": "59.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-116",
@@ -3346,7 +3961,13 @@
       "venue": "Fu Heng Sports Centre",
       "address": "Fu Heng Shopping Centre, Tai Po"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#82"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#82",
+    "price": {
+      "amount": "14.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-117",
@@ -3375,7 +3996,13 @@
       "venue": "Tai Po Hui Sports Centre",
       "address": "8 Heung Sze Wui Street, Tai Po"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#93"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#93",
+    "price": {
+      "amount": "59.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-118",
@@ -3404,7 +4031,13 @@
       "venue": "Ma On Shan Sports Centre",
       "address": "14 On Chun Street, Ma On Shan"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#411"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#411",
+    "price": {
+      "amount": "14.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-119",
@@ -3433,7 +4066,13 @@
       "venue": "Yuen Wo Road Sports Centre",
       "address": "8 Yuen Wo Road, Sha Tin"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#448"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#448",
+    "price": {
+      "amount": "148.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   },
   {
     "id": "act-120",
@@ -3462,6 +4101,12 @@
       "venue": "Hin Keng Sports Centre",
       "address": "Hin Keng Estate, Sha Tin"
     },
-    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#396"
+    "url": "https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#396",
+    "price": {
+      "amount": "59.00",
+      "currency": "HKD",
+      "is_free": false
+    },
+    "listed_at": "2026-09-15T00:00:00Z"
   }
 ]
