@@ -5,6 +5,8 @@ import {
   AUTO_FIT_LABEL,
   AUTO_FIT_TOGGLE_OFF,
   AUTO_FIT_TOGGLE_ON,
+  AUTO_TILE_LABEL,
+  AUTO_TILE_TOOLTIP,
   BOARD_TOOLBAR_LABEL,
   CLEAR_BOARD_LABEL,
   CLEAR_BOARD_TOOLTIP,
@@ -35,6 +37,7 @@ export type BoardToolbarProps = {
   canZoomOut: boolean;
   canResetZoom: boolean;
   canFitContent: boolean;
+  canAutoTile?: boolean;
   canClearBoard: boolean;
   autoFitEnabled: boolean;
   isDragging?: boolean;
@@ -42,6 +45,7 @@ export type BoardToolbarProps = {
   onZoomOut: () => void;
   onResetZoom: () => void;
   onFitContent: () => void;
+  onAutoTile?: () => void;
   onToggleAutoFit: (enabled: boolean) => void;
   onClearBoard: () => void;
   extraActions?: BoardActionItem[];
@@ -53,6 +57,7 @@ export function BoardToolbar({
   canZoomOut,
   canResetZoom,
   canFitContent,
+  canAutoTile = true,
   canClearBoard,
   autoFitEnabled,
   isDragging = false,
@@ -60,6 +65,7 @@ export function BoardToolbar({
   onZoomOut,
   onResetZoom,
   onFitContent,
+  onAutoTile,
   onToggleAutoFit,
   onClearBoard,
   extraActions = [],
@@ -85,6 +91,20 @@ export function BoardToolbar({
       isPressed: autoFitEnabled,
       variant: 'toggle',
     },
+    ...(onAutoTile
+      ? [
+          {
+            id: 'auto-tile',
+            label: AUTO_TILE_LABEL,
+            ariaLabel: AUTO_TILE_LABEL,
+            tooltip: `${AUTO_TILE_TOOLTIP} (T)`,
+            shortcut: 'T',
+            onClick: onAutoTile,
+            disabled: !canAutoTile,
+            variant: 'default' as const,
+          },
+        ]
+      : []),
     ...extraActions,
     {
       id: 'clear-board',

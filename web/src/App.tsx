@@ -50,12 +50,14 @@ import {
 } from './copy';
 import {
   BOARD_FIT_PADDING,
+  BOARD_GRID_ORIGIN,
   BOARD_GRID_SIZE,
   CARD_DISCARD_DURATION_MS,
   CARD_MIN_HEIGHT,
   CARD_WIDTH,
   type PlacedCard,
   areAnyCardsOutOfFrame,
+  autoTileBoard,
   computeBoardLayout,
   contentBounds,
   findBestSquareSlot,
@@ -168,6 +170,7 @@ export function App({
   const cardJustLandedRef = useRef(false);
   const particleIdRef = useRef(0);
   const particleCleanupTimerRef = useRef<number | null>(null);
+  const tilingTimerRef = useRef<number | null>(null);
 
   const storeCards = useBoardStore((state) => state.cards);
   const cards = propCards ?? storeCards;
@@ -210,6 +213,7 @@ export function App({
   const [settlingSlotId, setSettlingSlotId] = useState<string | null>(null);
   const [dragParticles, setDragParticles] = useState<DragParticle[]>([]);
   const [autoFitEnabled, setAutoFitEnabled] = useState(true);
+  const [isTiling, setIsTiling] = useState(false);
 
   useLayoutEffect(() => {
     cardDragStateRef.current = cardDragState;
@@ -297,6 +301,63 @@ export function App({
     },
     [boardSize.height, boardSize.width, canvasCards],
   );
+
+  const handleAutoTile = useCallback(() => {
+    if (canvasCards.length === 0) {
+      return;
+    }
+
+    const newPositions = autoTileBoard(canvasCards, {
+      origin: BOARD_GRID_ORIGIN,
+    });
+
+    if (tilingTimerRef.current !== null) {
+      window.clearTimeout(tilingTimerRef.current);
+    }
+
+    setIsTiling(true);
+    setCardPositionsById((prev) => ({
+      ...prev,
+      ...newPositions,
+    }));
+
+    const prefersReducedMotion =
+      typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const settleDuration = prefersReducedMotion ? 0 : 300;
+
+    tilingTimerRef.current = window.setTimeout(() => {
+      setIsTiling(false);
+      tilingTimerRef.current = null;
+
+      if (autoFitEnabled) {
+        const updatedCanvasCards = canvasCards.map((c) => ({
+          ...c,
+          position: newPositions[c.card.activity.id] ?? c.position,
+        }));
+        const bounds = contentBounds(updatedCanvasCards);
+        contentBoundsRef.current = bounds;
+        const width =
+          boardSize.width || previousSizeRef.current.width || boardRef.current?.clientWidth || window.innerWidth || 0;
+        const height =
+          boardSize.height ||
+          previousSizeRef.current.height ||
+          boardRef.current?.clientHeight ||
+          window.innerHeight ||
+          0;
+        if (width > 0 && height > 0) {
+          setViewport(fitViewport(bounds, { x: 0, y: 0, width, height }, BOARD_FIT_PADDING, 1.0));
+        }
+      }
+    }, settleDuration);
+  }, [canvasCards, autoFitEnabled, boardSize.height, boardSize.width]);
+
+  useEffect(() => {
+    return () => {
+      if (tilingTimerRef.current !== null) {
+        window.clearTimeout(tilingTimerRef.current);
+      }
+    };
+  }, []);
 
   // Observe the board element rather than `window`: resizing the window must not throw
   // away the user's pan and zoom.
@@ -977,6 +1038,11 @@ export function App({
         event.preventDefault();
         resetZoom();
         break;
+      case 't':
+      case 'T':
+        event.preventDefault();
+        handleAutoTile();
+        break;
       default:
         break;
     }
@@ -1157,12 +1223,14 @@ export function App({
         </aside>
         <BoardToolbar
           autoFitEnabled={autoFitEnabled}
+          canAutoTile={canvasCards.length > 0}
           canClearBoard={cards.length > 0 || timelineSlots.some((s) => Boolean(s.activityId))}
           canFitContent={canvasCards.length > 0}
           canResetZoom={Math.abs(viewport.scale - 1) >= 0.001}
           canZoomIn={canZoomIn(viewport.scale)}
           canZoomOut={canZoomOut(viewport.scale)}
           isDragging={Boolean(cardDragState)}
+          onAutoTile={handleAutoTile}
           onClearBoard={requestClearBoard}
           onFitContent={() => fitContent(1.0)}
           onResetZoom={resetZoom}
@@ -1231,7 +1299,7 @@ export function App({
         ) : null}
         <div className="board__pan">
           <div className="board__world">
-            <div className="board__cards">
+            <div className={`board__cards${isTiling ? ' board__cards--tiling' : ''}`}>
               {agentStatus === 'searching' ? (
                 <div
                   className="board__card board__card--research"

@@ -6,6 +6,8 @@ import {
   AUTO_FIT_DESCRIPTION,
   AUTO_FIT_INACTIVE_LABEL,
   AUTO_FIT_LABEL,
+  AUTO_TILE_LABEL,
+  AUTO_TILE_TOOLTIP,
   BOARD_TOOLBAR_LABEL,
   CLEAR_BOARD_LABEL,
   FIT_VIEW_LABEL,
@@ -129,5 +131,20 @@ describe('BoardToolbar', () => {
     );
 
     expect(markup).toContain('Auto-tile');
+  });
+
+  it('renders auto-tile button with accessible label and responds to canAutoTile state', () => {
+    const enabledMarkup = renderToStaticMarkup(
+      <BoardToolbar {...defaultProps} canAutoTile={true} onAutoTile={() => undefined} />,
+    );
+    expect(enabledMarkup).toContain(`aria-label="${AUTO_TILE_LABEL}"`);
+    expect(enabledMarkup).toContain(AUTO_TILE_LABEL);
+    expect(enabledMarkup).toContain(AUTO_TILE_TOOLTIP);
+    expect(enabledMarkup).not.toContain(`<button aria-label="${AUTO_TILE_LABEL}" class="btn btn--sm" disabled=""`);
+
+    const disabledMarkup = renderToStaticMarkup(
+      <BoardToolbar {...defaultProps} canAutoTile={false} onAutoTile={() => undefined} />,
+    );
+    expect(disabledMarkup).toContain(`<button aria-label="${AUTO_TILE_LABEL}" class="btn btn--sm" disabled=""`);
   });
 });
