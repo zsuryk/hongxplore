@@ -1,14 +1,22 @@
-"""Tests for seed dataset pricing, freshness metadata, and seed loading (issue #51)."""
+"""Tests for seed dataset pricing, freshness metadata, and seed loading (issue #51, #78)."""
 
 import json
+import sys
+from datetime import date, datetime
 from decimal import Decimal
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from app.models import Activity
 from app.services.agent.seed import is_free_activity, load_seed_activities
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SEED_PATH = REPO_ROOT / "data" / "activities.json"
+
+DATA_DIR = REPO_ROOT / "data"
+if str(DATA_DIR) not in sys.path:
+    sys.path.insert(0, str(DATA_DIR))
+from build_seed import compute_upcoming_weekend_dates  # noqa: E402
 
 
 def test_seed_dataset_conforms_to_activity_schema() -> None:
@@ -94,3 +102,70 @@ def test_is_free_activity_prioritizes_price_object() -> None:
     priced_raw["price"] = {"amount": "59.00", "currency": "HKD", "is_free": False}
     priced_act = Activity.model_validate(priced_raw)
     assert is_free_activity(priced_act) is False
+
+
+def test_seed_activity_dates_fall_on_current_or_upcoming_weekend() -> None:
+    """Scheduled activities fall on the upcoming weekend in HKT (issue #78)."""
+    now_hkt = datetime.now(ZoneInfo("Asia/Hong_Kong"))
+    expected_dates = compute_upcoming_weekend_dates(now_hkt.date())
+
+    activities = load_seed_activities()
+    scheduled = [a for a in activities if a.parts]
+    assert len(scheduled) > 0
+
+    sat_date_str = expected_dates["saturday"]
+    sun_date_str = expected_dates["sunday"]
+
+    found_sat = False
+    found_sun = False
+    for a in scheduled:
+        for part in a.parts:
+            part_hkt = part.start.astimezone(ZoneInfo("Asia/Hong_Kong"))
+            date_str = part_hkt.strftime("%Y-%m-%d")
+            weekday = part_hkt.weekday()
+            if weekday == 5:
+                assert date_str == sat_date_str, (
+                    f"Activity {a.id} Sat date {date_str} != {sat_date_str}"
+                )
+                found_sat = True
+            elif weekday == 6:
+                assert date_str == sun_date_str, (
+                    f"Activity {a.id} Sun date {date_str} != {sun_date_str}"
+                )
+                found_sun = True
+
+    assert found_sat, "Expected Saturday activities in seed dataset"
+    assert found_sun, "Expected Sunday activities in seed dataset"
+
+
+def test_upcoming_weekend_dates_derivation() -> None:
+    """compute_upcoming_weekend_dates rolls forward on Mon and retains current on Sat/Sun."""
+    # Thursday Oct 15 -> Saturday Oct 17, Sunday Oct 18
+    thu = date(2026, 10, 15)
+    dates_thu = compute_upcoming_weekend_dates(thu)
+    assert dates_thu["saturday"] == "2026-10-17"
+    assert dates_thu["sunday"] == "2026-10-18"
+
+    # Friday Oct 16 -> Saturday Oct 17, Sunday Oct 18
+    fri = date(2026, 10, 16)
+    dates_fri = compute_upcoming_weekend_dates(fri)
+    assert dates_fri["saturday"] == "2026-10-17"
+    assert dates_fri["sunday"] == "2026-10-18"
+
+    # Saturday Oct 17 -> Saturday Oct 17, Sunday Oct 18
+    sat = date(2026, 10, 17)
+    dates_sat = compute_upcoming_weekend_dates(sat)
+    assert dates_sat["saturday"] == "2026-10-17"
+    assert dates_sat["sunday"] == "2026-10-18"
+
+    # Sunday Oct 18 -> Saturday Oct 17, Sunday Oct 18
+    sun = date(2026, 10, 18)
+    dates_sun = compute_upcoming_weekend_dates(sun)
+    assert dates_sun["saturday"] == "2026-10-17"
+    assert dates_sun["sunday"] == "2026-10-18"
+
+    # Monday Oct 19 rolls over to next weekend -> Saturday Oct 24, Sunday Oct 25
+    mon = date(2026, 10, 19)
+    dates_mon = compute_upcoming_weekend_dates(mon)
+    assert dates_mon["saturday"] == "2026-10-24"
+    assert dates_mon["sunday"] == "2026-10-25"
