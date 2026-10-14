@@ -137,6 +137,8 @@ type DragParticle = {
 
 const PARTICLE_COLORS = ['#38bdf8', '#818cf8', '#c084fc', '#f472b6', '#e0e7ff', '#34d399'];
 
+const EMPTY_CARD_POSITIONS: Record<string, Point> = {};
+
 export type AppProps = {
   agentStatus?: AgentStatus;
   cards?: BoardActivityCard[];
@@ -193,6 +195,10 @@ export function App({
   const requestClearBoard = useBoardStore((state) => state.requestClearBoard);
   const cancelClearBoard = useBoardStore((state) => state.cancelClearBoard);
   const confirmClearBoard = useBoardStore((state) => state.confirmClearBoard);
+  const storeCardPositions = useBoardStore((state) => state.cardPositions);
+  const cardPositionsById = storeCardPositions ?? EMPTY_CARD_POSITIONS;
+  const setCardPosition = useBoardStore((state) => state.setCardPosition);
+  const setCardPositions = useBoardStore((state) => state.setCardPositions);
   const storeIsClearConfirmOpen = useBoardStore((state) => state.isClearConfirmOpen);
   const isClearConfirmOpen = initialClearConfirmOpen ?? storeIsClearConfirmOpen;
 
@@ -207,7 +213,6 @@ export function App({
   const [cardDragState, setCardDragState] = useState<CardDragState | null>(null);
   const [isGesturing, setIsGesturing] = useState(false);
   const [hoveredSlotId, setHoveredSlotId] = useState<string | null>(null);
-  const [cardPositionsById, setCardPositionsById] = useState<Record<string, Point>>({});
   const [cardHeightsById, setCardHeightsById] = useState<Record<string, number>>({});
   const [discardingCardId, setDiscardingCardId] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<string | null>(initialConfirmation ?? null);
@@ -320,10 +325,7 @@ export function App({
     }
 
     setIsTiling(true);
-    setCardPositionsById((prev) => ({
-      ...prev,
-      ...newPositions,
-    }));
+    setCardPositions(newPositions);
 
     const prefersReducedMotion =
       typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
@@ -353,7 +355,7 @@ export function App({
         }
       }
     }, settleDuration);
-  }, [canvasCards, autoFitEnabled, boardSize.height, boardSize.width]);
+  }, [canvasCards, autoFitEnabled, boardSize.height, boardSize.width, setCardPositions]);
 
   useEffect(() => {
     return () => {
@@ -680,7 +682,7 @@ export function App({
     if (!from) {
       const currentPos = cardPositionsById[cardId] ?? boardLayout.positionsById[cardId];
       if (currentPos && !cardPositionsById[cardId]) {
-        setCardPositionsById((prev) => ({ ...prev, [cardId]: currentPos }));
+        setCardPosition(cardId, currentPos);
       }
     }
 
@@ -818,14 +820,14 @@ export function App({
         if (source === 'board') {
           const originalCardPos = cardPositionsById[cardId] ?? boardLayout.positionsById[cardId];
           if (originalCardPos) {
-            setCardPositionsById((prev) => ({ ...prev, [cardId]: originalCardPos }));
+            setCardPosition(cardId, originalCardPos);
           }
         }
       } else {
         if (source === 'board') {
           const originalCardPos = cardPositionsById[cardId] ?? boardLayout.positionsById[cardId];
           if (originalCardPos) {
-            setCardPositionsById((prev) => ({ ...prev, [cardId]: originalCardPos }));
+            setCardPosition(cardId, originalCardPos);
           }
         }
 
@@ -837,10 +839,7 @@ export function App({
           const displacedCard = cards.find((c) => c.activity.id === replacedCardId);
           const originalReplacedPos = cardPositionsById[replacedCardId] ?? boardLayout.positionsById[replacedCardId];
           if (originalReplacedPos) {
-            setCardPositionsById((prev) => ({
-              ...prev,
-              [replacedCardId]: originalReplacedPos,
-            }));
+            setCardPosition(replacedCardId, originalReplacedPos);
           }
 
           if (displacedCard) {
@@ -874,7 +873,7 @@ export function App({
         if (source === 'board') {
           const originalCardPos = cardPositionsById[cardId] ?? boardLayout.positionsById[cardId];
           if (originalCardPos) {
-            setCardPositionsById((prev) => ({ ...prev, [cardId]: originalCardPos }));
+            setCardPosition(cardId, originalCardPos);
           }
         }
       } else {
@@ -886,7 +885,7 @@ export function App({
           y: screenPoint.y - grabOffset.y,
         };
         const newPos = screenToWorld(cardScreenPoint, viewport);
-        setCardPositionsById((prev) => ({ ...prev, [cardId]: newPos }));
+        setCardPosition(cardId, newPos);
         cardJustLandedRef.current = true;
       }
     }
@@ -1357,7 +1356,6 @@ export function App({
                 className="btn btn--sm btn--danger"
                 onClick={() => {
                   confirmClearBoard();
-                  setCardPositionsById({});
                   hasAdjustedRef.current = false;
                   initialFramedRef.current = false;
                 }}

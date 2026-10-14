@@ -513,15 +513,13 @@ export function computeBoardLayout<T extends ActivityMatch>({
       position = customPositions[cardId];
     } else if (positionsById[cardId]) {
       position = positionsById[cardId];
+    } else if (initialSlotIndex < 6) {
+      const compactHeight = initialSlotIndex % 3 === 1 ? existingPlaced[initialSlotIndex - 1]?.height : undefined;
+      position = tiledCardPosition(initialSlotIndex, undefined, compactHeight);
     } else {
-      if (initialSlotIndex < 6) {
-        const compactHeight = initialSlotIndex % 3 === 1 ? existingPlaced[initialSlotIndex - 1]?.height : undefined;
-        position = tiledCardPosition(initialSlotIndex, undefined, compactHeight);
-      } else {
-        position = findBestSquareSlot(variant, existingPlaced, BOARD_GRID_ORIGIN, height);
-      }
-      positionsById[cardId] = position;
+      position = findBestSquareSlot(variant, existingPlaced, BOARD_GRID_ORIGIN, height);
     }
+    positionsById[cardId] = position;
     initialSlotIndex += 1;
 
     const placedCard: PlacedBoardCard<T> = {

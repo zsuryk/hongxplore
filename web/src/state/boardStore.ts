@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { defaultAgentClient, fixtureAgentClient, type AgentClient, type AgentRequest } from '../api/client';
 import type { components } from '../api/schema';
+import { computeBoardLayout } from '../boardLayout';
 import {
   AGENT_ERROR_LOG_PREFIX,
   AGENT_STATUS_ERROR,
@@ -9,6 +10,7 @@ import {
   INITIAL_ACTIVITY_QUERY,
   TIMELINE_SLOTS,
 } from '../copy';
+import type { Point } from '../viewport';
 
 export type ActivityCard = components['schemas']['MatchedActivity'];
 export type AgentLogEntry = components['schemas']['AgentLogEntry'];
@@ -29,6 +31,7 @@ export type DataSourceMode = 'live' | 'mock';
 
 export type BoardStore = {
   cards: ActivityCard[];
+  cardPositions: Record<string, Point>;
   discardedCards: ActivityCard[];
   viewport: BoardViewport;
   timelineSlots: TimelineSlot[];
@@ -47,6 +50,8 @@ export type BoardStore = {
   cancelClearBoard: () => void;
   confirmClearBoard: () => void;
   clearBoard: () => void;
+  setCardPosition: (activityId: string, position: Point) => void;
+  setCardPositions: (positions: Record<string, Point>) => void;
   findSimilar: (card: ActivityCard, client?: AgentClient) => Promise<boolean>;
   loadAgentResponse: (request: AgentRequest, client?: AgentClient) => Promise<void>;
   submitSearch: (query: string, client?: AgentClient) => Promise<void>;
@@ -69,6 +74,7 @@ export function similarActivityRequest(card: ActivityCard): AgentRequest {
 
 export const useBoardStore = create<BoardStore>((set, get) => ({
   cards: [],
+  cardPositions: {},
   discardedCards: [],
   viewport: initialViewport,
   timelineSlots: TIMELINE_SLOTS.map((slot) => ({ id: slot.id, activityId: null })),
@@ -88,8 +94,12 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
         return state;
       }
 
+      const remainingPositions = { ...state.cardPositions };
+      delete remainingPositions[activityId];
+
       return {
         cards: state.cards.filter((candidate) => candidate.activity.id !== activityId),
+        cardPositions: remainingPositions,
         discardedCards: [...state.discardedCards, card],
         timelineSlots: state.timelineSlots.map((slot) =>
           slot.activityId === activityId ? { ...slot, activityId: null } : slot,
@@ -140,6 +150,7 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
   clearBoard() {
     set({
       cards: [],
+      cardPositions: {},
       discardedCards: [],
       timelineSlots: TIMELINE_SLOTS.map((slot) => ({ id: slot.id, activityId: null })),
       recentCardIds: [],
@@ -148,6 +159,22 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
       agentError: null,
       lastMatchCount: null,
     });
+  },
+  setCardPosition(activityId, position) {
+    set((state) => ({
+      cardPositions: {
+        ...state.cardPositions,
+        [activityId]: position,
+      },
+    }));
+  },
+  setCardPositions(positions) {
+    set((state) => ({
+      cardPositions: {
+        ...state.cardPositions,
+        ...positions,
+      },
+    }));
   },
   async findSimilar(card, client) {
     const activeClient = client ?? (get().dataSourceMode === 'mock' ? fixtureAgentClient : defaultAgentClient);
@@ -178,14 +205,25 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
         (match) => !existingIds.has(match.activity.id) && !discardedIds.has(match.activity.id),
       );
 
-      set((state) => ({
-        cards: mergeCards(state.cards, response.matches, discardedIds),
+      const nextCards = mergeCards(get().cards, response.matches, discardedIds);
+      const layout = computeBoardLayout({
+        cards: nextCards,
+        discardedCards: get().discardedCards,
+        dockedCardIds: get()
+          .timelineSlots.map((s) => s.activityId)
+          .filter((id): id is string => Boolean(id)),
+        customPositions: get().cardPositions,
+      });
+
+      set({
+        cards: nextCards,
+        cardPositions: layout.positionsById,
         agentLog: response.log,
         agentStatus: 'results',
         agentError: null,
         lastMatchCount: response.matches.length,
         recentCardIds: newlyAddedMatches.map((match) => match.activity.id),
-      }));
+      });
       return true;
     } catch (error) {
       const message = formatAgentErrorMessage(error);
@@ -264,26 +302,42 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
         (match) => !existingIds.has(match.activity.id) && !discardedIds.has(match.activity.id),
       );
 
-      set((state) => ({
-        cards:
-          request.query === INITIAL_ACTIVITY_QUERY && state.cards.length === 0
-            ? response.matches
-            : mergeCards(state.cards, response.matches, discardedIds),
+      const isInitial = request.query === INITIAL_ACTIVITY_QUERY && get().cards.length === 0;
+      const nextCards = isInitial ? response.matches : mergeCards(get().cards, response.matches, discardedIds);
+
+      const layout = computeBoardLayout({
+        cards: nextCards,
+        discardedCards: get().discardedCards,
+        dockedCardIds: get()
+          .timelineSlots.map((s) => s.activityId)
+          .filter((id): id is string => Boolean(id)),
+        customPositions: get().cardPositions,
+      });
+
+      set({
+        cards: nextCards,
+        cardPositions: layout.positionsById,
         agentLog: response.log,
         agentStatus: 'results',
         agentError: null,
         lastMatchCount: response.matches.length,
-        recentCardIds:
-          request.query === INITIAL_ACTIVITY_QUERY && state.cards.length === 0
-            ? []
-            : newlyAddedMatches.map((match) => match.activity.id),
-      }));
+        recentCardIds: isInitial ? [] : newlyAddedMatches.map((match) => match.activity.id),
+      });
     } catch (error) {
       if (activeClient !== fixtureAgentClient && request.query === INITIAL_ACTIVITY_QUERY) {
         try {
           const fallback = await fixtureAgentClient.requestAgent(request);
+          const layout = computeBoardLayout({
+            cards: fallback.matches,
+            discardedCards: get().discardedCards,
+            dockedCardIds: get()
+              .timelineSlots.map((s) => s.activityId)
+              .filter((id): id is string => Boolean(id)),
+            customPositions: get().cardPositions,
+          });
           set({
             cards: fallback.matches,
+            cardPositions: layout.positionsById,
             agentLog: fallback.log,
             agentStatus: 'results',
             agentError: null,

@@ -74,4 +74,63 @@ describe('Search and Agent status integration', () => {
     expect(useBoardStore.getState().agentStatus).toBe('results');
     expect(useBoardStore.getState().cards).toHaveLength(response.matches.length);
   });
+
+  it('locks existing card positions in place when new search results arrive', async () => {
+    // 1. Initial response with 2 cards
+    const initialResponse: components['schemas']['AgentResponse'] = {
+      ...response,
+      matches: response.matches.slice(0, 2),
+    };
+    const client1 = createAgentClient(
+      'live',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => initialResponse,
+      }) as unknown as typeof fetch,
+    );
+
+    await useBoardStore.getState().submitSearch('initial search', client1);
+
+    const initialPositions = { ...useBoardStore.getState().cardPositions };
+    const initialCard0Id = response.matches[0].activity.id;
+    const initialCard1Id = response.matches[1].activity.id;
+
+    expect(initialPositions[initialCard0Id]).toBeDefined();
+    expect(initialPositions[initialCard1Id]).toBeDefined();
+
+    // 2. Subsequent search that adds a new card
+    const newCard = {
+      ...response.matches[0],
+      activity: {
+        ...response.matches[0].activity,
+        id: 'new-activity-unique-id',
+        title: 'New Unique Activity',
+      },
+    };
+    const secondResponse: components['schemas']['AgentResponse'] = {
+      ...response,
+      matches: [response.matches[0], response.matches[2], newCard],
+    };
+    const client2 = createAgentClient(
+      'live',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => secondResponse,
+      }) as unknown as typeof fetch,
+    );
+
+    await useBoardStore.getState().submitSearch('second search', client2);
+
+    const updatedPositions = useBoardStore.getState().cardPositions;
+
+    // Existing cards must remain at their exact original positions
+    expect(updatedPositions[initialCard0Id]).toEqual(initialPositions[initialCard0Id]);
+    expect(updatedPositions[initialCard1Id]).toEqual(initialPositions[initialCard1Id]);
+
+    // Newly added cards must have assigned positions
+    expect(updatedPositions[response.matches[2].activity.id]).toBeDefined();
+    expect(updatedPositions['new-activity-unique-id']).toBeDefined();
+  });
 });
