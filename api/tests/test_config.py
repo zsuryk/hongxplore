@@ -36,6 +36,12 @@ def test_defaults_with_empty_env(monkeypatch: pytest.MonkeyPatch) -> None:
     assert settings.openai_base_url is None
     assert settings.openai_model == ""
     assert settings.tavily_api_key == ""
+    assert settings.tavily_cache_ttl_seconds == 86_400
+    assert settings.tavily_timeout_seconds == 15.0
+    assert settings.tavily_max_results == 10
+    assert settings.tavily_min_curated_results == 3
+    assert settings.tavily_extract_with_llm is False
+    assert settings.search_cache_path is None
     assert settings.demo_mode is True
 
 
@@ -79,6 +85,68 @@ def test_blank_optional_value_in_dotenv_is_unset(
     """`.env.example` ships `OPENAI_BASE_URL=` — blank means no override, not `""`."""
     _clear_env(monkeypatch)
     assert Settings(_env_file=_write_dotenv(tmp_path, OPENAI_BASE_URL="")).openai_base_url is None
+
+
+def test_search_policy_overrides_from_dotenv(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _clear_env(monkeypatch)
+    dotenv = _write_dotenv(
+        tmp_path,
+        TAVILY_CACHE_TTL_SECONDS="60",
+        TAVILY_TIMEOUT_SECONDS="2.5",
+        TAVILY_MAX_RESULTS="25",
+        TAVILY_MIN_CURATED_RESULTS="0",
+        TAVILY_EXTRACT_WITH_LLM="true",
+        SEARCH_CACHE_PATH="/tmp/hongxplore-cache.db",
+    )
+    settings = Settings(_env_file=dotenv)
+    assert settings.tavily_cache_ttl_seconds == 60
+    assert settings.tavily_timeout_seconds == 2.5
+    assert settings.tavily_max_results == 25
+    assert settings.tavily_min_curated_results == 0
+    assert settings.tavily_extract_with_llm is True
+    assert settings.search_cache_path == "/tmp/hongxplore-cache.db"
+
+
+def test_blank_search_cache_path_is_unset(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """`.env.example` ships `SEARCH_CACHE_PATH=` — blank means the service default."""
+    _clear_env(monkeypatch)
+    assert (
+        Settings(_env_file=_write_dotenv(tmp_path, SEARCH_CACHE_PATH="")).search_cache_path is None
+    )
+
+
+@pytest.mark.parametrize(
+    ("key", "value"),
+    [
+        ("TAVILY_CACHE_TTL_SECONDS", "-1"),
+        ("TAVILY_TIMEOUT_SECONDS", "0"),
+        ("TAVILY_MAX_RESULTS", "0"),
+        ("TAVILY_MIN_CURATED_RESULTS", "-5"),
+    ],
+)
+def test_invalid_search_policy_value_raises_validation_error(
+    key: str, value: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A malformed policy value must break startup, not silently clamp to something plausible."""
+    _clear_env(monkeypatch)
+    monkeypatch.setenv(key, value)
+    with pytest.raises(ValidationError) as exc_info:
+        Settings(_env_file=None)
+    assert key.lower() in str(exc_info.value)
+
+
+def test_env_example_documents_every_setting() -> None:
+    """`.env.example` is the documented surface — a key missing from it is undiscoverable."""
+    example = (API_ROOT / ".env.example").read_text(encoding="utf-8")
+    documented = {
+        line.split("=", 1)[0].strip()
+        for line in example.splitlines()
+        if "=" in line and not line.lstrip().startswith("#")
+    }
+    missing = sorted(set(ENV_KEYS) - documented)
+    assert not missing, f"undocumented in api/.env.example: {missing}"
 
 
 def test_invalid_demo_mode_raises_validation_error(monkeypatch: pytest.MonkeyPatch) -> None:
