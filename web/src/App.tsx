@@ -641,7 +641,7 @@ export function App({
         nearTimeline = true;
       } else {
         const bounds = timelineElement.getBoundingClientRect();
-        const proximityPadding = 50;
+        const proximityPadding = isHoverExpanded ? 8 : 50;
         const cursorNear =
           event.clientX >= bounds.left - proximityPadding &&
           event.clientX <= bounds.right + proximityPadding &&
