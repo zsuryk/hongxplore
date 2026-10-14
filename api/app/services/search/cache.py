@@ -207,6 +207,12 @@ class SQLiteActivityCache(ActivityCache):
     def __exit__(self, *exc_info: object) -> None:
         self.close()
 
+    async def __aenter__(self) -> SQLiteActivityCache:
+        return self
+
+    async def __aexit__(self, *exc_info: object) -> None:
+        await self.aclose()
+
 
 class InMemoryActivityCache(ActivityCache):
     """In-memory dictionary cache implementing the ActivityCache protocol.
@@ -263,4 +269,10 @@ class InMemoryActivityCache(ActivityCache):
         return self
 
     def __exit__(self, *exc_info: object) -> None:
+        pass
+
+    async def __aenter__(self) -> InMemoryActivityCache:
+        return self
+
+    async def __aexit__(self, *exc_info: object) -> None:
         pass
