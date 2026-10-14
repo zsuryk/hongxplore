@@ -33,6 +33,7 @@ import {
   TIMELINE_COLLAPSE_LABEL,
   TIMELINE_COLLAPSED_HINT,
   TIMELINE_COLLAPSED_LABEL,
+  TIMELINE_DRAG_COLLAPSE_HINT,
   TIMELINE_EXPAND_LABEL,
   TIMELINE_GUIDE_TOAST,
   TIMELINE_LABEL,
@@ -1049,6 +1050,8 @@ export function App({
               <div className="timeline__guide-hint timeline__replace-toast board__toast">
                 {timelineSlotReplaceAlert(hoveredExistingCard.activity.title_en ?? hoveredExistingCard.activity.title)}
               </div>
+            ) : isHoverExpanded ? (
+              <div className="timeline__guide-hint board__toast">{TIMELINE_DRAG_COLLAPSE_HINT}</div>
             ) : showGuideHints ? (
               <div className="timeline__guide-hint board__toast">{TIMELINE_GUIDE_TOAST}</div>
             ) : null}

@@ -10,6 +10,7 @@ import {
   GATHERING_INFO_TITLE,
   TIMELINE_COLLAPSE_LABEL,
   TIMELINE_COLLAPSED_LABEL,
+  TIMELINE_DRAG_COLLAPSE_HINT,
   TIMELINE_EXPAND_LABEL,
   TIMELINE_GUIDE_TOAST,
   TIMELINE_SLOTS,
@@ -131,6 +132,7 @@ describe('App shell', () => {
     const markup = renderToStaticMarkup(<App initialHoverExpanded={true} />);
 
     expect(markup).toContain('class="timeline timeline--expanded timeline--hover-expanded"');
+    expect(markup).toContain(TIMELINE_DRAG_COLLAPSE_HINT);
     expect(markup).toContain('timeline__count-badge');
     expect(markup).toContain('Saturday morning');
     expect(markup).toContain('Sunday evening');
