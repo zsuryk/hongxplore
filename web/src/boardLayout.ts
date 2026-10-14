@@ -462,7 +462,7 @@ export function computeBoardLayout<T extends ActivityMatch>({
   }
 
   // Accumulate occupied rects for collision-free placement of newly added cards
-  const existingUndockedPlaced: PlacedCard[] = [];
+  const existingPlaced: PlacedCard[] = [];
 
   let initialSlotIndex = 0;
   for (const [cardId, card] of knownCardsMap.entries()) {
@@ -480,7 +480,7 @@ export function computeBoardLayout<T extends ActivityMatch>({
       if (initialSlotIndex < 6) {
         position = tiledCardPosition(initialSlotIndex);
       } else {
-        position = findBestSquareSlot(variant, existingUndockedPlaced);
+        position = findBestSquareSlot(variant, existingPlaced);
       }
       positionsById[cardId] = position;
     }
@@ -495,12 +495,12 @@ export function computeBoardLayout<T extends ActivityMatch>({
 
     if (!isDiscarded) {
       allPlacedCards.push(placedCard);
+      existingPlaced.push({
+        position,
+        variant,
+      });
       if (!isDocked) {
         canvasCards.push(placedCard);
-        existingUndockedPlaced.push({
-          position,
-          variant,
-        });
       }
     }
   }

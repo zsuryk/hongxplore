@@ -533,6 +533,13 @@ export function App({
     event.currentTarget.setPointerCapture(event.pointerId);
     markGesture();
     markAdjusted();
+    const cardId = card.activity.id;
+    if (!from) {
+      const currentPos = cardPositionsById[cardId] ?? boardLayout.positionsById[cardId];
+      if (currentPos && !cardPositionsById[cardId]) {
+        setCardPositionsById((prev) => ({ ...prev, [cardId]: currentPos }));
+      }
+    }
 
     const screenPoint = screenPointWithin(boardBounds, event.clientX, event.clientY);
     setCardDragState({
@@ -632,6 +639,13 @@ export function App({
           }
         }
       } else {
+        if (source === 'board') {
+          const originalCardPos = cardPositionsById[cardId] ?? boardLayout.positionsById[cardId];
+          if (originalCardPos) {
+            setCardPositionsById((prev) => ({ ...prev, [cardId]: originalCardPos }));
+          }
+        }
+
         const targetSlot = timelineSlots.find((s) => s.id === slotId);
         const replacedCardId =
           targetSlot?.activityId && targetSlot.activityId !== cardId ? targetSlot.activityId : null;
