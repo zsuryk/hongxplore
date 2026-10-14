@@ -1,5 +1,6 @@
 """Prompt templates, parsers, and fixtures for intent parsing and match rationale (issue #8)."""
 
+from app.prompts.extraction import EXTRACTION_SYSTEM_PROMPT
 from app.prompts.fixtures import (
     SAMPLE_INTENT_FIXTURES,
     SampleIntentFixture,
@@ -25,6 +26,7 @@ from app.prompts.rationale import (
 )
 
 __all__ = [
+    "EXTRACTION_SYSTEM_PROMPT",
     "HONG_KONG_DISTRICTS",
     "INTENT_PROMPT_V1",
     "IntentPromptTemplate",
