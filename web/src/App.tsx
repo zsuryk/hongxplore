@@ -197,6 +197,10 @@ export function App({
   const isClearConfirmOpen = initialClearConfirmOpen ?? storeIsClearConfirmOpen;
 
   const [viewport, setViewport] = useState<Viewport>(initialViewport);
+  const viewportRef = useRef<Viewport>(viewport);
+  useLayoutEffect(() => {
+    viewportRef.current = viewport;
+  }, [viewport]);
   const [boardSize, setBoardSize] = useState<Size>({ width: 0, height: 0 });
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [pinchState, setPinchState] = useState<PinchState | null>(null);
@@ -384,6 +388,8 @@ export function App({
     return () => observer.disconnect();
   }, []);
 
+  const cardIdsKey = cards.map((c) => c.activity.id).join(',');
+
   // Measure rendered heights of canvas cards to drive content-driven layout and collision avoidance
   useLayoutEffect(() => {
     const container = boardRef.current;
@@ -411,7 +417,8 @@ export function App({
         setCardHeightsById((prev) => {
           let changed = false;
           for (const [k, v] of Object.entries(updates)) {
-            if (prev[k] !== v) {
+            // Ignore minor subpixel rounding (<3px) caused by browser zoom
+            if (Math.abs((prev[k] ?? 0) - v) > 3) {
               changed = true;
               break;
             }
@@ -423,7 +430,7 @@ export function App({
 
     cardElements.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
-  }, [canvasCards]);
+  }, [cardIdsKey]);
 
   // Resizing must not throw away their pan and zoom: hold the centre point.
   useEffect(() => {
@@ -473,7 +480,7 @@ export function App({
     const cardsAdded = cards.length > previousCardsLengthRef.current;
     previousCardsLengthRef.current = cards.length;
 
-    const outOfFrame = areAnyCardsOutOfFrame(cardsToFrame, viewport, boardSize);
+    const outOfFrame = areAnyCardsOutOfFrame(cardsToFrame, viewportRef.current, boardSize);
 
     // When autoFitEnabled is TRUE:
     // - New cards are added from search queries
@@ -482,7 +489,7 @@ export function App({
       fitContent(1.0);
     }
     cardJustLandedRef.current = false;
-  }, [agentStatus, autoFitEnabled, boardSize, canvasCards, cards.length, fitContent, researchCardPosition, viewport]);
+  }, [agentStatus, autoFitEnabled, boardSize, canvasCards, cards.length, fitContent, researchCardPosition]);
 
   // Continuous particle bleed emitter while dragging: continuously drops glowing stardust
   const isDraggingAnyCard = Boolean(cardDragState);
@@ -629,7 +636,9 @@ export function App({
       (event.target.closest('[data-activity-card]') ||
         event.target.closest('[data-timeline-slot]') ||
         event.target.closest('.timeline') ||
-        event.target.closest('.discard-bin'))
+        event.target.closest('.discard-bin') ||
+        event.target.closest('.board-toolbar') ||
+        event.target.closest('.board-modal'))
     ) {
       return;
     }

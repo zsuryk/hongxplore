@@ -118,7 +118,11 @@ export function BoardToolbar({
   ];
 
   return (
-    <aside aria-label={BOARD_TOOLBAR_LABEL} className={`board-toolbar${isDragging ? ' board-toolbar--inert' : ''}`}>
+    <aside
+      aria-label={BOARD_TOOLBAR_LABEL}
+      className={`board-toolbar${isDragging ? ' board-toolbar--inert' : ''}`}
+      onPointerDown={(event) => event.stopPropagation()}
+    >
       <div aria-label={ZOOM_CONTROL_LABEL} className="board-toolbar__group board-toolbar__group--zoom" role="group">
         <div className="board-toolbar__item">
           <button
