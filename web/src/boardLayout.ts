@@ -112,6 +112,31 @@ export function getCardVariant(input: number | ActivityMatch): CardVariant {
   return getCardVariantFromContent(input);
 }
 
+/**
+ * Calculates the content-driven rendered height of a card based on its actual content
+ * (title, translation, rationale length, and variant minimums).
+ * Ensures that a card with a short rationale is shorter than a card with a long one.
+ */
+export function calculateContentCardHeight(card: ActivityMatch, variant: CardVariant = 'standard'): number {
+  const rationale = card.match_rationale ?? '';
+  // In a 320px card with 20px padding (inner width 280px), rationale has ~34 chars/line
+  const rationaleLines = Math.max(1, Math.ceil(rationale.length / 34));
+  const rationaleHeight = 24 + rationaleLines * 22;
+
+  const title = card.activity.title_en ?? card.activity.title ?? '';
+  const titleLines = Math.max(1, Math.ceil(title.length / 22));
+  const titleHeight = titleLines * 24;
+
+  const hasTranslated = Boolean(card.activity.title_en && card.activity.title_en !== card.activity.title);
+  const translationHeight = hasTranslated && variant !== 'compact' ? 24 : 0;
+
+  // Base overhead: padding (40px) + topline (28px) + location (24px) + margins (32px) + action/source (40px)
+  const baseChrome = variant === 'compact' ? 120 : 164;
+  const contentHeight = baseChrome + titleHeight + translationHeight + rationaleHeight;
+
+  return Math.max(CARD_VARIANT_DIMENSIONS[variant].minHeight, Math.round(contentHeight));
+}
+
 /** Default grid slot for the card at `index`. Cards keep this position until dragged. */
 export function defaultCardPosition(index: number): Point {
   const column = index % BOARD_COLUMNS;
@@ -150,7 +175,7 @@ export function getClustersPerRow(totalCards: number = 0): number {
  * Dynamically adjusts clusters per row based on `totalCards` to maintain a balanced,
  * square layout area.
  */
-export function tiledCardPosition(index: number, totalCards?: number): Point {
+export function tiledCardPosition(index: number, totalCards?: number, compactHeight?: number): Point {
   const clusterIndex = Math.floor(index / 3);
   const slotInCluster = index % 3;
 
@@ -170,7 +195,8 @@ export function tiledCardPosition(index: number, totalCards?: number): Point {
   }
   if (slotInCluster === 1) {
     // Wide: bottom-left of cluster, stacked comfortably under Compact with ample clearance
-    return { x: clusterX, y: clusterY + 310 };
+    const compactOffset = compactHeight !== undefined ? Math.max(310, compactHeight + 40) : 310;
+    return { x: clusterX, y: clusterY + compactOffset };
   }
   // Tall: right column of cluster, spanning full height
   return { x: clusterX + (CARD_WIDTH + 56), y: clusterY };
@@ -187,13 +213,13 @@ export function rectsOverlap(a: Rect, b: Rect, margin: number = 0): boolean {
 }
 
 /** World-space rectangle a card occupies at `position`. */
-export function cardBounds(position: Point, variant: CardVariant = 'standard'): Rect {
+export function cardBounds(position: Point, variant: CardVariant = 'standard', height?: number): Rect {
   const dimensions = CARD_VARIANT_DIMENSIONS[variant];
   return {
     x: position.x,
     y: position.y,
     width: dimensions.width,
-    height: dimensions.fitHeight,
+    height: height ?? dimensions.fitHeight,
   };
 }
 
@@ -247,6 +273,7 @@ export function findBestSquareSlot(
   variant: CardVariant,
   existingCards: readonly PlacedCard[],
   origin: Point = BOARD_GRID_ORIGIN,
+  newCardHeight?: number,
 ): Point {
   if (existingCards.length === 0) {
     return origin;
@@ -254,7 +281,7 @@ export function findBestSquareSlot(
 
   const dimensions = CARD_VARIANT_DIMENSIONS[variant];
   const newW = dimensions.width;
-  const newH = dimensions.fitHeight;
+  const newH = newCardHeight ?? dimensions.fitHeight;
   const currBounds = contentBounds(existingCards);
   const center = {
     x: currBounds.x + currBounds.width / 2,
@@ -283,7 +310,7 @@ export function findBestSquareSlot(
 
     // When card above is Compact, place Wide comfortably stacked underneath
     if (card.variant === 'compact') {
-      candidates.push({ x: card.position.x, y: card.position.y + 310 });
+      candidates.push({ x: card.position.x, y: card.position.y + cH + 40 });
     }
   }
 
@@ -295,7 +322,7 @@ export function findBestSquareSlot(
 
     // Avoid colliding with any existing card (allow 10px breathing room)
     const collides = existingCards.some((other) => {
-      const otherRect = cardBounds(other.position, other.variant ?? 'standard');
+      const otherRect = cardBounds(other.position, other.variant ?? 'standard', other.height);
       return rectsOverlap(candRect, otherRect, 10);
     });
 
@@ -402,6 +429,7 @@ export type PlacedBoardCard<T extends ActivityMatch = ActivityMatch> = {
   card: T;
   position: Point;
   variant: CardVariant;
+  height: number;
   isDocked: boolean;
 };
 
@@ -416,6 +444,8 @@ export type ComputeBoardLayoutOptions<T extends ActivityMatch = ActivityMatch> =
   assignedPositions?: Readonly<Record<string, Point>>;
   /** Discarded cards that were previously on the board, to preserve slot indices. */
   discardedCards?: readonly T[];
+  /** Measured DOM rendered heights of cards by activity ID (optional). */
+  measuredHeights?: Readonly<Record<string, number>>;
 };
 
 export type ComputeBoardLayoutResult<T extends ActivityMatch = ActivityMatch> = {
@@ -427,6 +457,8 @@ export type ComputeBoardLayoutResult<T extends ActivityMatch = ActivityMatch> = 
   positionsById: Record<string, Point>;
   /** Complete map of card variants by activity ID. */
   variantsById: Record<string, CardVariant>;
+  /** Complete map of content-driven card heights by activity ID. */
+  heightsById: Record<string, number>;
 };
 
 /**
@@ -443,10 +475,12 @@ export function computeBoardLayout<T extends ActivityMatch>({
   customPositions = {},
   assignedPositions = {},
   discardedCards = [],
+  measuredHeights = {},
 }: ComputeBoardLayoutOptions<T>): ComputeBoardLayoutResult<T> {
   const dockedSet = dockedCardIds instanceof Set ? dockedCardIds : new Set(dockedCardIds);
   const positionsById: Record<string, Point> = { ...assignedPositions };
   const variantsById: Record<string, CardVariant> = {};
+  const heightsById: Record<string, number> = {};
   const allPlacedCards: PlacedBoardCard<T>[] = [];
   const canvasCards: PlacedBoardCard<T>[] = [];
 
@@ -471,6 +505,9 @@ export function computeBoardLayout<T extends ActivityMatch>({
     const variant = getCardVariantFromContent(card);
     variantsById[cardId] = variant;
 
+    const height = measuredHeights[cardId] ?? calculateContentCardHeight(card, variant);
+    heightsById[cardId] = height;
+
     let position: Point;
     if (customPositions[cardId]) {
       position = customPositions[cardId];
@@ -478,9 +515,10 @@ export function computeBoardLayout<T extends ActivityMatch>({
       position = positionsById[cardId];
     } else {
       if (initialSlotIndex < 6) {
-        position = tiledCardPosition(initialSlotIndex);
+        const compactHeight = initialSlotIndex % 3 === 1 ? existingPlaced[initialSlotIndex - 1]?.height : undefined;
+        position = tiledCardPosition(initialSlotIndex, undefined, compactHeight);
       } else {
-        position = findBestSquareSlot(variant, existingPlaced);
+        position = findBestSquareSlot(variant, existingPlaced, BOARD_GRID_ORIGIN, height);
       }
       positionsById[cardId] = position;
     }
@@ -490,6 +528,7 @@ export function computeBoardLayout<T extends ActivityMatch>({
       card,
       position,
       variant,
+      height,
       isDocked,
     };
 
@@ -498,6 +537,8 @@ export function computeBoardLayout<T extends ActivityMatch>({
       existingPlaced.push({
         position,
         variant,
+        height,
+        width: CARD_VARIANT_DIMENSIONS[variant].width,
       });
       if (!isDocked) {
         canvasCards.push(placedCard);
@@ -510,5 +551,6 @@ export function computeBoardLayout<T extends ActivityMatch>({
     canvasCards,
     positionsById,
     variantsById,
+    heightsById,
   };
 }

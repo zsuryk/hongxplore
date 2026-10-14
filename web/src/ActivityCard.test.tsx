@@ -86,4 +86,36 @@ describe('ActivityCard', () => {
     const zhMarkup = renderToStaticMarkup(<ActivityCard match={response.matches[1]} />);
     expect(zhMarkup).toContain('Chinese');
   });
+
+  it('provides accessible language badge attributes and card label with language', () => {
+    const markup = renderToStaticMarkup(<ActivityCard match={response.matches[0]} />);
+
+    // Language badge has title, tabindex, and aria-label for accessibility & overflow inspectability
+    expect(markup).toContain('title="Language: English Available"');
+    expect(markup).toContain('tabindex="0"');
+    expect(markup).toContain('aria-label="Language: English Available"');
+
+    // Card outer article contains language in accessible label
+    expect(markup).toContain('(Language: English Available)');
+  });
+
+  it('renders both short and long rationales fully across card variants', () => {
+    const shortMatch = {
+      ...response.matches[0],
+      match_rationale: 'Quick 2-line match.',
+    };
+    const longMatch = {
+      ...response.matches[0],
+      match_rationale:
+        'A comprehensive 6-line rationale explaining why this activity is an outstanding choice for weekend discovery, offering rich cultural context, historic artifacts, and walking convenience in Tsim Sha Tsui.',
+    };
+
+    const shortMarkup = renderToStaticMarkup(<ActivityCard match={shortMatch} variant="compact" />);
+    const longMarkup = renderToStaticMarkup(<ActivityCard match={longMatch} variant="compact" />);
+
+    expect(shortMarkup).toContain('Quick 2-line match.');
+    expect(longMarkup).toContain(
+      'A comprehensive 6-line rationale explaining why this activity is an outstanding choice',
+    );
+  });
 });

@@ -86,13 +86,18 @@ export function ActivityCard({
 
   return (
     <article
-      aria-label={activityCardAccessibleLabel(title)}
+      aria-label={activityCardAccessibleLabel(title, language)}
       className={`activity-card activity-card--${size}${variantClass}${stateClass}${recentClass}`}
       style={style}
     >
       <div className="activity-card__topline">
-        <span className="activity-card__language">
-          {ACTIVITY_CARD_LANGUAGE_LABEL}: {language}
+        <span
+          aria-label={`${ACTIVITY_CARD_LANGUAGE_LABEL}: ${language}`}
+          className="activity-card__language"
+          tabIndex={0}
+          title={`${ACTIVITY_CARD_LANGUAGE_LABEL}: ${language}`}
+        >
+          {language}
         </span>
         {start ? (
           <span
