@@ -152,6 +152,30 @@
               }
             ],
             "title": "Image"
+          },
+          "price": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Price"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "What it costs; absent when the source publishes no pricing at all, which is distinct from an explicit free entry."
+          },
+          "listed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Listed At",
+            "description": "When the source published or last confirmed this listing (UTC)."
           }
         },
         "additionalProperties": false,
@@ -396,6 +420,41 @@
         ],
         "title": "MatchedActivity",
         "description": "An Activity the agent returned, carrying its **match rationale**."
+      },
+      "Price": {
+        "properties": {
+          "amount": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount",
+            "description": "Cost in `currency`, greater than zero; null when `is_free` is true."
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[A-Z]{3}$",
+            "title": "Currency",
+            "description": "ISO 4217 code of `amount`; meaningless when `is_free` is true.",
+            "default": "HKD"
+          },
+          "is_free": {
+            "type": "boolean",
+            "title": "Is Free",
+            "description": "True when the source states the Activity is free of charge.",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "Price",
+        "description": "What an Activity costs.\n\nThe whole object is **absent** when the source publishes no pricing at all — a\nthird state, distinct from both an explicit free entry and a priced one. A\npresent price says one of:\n\n- **free of charge** — ``is_free=True`` with no ``amount``\n- **priced** — an ``amount`` greater than zero, optionally in another currency"
       },
       "Source": {
         "properties": {

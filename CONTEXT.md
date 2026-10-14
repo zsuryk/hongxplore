@@ -17,3 +17,5 @@
 | **Agent log** | The ordered list of steps the agent records while handling a query (parse → search → normalise → rank → translate). Returned as `log` on the agent response and shown in the status panel. We say **agent log**, not "trace" or "activity stream" (that collides with Activity). |
 | **Discard bin** | The drop target for rejected cards — removes them from consideration without deleting the underlying Activity. We say **discard bin**, not "trash". |
 | **Find similar** | Card action that re-queries the agent using the card as the seed. We say **find similar**, not "discover more". |
+| **Price** | What an Activity costs. Three states: **free of charge**, **priced** (an amount plus currency), and **absent** — the source published no pricing. Absent is never shown as free. We say **price**, not "cost field" or "fee". |
+| **Listed at** | When the source published or last confirmed the listing, carried as `listed_at` (stored UTC, displayed HKT). Absent when the source dates nothing. We say **listed at**, not "last updated" or "fetched at". |
