@@ -11,6 +11,7 @@ import {
 } from 'react';
 import { ActivityCard } from './ActivityCard';
 import { AgentStatusPanel } from './AgentStatusPanel';
+import { BoardToolbar } from './BoardToolbar';
 import { ResearchCard } from './ResearchCard';
 import { SearchBar } from './SearchBar';
 import {
@@ -20,15 +21,15 @@ import {
   BOARD_KEYBOARD_HINT,
   BOARD_KEYBOARD_SHORTCUTS,
   BOARD_LABEL,
-  AUTO_FIT_LABEL,
-  AUTO_FIT_DESCRIPTION,
+  CLEAR_BOARD_CANCEL_ACTION,
+  CLEAR_BOARD_CONFIRM_ACTION,
+  CLEAR_BOARD_CONFIRM_MESSAGE,
+  CLEAR_BOARD_CONFIRM_TITLE,
   DISCARD_BIN_HINT,
   DISCARD_BIN_LABEL,
   DISCARD_GUIDE_TOAST,
-  FIT_VIEW_LABEL,
   HEADING,
   INITIAL_ACTIVITY_QUERY,
-  RESET_ZOOM_LABEL,
   TAGLINE,
   TIMELINE_COLLAPSE_LABEL,
   TIMELINE_COLLAPSED_HINT,
@@ -40,16 +41,12 @@ import {
   TIMELINE_SLOT_EMPTY,
   TIMELINE_SLOTS,
   UNDOCK_CARD_LABEL,
-  ZOOM_CONTROL_LABEL,
-  ZOOM_IN_LABEL,
-  ZOOM_OUT_LABEL,
   findSimilarConfirmation,
   timelineActivityReplacedConfirmation,
   timelineActivityDockedConfirmation,
   timelinePlannedCount,
   timelineSlotMismatchMessage,
   timelineSlotReplaceAlert,
-  zoomPercentage,
 } from './copy';
 import {
   BOARD_FIT_PADDING,
@@ -141,6 +138,7 @@ const PARTICLE_COLORS = ['#38bdf8', '#818cf8', '#c084fc', '#f472b6', '#e0e7ff', 
 export type AppProps = {
   agentStatus?: AgentStatus;
   cards?: BoardActivityCard[];
+  initialClearConfirmOpen?: boolean;
   initialConfirmation?: string;
   initialHoverExpanded?: boolean;
   initialTimelineExpanded?: boolean;
@@ -150,6 +148,7 @@ export type AppProps = {
 export function App({
   agentStatus: propAgentStatus,
   cards: propCards,
+  initialClearConfirmOpen,
   initialConfirmation,
   initialHoverExpanded,
   initialTimelineExpanded,
@@ -188,6 +187,11 @@ export function App({
   const loadAgentResponse = useBoardStore((state) => state.loadAgentResponse);
   const setTimelineSlots = useBoardStore((state) => state.setTimelineSlots);
   const recentCardIds = useBoardStore((state) => state.recentCardIds);
+  const requestClearBoard = useBoardStore((state) => state.requestClearBoard);
+  const cancelClearBoard = useBoardStore((state) => state.cancelClearBoard);
+  const confirmClearBoard = useBoardStore((state) => state.confirmClearBoard);
+  const storeIsClearConfirmOpen = useBoardStore((state) => state.isClearConfirmOpen);
+  const isClearConfirmOpen = initialClearConfirmOpen ?? storeIsClearConfirmOpen;
 
   const [viewport, setViewport] = useState<Viewport>(initialViewport);
   const [boardSize, setBoardSize] = useState<Size>({ width: 0, height: 0 });
@@ -256,6 +260,20 @@ export function App({
 
     return () => window.clearTimeout(timer);
   }, [confirmation]);
+
+  // Escape key closes clear board confirmation dialog if open
+  useEffect(() => {
+    if (!isClearConfirmOpen) {
+      return;
+    }
+    const handleKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        cancelClearBoard();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isClearConfirmOpen, cancelClearBoard]);
 
   /** Records that the user has taken over the viewport, so auto-framing stops for good. */
   const markAdjusted = useCallback(() => {
@@ -994,57 +1012,6 @@ export function App({
         <div className="app__header-search">
           <SearchBar />
         </div>
-        <div aria-label={ZOOM_CONTROL_LABEL} className="viewport-controls" role="group">
-          <div className="viewport-controls__zoom">
-            <button
-              aria-label={ZOOM_OUT_LABEL}
-              className="btn btn--sm btn--icon"
-              disabled={!canZoomOut(viewport.scale)}
-              onClick={() => stepZoom(-1)}
-              type="button"
-            >
-              &minus;
-            </button>
-            <output aria-live="polite">{zoomPercentage(viewport.scale)}</output>
-            <button
-              aria-label={ZOOM_IN_LABEL}
-              className="btn btn--sm btn--icon"
-              disabled={!canZoomIn(viewport.scale)}
-              onClick={() => stepZoom(1)}
-              type="button"
-            >
-              +
-            </button>
-          </div>
-          <button
-            aria-label={RESET_ZOOM_LABEL}
-            className="btn btn--sm"
-            disabled={Math.abs(viewport.scale - 1) < 0.001}
-            onClick={resetZoom}
-            type="button"
-          >
-            100%
-          </button>
-          <div className="viewport-controls__autofit">
-            <button className="btn btn--sm" onClick={() => fitContent(1.0)} type="button">
-              {FIT_VIEW_LABEL}
-            </button>
-            <label className="viewport-controls__autofit-label" htmlFor="viewport-autofit-toggle">
-              <input
-                aria-describedby="autofit-description"
-                checked={autoFitEnabled}
-                className="viewport-controls__checkbox"
-                id="viewport-autofit-toggle"
-                onChange={(event) => setAutoFitEnabled(event.target.checked)}
-                type="checkbox"
-              />
-              <span>{AUTO_FIT_LABEL}</span>
-              <span className="viewport-controls__tooltip" id="autofit-description" role="tooltip">
-                {AUTO_FIT_DESCRIPTION}
-              </span>
-            </label>
-          </div>
-        </div>
       </header>
       <AgentStatusPanel status={agentStatus} />
       <p className="sr-only" id="board-keyboard-hint">
@@ -1188,6 +1155,22 @@ export function App({
           <strong>{DISCARD_BIN_LABEL}</strong>
           <span>{DISCARD_BIN_HINT}</span>
         </aside>
+        <BoardToolbar
+          autoFitEnabled={autoFitEnabled}
+          canClearBoard={cards.length > 0 || timelineSlots.some((s) => Boolean(s.activityId))}
+          canFitContent={canvasCards.length > 0}
+          canResetZoom={Math.abs(viewport.scale - 1) >= 0.001}
+          canZoomIn={canZoomIn(viewport.scale)}
+          canZoomOut={canZoomOut(viewport.scale)}
+          isDragging={Boolean(cardDragState)}
+          onClearBoard={requestClearBoard}
+          onFitContent={() => fitContent(1.0)}
+          onResetZoom={resetZoom}
+          onToggleAutoFit={setAutoFitEnabled}
+          onZoomIn={() => stepZoom(1)}
+          onZoomOut={() => stepZoom(-1)}
+          scale={viewport.scale}
+        />
         {cards.length === 0 && agentStatus !== 'searching' ? (
           <div className="board__layer board__layer--center">
             <div className="board__panel">
@@ -1288,6 +1271,38 @@ export function App({
           </div>
         </div>
       </div>
+      {isClearConfirmOpen ? (
+        <div
+          aria-describedby="clear-board-desc"
+          aria-labelledby="clear-board-title"
+          aria-modal="true"
+          className="board-modal-backdrop"
+          onClick={cancelClearBoard}
+          role="alertdialog"
+        >
+          <div className="board-modal" onClick={(event) => event.stopPropagation()}>
+            <h2 id="clear-board-title">{CLEAR_BOARD_CONFIRM_TITLE}</h2>
+            <p id="clear-board-desc">{CLEAR_BOARD_CONFIRM_MESSAGE}</p>
+            <div className="board-modal__actions">
+              <button autoFocus className="btn btn--sm" onClick={cancelClearBoard} type="button">
+                {CLEAR_BOARD_CANCEL_ACTION}
+              </button>
+              <button
+                className="btn btn--sm btn--danger"
+                onClick={() => {
+                  confirmClearBoard();
+                  setCardPositionsById({});
+                  hasAdjustedRef.current = false;
+                  initialFramedRef.current = false;
+                }}
+                type="button"
+              >
+                {CLEAR_BOARD_CONFIRM_ACTION}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }
