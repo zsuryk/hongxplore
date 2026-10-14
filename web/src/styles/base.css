@@ -96,119 +96,11 @@ button {
   min-width: 0;
 }
 
-/* Viewport toolbar */
-
-.viewport-controls {
-  align-items: center;
-  display: flex;
-  flex-shrink: 0;
-  gap: var(--control-gap);
-}
-
-.viewport-controls__zoom {
-  align-items: center;
-  background: var(--color-surface-sunken);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  display: flex;
-  gap: var(--control-inset);
-  padding: var(--control-inset);
-}
-
-.viewport-controls__zoom .btn {
-  background: var(--color-surface);
-  border-color: var(--color-border);
-}
-
-.viewport-controls output {
-  color: var(--color-text-muted);
-  font-size: var(--text-xs);
-  font-variant-numeric: tabular-nums;
-  min-width: 4.25rem;
-  padding: 0 var(--space-1);
-  text-align: center;
-}
-
-.viewport-controls__autofit {
-  align-items: center;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  position: relative;
-}
-
-.viewport-controls__tooltip {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
-  color: var(--color-text-muted);
-  font-size: var(--text-xs);
-  font-weight: 400;
-  left: 50%;
-  line-height: var(--leading-tight);
-  max-width: 16rem;
-  opacity: 0;
-  padding: var(--space-2) var(--space-3);
-  pointer-events: none;
-  position: absolute;
-  text-align: center;
-  top: calc(100% + var(--space-2));
-  translate: -50% 0;
-  transition:
-    opacity var(--motion-duration-fast) var(--motion-ease),
-    visibility var(--motion-duration-fast) var(--motion-ease);
-  visibility: hidden;
-  white-space: normal;
-  width: max-content;
-  z-index: 100;
-}
-
-.viewport-controls__autofit-label:hover .viewport-controls__tooltip,
-.viewport-controls__checkbox:focus-visible ~ .viewport-controls__tooltip {
-  opacity: 1;
-  visibility: visible;
-}
-
-.viewport-controls__autofit-label {
-  align-items: center;
-  color: var(--color-text-subtle);
-  cursor: pointer;
-  display: inline-flex;
-  font-size: 0.65rem;
-  gap: var(--space-1);
-  letter-spacing: 0.02em;
-  line-height: 1;
-  user-select: none;
-}
-
-.viewport-controls__autofit-label:hover {
-  color: var(--color-text);
-}
-
-.viewport-controls__checkbox {
-  accent-color: var(--color-accent);
-  cursor: pointer;
-  height: 0.75rem;
-  margin: 0;
-  width: 0.75rem;
-}
-
 @media (width <= 640px) {
   .app__header {
     align-items: stretch;
     flex-direction: column;
     gap: var(--space-3);
     padding: var(--space-3);
-  }
-
-  .viewport-controls {
-    justify-content: space-between;
-  }
-
-  .viewport-controls__tooltip {
-    left: auto;
-    right: 0;
-    translate: 0 0;
   }
 }

@@ -194,4 +194,57 @@ describe('board store search retrieval and error handling', () => {
     // Only the brand-new card glows; the already-existing card does NOT glow
     expect(useBoardStore.getState().recentCardIds).toEqual(['brand-new-unique-id']);
   });
+
+  describe('board store clear board and confirmation', () => {
+    beforeEach(() => {
+      useBoardStore.setState({
+        cards: response.matches,
+        discardedCards: [response.matches[0]],
+        isClearConfirmOpen: false,
+        recentCardIds: ['activity-1'],
+        timelineSlots: [
+          { id: 'saturday-afternoon', activityId: 'activity-1' },
+          { id: 'saturday-evening', activityId: null },
+        ],
+        agentStatus: 'results',
+        lastMatchCount: 5,
+      });
+    });
+
+    it('manages confirmation dialog open and cancel lifecycle', () => {
+      expect(useBoardStore.getState().isClearConfirmOpen).toBe(false);
+
+      useBoardStore.getState().requestClearBoard();
+      expect(useBoardStore.getState().isClearConfirmOpen).toBe(true);
+
+      useBoardStore.getState().cancelClearBoard();
+      expect(useBoardStore.getState().isClearConfirmOpen).toBe(false);
+    });
+
+    it('clears all cards, timeline slots, discarded cards, and resets status on confirmClearBoard', () => {
+      useBoardStore.getState().requestClearBoard();
+      expect(useBoardStore.getState().isClearConfirmOpen).toBe(true);
+
+      useBoardStore.getState().confirmClearBoard();
+
+      const state = useBoardStore.getState();
+      expect(state.cards).toEqual([]);
+      expect(state.discardedCards).toEqual([]);
+      expect(state.recentCardIds).toEqual([]);
+      expect(state.timelineSlots.every((slot) => slot.activityId === null)).toBe(true);
+      expect(state.isClearConfirmOpen).toBe(false);
+      expect(state.agentStatus).toBe('idle');
+      expect(state.agentError).toBeNull();
+      expect(state.lastMatchCount).toBeNull();
+    });
+
+    it('clears board directly when clearBoard action is called', () => {
+      useBoardStore.getState().clearBoard();
+
+      const state = useBoardStore.getState();
+      expect(state.cards).toHaveLength(0);
+      expect(state.timelineSlots.every((slot) => slot.activityId === null)).toBe(true);
+      expect(state.agentStatus).toBe('idle');
+    });
+  });
 });

@@ -6,6 +6,7 @@ import {
   AUTO_FIT_DESCRIPTION,
   BOARD_LABEL,
   BOARD_KEYBOARD_HINT,
+  CLEAR_BOARD_CONFIRM_TITLE,
   DISCARD_GUIDE_TOAST,
   GATHERING_INFO_TITLE,
   TIMELINE_COLLAPSE_LABEL,
@@ -138,11 +139,11 @@ describe('App shell', () => {
     expect(markup).toContain('Sunday evening');
   });
 
-  it('renders the Auto-fit toggle checkbox with accessible tooltip description', () => {
+  it('renders the Auto-fit toggle switch with accessible tooltip description in board toolbar', () => {
     const markup = renderToStaticMarkup(<App />);
 
-    expect(markup).toContain('class="viewport-controls__autofit"');
-    expect(markup).toContain('class="viewport-controls__checkbox"');
+    expect(markup).toContain('class="board-toolbar"');
+    expect(markup).toContain('id="autofit-toggle"');
     expect(markup).toContain(AUTO_FIT_LABEL);
     expect(markup).toContain('aria-describedby="autofit-description"');
     expect(markup).toContain('id="autofit-description"');
@@ -210,5 +211,22 @@ describe('App shell', () => {
     expect(markup).toContain('timeline__slot--docked');
     expect(markup).toContain('aria-live="polite"');
     expect(markup).toContain('Test Docked Activity');
+  });
+
+  it('keeps the header restricted to brand and search only without viewport controls', () => {
+    const markup = renderToStaticMarkup(<App />);
+
+    expect(markup).toContain('class="app__header-brand"');
+    expect(markup).toContain('class="app__header-search"');
+    expect(markup).not.toContain('class="viewport-controls"');
+    expect(markup).not.toContain('class="viewport-controls__zoom"');
+  });
+
+  it('renders the clear board confirmation modal when isClearConfirmOpen is true', () => {
+    const markup = renderToStaticMarkup(<App initialClearConfirmOpen={true} />);
+
+    expect(markup).toContain('class="board-modal-backdrop"');
+    expect(markup).toContain('role="alertdialog"');
+    expect(markup).toContain(CLEAR_BOARD_CONFIRM_TITLE);
   });
 });

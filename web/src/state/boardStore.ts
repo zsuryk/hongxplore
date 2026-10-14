@@ -39,9 +39,14 @@ export type BoardStore = {
   dataSourceMode: DataSourceMode;
   selectedFreeSlotIds: string[];
   recentCardIds: string[];
+  isClearConfirmOpen: boolean;
   discardCard: (activityId: string) => void;
   dockCard: (activityId: string, timelineSlotId: string, options?: { replace?: boolean }) => boolean;
   undockCard: (timelineSlotId: string) => void;
+  requestClearBoard: () => void;
+  cancelClearBoard: () => void;
+  confirmClearBoard: () => void;
+  clearBoard: () => void;
   findSimilar: (card: ActivityCard, client?: AgentClient) => Promise<boolean>;
   loadAgentResponse: (request: AgentRequest, client?: AgentClient) => Promise<void>;
   submitSearch: (query: string, client?: AgentClient) => Promise<void>;
@@ -74,6 +79,7 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
   dataSourceMode: 'live',
   selectedFreeSlotIds: [],
   recentCardIds: [],
+  isClearConfirmOpen: false,
   discardCard(activityId) {
     set((state) => {
       const card = state.cards.find((candidate) => candidate.activity.id === activityId);
@@ -121,6 +127,27 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
         slot.id === timelineSlotId ? { ...slot, activityId: null } : slot,
       ),
     }));
+  },
+  requestClearBoard() {
+    set({ isClearConfirmOpen: true });
+  },
+  cancelClearBoard() {
+    set({ isClearConfirmOpen: false });
+  },
+  confirmClearBoard() {
+    get().clearBoard();
+  },
+  clearBoard() {
+    set({
+      cards: [],
+      discardedCards: [],
+      timelineSlots: TIMELINE_SLOTS.map((slot) => ({ id: slot.id, activityId: null })),
+      recentCardIds: [],
+      isClearConfirmOpen: false,
+      agentStatus: 'idle',
+      agentError: null,
+      lastMatchCount: null,
+    });
   },
   async findSimilar(card, client) {
     const activeClient = client ?? (get().dataSourceMode === 'mock' ? fixtureAgentClient : defaultAgentClient);
