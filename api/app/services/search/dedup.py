@@ -1,9 +1,10 @@
 """Multi-stage activity deduplication for search results (issue #6).
 
 Prevents redundant activity listings by checking:
-1. Canonical URL normalization (ignoring tracking params, casing, trailing slashes).
+1. Canonical URL normalization (ignoring tracking params, casing, www,
+   http/https, trailing slashes).
 2. Semantic title & venue overlap within the same district (token similarity threshold).
-3. Seed catalogue collisions (avoiding duplicating items already curated in seed data).
+3. Optional seed catalogue collisions when a catalogue is provided by the caller.
 """
 
 from __future__ import annotations
@@ -32,24 +33,33 @@ TRACKING_PARAMS: frozenset[str] = frozenset(
 
 # Known HK districts to strip from title branding suffixes
 _DISTRICT_NAMES = (
-    "central & western|wan chai|eastern|southern|yau tsim mong|sham shui po|"
-    "kowloon city|wong tai sin|kwun tong|kwai tsing|tsuen wan|tuen mun|"
-    "yuen long|north|tai po|sha tin|sai kung|islands|central|kowloon"
+    r"central & western|wan chai|eastern|southern|yau tsim mong|sham shui po|"
+    r"kowloon city|wong tai sin|kwun tong|kwai tsing|tsuen wan|tuen mun|"
+    r"yuen long|north|tai po|sha tin|sai kung|islands|central|kowloon"
 )
 
 _PORTAL_PATTERN = (
-    r"\s*[-|–]\s*(?:lcsd|govhk|discover hong kong|timable|art-mate|eventbrite|"
-    rf"康文署|政府一站通|{_DISTRICT_NAMES}).*$"
+    rf"\s+[-|–—]\s*(?:lcsd|govhk|discover hong kong|timable|art-mate|eventbrite|"
+    rf"康文署|政府一站通|{_DISTRICT_NAMES})\s*$"
 )
 _PORTAL_SUFFIXES = re.compile(_PORTAL_PATTERN, re.IGNORECASE)
 _NON_WORD_PATTERN = re.compile(r"[^\w\s\u4e00-\u9fff]+", re.UNICODE)
 
 
 def normalize_url(url: str) -> str:
-    """Canonicalize a URL by normalizing scheme, host, path and removing tracking query params."""
-    split = urlsplit(url.strip())
-    scheme = split.scheme.lower()
+    """Canonicalize a URL by normalizing scheme, host, path, and removing tracking params.
+
+    Normalizes http vs https, strips leading 'www.', and strips trailing slashes.
+    """
+    raw = url.strip()
+    if not raw:
+        return ""
+
+    split = urlsplit(raw)
+    scheme = "https" if split.scheme.lower() in ("http", "https") else split.scheme.lower()
     netloc = split.netloc.lower()
+    if netloc.startswith("www."):
+        netloc = netloc[4:]
     path = split.path.rstrip("/") if split.path != "/" else "/"
 
     query_pairs = parse_qsl(split.query, keep_blank_values=False)
@@ -64,8 +74,13 @@ def normalize_url(url: str) -> str:
     return urlunsplit((scheme, netloc, path, query, ""))
 
 
+def strip_portal_suffix(title: str) -> str:
+    """Strip trailing portal/district branding suffixes while preserving original casing."""
+    return _PORTAL_SUFFIXES.sub("", title).strip()
+
+
 def clean_title(title: str) -> str:
-    """Strip portal branding suffixes and punctuation for semantic comparison."""
+    """Strip trailing portal/district branding suffixes and punctuation for semantic comparison."""
     no_suffix = _PORTAL_SUFFIXES.sub("", title)
     return _NON_WORD_PATTERN.sub(" ", no_suffix.lower()).strip()
 
@@ -84,25 +99,37 @@ def title_similarity(t1: str, t2: str) -> float:
 def is_duplicate_activity(
     act1: Activity, act2: Activity, similarity_threshold: float = 0.75
 ) -> bool:
-    """Check if two activities represent the same physical event or venue."""
+    """Check if two activities represent the same physical event or listing.
+
+    Two items are duplicates if they share the same canonical URL, or are in
+    the same district with high title similarity. Same venue alone is not sufficient
+    unless title similarity is at least 0.5.
+    """
     # 1. Exact canonical URL match
     if normalize_url(str(act1.url)) == normalize_url(str(act2.url)):
         return True
 
-    # 2. Same district with matching venue or high title similarity
+    # 2. Same district comparison
     dist1 = act1.location.district.lower().strip()
     dist2 = act2.location.district.lower().strip()
     if dist1 == dist2:
         venue1 = (act1.location.venue or "").lower().strip()
         venue2 = (act2.location.venue or "").lower().strip()
-        if venue1 and venue2 and venue1 == venue2:
+
+        sim_title = title_similarity(act1.title, act2.title)
+        sim_title_en = (
+            title_similarity(act1.title_en, act2.title_en)
+            if (act1.title_en and act2.title_en)
+            else 0.0
+        )
+        max_sim = max(sim_title, sim_title_en)
+
+        # Same venue ONLY counts as duplicate when accompanied by moderate title similarity
+        if venue1 and venue2 and venue1 == venue2 and max_sim >= 0.5:
             return True
 
-        if title_similarity(act1.title, act2.title) >= similarity_threshold:
+        if max_sim >= similarity_threshold:
             return True
-        if act1.title_en and act2.title_en:
-            if title_similarity(act1.title_en, act2.title_en) >= similarity_threshold:
-                return True
 
     return False
 
@@ -116,8 +143,8 @@ def deduplicate_activities(
 
     Args:
         activities: Newly discovered candidate activities.
-        existing_catalog: Optional list of activities (e.g. seed catalog or existing board cards)
-                          to avoid duplicating.
+        existing_catalog: Optional list of activities (supplied by caller, e.g. seed catalog
+                          or existing board cards) to avoid duplicating.
         similarity_threshold: Token overlap threshold for title matching (default 0.75).
 
     Returns:
@@ -129,11 +156,13 @@ def deduplicate_activities(
     # Pre-populate seen URLs and entities from existing catalog if provided
     catalog_pool = existing_catalog or []
     for item in catalog_pool:
-        seen_urls.add(normalize_url(str(item.url)))
+        norm = normalize_url(str(item.url))
+        if norm:
+            seen_urls.add(norm)
 
     for act in activities:
         norm_url = normalize_url(str(act.url))
-        if norm_url in seen_urls:
+        if norm_url and norm_url in seen_urls:
             continue
 
         # Check against existing catalog
@@ -151,7 +180,8 @@ def deduplicate_activities(
         if collision_with_batch:
             continue
 
-        seen_urls.add(norm_url)
+        if norm_url:
+            seen_urls.add(norm_url)
         unique_activities.append(act)
 
     return unique_activities

@@ -468,31 +468,9 @@ class AgentOrchestrator:
         settings: Settings | None = None,
         seed_data_path: Path | None = None,
     ) -> None:
-        self.settings = settings or app_settings
         self.llm_client = llm_client
-        if (
-            self.llm_client is None
-            and not self.settings.demo_mode
-            and bool(self.settings.openai_api_key.strip())
-        ):
-            from app.services.llm import OpenAILLMClient
-
-            self.llm_client = OpenAILLMClient(self.settings)
-
         self.search_provider = search_provider
-        if (
-            self.search_provider is None
-            and not self.settings.demo_mode
-            and bool(self.settings.tavily_api_key.strip())
-        ):
-            from app.services.search import SQLiteActivityCache, TavilySearchProvider
-
-            self.search_provider = TavilySearchProvider(
-                config=self.settings,
-                cache=SQLiteActivityCache(),
-                llm_client=self.llm_client,
-            )
-
+        self.settings = settings or app_settings
         self.seed_data_path = seed_data_path
 
     async def run(self, request: AgentRequest) -> AgentResponse:
