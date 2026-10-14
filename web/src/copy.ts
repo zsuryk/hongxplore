@@ -205,7 +205,10 @@ export const DISCARD_BIN_HINT = 'Drop a card here to remove it from the board.';
 export const BOARD_EMPTY_STATE = 'Your board is clear. Find similar activities to explore more.';
 export const INITIAL_ACTIVITY_QUERY = 'free saturday afternoon, something cultural in Kowloon, English friendly';
 
-export function activityCardAccessibleLabel(title: string): string {
+export function activityCardAccessibleLabel(title: string, language?: string): string {
+  if (language) {
+    return `${ACTIVITY_CARD_LABEL}: ${title} (${ACTIVITY_CARD_LANGUAGE_LABEL}: ${language})`;
+  }
   return `${ACTIVITY_CARD_LABEL}: ${title}`;
 }
 

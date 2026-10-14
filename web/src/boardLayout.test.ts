@@ -6,6 +6,7 @@ import {
   CARD_WIDTH,
   EMPTY_BOARD_BOUNDS,
   areAnyCardsOutOfFrame,
+  calculateContentCardHeight,
   cardBounds,
   computeBoardLayout,
   contentBounds,
@@ -386,6 +387,76 @@ describe('content-driven card shapes and pure board layout (Issue #76)', () => {
 
       expect(secondRun.positionsById).toEqual(firstRun.positionsById);
       expect(secondRun.variantsById).toEqual(firstRun.variantsById);
+    });
+  });
+
+  describe('content-driven heights and measured collision avoidance', () => {
+    it('calculates content-driven height so a 2-line rationale is shorter than a 6-line rationale', () => {
+      const shortRationaleCard = makeMockCard('short-c', 'Brief 2-line rationale match for testing.');
+      const longRationaleCard = makeMockCard(
+        'long-c',
+        'This is a comprehensive six-line rationale with detailed explanation about cultural background, neighborhood walking convenience, timing, language comfort, and unique architectural interest in the historic quarter.',
+      );
+
+      const shortHeight = calculateContentCardHeight(shortRationaleCard, 'standard');
+      const longHeight = calculateContentCardHeight(longRationaleCard, 'standard');
+
+      expect(shortHeight).toBeLessThan(longHeight);
+      expect(shortHeight).toBeGreaterThanOrEqual(280);
+    });
+
+    it('tiledCardPosition accommodates tall compact card so wide card clears it', () => {
+      const standardCompactPos = tiledCardPosition(1, undefined, 250);
+      const tallCompactPos = tiledCardPosition(1, undefined, 350);
+
+      expect(standardCompactPos.y).toBe(BOARD_GRID_ORIGIN.y + 310);
+      // Tall compact card (350px) pushes wide card down to 350 + 40 = 390
+      expect(tallCompactPos.y).toBe(BOARD_GRID_ORIGIN.y + 390);
+    });
+
+    it('findBestSquareSlot uses measured height to avoid candidate collision', () => {
+      // Existing card has a measured height of 500px at (0, 0)
+      const existing: PlacedCard[] = [
+        {
+          position: { x: 0, y: 0 },
+          variant: 'tall',
+          width: 320,
+          height: 500,
+        },
+      ];
+
+      // A slot candidate placed below it must clear 500px, not the default fitHeight (480px)
+      const slot = findBestSquareSlot('standard', existing, { x: 0, y: 0 }, 300);
+      const slotRect = cardBounds(slot, 'standard', 300);
+      const existingRect = cardBounds(existing[0].position, existing[0].variant, existing[0].height);
+
+      expect(rectsOverlap(slotRect, existingRect, 10)).toBe(false);
+    });
+
+    it('computeBoardLayout exposes height and passes it to contentBounds and placed cards', () => {
+      const cards: ActivityMatch[] = [
+        makeMockCard('c0', 'Short rationale'),
+        makeMockCard(
+          'c1',
+          'Very detailed rationale that expands across multiple lines and takes more vertical space on the canvas.',
+        ),
+      ];
+
+      const measuredHeights = {
+        c0: 240,
+        c1: 420,
+      };
+
+      const layout = computeBoardLayout({ cards, measuredHeights });
+
+      expect(layout.heightsById['c0']).toBe(240);
+      expect(layout.heightsById['c1']).toBe(420);
+      expect(layout.canvasCards[0].height).toBe(240);
+      expect(layout.canvasCards[1].height).toBe(420);
+
+      // contentBounds uses the cards' measured heights
+      const bounds = contentBounds(layout.canvasCards);
+      expect(bounds.height).toBeGreaterThanOrEqual(420);
     });
   });
 });

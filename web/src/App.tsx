@@ -197,6 +197,7 @@ export function App({
   const [isGesturing, setIsGesturing] = useState(false);
   const [hoveredSlotId, setHoveredSlotId] = useState<string | null>(null);
   const [cardPositionsById, setCardPositionsById] = useState<Record<string, Point>>({});
+  const [cardHeightsById, setCardHeightsById] = useState<Record<string, number>>({});
   const [discardingCardId, setDiscardingCardId] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<string | null>(initialConfirmation ?? null);
   const [isTimelineExpanded, setIsTimelineExpanded] = useState(initialTimelineExpanded ?? false);
@@ -222,8 +223,9 @@ export function App({
         discardedCards,
         dockedCardIds,
         customPositions: cardPositionsById,
+        measuredHeights: cardHeightsById,
       }),
-    [cards, discardedCards, dockedCardIds, cardPositionsById],
+    [cards, discardedCards, dockedCardIds, cardPositionsById, cardHeightsById],
   );
 
   const canvasCards = boardLayout.canvasCards;
@@ -302,6 +304,47 @@ export function App({
 
     return () => observer.disconnect();
   }, []);
+
+  // Measure rendered heights of canvas cards to drive content-driven layout and collision avoidance
+  useLayoutEffect(() => {
+    const container = boardRef.current;
+    if (!container || typeof ResizeObserver === 'undefined') {
+      return;
+    }
+
+    const cardElements = container.querySelectorAll<HTMLElement>('[data-activity-card-id]');
+    if (cardElements.length === 0) {
+      return;
+    }
+
+    const observer = new ResizeObserver((entries) => {
+      const updates: Record<string, number> = {};
+      for (const entry of entries) {
+        const id = entry.target.getAttribute('data-activity-card-id');
+        if (id) {
+          const height = Math.round(entry.borderBoxSize?.[0]?.blockSize ?? entry.target.getBoundingClientRect().height);
+          if (height > 0) {
+            updates[id] = height;
+          }
+        }
+      }
+      if (Object.keys(updates).length > 0) {
+        setCardHeightsById((prev) => {
+          let changed = false;
+          for (const [k, v] of Object.entries(updates)) {
+            if (prev[k] !== v) {
+              changed = true;
+              break;
+            }
+          }
+          return changed ? { ...prev, ...updates } : prev;
+        });
+      }
+    });
+
+    cardElements.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, [canvasCards]);
 
   // Resizing must not throw away their pan and zoom: hold the centre point.
   useEffect(() => {
@@ -1223,6 +1266,7 @@ export function App({
                   <div
                     className={`board__card board__card--${variant}${isDragging ? ' board__card--ghost' : ''}`}
                     data-activity-card
+                    data-activity-card-id={match.activity.id}
                     key={match.activity.id}
                     onPointerCancel={handleCardPointerCancel}
                     onPointerDown={(event) => handleCardPointerDown(event, match)}
