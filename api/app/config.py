@@ -30,6 +30,8 @@ class Settings(BaseSettings):
     tavily_min_curated_results: int = Field(default=3, ge=0)
     tavily_extract_with_llm: bool = False
     search_cache_path: str | None = None
+    # Retrieval policy: how many cards one query may fill the board with (A8.4).
+    agent_match_limit: int = Field(default=6, ge=3, le=10)
     demo_mode: bool = True
 
     @field_validator("openai_base_url", "search_cache_path", mode="before")

@@ -42,6 +42,7 @@ def test_defaults_with_empty_env(monkeypatch: pytest.MonkeyPatch) -> None:
     assert settings.tavily_min_curated_results == 3
     assert settings.tavily_extract_with_llm is False
     assert settings.search_cache_path is None
+    assert settings.agent_match_limit == 6
     assert settings.demo_mode is True
 
 
@@ -109,6 +110,14 @@ def test_search_policy_overrides_from_dotenv(
     assert settings.search_cache_path == "/tmp/hongxplore-cache.db"
 
 
+def test_agent_match_limit_overrides_from_dotenv(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _clear_env(monkeypatch)
+    dotenv = _write_dotenv(tmp_path, AGENT_MATCH_LIMIT="10")
+    assert Settings(_env_file=dotenv).agent_match_limit == 10
+
+
 def test_blank_search_cache_path_is_unset(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """`.env.example` ships `SEARCH_CACHE_PATH=` — blank means the service default."""
     _clear_env(monkeypatch)
@@ -124,9 +133,11 @@ def test_blank_search_cache_path_is_unset(tmp_path: Path, monkeypatch: pytest.Mo
         ("TAVILY_TIMEOUT_SECONDS", "0"),
         ("TAVILY_MAX_RESULTS", "0"),
         ("TAVILY_MIN_CURATED_RESULTS", "-5"),
+        ("AGENT_MATCH_LIMIT", "2"),
+        ("AGENT_MATCH_LIMIT", "11"),
     ],
 )
-def test_invalid_search_policy_value_raises_validation_error(
+def test_invalid_policy_value_raises_validation_error(
     key: str, value: str, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """A malformed policy value must break startup, not silently clamp to something plausible."""
