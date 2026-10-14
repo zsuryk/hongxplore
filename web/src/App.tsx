@@ -116,6 +116,7 @@ type PinchState = {
 
 type CardDragState = {
   card: BoardActivityCard;
+  cardSize?: Size;
   source: 'board' | 'timeline';
   fromSlotId?: string;
   pointerId: number;
@@ -429,6 +430,23 @@ export function App({
     [],
   );
 
+  useEffect(() => {
+    function handleGlobalKeyDown(event: globalThis.KeyboardEvent) {
+      if (event.key === 'Escape') {
+        if (cardDragState) {
+          setIsTimelineExpanded(false);
+          setIsHoverExpanded(false);
+          userCollapsedDuringDragRef.current = true;
+        } else if (isTimelineExpanded) {
+          setIsTimelineExpanded(false);
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [cardDragState, isTimelineExpanded]);
+
   // React registers `wheel` passively at the root, so `preventDefault()` from an
   // onWheel handler is ignored. Only a native non-passive listener keeps the page from
   // scrolling while zooming.
@@ -550,6 +568,10 @@ export function App({
     const screenPoint = screenPointWithin(boardBounds, event.clientX, event.clientY);
     setCardDragState({
       card,
+      cardSize: {
+        width: cardBounds.width,
+        height: cardBounds.height,
+      },
       source: from ? 'timeline' : 'board',
       fromSlotId: from?.slotId,
       pointerId: event.pointerId,
@@ -581,8 +603,8 @@ export function App({
 
     const isTimeline = cardDragState.source === 'timeline';
     const scale = isTimeline ? 1 : viewport.scale;
-    const cardW = (isTimeline ? 176 : CARD_WIDTH) * scale;
-    const cardH = (isTimeline ? 120 : CARD_MIN_HEIGHT) * scale;
+    const cardW = cardDragState.cardSize?.width ?? (isTimeline ? 176 : CARD_WIDTH) * scale;
+    const cardH = cardDragState.cardSize?.height ?? (isTimeline ? 120 : CARD_MIN_HEIGHT) * scale;
     const cardLeft = screenPoint.x - cardDragState.grabOffset.x;
     const cardTop = screenPoint.y - cardDragState.grabOffset.y;
 
@@ -618,7 +640,7 @@ export function App({
         nearTimeline = true;
       } else {
         const bounds = timelineElement.getBoundingClientRect();
-        const proximityPadding = 72;
+        const proximityPadding = 96;
         const cursorNear =
           event.clientX >= bounds.left - proximityPadding &&
           event.clientX <= bounds.right + proximityPadding &&
