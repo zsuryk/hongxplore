@@ -12,6 +12,7 @@ from app.models.activity import (
     FreeSlot,
     Lang,
     Location,
+    Price,
     Source,
     TimeRange,
 )
@@ -38,6 +39,7 @@ __all__ = [
     "LogLevel",
     "Location",
     "MatchedActivity",
+    "Price",
     "Source",
     "TimeRange",
     "UtcDateTime",

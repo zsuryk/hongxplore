@@ -1,5 +1,6 @@
 """Activity — the canonical domain object and single source of truth for the API contract."""
 
+from decimal import Decimal
 from typing import Literal, Self
 
 from pydantic import Field, HttpUrl, model_validator
@@ -29,6 +30,42 @@ class ActivityPart(TimeRange):
 
 class FreeSlot(TimeRange):
     """A period the user marked as available — the glossary's **free slot**."""
+
+
+class Price(ContractModel):
+    """What an Activity costs.
+
+    The whole object is **absent** when the source publishes no pricing at all — a
+    third state, distinct from both an explicit free entry and a priced one. A
+    present price says one of:
+
+    - **free of charge** — ``is_free=True`` with no ``amount``
+    - **priced** — an ``amount`` greater than zero, optionally in another currency
+    """
+
+    amount: Decimal | None = Field(
+        default=None,
+        gt=0,
+        description="Cost in `currency`, greater than zero; null when `is_free` is true.",
+    )
+    currency: str = Field(
+        default="HKD",
+        min_length=1,
+        pattern=r"^[A-Z]{3}$",
+        description="ISO 4217 code of `amount`; meaningless when `is_free` is true.",
+    )
+    is_free: bool = Field(
+        default=False,
+        description="True when the source states the Activity is free of charge.",
+    )
+
+    @model_validator(mode="after")
+    def _free_and_amount_agree(self) -> Self:
+        if self.is_free and self.amount is not None:
+            raise ValueError("amount must be null when `is_free` is true")
+        if not self.is_free and self.amount is None:
+            raise ValueError("a price must carry an amount or `is_free`")
+        return self
 
 
 class Source(ContractModel):
@@ -64,3 +101,14 @@ class Activity(ContractModel):
     location: Location = Field(description="District, venue and address.")
     url: HttpUrl = Field(description="The Activity's own page — details or booking.")
     image: HttpUrl | None = None
+    price: Price | None = Field(
+        default=None,
+        description=(
+            "What it costs; absent when the source publishes no pricing at all, "
+            "which is distinct from an explicit free entry."
+        ),
+    )
+    listed_at: UtcDateTime | None = Field(
+        default=None,
+        description="When the source published or last confirmed this listing (UTC).",
+    )

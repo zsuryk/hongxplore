@@ -96,6 +96,13 @@ export interface components {
             url: string;
             /** Image */
             image?: string | null;
+            /** @description What it costs; absent when the source publishes no pricing at all, which is distinct from an explicit free entry. */
+            price?: components["schemas"]["Price"] | null;
+            /**
+             * Listed At
+             * @description When the source published or last confirmed this listing (UTC).
+             */
+            listed_at?: string | null;
         };
         /**
          * ActivityPart
@@ -225,6 +232,36 @@ export interface components {
              * @description Short 'why this matches', shown on the activity card.
              */
             match_rationale: string;
+        };
+        /**
+         * Price
+         * @description What an Activity costs.
+         *
+         *     The whole object is **absent** when the source publishes no pricing at all — a
+         *     third state, distinct from both an explicit free entry and a priced one. A
+         *     present price says one of:
+         *
+         *     - **free of charge** — ``is_free=True`` with no ``amount``
+         *     - **priced** — an ``amount`` greater than zero, optionally in another currency
+         */
+        Price: {
+            /**
+             * Amount
+             * @description Cost in `currency`, greater than zero; null when `is_free` is true.
+             */
+            amount?: string | null;
+            /**
+             * Currency
+             * @description ISO 4217 code of `amount`; meaningless when `is_free` is true.
+             * @default HKD
+             */
+            currency: string;
+            /**
+             * Is Free
+             * @description True when the source states the Activity is free of charge.
+             * @default false
+             */
+            is_free: boolean;
         };
         /**
          * Source
