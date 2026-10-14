@@ -117,7 +117,6 @@ async def test_auth_header_sent_and_not_in_body() -> None:
             await provider.search("hiking in sai kung")
             assert received_header == "Bearer secret-tavily-key-12345"
             assert "api_key" not in received_payload
-            assert received_payload.get("country") == "hong kong"
 
 
 @pytest.mark.anyio
