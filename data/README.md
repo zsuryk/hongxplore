@@ -22,6 +22,8 @@ Each entry in `activities.json` conforms strictly to the canonical `Activity` do
 | `location` | `object` | Structured location: `district`, `venue`, and `address` |
 | `url` | `string` | Official URL for booking or facility details |
 | `image` | `string \| null` | Optional official venue / event image URL |
+| `price` | `object \| null` | Three-state pricing object: `{ amount, currency, is_free }`, or absent (`null`) |
+| `listed_at` | `string \| null` | UTC ISO-8601 timestamp when confirmed/crawled, or absent (`null`) |
 
 
 ## Category Distribution
@@ -45,7 +47,8 @@ Hong Kong public venues and facilities do not offer permanent, static per-sessio
   - LCSD Sports Centres: `https://www.lcsd.gov.hk/clpss/en/webApp/Facility/Details.do?ftid=0#<anchor_id>` (with verified `#<anchor_id>` matching the venue).
   - LCSD Swimming Pools: `https://www.lcsd.gov.hk/clpss/en/webApp/Swimming.do?swpId=<id>`.
   - Museums & Cultural Venues: Official portals (`mplus.org.hk`, `hkpm.org.hk`, `taikwun.hk`, `pmq.org.hk`, `apo.hk`, etc.).
-- **Official Tariffs & Fees**: Costs for public facilities represent official statutory LCSD gazetted hire charges (e.g., Badminton Peak HKD 59–118/hr, Squash HKD 27–54/30 mins, Table Tennis HKD 14–28/hr, Swimming HKD 17–19 per session, Fitness Room HKD 14/hr) or official museum general admission prices.
+- **Official Tariffs & Fees**: Costs for public facilities represent official statutory LCSD gazetted hire charges (e.g., Badminton Peak HKD 59–118/hr, Squash HKD 27–54/30 mins, Table Tennis HKD 14–28/hr, Swimming HKD 17–19 per session, Fitness Room HKD 14/hr) or official museum general admission prices. Modeled as a strict three-state contract per ADR-0010: explicit priced amount (positive decimal string), explicit free of charge (`is_free=true`), or absent (`null`) when unpriced or donation-based (never defaulted to free without proof).
+- **Crawl Freshness (`listed_at`)**: Carries verified crawl/confirmation timestamps in UTC (e.g. `2026-09-15T00:00:00Z` for LCSD CLPSS directory audits, `2026-09-20T00:00:00Z` for major museum catalogs, `2026-09-18T00:00:00Z` for AFCD park trails), while unconfirmed community events remain absent (`null`).
 
 ### 2. Operational Scheduling Conventions in `DEMO_MODE`
 - **Simulated Booking Slots (`parts`)**: Citizen booking platforms in Hong Kong (LCSD SmartPLAY, URBTIX, Cityline) manage bookings behind dynamic user logins with 7-day rolling windows. Because static URLs cannot link to live rolling booking instances, simulated weekend time slots are normalized to UTC ISO-8601 (e.g., Saturday 10:00–12:00 HKT mapped to `2026-10-03T02:00:00Z`–`04:00:00Z` UTC) within standard facility operating hours (typically 07:00–23:00 HKT) to allow interactive drag-and-drop scheduling, timeline placement, and conflict detection in the Hongxplore whiteboard canvas. All instants store UTC and display HKT per repository rules.
