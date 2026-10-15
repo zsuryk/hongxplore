@@ -291,3 +291,74 @@ async def test_pool_close_closes_all_clients() -> None:
 
     await pool.close()
     assert closed == ["c1", "c2"]
+
+
+@pytest.mark.anyio
+async def test_agent_orchestrator_integration_with_provider_pool_failover() -> None:
+    """AgentOrchestrator runs live path with LLMProviderPool failover between providers."""
+    from app.models.agent import AgentRequest
+    from app.services.agent import AgentOrchestrator
+
+    valid_intent_json = (
+        "{\n"
+        '  "search_query": "hiking in Sai Kung",\n'
+        '  "categories": ["outdoors", "hiking"],\n'
+        '  "districts": ["Sai Kung"],\n'
+        '  "free_only": true,\n'
+        '  "english_friendly": true,\n'
+        '  "temporal_expression": "Sunday",\n'
+        '  "matched_slot_indices": [],\n'
+        '  "summary": "hiking in Sai Kung on Sunday"\n'
+        "}"
+    )
+    p1 = FakeClient([_make_status_error(429)])
+    p2 = FakeClient([valid_intent_json, '{"match_rationale": "Scenic hike in Sai Kung."}'])
+
+    pool = LLMProviderPool(
+        config=Settings(llm_pool_size=2, llm_pool_failover_enabled=True),
+        clients=[p1, p2],
+    )
+
+    settings = Settings(demo_mode=False, openai_api_key="mock-key")
+    orchestrator = AgentOrchestrator(
+        llm_client=pool,
+        settings=settings,
+    )
+
+    request = AgentRequest(query="hiking in Sai Kung on Sunday")
+    response = await orchestrator.run(request)
+
+    assert response.status == "ok"
+    assert len(response.matches) > 0
+    assert len(p1.calls) == 1
+    assert len(p2.calls) >= 1
+
+
+@pytest.mark.anyio
+async def test_agent_orchestrator_integration_with_exhausted_pool_fallback() -> None:
+    """When pool exhausts all providers, AgentOrchestrator falls back to offline parsing."""
+    from app.models.agent import AgentRequest
+    from app.services.agent import AgentOrchestrator
+
+    p1 = FakeClient([_make_status_error(429)])
+    p2 = FakeClient([_make_status_error(503)])
+
+    pool = LLMProviderPool(
+        config=Settings(llm_pool_size=2, llm_pool_failover_enabled=True),
+        clients=[p1, p2],
+    )
+
+    settings = Settings(demo_mode=False, openai_api_key="mock-key")
+    orchestrator = AgentOrchestrator(
+        llm_client=pool,
+        settings=settings,
+    )
+
+    request = AgentRequest(query="hiking in Sai Kung")
+    response = await orchestrator.run(request)
+
+    assert response.status == "ok"
+    assert len(response.matches) > 0
+    log_messages = [entry.message for entry in response.log]
+    assert any("Live intent parsing unavailable" in msg for msg in log_messages)
+    assert any("All 2 LLM provider(s) in the pool failed." in msg for msg in log_messages)

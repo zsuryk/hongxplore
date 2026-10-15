@@ -5,6 +5,7 @@ Policy (pool size, failover toggle, timeout/retries) comes from Settings (A8.4);
 Strategy (failover order, error classification, cooldown backoff) lives here.
 """
 
+import inspect
 import logging
 import time
 from collections.abc import Callable, Sequence
@@ -84,7 +85,9 @@ class LLMProviderPool:
         """Close all underlying provider clients that support closing."""
         for client in self._clients:
             if hasattr(client, "close") and callable(client.close):
-                await client.close()
+                res = client.close()
+                if inspect.isawaitable(res):
+                    await res
 
     async def complete(self, *, system: str, user: str) -> str:
         """Execute a completion using the provider pool with failover and cooldown."""
