@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import agentResponse from '../../docs/examples/agent-response.json';
 import { createAgentClient } from './api/client';
 import type { components } from './api/schema';
+import { getUpcomingWeekendFreeSlots } from './copy';
 import { useBoardStore } from './state/boardStore';
 
 const response = agentResponse as components['schemas']['AgentResponse'];
@@ -43,7 +44,9 @@ describe('Search and Agent status integration', () => {
     const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
     expect(callBody.query).toBe('hiking in Sai Kung');
     expect(callBody.free_slots).toHaveLength(2);
-    expect(callBody.free_slots[0].start).toContain('2026-10-10');
+    const expectedMorning = getUpcomingWeekendFreeSlots().find((s) => s.id === 'saturday-morning');
+    expect(callBody.free_slots[0].start).toBe(expectedMorning?.start);
+    expect(callBody.free_slots[0].end).toBe(expectedMorning?.end);
 
     expect(useBoardStore.getState().agentStatus).toBe('results');
     expect(useBoardStore.getState().cards).toEqual(response.matches);

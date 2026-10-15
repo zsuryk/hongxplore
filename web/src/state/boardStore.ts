@@ -6,7 +6,7 @@ import {
   AGENT_ERROR_LOG_PREFIX,
   AGENT_STATUS_ERROR,
   formatAgentErrorMessage,
-  FREE_TIME_SLOTS,
+  getUpcomingWeekendFreeSlots,
   INITIAL_ACTIVITY_QUERY,
   TIMELINE_SLOTS,
 } from '../copy';
@@ -54,7 +54,7 @@ export type BoardStore = {
   setCardPositions: (positions: Record<string, Point>) => void;
   findSimilar: (card: ActivityCard, client?: AgentClient) => Promise<boolean>;
   loadAgentResponse: (request: AgentRequest, client?: AgentClient) => Promise<void>;
-  submitSearch: (query: string, client?: AgentClient) => Promise<void>;
+  submitSearch: (query: string, client?: AgentClient, options?: { referenceTime?: Date }) => Promise<void>;
   toggleFreeSlot: (slotId: string) => void;
   setDataSourceMode: (mode: DataSourceMode) => void;
   setTimelineSlots: (timelineSlots: TimelineSlot[]) => void;
@@ -256,12 +256,15 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
   setDataSourceMode(dataSourceMode) {
     set({ dataSourceMode });
   },
-  async submitSearch(query, client) {
+  async submitSearch(query, client, options) {
     const selectedSlots = get().selectedFreeSlotIds;
-    const freeSlots = FREE_TIME_SLOTS.filter((slot) => selectedSlots.includes(slot.id)).map((slot) => ({
-      start: slot.start,
-      end: slot.end,
-    }));
+    const availableSlots = getUpcomingWeekendFreeSlots(options?.referenceTime);
+    const freeSlots = availableSlots
+      .filter((slot) => selectedSlots.includes(slot.id))
+      .map((slot) => ({
+        start: slot.start,
+        end: slot.end,
+      }));
 
     const activeClient = client ?? (get().dataSourceMode === 'mock' ? fixtureAgentClient : defaultAgentClient);
 
