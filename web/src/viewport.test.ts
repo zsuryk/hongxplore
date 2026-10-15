@@ -108,65 +108,56 @@ describe('zoom ladder', () => {
 
 describe('smartCenter100 (#104)', () => {
   const container = { width: 1000, height: 700 };
-  const currentViewport = { x: 50, y: 50, scale: 0.4 };
+  const overviewViewport = { x: 50, y: 50, scale: 0.4 };
 
-  it('resets to 100% at container center when no content exists', () => {
-    const result = smartCenter100(currentViewport, null, container, 48);
+  const cards = [
+    { x: 100, y: 100, width: 320, height: 200 }, // Card 1 center: (260, 200)
+    { x: 460, y: 100, width: 320, height: 200 }, // Card 2 center: (620, 200)
+    { x: 100, y: 340, width: 320, height: 200 }, // Card 3 center: (260, 440)
+    { x: 460, y: 340, width: 320, height: 200 }, // Card 4 center: (620, 440)
+  ];
+
+  it('resets to 100% at container center when no cards exist', () => {
+    const result = smartCenter100(overviewViewport, [], container);
     expect(result.scale).toBe(1.0);
-    // At scale 1, screen center remains centered
     expect(worldToScreen(screenToWorld({ x: 500, y: 350 }, result), result)).toEqual({ x: 500, y: 350 });
   });
 
-  it('centers content horizontally and vertically when content fits within container at 100%', () => {
-    const content = { x: 100, y: 200, width: 400, height: 300 };
-    const result = smartCenter100(currentViewport, content, container, 48);
+  it('preserves existing focal point with zero camera jump for subtle zoom changes', () => {
+    const subtleViewport = { x: 120, y: -40, scale: 0.9 };
+    const result = smartCenter100(subtleViewport, cards, container);
 
     expect(result.scale).toBe(1.0);
-    // Expected center:
-    // x = (1000 - 400)/2 - 100 = 200
-    // y = (700 - 300)/2 - 200 = 0
-    expect(result.x).toBe(200);
-    expect(result.y).toBe(0);
-
-    // Screen coordinates of content bounds should have equal margins:
-    const screenLeft = content.x * result.scale + result.x;
-    const screenRight = (content.x + content.width) * result.scale + result.x;
-    expect(screenLeft).toBe(300);
-    expect(container.width - screenRight).toBe(300);
+    // World point at screen center should remain at screen center
+    const centerBefore = screenToWorld({ x: 500, y: 350 }, subtleViewport);
+    const centerAfter = screenToWorld({ x: 500, y: 350 }, result);
+    expect(centerAfter.x).toBeCloseTo(centerBefore.x, 2);
+    expect(centerAfter.y).toBeCloseTo(centerBefore.y, 2);
   });
 
-  it('aligns to top margin when content is taller than viewport and zoomed out, preventing void center', () => {
-    // 12 cards in 2 columns: 1400px tall
-    const content = { x: 150, y: 100, width: 660, height: 1400 };
-    const result = smartCenter100(currentViewport, content, container, 48);
+  it('preserves focal point when screen center is already directly over a card', () => {
+    // Viewport positioned so screen center (500, 350) lands inside Card 1 (100..420, 100..300)
+    const cardCenteredViewport = { x: 300, y: 150, scale: 1.0 };
+    const result = smartCenter100(cardCenteredViewport, cards, container);
 
     expect(result.scale).toBe(1.0);
-    // Fits horizontally -> centered horizontally: (1000 - 660)/2 - 150 = 20
-    expect(result.x).toBe(20);
-    // Taller than viewport (1400 > 700 - 96) -> aligns top with padding (48):
-    // y = padding - content.y = 48 - 100 = -52
-    expect(result.y).toBe(-52);
-
-    // Screen top of the first card should be at padding (48px), perfectly visible:
-    const screenTop = content.y * result.scale + result.y;
-    expect(screenTop).toBe(48);
+    expect(result.x).toBe(cardCenteredViewport.x);
+    expect(result.y).toBe(cardCenteredViewport.y);
   });
 
-  it('clamps within content bounds when already zoomed in and examining cards', () => {
-    const content = { x: 0, y: 0, width: 1500, height: 1500 };
-    const zoomedInViewport = { x: -800, y: -800, scale: 1.25 };
-    const result = smartCenter100(zoomedInViewport, content, container, 48);
+  it('snaps to nearest card medoid when jumping from overview and center is in empty gap', () => {
+    // Overview viewport where screen center (500, 350) lands in the empty gap (430, 250)
+    // Between Card 1 center (260, 200) and Card 2 center (620, 200)
+    // Distance to Card 2 is sqrt((620-500)^2 + (200-350)^2) = sqrt(14400 + 22500) = sqrt(36900)
+    // Distance to Card 4 is sqrt((620-500)^2 + (440-350)^2) = sqrt(14400 + 8100) = sqrt(22500) = 150
+    // So Card 4 is the nearest card
+    const gapViewport = { x: -20, y: 50, scale: 0.4 };
+    const result = smartCenter100(gapViewport, cards, container);
 
     expect(result.scale).toBe(1.0);
-    // Content should not be panned beyond content bounds
-    const screenLeft = content.x * result.scale + result.x;
-    const screenTop = content.y * result.scale + result.y;
-    const screenRight = (content.x + content.width) * result.scale + result.x;
-    const screenBottom = (content.y + content.height) * result.scale + result.y;
-
-    expect(screenLeft).toBeLessThanOrEqual(48);
-    expect(screenTop).toBeLessThanOrEqual(48);
-    expect(screenRight).toBeGreaterThanOrEqual(container.width - 48);
-    expect(screenBottom).toBeGreaterThanOrEqual(container.height - 48);
+    // Camera center should now land directly on the nearest card's center (Card 4: 620, 440)
+    const worldCenter = screenToWorld({ x: 500, y: 350 }, result);
+    expect(worldCenter.x).toBeCloseTo(620, 1);
+    expect(worldCenter.y).toBeCloseTo(440, 1);
   });
 });

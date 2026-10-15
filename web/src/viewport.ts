@@ -176,60 +176,68 @@ export function isRectInViewport(
 /**
  * Smart-centers the viewport to 100% (scale 1.0) on active content.
  *
- * If content fits within the container at 100% scale, it is centered.
- * If content is taller or wider than the container (e.g. large card clusters),
- * it aligns to the top margin with padding so the primary / first row of cards
- * remains clearly in view without zooming into an empty gap or black void.
+ * 1. If zoom change is subtle (near 1.0, e.g. within ±25%) or the current center is already
+ *    over a card, maintains the user's existing focal point with zero camera jump.
+ * 2. If jumping from a zoomed-out overview (e.g. 35%-60%) and landing in empty space,
+ *    snaps the focus to the nearest card to where the user is looking (nearest neighbor / medoid),
+ *    guaranteeing the camera always centers an actual card rather than an empty gutter or black void.
+ * 3. Falls back to container center if no cards are present.
  */
 export function smartCenter100(
   currentViewport: Viewport,
-  content: Rect | null | undefined,
+  cards: readonly Rect[] | null | undefined,
   container: { width: number; height: number },
-  padding: number = 48,
 ): Viewport {
   const containerW = container.width;
   const containerH = container.height;
+  const screenCenter = { x: containerW / 2 || 0, y: containerH / 2 || 0 };
 
-  if (!content || content.width <= 0 || content.height <= 0 || containerW <= 0 || containerH <= 0) {
-    return zoomAtScreenPoint(currentViewport, { x: containerW / 2 || 0, y: containerH / 2 || 0 }, 1.0);
+  if (!cards || cards.length === 0 || containerW <= 0 || containerH <= 0) {
+    return zoomAtScreenPoint(currentViewport, screenCenter, 1.0);
   }
 
-  const availableWidth = Math.max(containerW - padding * 2, 1);
-  const availableHeight = Math.max(containerH - padding * 2, 1);
+  const currentWorldCenter = screenToWorld(screenCenter, currentViewport);
 
-  let targetX: number;
-  if (content.width <= availableWidth) {
-    targetX = (containerW - content.width) / 2 - content.x;
-  } else {
-    const minX = containerW - padding - (content.x + content.width);
-    const maxX = padding - content.x;
-    if (currentViewport.scale <= 0.85) {
-      targetX = maxX;
-    } else {
-      const worldCenter = screenToWorld({ x: containerW / 2, y: containerH / 2 }, currentViewport);
-      const naturalX = containerW / 2 - worldCenter.x * 1.0;
-      targetX = Math.max(minX, Math.min(maxX, naturalX));
+  // Check if current center already falls within any card's bounds
+  const cardUnderCenter = cards.find(
+    (card) =>
+      currentWorldCenter.x >= card.x &&
+      currentWorldCenter.x <= card.x + card.width &&
+      currentWorldCenter.y >= card.y &&
+      currentWorldCenter.y <= card.y + card.height,
+  );
+
+  const isSubtleZoom = Math.abs(currentViewport.scale - 1.0) <= 0.25;
+
+  // If already looking at a card or making a subtle zoom adjustment, preserve current focal point
+  if (cardUnderCenter || isSubtleZoom) {
+    return zoomAtScreenPoint(currentViewport, screenCenter, 1.0);
+  }
+
+  // Jumping from an overview into empty space: snap to the nearest card (medoid)
+  let nearestCard = cards[0];
+  let minDistanceSq = Infinity;
+
+  for (const card of cards) {
+    const cardCenterX = card.x + card.width / 2;
+    const cardCenterY = card.y + card.height / 2;
+    const dx = cardCenterX - currentWorldCenter.x;
+    const dy = cardCenterY - currentWorldCenter.y;
+    const distSq = dx * dx + dy * dy;
+    if (distSq < minDistanceSq) {
+      minDistanceSq = distSq;
+      nearestCard = card;
     }
   }
 
-  let targetY: number;
-  if (content.height <= availableHeight) {
-    targetY = (containerH - content.height) / 2 - content.y;
-  } else {
-    const minY = containerH - padding - (content.y + content.height);
-    const maxY = padding - content.y;
-    if (currentViewport.scale <= 0.85) {
-      targetY = maxY;
-    } else {
-      const worldCenter = screenToWorld({ x: containerW / 2, y: containerH / 2 }, currentViewport);
-      const naturalY = containerH / 2 - worldCenter.y * 1.0;
-      targetY = Math.max(minY, Math.min(maxY, naturalY));
-    }
-  }
+  const targetPoint = {
+    x: nearestCard.x + nearestCard.width / 2,
+    y: nearestCard.y + nearestCard.height / 2,
+  };
 
   return {
     scale: 1.0,
-    x: targetX,
-    y: targetY,
+    x: screenCenter.x - targetPoint.x * 1.0,
+    y: screenCenter.y - targetPoint.y * 1.0,
   };
 }

@@ -1397,8 +1397,13 @@ export function App({
     const height =
       boardSize.height || previousSizeRef.current.height || boardRef.current?.clientHeight || window.innerHeight || 0;
 
-    const bounds = canvasCards.length > 0 ? contentBounds(canvasCards) : null;
-    setViewport((current) => smartCenter100(current, bounds, { width, height }, BOARD_FIT_PADDING));
+    const cardRects = canvasCards.map((c) => ({
+      x: c.position.x,
+      y: c.position.y,
+      width: CARD_WIDTH,
+      height: cardHeightsById[c.card.activity.id] ?? CARD_MIN_HEIGHT,
+    }));
+    setViewport((current) => smartCenter100(current, cardRects, { width, height }));
   }
 
   function handleBoardKeyDown(event: KeyboardEvent<HTMLDivElement>) {
