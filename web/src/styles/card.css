@@ -311,25 +311,43 @@
   padding: 0 var(--card-pad-x) var(--card-pad-y);
 }
 
-.activity-card__source {
-  color: var(--card-muted-foreground);
-  flex: 1 1 8rem;
-  font-size: var(--text-label);
-  line-height: var(--leading-body);
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-
-.activity-card__source-label {
-  color: var(--card-muted-foreground);
-  font-weight: var(--weight-semi);
-  letter-spacing: var(--tracking-label);
-  text-transform: uppercase;
-}
-
-.activity-card__source a {
+/**
+ * Source CTA — ported from #112 (kORNkin), restyled for the Blue Hour card.
+ *
+ * The old footer had a `SOURCE:` label with a bare inline link, which is the least tappable thing
+ * on the card. The CTA makes the same destination an actual control.
+ *
+ * The flex + `min-width: 0` chain is what makes the ellipsis work: the anchor is a flex item that
+ * must be allowed to shrink below its content width, and the inner span is the thing that
+ * actually clips. Without `min-width: 0` on both, a long source name pushes the Find similar
+ * button out of the card instead of truncating.
+ */
+.activity-card__cta {
+  align-items: center;
   color: var(--accent);
+  flex: 1 1 auto;
+  justify-content: center;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.activity-card__cta:hover {
+  color: var(--accent-strong);
+  text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+.activity-card__cta-text {
+  display: inline-block;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .activity-card__similar-button {

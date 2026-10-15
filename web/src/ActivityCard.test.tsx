@@ -2,6 +2,9 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import agentResponse from '../../docs/examples/agent-response.json';
 import { ActivityCard } from './ActivityCard';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { activityCardCtaLabel } from './copy';
 import type { components } from './api/schema';
 
 const response = agentResponse as components['schemas']['AgentResponse'];
@@ -22,6 +25,39 @@ describe('ActivityCard', () => {
     const markup = renderToStaticMarkup(<ActivityCard match={response.matches[1]} state="discarding" />);
 
     expect(markup).toContain('activity-card--discarding');
+  });
+
+  it('renders a tappable source CTA naming the source organisation', () => {
+    // Ported from #112. The CTA replaces a bare inline `Source: <name>` link, so it has to be a
+    // real control: it links the booking page, names who to visit, and stops pointerdown so that
+    // pressing it cannot start a card drag — the whole card is a drag handle.
+    const markup = renderToStaticMarkup(<ActivityCard match={response.matches[0]} />);
+
+    expect(markup).toContain('class="btn btn--sm activity-card__cta"');
+    expect(markup).toContain(`href="${response.matches[0].activity.url}"`);
+    expect(markup).toContain(activityCardCtaLabel(response.matches[0].activity.source.name));
+    expect(markup).toContain('rel="noreferrer"');
+    expect(markup).toContain('target="_blank"');
+  });
+
+  it('stops pointerdown on the source CTA so pressing it does not start a drag', () => {
+    // `renderToStaticMarkup` does not emit event handlers, so this cannot be asserted on rendered
+    // output. Asserting against the source is the honest alternative, and there is precedent —
+    // `dragProxy.test.tsx` reads `card.css` the same way. It matters because the whole card is a
+    // drag handle: without the stop, pressing the one control every user will try starts a drag.
+    const src = readFileSync(join(import.meta.dirname, 'ActivityCard.tsx'), 'utf8');
+    const cta = src.slice(src.indexOf('activity-card__cta'));
+
+    expect(cta).toContain('onPointerDown');
+    expect(cta).toContain('stopPropagation');
+  });
+
+  it('omits the source CTA from the compact variant, matching the previous source row', () => {
+    // The old footer guarded the source row with `variant !== 'compact'` so the compact card did
+    // not blow out vertically. The CTA inherits that guard.
+    const markup = renderToStaticMarkup(<ActivityCard match={response.matches[0]} variant="compact" />);
+
+    expect(markup).not.toContain('activity-card__cta');
   });
 
   it('renders the find similar action when provided', () => {

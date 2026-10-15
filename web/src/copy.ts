@@ -222,7 +222,6 @@ export function getActivityLanguageBadge(
 }
 
 export const ACTIVITY_CARD_TIME_UNAVAILABLE = 'Time to be confirmed';
-export const ACTIVITY_CARD_SOURCE_LABEL = 'Source';
 export const ACTIVITY_CARD_MATCH_RATIONALE_LABEL = 'Why it matches';
 export const ACTIVITY_CARD_DISTRICT_LABEL = 'District';
 
@@ -319,6 +318,18 @@ export function activityCardAccessibleLabel(title: string, language?: string): s
 
 export function activityCardLocation(venue: string | null | undefined, district: string): string {
   return venue ? `${venue}, ${district}` : district;
+}
+
+/**
+ * The card's source CTA. Ported from #112 (kORNkin), which was written against the pre-Blue-Hour
+ * card: everything else that PR asked for — district, price, freshness, the original CJK title —
+ * is already delivered by the ruled data rows added in #111, so only the CTA was genuinely new.
+ *
+ * It links `activity.url` (the booking page, required on the contract) rather than
+ * `activity.source.url` (the organisation's own page, optional), so the CTA is always present.
+ */
+export function activityCardCtaLabel(sourceName: string): string {
+  return `Visit ${sourceName}`;
 }
 
 export function findSimilarConfirmation(title: string): string {

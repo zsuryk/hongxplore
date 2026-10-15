@@ -185,10 +185,22 @@ const RAW_COLOUR = new RegExp(RAW_COLOUR_SOURCE, 'gi');
 /** Non-global twin for `.test()` — a /g regex carries lastIndex between calls. */
 const RAW_COLOUR_TEST = new RegExp(RAW_COLOUR_SOURCE, 'i');
 
+/**
+ * Strip CSS comments before scanning.
+ *
+ * A comment is allowed to *name* a colour — that is how a justified exception documents itself.
+ * It is also allowed to cite an issue whose number is valid hex: `#112` is a pull request, and a
+ * regex cannot tell that from `#ff0000`. Both checks below must strip, or a doc reference fails
+ * the build.
+ */
+function stripCssComments(css: string): string {
+  return css.replace(/\/\*[\s\S]*?\*\//g, '');
+}
+
 describe('component CSS', () => {
   it.each(componentCss.map((c) => c.file))('%s introduces no raw colour literals', (file) => {
     const { css } = componentCss.find((c) => c.file === file)!;
-    const stripped = css.replace(/\/\*[\s\S]*?\*\//g, ''); // comments may name colours for justification
+    const stripped = stripCssComments(css); // comments may name colours for justification
     const offenders = [...stripped.matchAll(RAW_COLOUR)].map((m) => m[0]);
     expect(
       offenders,
@@ -209,7 +221,11 @@ describe('component CSS', () => {
     const sourceFiles = ['App.tsx', 'ActivityCard.tsx', 'BoardToolbar.tsx', 'SearchBar.tsx', 'AgentStatusPanel.tsx'];
     const offenders = sourceFiles.flatMap((file) => {
       const src = readFileSync(join(import.meta.dirname, file), 'utf8');
-      const hits = src.match(/#[0-9a-f]{3,8}\b|\brgba?\(/gi) ?? [];
+      // Comments are stripped for the same reason the CSS check strips them: a comment may *name*
+      // a colour to justify it, or cite an issue/PR whose number happens to be valid hex — "#112"
+      // is a pull request, not a colour, and matching it here fails the build on documentation.
+      const code = src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
+      const hits = code.match(/#[0-9a-f]{3,8}\b|\brgba?\(/gi) ?? [];
       return hits.length ? [`${file}: ${[...new Set(hits)].join(', ')}`] : [];
     });
     expect(
@@ -222,7 +238,9 @@ describe('component CSS', () => {
   it('keeps the token layer the only file that writes colour values', () => {
     // NOTE: a /g regex is stateful across `.test()` calls via lastIndex, so it is rebuilt here
     // rather than reused from the module-scope matchAll pattern.
-    const writers = componentCss.filter((entry) => RAW_COLOUR_TEST.test(entry.css)).map((entry) => entry.file);
+    const writers = componentCss
+      .filter((entry) => RAW_COLOUR_TEST.test(stripCssComments(entry.css)))
+      .map((entry) => entry.file);
     expect(writers).toEqual([]);
   });
 });

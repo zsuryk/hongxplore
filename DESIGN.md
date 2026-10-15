@@ -329,7 +329,7 @@ Anatomy, in order: **header plate** (`--text-plate` serial plate in mono, distri
 caps label, then a sub-row of language chip and departure time in tabular mono) → **1px `--rule`
 divider** → **title** (with the original CJK title beneath it when the title was translated) →
 **ruled data rows** (`Venue` / `Price` / `Listed`, a fixed label gutter so every card's values
-align) → **rationale** in a recessed cell → **footer** (source link + find similar).
+align) → **rationale** in a recessed cell → **footer** (source CTA + find similar).
 
 **The header runs full-bleed and one step below the card face**, which is the one structural
 change the new material language needs: a recessed band across the top is what makes the card read
