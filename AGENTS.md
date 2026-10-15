@@ -57,6 +57,31 @@ CI additionally lints commit messages and the PR title (`commitlint` job).
 - **Python:** `ruff format` is law; type hints on public functions; pydantic v2.
 - **TS/React:** prettier is law; function components; named exports; strings via `copy.ts`.
 
+### Before any visual change to the UI
+
+**Read `DESIGN.md` first, every time.** It is the design contract: tokens, card anatomy and the
+content-driven height rule, board/zoom geometry, component behaviour contracts, motion rules and
+the accessibility gates. A visual change that contradicts it is a bug in the change, not an
+excuse to edit the document — if a decision genuinely has to change, change `DESIGN.md` in the same
+commit and say why.
+
+Specifically:
+
+- **Never hand-write a colour, radius, duration or spacing value.** They go in
+  `web/src/styles/tokens.css`, and `web/src/designSystem.test.ts` fails the build otherwise — in
+  CSS *and* in component source.
+- **Never weaken `designSystem.test.ts` to make a change pass.** It recomputes every WCAG contrast
+  pair from the token layer, which is what stops a palette change shipping an unreadable UI. If an
+  assertion is genuinely obsolete, change it deliberately, in the open, with the reason in the
+  commit.
+- **Run `impeccable detect` over changed UI targets** before calling a visual task done.
+- **A design decision that is not written down has not been made.** Where a future change would
+  find it — `DESIGN.md`, a code comment carrying the *why*, or both.
+
+`PRODUCT.md` does not exist and must not be created: ADR-0004 keeps PRD-shaped artefacts
+(personas, success metrics, roadmap tables) out of this repo. Product intent lives outside it.
+`CONTEXT.md` plus the issues carry the domain vocabulary.
+
 **Commits — Conventional Commits, strictly:**
 
 - Format: `type(scope): imperative summary` — lowercase, imperative mood, no trailing period, subject ≤ 72 chars.
