@@ -361,3 +361,75 @@ describe('timeline hover geometry', () => {
     expect(block('.discard-bin__guide-hint')).toMatch(/pointer-events:\s*none/);
   });
 });
+
+describe('card drag gesture stability (#103)', () => {
+  const boardCss = readFileSync(join(import.meta.dirname, 'styles/board.css'), 'utf8');
+  const timelineCss = readFileSync(join(import.meta.dirname, 'styles/timeline.css'), 'utf8');
+  const cardCss = readFileSync(join(import.meta.dirname, 'styles/card.css'), 'utf8');
+
+  const extractBlock = (css: string, selector: string) =>
+    css.match(new RegExp(`${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\{([^}]*)\\}`))?.[1] ?? '';
+
+  it('renders canvas cards with draggable="false" to prevent native HTML5 drag interference', () => {
+    const mockCard = {
+      activity: {
+        id: 'test-card-drag-stability',
+        title: 'Test Drag Stability',
+        title_en: 'Test Drag Stability',
+        lang: 'en' as const,
+        url: 'https://example.com',
+        tags: ['culture'],
+        parts: [{ start: '2026-10-10T06:00:00Z', end: '2026-10-10T08:00:00Z' }],
+        source: { name: 'Source' },
+        location: { district: 'Central', venue: 'Venue' },
+      },
+      match_rationale: 'Fit',
+    };
+
+    const markup = renderToStaticMarkup(<App cards={[mockCard]} />);
+    expect(markup).toContain('class="board__card');
+    expect(markup).toContain('draggable="false"');
+  });
+
+  it('renders docked timeline cards with draggable="false"', () => {
+    const mockCard = {
+      activity: {
+        id: 'docked-drag-stability',
+        title: 'Docked Drag Card',
+        title_en: 'Docked Drag Card',
+        lang: 'en' as const,
+        url: 'https://example.com',
+        tags: ['culture'],
+        parts: [{ start: '2026-10-10T06:00:00Z', end: '2026-10-10T08:00:00Z' }],
+        source: { name: 'Source' },
+        location: { district: 'Central', venue: 'Venue' },
+      },
+      match_rationale: 'Fit',
+    };
+
+    const mockSlots = [
+      { id: 'saturday-morning', activityId: 'docked-drag-stability' },
+      ...TIMELINE_SLOTS.filter((s) => s.id !== 'saturday-morning').map((slot) => ({ ...slot, activityId: null })),
+    ];
+
+    const markup = renderToStaticMarkup(
+      <App cards={[mockCard]} initialTimelineExpanded={true} timelineSlots={mockSlots} />,
+    );
+    expect(markup).toContain('class="timeline__docked-card"');
+    expect(markup).toContain('draggable="false"');
+  });
+
+  it('enforces WebKit drag and selection suppression rules in CSS to prevent gesture drop', () => {
+    const boardCardBlock = extractBlock(boardCss, '.board__card');
+    expect(boardCardBlock).toMatch(/-webkit-user-select:\s*none/);
+    expect(boardCardBlock).toMatch(/-webkit-user-drag:\s*none/);
+
+    const timelineDockedBlock = extractBlock(timelineCss, '.timeline__docked-card');
+    expect(timelineDockedBlock).toMatch(/-webkit-user-select:\s*none/);
+    expect(timelineDockedBlock).toMatch(/-webkit-user-drag:\s*none/);
+
+    const activityCardBlock = extractBlock(cardCss, '.activity-card');
+    expect(activityCardBlock).toMatch(/user-select:\s*none/);
+    expect(activityCardBlock).toMatch(/-webkit-user-select:\s*none/);
+  });
+});

@@ -830,6 +830,10 @@ export function App({
     }
 
     const handleNativeWheel = (event: globalThis.WheelEvent) => {
+      if (cardDragStateRef.current !== null) {
+        return;
+      }
+
       const screenPoint = screenPointWithin(element.getBoundingClientRect(), event.clientX, event.clientY);
 
       event.preventDefault();
@@ -998,7 +1002,11 @@ export function App({
     }
 
     event.stopPropagation();
-    event.currentTarget.setPointerCapture(event.pointerId);
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    } catch {
+      // Ignored in test runners or environments where pointer capture is unsupported
+    }
     markGesture();
     markAdjusted();
     const cardId = card.activity.id;
@@ -1035,6 +1043,11 @@ export function App({
 
   function handleCardPointerMove(event: PointerEvent<HTMLElement>) {
     if (!cardDragState || cardDragState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    if (event.buttons === 0) {
+      handleCardPointerUp(event);
       return;
     }
 
@@ -1243,23 +1256,68 @@ export function App({
     }, 600);
   }
 
+  const cancelCardDrag = useCallback(() => {
+    setIsDragTimelineExpanded(false);
+    setIsOverDropZone(false);
+    userCollapsedDuringDragRef.current = false;
+    setCardDragState(null);
+    setHoveredSlotId(null);
+
+    if (particleCleanupTimerRef.current !== null) {
+      window.clearTimeout(particleCleanupTimerRef.current);
+    }
+    particleCleanupTimerRef.current = window.setTimeout(() => {
+      setDragParticles([]);
+      particleCleanupTimerRef.current = null;
+    }, 600);
+  }, []);
+
   function handleCardPointerCancel(event: PointerEvent<HTMLElement>) {
     if (cardDragState?.pointerId === event.pointerId) {
-      setIsDragTimelineExpanded(false);
-      setIsOverDropZone(false);
-      userCollapsedDuringDragRef.current = false;
-      setCardDragState(null);
-      setHoveredSlotId(null);
-
-      if (particleCleanupTimerRef.current !== null) {
-        window.clearTimeout(particleCleanupTimerRef.current);
-      }
-      particleCleanupTimerRef.current = window.setTimeout(() => {
-        setDragParticles([]);
-        particleCleanupTimerRef.current = null;
-      }, 600);
+      cancelCardDrag();
     }
   }
+
+  function handleCardLostPointerCapture(event: PointerEvent<HTMLElement>) {
+    if (cardDragState?.pointerId === event.pointerId) {
+      cancelCardDrag();
+    }
+  }
+
+  // Window fallback: ensure drag state is cleaned up if pointer capture is revoked or lost
+  useEffect(() => {
+    if (!cardDragState) {
+      return;
+    }
+
+    const pointerId = cardDragState.pointerId;
+
+    const handleWindowPointerMove = (event: globalThis.PointerEvent) => {
+      if (event.pointerId === pointerId && event.buttons === 0) {
+        cancelCardDrag();
+      }
+    };
+
+    const handleWindowPointerCancel = (event: globalThis.PointerEvent) => {
+      if (event.pointerId === pointerId) {
+        cancelCardDrag();
+      }
+    };
+
+    const handleWindowBlur = () => {
+      cancelCardDrag();
+    };
+
+    window.addEventListener('pointermove', handleWindowPointerMove);
+    window.addEventListener('pointercancel', handleWindowPointerCancel);
+    window.addEventListener('blur', handleWindowBlur);
+
+    return () => {
+      window.removeEventListener('pointermove', handleWindowPointerMove);
+      window.removeEventListener('pointercancel', handleWindowPointerCancel);
+      window.removeEventListener('blur', handleWindowBlur);
+    };
+  }, [cardDragState, cancelCardDrag]);
 
   async function handleFindSimilar(card: BoardActivityCard) {
     const title = card.activity.title_en ?? card.activity.title;
@@ -1579,6 +1637,9 @@ export function App({
                     {match ? (
                       <div
                         className={`timeline__docked-card${isDraggingThisCard ? ' timeline__docked-card--ghost' : ''}`}
+                        draggable={false}
+                        onDragStart={(event) => event.preventDefault()}
+                        onLostPointerCapture={handleCardLostPointerCapture}
                         onPointerCancel={handleCardPointerCancel}
                         onPointerDown={(event) => handleCardPointerDown(event, match, { slotId: slot.id })}
                         onPointerMove={handleCardPointerMove}
@@ -1749,7 +1810,10 @@ export function App({
                     }`}
                     data-activity-card
                     data-activity-card-id={match.activity.id}
+                    draggable={false}
                     key={match.activity.id}
+                    onDragStart={(event) => event.preventDefault()}
+                    onLostPointerCapture={handleCardLostPointerCapture}
                     onPointerCancel={handleCardPointerCancel}
                     onPointerDown={(event) => handleCardPointerDown(event, match)}
                     onPointerMove={handleCardPointerMove}
