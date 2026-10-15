@@ -12,6 +12,7 @@ import {
 import { ActivityCard } from './ActivityCard';
 import { AgentStatusPanel } from './AgentStatusPanel';
 import { BoardToolbar } from './BoardToolbar';
+import { ProductTour } from './ProductTour';
 import { ResearchCard } from './ResearchCard';
 import { SearchBar } from './SearchBar';
 import {
@@ -27,7 +28,6 @@ import {
   CLEAR_BOARD_CONFIRM_TITLE,
   DISCARD_BIN_HINT,
   DISCARD_BIN_LABEL,
-  DISCARD_GUIDE_TOAST,
   HEADING,
   INITIAL_ACTIVITY_QUERY,
   TAGLINE,
@@ -36,7 +36,6 @@ import {
   TIMELINE_COLLAPSED_LABEL,
   TIMELINE_DRAG_COLLAPSE_HINT,
   TIMELINE_EXPAND_LABEL,
-  TIMELINE_GUIDE_TOAST,
   TIMELINE_LABEL,
   TIMELINE_SLOT_EMPTY,
   TIMELINE_SLOTS,
@@ -104,8 +103,8 @@ const WHEEL_ZOOM_STEP = 1.15;
 const GESTURE_SETTLE_MS = 160;
 /** How long the "looking for similar activities" confirmation stays on the board. */
 const CONFIRMATION_MS = 4000;
-/** How long the initial floating hints are displayed above docks. */
-const GUIDE_HINTS_MS = 8000;
+/** Storage key tracking whether the first-run product tour has already been seen. */
+export const TOUR_STORAGE_KEY = 'hongxplore:product-tour-seen';
 /**
  * How long the board waits for its re-framing to land before releasing the deal.
  *
@@ -247,6 +246,7 @@ export type AppProps = {
   initialConfirmation?: string;
   initialHoverExpanded?: boolean;
   initialTimelineExpanded?: boolean;
+  initialTourOpen?: boolean;
   timelineSlots?: TimelineSlot[];
 };
 
@@ -257,6 +257,7 @@ export function App({
   initialConfirmation,
   initialHoverExpanded,
   initialTimelineExpanded,
+  initialTourOpen,
   timelineSlots: propTimelineSlots,
 }: AppProps = {}) {
   const boardRef = useRef<HTMLDivElement>(null);
@@ -340,12 +341,50 @@ export function App({
   const [isDragTimelineExpanded, setIsDragTimelineExpanded] = useState(initialHoverExpanded ?? false);
   /** Previewed open: the pointer is resting on the collapsed control. Collapses again on leave. */
   const [isTimelinePreviewed, setIsTimelinePreviewed] = useState(false);
-  const [showGuideHints, setShowGuideHints] = useState(true);
+  const [isTourOpen, setIsTourOpen] = useState(() => {
+    if (initialTourOpen !== undefined) {
+      return initialTourOpen;
+    }
+    try {
+      return localStorage.getItem(TOUR_STORAGE_KEY) !== 'true';
+    } catch {
+      return true;
+    }
+  });
   const [settlingSlotId, setSettlingSlotId] = useState<string | null>(null);
   const [dragParticles, setDragParticles] = useState<DragParticle[]>([]);
   const [autoFitEnabled, setAutoFitEnabled] = useState(true);
   /** The deal in flight, or null. Non-null drives `.board__cards--dealing`. */
   const [deal, setDeal] = useState<ActiveDeal | null>(null);
+
+  const handleCloseTour = useCallback(() => {
+    setIsTourOpen(false);
+    try {
+      localStorage.setItem(TOUR_STORAGE_KEY, 'true');
+    } catch {
+      // Ignore localStorage restrictions
+    }
+  }, []);
+
+  const handleOpenTour = useCallback(() => {
+    setIsTourOpen(true);
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (event.key === '?' && !isTourOpen) {
+        const target = event.target as HTMLElement | null;
+        const isInput =
+          target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target?.isContentEditable;
+        if (!isInput) {
+          event.preventDefault();
+          handleOpenTour();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleOpenTour, isTourOpen]);
 
   useLayoutEffect(() => {
     cardDragStateRef.current = cardDragState;
@@ -379,12 +418,6 @@ export function App({
     setTimelineSlots(TIMELINE_SLOTS.map((slot) => ({ ...slot, activityId: null })));
     void loadAgentResponse({ query: INITIAL_ACTIVITY_QUERY });
   }, [loadAgentResponse, setTimelineSlots]);
-
-  // 5-second floating guide hint timer for timeline and discard bin
-  useEffect(() => {
-    const timer = window.setTimeout(() => setShowGuideHints(false), GUIDE_HINTS_MS);
-    return () => window.clearTimeout(timer);
-  }, []);
 
   // The confirmation is a transient status, not a permanent fixture on the board.
   useEffect(() => {
@@ -1502,7 +1535,7 @@ export function App({
           <h1>{HEADING}</h1>
           <p>{TAGLINE}</p>
         </div>
-        <div className="app__header-search">
+        <div className="app__header-search" data-tour-anchor="search">
           <SearchBar />
         </div>
       </header>
@@ -1537,6 +1570,7 @@ export function App({
             aria-expanded={false}
             aria-label={TIMELINE_EXPAND_LABEL}
             className="timeline timeline--collapsed"
+            data-tour-anchor="timeline"
             onBlur={requestHoverCollapse}
             onClick={() => {
               clearTimelineHoverTimers();
@@ -1546,7 +1580,6 @@ export function App({
             onPointerLeave={requestHoverCollapse}
             type="button"
           >
-            {showGuideHints ? <div className="timeline__guide-hint board__toast">{TIMELINE_GUIDE_TOAST}</div> : null}
             <div className="timeline__collapsed-content">
               <div className="timeline__collapsed-header">
                 <span className="timeline__collapsed-badge">
@@ -1568,6 +1601,7 @@ export function App({
             className={`timeline timeline--expanded${
               isDragTimelineExpanded ? ' timeline--hover-expanded' : isTimelinePreviewed ? ' timeline--preview' : ''
             }`}
+            data-tour-anchor="timeline"
             onPointerEnter={cancelHoverCollapse}
             onPointerLeave={requestHoverCollapse}
           >
@@ -1579,8 +1613,6 @@ export function App({
               /* Drag-only. Offering "press Esc to minimize" to somebody who is only hovering
                  would be offering to undo something they never did. */
               <div className="timeline__guide-hint board__toast">{TIMELINE_DRAG_COLLAPSE_HINT}</div>
-            ) : showGuideHints ? (
-              <div className="timeline__guide-hint board__toast">{TIMELINE_GUIDE_TOAST}</div>
             ) : null}
             <div className="timeline__header">
               <div className="timeline__header-left">
@@ -1673,7 +1705,6 @@ export function App({
           className={`discard-bin${cardDragState ? ' discard-bin--active' : ''}`}
           ref={discardBinRef}
         >
-          {showGuideHints ? <div className="discard-bin__guide-hint board__toast">{DISCARD_GUIDE_TOAST}</div> : null}
           <strong>{DISCARD_BIN_LABEL}</strong>
           <span>{DISCARD_BIN_HINT}</span>
         </aside>
@@ -1689,6 +1720,7 @@ export function App({
           onAutoTile={handleAutoTile}
           onClearBoard={requestClearBoard}
           onFitContent={() => fitContent(1.0)}
+          onOpenHelp={handleOpenTour}
           onResetZoom={resetZoom}
           onToggleAutoFit={setAutoFitEnabled}
           onZoomIn={() => stepZoom(1)}
@@ -1807,7 +1839,7 @@ export function App({
                   <ResearchCard />
                 </div>
               ) : null}
-              {canvasCards.map(({ card: match, position, variant }) => {
+              {canvasCards.map(({ card: match, position, variant }, index) => {
                 const isDragging = cardDragState?.card.activity.id === match.activity.id;
                 const isDiscarding = discardingCardId === match.activity.id;
                 // The serial is the card's index in the *full* list, not in `canvasCards`, so
@@ -1822,6 +1854,7 @@ export function App({
                     }`}
                     data-activity-card
                     data-activity-card-id={match.activity.id}
+                    data-tour-anchor={index === 0 ? 'card' : undefined}
                     draggable={false}
                     key={match.activity.id}
                     onDragStart={(event) => event.preventDefault()}
@@ -1899,6 +1932,7 @@ export function App({
           </div>
         </div>
       ) : null}
+      <ProductTour isOpen={isTourOpen} onClose={handleCloseTour} />
     </main>
   );
 }

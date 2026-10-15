@@ -11,6 +11,8 @@ import {
   CLEAR_BOARD_LABEL,
   CLEAR_BOARD_TOOLTIP,
   FIT_VIEW_LABEL,
+  HELP_LABEL,
+  HELP_TOOLTIP,
   RESET_ZOOM_LABEL,
   ZOOM_CONTROL_LABEL,
   ZOOM_IN_LABEL,
@@ -19,7 +21,7 @@ import {
   zoomPercentage,
   zoomReadout,
 } from './copy';
-import { IconAutoFit, IconClear, IconFit, IconTile, IconZoomIn, IconZoomOut } from './icons';
+import { IconAutoFit, IconClear, IconFit, IconHelp, IconTile, IconZoomIn, IconZoomOut } from './icons';
 
 type GlyphComponent = (props: { className?: string }) => React.ReactElement;
 
@@ -54,6 +56,7 @@ export type BoardToolbarProps = {
   onAutoTile?: () => void;
   onToggleAutoFit: (enabled: boolean) => void;
   onClearBoard: () => void;
+  onOpenHelp?: () => void;
   extraActions?: BoardActionItem[];
 };
 
@@ -94,6 +97,7 @@ export function BoardToolbar({
   onAutoTile,
   onToggleAutoFit,
   onClearBoard,
+  onOpenHelp,
   extraActions = [],
 }: BoardToolbarProps) {
   const actions: BoardActionItem[] = [
@@ -136,6 +140,16 @@ export function BoardToolbar({
       variant: 'toggle',
     },
     {
+      id: 'help',
+      label: HELP_LABEL,
+      ariaLabel: HELP_LABEL,
+      tooltip: `${HELP_TOOLTIP} (?)`,
+      icon: IconHelp,
+      shortcut: '?',
+      onClick: () => onOpenHelp?.(),
+      variant: 'default',
+    },
+    {
       id: 'clear-board',
       label: CLEAR_BOARD_LABEL,
       ariaLabel: CLEAR_BOARD_LABEL,
@@ -151,6 +165,7 @@ export function BoardToolbar({
     <aside
       aria-label={BOARD_TOOLBAR_LABEL}
       className={`board-toolbar${isDragging ? ' board-toolbar--inert' : ''}`}
+      data-tour-anchor="toolbar"
       onPointerDown={(event) => event.stopPropagation()}
     >
       <div aria-label={ZOOM_CONTROL_LABEL} className="board-toolbar__group" role="group">

@@ -12,6 +12,8 @@ import {
   CLEAR_BOARD_CONFIRM_TITLE,
   DISCARD_GUIDE_TOAST,
   GATHERING_INFO_TITLE,
+  HELP_LABEL,
+  PRODUCT_TOUR_LABEL,
   TIMELINE_COLLAPSE_LABEL,
   TIMELINE_COLLAPSED_HINT,
   TIMELINE_COLLAPSED_LABEL,
@@ -19,6 +21,9 @@ import {
   TIMELINE_EXPAND_LABEL,
   TIMELINE_GUIDE_TOAST,
   TIMELINE_SLOTS,
+  TOUR_NEXT_LABEL,
+  TOUR_SEARCH_TITLE,
+  TOUR_SKIP_LABEL,
   timelineActivityDockedConfirmation,
   timelineActivityReplacedConfirmation,
   timelineSlotMismatchMessage,
@@ -110,15 +115,17 @@ describe('App shell', () => {
     expect(markup).toContain(GATHERING_INFO_TITLE);
   });
 
-  it('renders collapsed timeline dock as accessible button with aria-expanded="false" and guide hints', () => {
-    const markup = renderToStaticMarkup(<App />);
+  it('renders collapsed timeline dock as accessible button with aria-expanded="false" and guide hints replaced by tour', () => {
+    const markup = renderToStaticMarkup(<App initialTourOpen={false} />);
 
     expect(markup).toContain('class="timeline timeline--collapsed"');
     expect(markup).toContain(`aria-label="${TIMELINE_EXPAND_LABEL}"`);
     expect(markup).toContain('aria-expanded="false"');
     expect(markup).toContain(TIMELINE_COLLAPSED_LABEL);
-    expect(markup).toContain(TIMELINE_GUIDE_TOAST);
-    expect(markup).toContain(DISCARD_GUIDE_TOAST);
+    expect(markup).toContain('data-tour-anchor="timeline"');
+    // The three ad-hoc first-load hints are removed in favor of the product tour
+    expect(markup).not.toContain(TIMELINE_GUIDE_TOAST);
+    expect(markup).not.toContain(DISCARD_GUIDE_TOAST);
     expect(markup).not.toContain('viewport-controls__guide-hint');
     expect(markup).not.toContain('role="button"');
   });
@@ -313,6 +320,33 @@ describe('App shell', () => {
     expect(TIMELINE_COLLAPSED_HINT).toMatch(/hover/i);
     expect(TIMELINE_COLLAPSED_HINT).toMatch(/click/i);
     expect(TIMELINE_GUIDE_TOAST).toMatch(/hover/i);
+  });
+
+  it('renders first-run product tour on initial visit with real controls anchored', () => {
+    const markup = renderToStaticMarkup(<App initialTourOpen={true} />);
+
+    expect(markup).toContain('class="product-tour"');
+    expect(markup).toContain(`aria-label="${PRODUCT_TOUR_LABEL}"`);
+    expect(markup).toContain(TOUR_SEARCH_TITLE);
+    expect(markup).toContain('Step 1 of 4');
+    expect(markup).toContain(TOUR_NEXT_LABEL);
+    expect(markup).toContain(TOUR_SKIP_LABEL);
+  });
+
+  it('respects initialTourOpen=false and omits tour popover on reload', () => {
+    const markup = renderToStaticMarkup(<App initialTourOpen={false} />);
+
+    expect(markup).not.toContain('class="product-tour"');
+    expect(markup).not.toContain(`aria-label="${PRODUCT_TOUR_LABEL}"`);
+  });
+
+  it('renders persistent Help control in BoardToolbar and anchors for tour targets', () => {
+    const markup = renderToStaticMarkup(<App initialTourOpen={false} />);
+
+    expect(markup).toContain(`aria-label="${HELP_LABEL}"`);
+    expect(markup).toContain('data-tour-anchor="search"');
+    expect(markup).toContain('data-tour-anchor="timeline"');
+    expect(markup).toContain('data-tour-anchor="toolbar"');
   });
 });
 

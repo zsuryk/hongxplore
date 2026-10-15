@@ -18,7 +18,7 @@
 import type { SVGProps } from 'react';
 
 export type IconName =
-  'zoom-in' | 'zoom-out' | 'reset' | 'fit' | 'auto-fit' | 'tile' | 'clear' | 'close' | 'search' | 'pending';
+  'zoom-in' | 'zoom-out' | 'reset' | 'fit' | 'auto-fit' | 'tile' | 'clear' | 'close' | 'search' | 'pending' | 'help';
 
 type IconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'strokeWidth'>;
 
@@ -168,12 +168,26 @@ export function IconClose(props: IconProps) {
   );
 }
 
+/**
+ * Help. A centered circle with a question hook, authored on the 24-unit grid with no fill.
+ */
+export function IconHelp(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-2 2-2 3" />
+      <path d="M12 16.5v.5" />
+    </Svg>
+  );
+}
+
 /** Kept as a lookup so a control can declare an icon by name instead of by element. */
 export const ICONS = {
   'auto-fit': IconAutoFit,
   clear: IconClear,
   close: IconClose,
   fit: IconFit,
+  help: IconHelp,
   pending: IconPending,
   reset: IconReset,
   search: IconSearch,
