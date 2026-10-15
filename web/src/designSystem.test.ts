@@ -151,7 +151,7 @@ describe('token layer', () => {
   it('declares the shipped theme and records the second theme as unreachable', () => {
     // DESIGN.md records dark-first, single theme. A light block may exist for the future, but it
     // must not be selectable today — nothing may set data-theme to anything but the shipped name.
-    expect(tokenCss).toContain("[data-theme='departure']");
+    expect(tokenCss).toContain("[data-theme='blue-hour']");
     expect(tokenCss).toContain("[data-theme='light']");
     expect(tokenCss).toMatch(/Single shipped theme/);
   });

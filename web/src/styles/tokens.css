@@ -1,9 +1,18 @@
 /**
  * Design tokens — the only place a colour, radius, size or duration may be written down.
  *
- * The visual system is **Departure Board**: the concourse split-flap board's discipline applied
- * to the agent's live output. Fixed cells, one type voice, ruled rows, amber for pending — with
- * the canvas kept plain so the board never becomes a costume.
+ * The visual system is **Blue Hour**: the twenty minutes after a Hong Kong sunset, when the sky
+ * is still a cold indigo and the city has already turned its lights on. That is the product's
+ * scene too — a student planning a weekend at a desk at night — and it is a *relationship*
+ * rather than a mood, which is what makes it usable as a token layer:
+ *
+ *   a cold, tinted ground (never a pure grey) · a cool steel lattice drawn over it
+ *   sodium amber for anything waiting on the agent · harbour cyan for everything the user acts on
+ *
+ * The functional spine that survives from the previous identity is kept verbatim and is named
+ * in DESIGN.md: the rule-separated lattice, amber-means-pending, screen-space chrome, geometry
+ * owned by `boardLayout.ts`. What was replaced is the *material language* — the flat fill plus
+ * 1px border on a dead ground that had no light in it and no depth between its surfaces.
  *
  * `DESIGN.md` at the repo root is the contract this file implements, and
  * `src/designSystem.test.ts` enforces it. If a value here needs to change, DESIGN.md changes
@@ -14,113 +23,160 @@
  */
 
 :root,
-[data-theme='departure'] {
+[data-theme='blue-hour'] {
   color-scheme: dark;
 
   /* ================================================================ semantic roles */
 
-  /* ---- Canvas ---- */
-  --background: #0e0f11;
-  --foreground: #f2f2f0;
-  --popover: #1a1c1f;
+  /* ---- Canvas ----
+     Ink, not black. The hue cast is what stops the board reading as an unstyled `<body>`, and it
+     is the same hue the whole neutral ramp is tinted from, so the lattice reads as one material
+     lit from one direction. */
+  --background: #070b13;
+  --foreground: #eaf0f8;
+  --popover: #1a2334;
 
   /* ---- Surfaces ----
-     The card face is deliberately close to the canvas (1.31:1). Separation is carried by
-     --rule, not by the fill — see DESIGN.md "The deliberate non-pair". */
-  --card: #26292d;
-  --card-foreground: #f2f2f0;
-  --card-muted-foreground: #a6a9ae;
-  --muted: #17191c;
-  --muted-foreground: #a6a9ae;
-  --input: #16181b;
+     A five-step ramp in one hue family, so the board has depth instead of two flat values. The
+     card face stays close to the canvas (1.17:1) and separation is still carried by `--rule` —
+     see DESIGN.md "The deliberate non-pair", which is still true of this palette. */
+  --card: #151d2e;
+  --card-foreground: #eaf0f8;
+  --card-muted-foreground: #94a3bd;
+  /* The serial plate is the largest glyph on the card and must not read as a heading, so it
+     gets its own step below `--card-muted-foreground` rather than an `opacity`, which would put
+     it under 4.5:1 against the header plate. Measured 5.14:1 on `--card-header`. */
+  --card-plate: #7b8aa6;
+  --muted: #0d1421;
+  --muted-foreground: #94a3bd;
+  --input: #0f1624;
 
-  /* ---- Accent: amber is the pending lamp, never a structural boundary.
-     Twelve amber outlines read as an error state, and amber already means "waiting". ---- */
-  --primary: #e8a317;
-  --primary-foreground: #0e0f11;
+  /* The card's header plate: one step *down*, so the row of board coordinates reads as the
+     machined part of the object and the title below it as the display. */
+  --card-header: #101726;
+  --card-header-hover: #162034;
 
-  /* The pending cell's face. An 8% amber wash rather than the full `--primary-soft`, which is
-     a saturated brown that outshouts the result cards it is only standing in for. Amber still
-     does the work — it is on the plate and the label — it just stops shouting. */
-  --surface-pending: rgb(232 163 23 / 8%);
+  /* Chrome sits behind the board, so it steps *up* only where it floats (the rail, the timeline,
+     the toasts). The header and the status strip wear this and stay quiet. */
+  --chrome: #0a101b;
+  --chrome-raised: #101a29;
+  --chrome-edge: rgb(174 197 236 / 7%);
+  /* The free-slot chips sit on chrome, not on a card, so they take a slightly warmer-neutral
+     fill than `--muted` to stop them merging into the header behind them. */
+  --chip-face: #0f1826;
 
-  /* State colour proper. */
-  --accent: #5a9de6;
-  --accent-foreground: #0e0f11;
-  --destructive: #ec6a5e;
+  /* ---- Accent: harbour cyan. The one saturated colour the user acts on — the primary button,
+     the selected free-slot chip, the drop-target state, the auto-fit lamp, the recent edge.
+     It is deliberately *light*, not neon: the ground is already cold, so a glowing edge would
+     have nothing to contrast against and would only add bloom the layout does not earn. ---- */
+  --accent: #2cc8dc;
+  --accent-foreground: #071019;
+  --foreground-inverse: #071019;
+  --accent-strong: #6fe3f2;
+  --accent-soft: #0d2f3a;
+  --accent-border: #2b7d8e;
+
+  /* ---- Amber: the pending signal, and nothing else.
+     Sodium, not gold-leaf — the colour of the lamps that are already on in this palette. Twelve
+     amber outlines would still read as an error state, so it stays off every bezel. ---- */
+  --primary: #ffa62b;
+  --primary-foreground: #1a1206;
+  /* The same amber at zero chroma, for gradients that have to fade out without a raw colour
+     stop in a component stylesheet. */
+  --primary-fade: rgb(255 166 43 / 0%);
+
+  /* The pending cell's face: a wash, not the full `--primary-soft`, which is a saturated brown
+     that outshouts the result cards it is only standing in for. */
+  --surface-pending: rgb(255 166 43 / 9%);
+
+  --destructive: #f4615a;
+  --destructive-strong: #ff8a83;
+  --destructive-soft: #3a1c1e;
+  --destructive-border: #8f3b3f;
 
   /* ---- The one structural rule ----
-     One value doing five jobs: card outline, card header divider, timeline cell divider,
-     empty-slot drop target, toolbar separator. Each card is a hole in a continuous lattice. */
-  --rule: #6e747b;
+     One value doing five jobs: card bezel, card header divider, timeline cell divider,
+     empty-slot drop target, toolbar separator. It is steel *blue*, not neutral grey — the
+     lattice and the ground share a hue family, which is what makes the board read as one lit
+     surface instead of lines drawn on a hole. */
+  --rule: #6b7b99;
   --row-rule: var(--rule);
   --border: var(--rule);
 
   /* ---- Focus ---- */
-  --ring: #e8a317;
+  --ring: #ffa62b;
 
   /* ---- Lamps: agent-log stage states ---- */
-  --lamp-live: #35b37e;
-  --lamp-pending: #e8a317;
-  --lamp-cancelled: #e0574a;
-  --success: #35b37e;
-  --warning: #e8a317;
+  --lamp-live: #2fd48a;
+  --lamp-pending: #ffa62b;
+  --lamp-cancelled: #f4615a;
+  --success: #2fd48a;
+  --warning: #ffa62b;
+  /* The diffuser ring around a lit lamp. Jade, because the strip's steady state is "results in",
+     which is the one lamp a user actually sits and looks at. */
+  --lamp-halo: rgb(47 212 138 / 18%);
 
   /* ================================================================= brand tokens */
 
-  /* Canvas furniture. Kept recessive so the cards stay the subject. */
-  --canvas-grid: rgb(110 116 123 / 9%);
-  --canvas-grid-major: rgb(110 116 123 / 16%);
-  --chrome-surface: rgb(26 28 31 / 88%);
-  --scrim: rgb(14 15 17 / 82%);
+  /* Canvas furniture. The grid is world geometry — a whiteboard is a measuring surface, so a
+     two-axis lattice is earned here rather than decorative, and it is the one texture in the
+     app that is allowed to be visible at every zoom. The fine line stays well below the major
+     one because at 40% zoom its pitch falls to ~16px and a strong value turns the whole field
+     into flat grey; the major line every 5 cells carries the structure. */
+  --canvas-grid: rgb(107 123 153 / 11%);
+  --canvas-grid-major: rgb(107 123 153 / 30%);
+
+  /* The light source. A broad cool wash from above the board and a vignette that closes the
+     edges, so an infinite canvas reads as a lit room instead of an unbounded void. */
+  --canvas-glow: radial-gradient(74rem 44rem at 50% -12%, rgb(44 200 220 / 14%), transparent 68%);
+  --canvas-vignette: radial-gradient(124% 100% at 50% 38%, transparent 40%, rgb(2 5 11 / 78%) 100%);
+
+  --chrome-surface: rgb(11 17 28 / 86%);
+  --scrim: rgb(8 13 22 / 82%);
 
   /* Hairlines that are decorative, not meaningful. WCAG 1.4.11 governs meaningful UI
-     boundaries, so these may sit below 3:1 where --rule may not. */
-  --divider: rgb(110 116 123 / 28%);
-  --divider-strong: rgb(110 116 123 / 44%);
-  --divider-subtle: rgb(110 116 123 / 18%);
+     boundaries, so these may sit below 3:1 where `--rule` may not. */
+  --divider: rgb(107 123 153 / 28%);
+  --divider-strong: rgb(107 123 153 / 46%);
+  --divider-subtle: rgb(107 123 153 / 15%);
+
+  /* Light on an edge. The single cheapest thing that makes a dark UI stop looking like a
+     wireframe: a 1px inner highlight along the top of every raised surface says "there is a
+     light source above this", which a shadow alone cannot. */
+  --edge-light: rgb(174 197 236 / 8%);
+  --edge-light-strong: rgb(174 197 236 / 15%);
 
   /* Dashed edges mark a target that exists but is not yet filled — an empty timeline slot, the
      discard bin. There is deliberately no second dashed value: a dashed edge is still a
-     *meaningful* boundary, so it draws in `--rule`, the same value as every solid one. An
-     earlier `--border-dashed` sat between `--rule` and `--divider` and made a third rule out of
-     one, which is the thing this system is against. */
+     *meaningful* boundary, so it draws in `--rule`, the same value as every solid one. */
 
   /* =========================================================== surface + hover states
      The lattice is quiet, so a state change is a small step in lightness plus the rule
-     darkening — never a glow. */
+     lightening — never a glow. */
 
-  --card-hover: #2e3236;
-  --card-active: #373b41;
-  --muted-hover: #1e2124;
-  --popover-hover: #22252a;
+  --card-hover: #1b2437;
+  --card-active: #222c42;
+  --muted-hover: #131c2c;
+  --popover-hover: #222d41;
 
-  --accent-strong: #7ab2ee;
-  --accent-soft: #1b2530;
-  --accent-border: #3f6ea8;
-  --primary-soft: #35270c;
+  --primary-soft: #3a2a0c;
 
-  --destructive-strong: #f08a80;
-  --destructive-soft: #371e1b;
-  --destructive-border: #a85046;
-
-  --info: #5a9de6;
-  --info-soft: #1b2530;
-
-  --foreground-inverse: #0e0f11;
+  --info: #2cc8dc;
+  --info-soft: #0d2f3a;
 
   /* Drag particles. Read from JS via getComputedStyle because each spark takes its colour inline
-     — a value written in a stylesheet could not reach it. Amber sparks and steel highlights, so
-     they stay in the Departure Board vocabulary instead of the old cosmic palette. */
-  --particle-1: #e8a317;
-  --particle-2: #f2c14e;
-  --particle-3: #6e747b;
-  --particle-4: #a6a9ae;
-  --particle-5: #f2f2f0;
-  --particle-6: #35b37e;
+     — a value written in a stylesheet could not reach it. Drawn from the same four signals the
+     board uses: amber for pending, cyan for what the user chose, steel for the lattice, jade
+     for what the agent finished. */
+  --particle-1: #ffa62b;
+  --particle-2: #2cc8dc;
+  --particle-3: #6b7b99;
+  --particle-4: #94a3bd;
+  --particle-5: #eaf0f8;
+  --particle-6: #2fd48a;
 
   /* Chrome blurs what is behind it so the canvas grid does not read through a panel. */
-  --backdrop-blur-chrome: blur(14px);
+  --backdrop-blur-chrome: blur(18px) saturate(1.3);
 
   /* ==================================================================== type scale */
 
@@ -130,24 +186,27 @@
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Cascadia Mono', Consolas, monospace;
 
   /* One voice, sizes set for the lattice. Tracking opens as size closes, which is what keeps
-     the small caps legible without going bold. */
+     the small caps legible without going bold; above 16px it closes instead, because tight
+     negative tracking is what makes a title look typeset rather than typed. */
   --text-plate: 1.3125rem; /* 21px — the plate serial, CJK card title */
-  --text-title: 1.0625rem; /* 17px — card title, Latin */
+  --text-wordmark: 1.1875rem; /* 19px — the wordmark, the only display voice in the app */
+  --text-title: 1.0625rem; /* 17px — card title (Latin) */
   --text-body: 0.84375rem; /* 13.5px — match rationale */
-  --text-meta: 0.6875rem; /* 11px — district, venue, freshness */
-  --text-label: 0.65625rem; /* 10.5px — row labels, rank, slot labels */
+  --text-meta: 0.75rem; /* 12px — data values, venue, source */
+  --text-label: 0.6875rem; /* 11px — row labels, rank, slot labels, every control */
   --text-lamp: 0.6875rem; /* 11px — lamp state */
 
-  --leading-tight: 1.34;
-  --leading-body: 1.5;
+  --leading-tight: 1.26;
+  --leading-body: 1.55;
   --leading-label: 1.2;
 
-  --tracking-label: 0.1em;
-  --tracking-lamp: 0.09em;
-  --tracking-title: 0.03em;
-  /* The serial plate is set large but must not read as a heading, so it tracks open and
+  --tracking-display: -0.025em;
+  --tracking-label: 0.085em;
+  --tracking-lamp: 0.08em;
+  --tracking-title: -0.012em;
+  /* The serial plate is set large but must not read as a heading, so it tracks slightly open and
      keeps its ink weight at the muted foreground role rather than stepping up to --foreground. */
-  --tracking-plate: 0.06em;
+  --tracking-plate: 0.02em;
 
   --weight-regular: 400;
   --weight-medium: 500;
@@ -172,26 +231,40 @@
 
   /* ======================================================================= radius */
 
-  /* Cells and plates are near-square. Only fully round things are round. */
-  --radius-xs: 0.125rem;
-  --radius-sm: 0.1875rem;
-  --radius-md: 0.25rem;
-  --radius-lg: 0.375rem;
+  /* The previous identity ran near-square (2–6px) because every cell was a machined plate.
+     Blue Hour keeps the plates but lets them sit as *objects*: the card is the largest surface
+     on screen and gets the largest radius, and the ramp tightens from there to the chips. */
+  --radius-xs: 0.1875rem;
+  --radius-sm: 0.3125rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-card: 0.875rem;
   --radius-pill: 999px;
 
   /* ==================================================================== elevation */
 
-  /* Elevation is nearly flat by design: the rule does the separating, so shadow only has to
-     answer "how far off the plane is this" — not "what is this". */
+  /**
+   * Depth is declared once, and it is layered rather than duplicated: a tight contact shadow
+   * says "this is off the plane", a wide one says "this is well off it". A card at rest gets the
+   * contact only — its 1px `--rule` bezel is the separator and a wide shadow underneath it would
+   * turn every card into a ghost. Chrome, which genuinely floats over the canvas, gets the wide
+   * one, because there the shadow is describing the layer rather than outlining an object.
+   */
   --shadow-none: none;
-  --shadow-lift: 0 1px 2px rgb(0 0 0 / 45%);
-  --shadow-raised: 0 2px 8px rgb(0 0 0 / 55%);
-  --shadow-drag: 0 8px 24px rgb(0 0 0 / 65%);
+  --shadow-contact: 0 1px 2px rgb(2 5 11 / 45%);
+  --shadow-lift: 0 2px 6px rgb(2 5 11 / 45%), 0 12px 26px -14px rgb(2 5 11 / 75%);
+  --shadow-raised: 0 4px 12px -4px rgb(2 5 11 / 55%), 0 22px 48px -20px rgb(2 5 11 / 85%);
+  --shadow-drag: 0 24px 56px -16px rgb(2 5 11 / 90%), 0 6px 16px rgb(2 5 11 / 65%);
+  /* Pressed surfaces lose their outer shadow and gain a short one *inside*, which is the only
+     way a press reads as going down rather than as the control simply changing colour. */
+  --shadow-press: rgb(2 5 11 / 45%);
+  /* Fields are holes in the chrome, so they take an inset shadow and no light on the top edge. */
+  --shadow-input-inset: rgb(2 5 11 / 40%);
 
   /* The dragged card is a `filter`, not a `box-shadow`, so the lift has to follow the card's
      own alpha as it rotates. Kept as tokens so component CSS writes no colour of its own. */
-  --filter-drag-lift: drop-shadow(0 8px 20px rgb(0 0 0 / 70%));
-  --filter-drag-lift-sm: drop-shadow(0 2px 8px rgb(0 0 0 / 55%));
+  --filter-drag-lift: drop-shadow(0 18px 36px rgb(2 5 11 / 85%)) drop-shadow(0 3px 8px rgb(2 5 11 / 60%));
+  --filter-drag-lift-sm: drop-shadow(0 6px 16px rgb(2 5 11 / 70%));
 
   /* ======================================================================= focus */
 
@@ -249,70 +322,97 @@
   --card-compact-min-height: 220px;
   --card-wide-min-height: 200px;
   --card-tall-min-height: 440px;
-  --card-hover-lift: 2px;
+  --card-hover-lift: 3px;
 }
 
 /**
  * Single shipped theme.
  *
  * The bootstrap token layer carried a `[data-theme='light']` block that nothing ever activated,
- * so `--background` was unreachable for light. DESIGN.md records dark-first, single theme as the
- * decision: one theme, fully specified, with the contrast pairs above verified against it. Adding
- * a second theme is a future ticket that must re-run the contrast gate in
- * `src/designSystem.test.ts` for the new values — not an unblock of this block.
+ * so `--background` was unreachable for light. That block is still here as a complete, specified
+ * second theme kept for the future, but **nothing sets `data-theme` to it today**, and the test
+ * suite asserts the decision is recorded and that dark is the shipped one.
+ *
+ * Blue Hour is chosen from the use scene — a student planning a weekend at a desk at night —
+ * not from category habit, and the light theme is its own design problem: the same hue ramp
+ * inverted, with amber and cyan re-picked for their lightness rather than copied.
+ *
+ * Adding a second reachable theme means re-running the contrast gate against the new values. It
+ * is not a matter of uncommenting a block.
  */
 [data-theme='light'] {
-  --background: #f4f5f6;
-  --foreground: #14161a;
-  --card: #ffffff;
-  --card-foreground: #14161a;
-  --card-muted-foreground: #4d535c;
-  --muted: #e8eaed;
-  --muted-foreground: #4d535c;
-  --input: #ffffff;
+  --background: #eef1f6;
+  --foreground: #0d1420;
   --popover: #ffffff;
-  --primary: #8a5a00;
+  --card: #ffffff;
+  --card-foreground: #0d1420;
+  --card-muted-foreground: #4b5769;
+  --card-plate: #5d6a80;
+  --card-header: #f4f6fa;
+  --card-header-hover: #eaeef5;
+  --muted: #e7ebf2;
+  --muted-foreground: #4b5769;
+  --input: #ffffff;
+  --chrome: #f7f9fc;
+  --chrome-raised: #ffffff;
+  --chrome-edge: rgb(13 20 32 / 6%);
+  --primary: #8a5200;
   --primary-foreground: #ffffff;
-  --accent: #1f5fa8;
+  --primary-fade: rgb(138 82 0 / 0%);
+  --surface-pending: rgb(138 82 0 / 10%);
+  --primary-soft: #fbeed8;
+  --accent: #0b6c7d;
   --accent-foreground: #ffffff;
+  --accent-strong: #085867;
+  --accent-soft: #dff0f4;
+  --accent-border: #8cc3ce;
   --destructive: #a53428;
-  --rule: #6b7078;
-  --row-rule: var(--rule);
-  --border: var(--rule);
-  --ring: #8a5a00;
-  --lamp-live: #1f6b45;
-  --lamp-pending: #8a5a00;
-  --lamp-cancelled: #a53428;
-  --success: #1f6b45;
-  --warning: #8a5a00;
-  --canvas-grid: rgb(107 112 120 / 14%);
-  --canvas-grid-major: rgb(107 112 120 / 22%);
-  --chrome-surface: rgb(255 255 255 / 90%);
-  --scrim: rgb(244 245 246 / 82%);
-  --divider: rgb(107 112 120 / 30%);
-  --divider-strong: rgb(107 112 120 / 50%);
-  --divider-subtle: rgb(107 112 120 / 18%);
-  --card-hover: #f0f1f3;
-  --card-active: #e6e8eb;
-  --muted-hover: #dcdfe3;
-  --popover-hover: #f0f1f3;
-  --accent-strong: #3f7cc4;
-  --accent-soft: #e3edf8;
-  --accent-border: #9cc0e4;
-  --primary-soft: #fbf0d8;
-  --surface-pending: rgb(138 90 0 / 10%);
   --destructive-strong: #c04a3d;
   --destructive-soft: #fbe6e4;
   --destructive-border: #e8a79f;
-  --info: #1f5fa8;
-  --info-soft: #e3edf8;
+  --rule: #56637a;
+  --row-rule: var(--rule);
+  --border: var(--rule);
+  --ring: #8a5200;
+  --lamp-live: #146b48;
+  --lamp-pending: #8a5200;
+  --lamp-cancelled: #a53428;
+  --lamp-halo: rgb(20 107 72 / 20%);
+  --success: #146b48;
+  --warning: #8a5200;
+  --info: #0b6c7d;
+  --info-soft: #dff0f4;
   --foreground-inverse: #ffffff;
-  --particle-1: #8a5a00;
-  --particle-2: #b07d22;
-  --particle-3: #6b7078;
-  --particle-4: #4d535c;
+  --canvas-grid: rgb(86 99 122 / 12%);
+  --canvas-grid-major: rgb(86 99 122 / 22%);
+  --canvas-glow: radial-gradient(74rem 44rem at 50% -12%, rgb(11 108 125 / 10%), transparent 66%);
+  --canvas-vignette: radial-gradient(122% 98% at 50% 40%, transparent 46%, rgb(120 132 152 / 26%) 100%);
+  --chrome-surface: rgb(255 255 255 / 90%);
+  --scrim: rgb(247 249 252 / 88%);
+  --divider: rgb(86 99 122 / 28%);
+  --divider-strong: rgb(86 99 122 / 46%);
+  --divider-subtle: rgb(86 99 122 / 14%);
+  --edge-light: rgb(255 255 255 / 70%);
+  --edge-light-strong: rgb(255 255 255 / 90%);
+  --card-hover: #f2f5f9;
+  --card-active: #e8ecf3;
+  --muted-hover: #dfe4ed;
+  --popover-hover: #f2f5f9;
+  --chip-face: #eef1f7;
+  --shadow-contact: 0 1px 2px rgb(24 36 56 / 10%);
+  --shadow-lift: 0 2px 6px rgb(24 36 56 / 10%), 0 12px 26px -14px rgb(24 36 56 / 22%);
+  --shadow-raised: 0 4px 12px -4px rgb(24 36 56 / 14%), 0 22px 48px -20px rgb(24 36 56 / 26%);
+  --shadow-drag: 0 24px 56px -16px rgb(24 36 56 / 30%), 0 6px 16px rgb(24 36 56 / 18%);
+  --shadow-press: rgb(24 36 56 / 30%);
+  --shadow-input-inset: rgb(24 36 56 / 8%);
+  --filter-drag-lift: drop-shadow(0 18px 36px rgb(24 36 56 / 30%)) drop-shadow(0 3px 8px rgb(24 36 56 / 18%));
+  --filter-drag-lift-sm: drop-shadow(0 6px 16px rgb(24 36 56 / 24%));
+  --particle-1: #c07c10;
+  --particle-2: #0b6c7d;
+  --particle-3: #56637a;
+  --particle-4: #4b5769;
   --particle-5: #ffffff;
-  --particle-6: #1f6b45;
+  --particle-6: #146b48;
 }
 
 /**

@@ -5,23 +5,49 @@
  * Both variants share every colour, radius and type token, so they read as the same
  * object at two scales rather than as two different components.
  *
- * The card is the product's identity. Everything the Departure Board world claims happens here
- * and nowhere else on screen, so the card is built as a **cell in a table**: a header row of
- * board coordinates (serial, district, time), a 1px `--rule` under it, the destination as the
- * one large thing, then ruled data rows for the facts. Every internal divider is the same
- * `--rule` value that draws the card's own bezel — that is the whole trick.
+ * The card is the product's identity. It is built as a **cell in a table**: a machined header
+ * plate of board coordinates (serial, district, time), the destination as the one large thing,
+ * then ruled data rows for the facts. Every internal divider is the same `--rule` value that
+ * draws the card's own bezel — that is the whole trick, and it survived the rebrand unchanged.
+ *
+ * The padding lives on the three regions rather than on the card, so the header plate can run
+ * full-bleed to the bezel. That is the one structural change the new material language needs:
+ * a recessed band across the top is what makes the card read as a milled object catching light
+ * from above, rather than as a filled rectangle with a border.
  */
 
 .activity-card {
+  --card-pad-x: var(--space-5);
+  --card-pad-y: var(--space-4);
+
   background: var(--card);
   border: 1px solid var(--rule);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-card);
+  /* The card's own bezel is the separator. A wide shadow underneath it would make every card a
+     ghost, so at rest it gets a 1px contact shadow (it is off the plane) and a 1px inner
+     highlight (there is a light source above). The wide shadow is for hover, drag and chrome. */
+  box-shadow:
+    var(--shadow-contact),
+    inset 0 1px 0 var(--edge-light);
   color: var(--foreground);
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding: var(--space-4) var(--space-5) var(--space-5);
+  overflow: hidden;
+  padding: 0;
   width: 100%;
+}
+
+.activity-card:hover {
+  background: var(--card-hover);
+  box-shadow:
+    var(--shadow-lift),
+    inset 0 1px 0 var(--edge-light);
+}
+
+.activity-card:hover .activity-card__head,
+.activity-card:hover .activity-card__research-head {
+  background: var(--card-header-hover);
 }
 
 /**
@@ -34,26 +60,24 @@
   min-height: var(--card-min-height);
 }
 
-/**
- * No resting shadow. The bezel already says where the card ends, and a 1px `--rule` under a
- * wide soft shadow is the ghost-card look DESIGN.md rules out. `--shadow-lift` is reserved for
- * hover, `--shadow-drag` for the card the user is actually holding.
- */
-
 /* ---- Header row: serial plate · district · time ---- */
 
 /**
  * Two rows, not one line: the region takes the full width of the row above the sub-row, and
  * the language chip and departure time share the sub-row. Sharing one line is what truncated
  * "Central & Western" to "CENTRAL & …" — the time is a fixed 120px and the district is not.
+ *
+ * One step below the card face, running edge to edge: the row of board coordinates is the
+ * machine part of the object, and the title below it is the display.
  */
 .activity-card__head {
   align-items: baseline;
+  background: var(--card-header);
   border-bottom: 1px solid var(--rule);
   display: grid;
   gap: var(--space-1) var(--space-3);
   grid-template-columns: auto minmax(0, 1fr);
-  padding-bottom: var(--space-3);
+  padding: var(--space-3) var(--card-pad-x);
 }
 
 /**
@@ -61,10 +85,11 @@
  *
  * It is deliberately *not* `--foreground`: at 21px it is the largest glyph on the card, and
  * if it were also the brightest the serial would outrank the title it labels. Muted ink, open
- * tracking, tabular figures — a board operator's row number, not a heading.
+ * tracking, tabular figures — a board operator's row number, not a heading. Against the
+ * recessed header plate it reads as an index cut into the surface.
  */
 .activity-card__plate {
-  color: var(--card-muted-foreground);
+  color: var(--card-plate);
   font-family: var(--font-mono);
   font-size: var(--text-plate);
   font-variant-numeric: tabular-nums;
@@ -106,6 +131,7 @@
  */
 .activity-card__language {
   align-self: start;
+  background: var(--chrome);
   border: 1px solid var(--divider);
   border-radius: var(--radius-xs);
   color: var(--card-muted-foreground);
@@ -123,15 +149,21 @@
    restate it — and this span is only focusable so its `aria-label` can be read out, so it
    inherits the policy rather than owning one. */
 
+/**
+ * The departure time is one of the two facts a board exists to publish, so it stays in muted
+ * ink but gains tabular figures and mono-adjacent alignment — the cells of a timetable line up
+ * by their digits, not by their letters.
+ */
 .activity-card__time-badge {
   align-items: center;
   color: var(--card-muted-foreground);
   display: inline-flex;
   flex-shrink: 0;
+  font-family: var(--font-mono);
   font-size: var(--text-meta);
   font-variant-numeric: tabular-nums;
   justify-content: flex-end;
-  letter-spacing: var(--tracking-label);
+  letter-spacing: 0.01em;
   text-align: right;
   white-space: nowrap;
 }
@@ -143,6 +175,7 @@
   flex: 1 1 auto;
   flex-direction: column;
   min-width: 0;
+  padding: 0 var(--card-pad-x);
 }
 
 .activity-card__title {
@@ -183,14 +216,14 @@
   display: flex;
   flex-direction: column;
   margin-top: var(--space-3);
-  padding-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
 }
 
 .activity-card__data-row {
   align-items: baseline;
   display: grid;
   gap: var(--space-3);
-  grid-template-columns: 4.25rem minmax(0, 1fr);
+  grid-template-columns: 3.75rem minmax(0, 1fr);
   padding: var(--space-1) 0;
 }
 
@@ -203,6 +236,7 @@
   font-size: var(--text-label);
   font-weight: var(--weight-medium);
   letter-spacing: var(--tracking-label);
+  opacity: 0.85;
   text-transform: uppercase;
 }
 
@@ -226,16 +260,19 @@
 /* ---- Match rationale: the reason this card exists, so it gets the recessed cell ---- */
 
 /**
- * A recessed `--muted` cell with a 1px `--rule` edge. The callout reads because it is
- * *recessed* and because of its tracked-caps label, not because of a coloured stripe — a 3px
- * accent border-left on every card would turn the board into a set of callout boxes and
- * spend `--accent`, which is the state colour, on something that is not a state.
+ * A recessed well.
+ *
+ * It reads because it is *sunken* — one surface step below the card face — and because of its
+ * tracked-caps label, not because of a coloured stripe. A 3px accent `border-left` on every card
+ * would turn the board into a set of callout boxes and spend `--accent`, the state colour, on
+ * something that is not a state. It carries **no border**: a filled, bordered box inside a
+ * bordered card is a card inside a card, and the card's own `--rule` under the data block already
+ * separates this from everything above it.
  */
 .activity-card__rationale {
   background: var(--muted);
-  border: 1px solid var(--rule);
   border-radius: var(--radius-md);
-  margin-top: var(--space-4);
+  margin-top: var(--space-3);
   padding: var(--space-2) var(--space-3) var(--space-3);
   transition: background-color var(--motion-fast) var(--motion-ease);
 }
@@ -271,6 +308,7 @@
   gap: var(--space-2) var(--space-3);
   justify-content: space-between;
   margin-top: var(--space-3);
+  padding: 0 var(--card-pad-x) var(--card-pad-y);
 }
 
 .activity-card__source {
@@ -291,7 +329,7 @@
 
 .activity-card__source a {
   color: var(--accent);
-  text-underline-offset: 2px;
+  text-underline-offset: 3px;
 }
 
 .activity-card__similar-button {
@@ -302,13 +340,15 @@
 /* Each sets a minimum injected by boardLayout.ts and then grows with its content. */
 
 .activity-card--compact {
+  --card-pad-x: var(--space-4);
+  --card-pad-y: var(--space-3);
+
   min-height: var(--card-compact-min-height);
-  padding: var(--space-3) var(--space-4) var(--space-4);
 }
 
 .activity-card--compact .activity-card__title {
   font-size: var(--text-title);
-  margin-top: var(--space-2);
+  margin-top: var(--space-3);
 }
 
 .activity-card--compact .activity-card__rationale {
@@ -332,12 +372,14 @@
 }
 
 .activity-card--wide {
+  --card-pad-x: var(--space-4);
+  --card-pad-y: var(--space-3);
+
   min-height: var(--card-wide-min-height);
-  padding: var(--space-3) var(--space-4) var(--space-4);
 }
 
 .activity-card--wide .activity-card__title {
-  margin-top: var(--space-2);
+  margin-top: var(--space-3);
 }
 
 .activity-card--tall {
@@ -352,9 +394,11 @@
 /* ---- Docked: the same object at timeline scale ---- */
 /* Drops the serial plate, the data rows and the rationale, and re-reads the card as a time,
    a title and a place. It shares every token with the canvas card so the two read as one
-   object seen closer rather than as two components. */
+   object seen closer rather than as two components. Because it has no header plate to bleed
+   into, it takes its own padding back. */
 
 .activity-card--docked {
+  border-radius: var(--radius-md);
   font-size: var(--text-label);
   gap: var(--space-1);
   padding: var(--space-2) var(--space-3);
@@ -394,23 +438,27 @@
 
 /**
  * A cell waiting to be filled, so it wears the one colour that means "waiting on you":
- * `--primary`, on the label only. Never on the bezel — twelve amber outlines read as an
- * error state, and this card is a promise, not a failure.
+ * `--primary`, on the label and the plate only. Never on the bezel — twelve amber outlines
+ * read as an error state, and this card is a promise, not a failure.
  */
 .activity-card--researching {
   background: var(--surface-pending);
   border: 1px dashed var(--rule);
   min-height: var(--card-min-height);
-  padding: var(--space-4) var(--space-5) var(--space-5);
+  padding: 0;
+}
+
+.activity-card--researching .activity-card__research-head {
+  border-bottom: 1px dashed var(--rule);
+  padding: var(--space-3) var(--card-pad-x);
 }
 
 .activity-card__research-head {
   align-items: baseline;
-  border-bottom: 1px solid var(--rule);
+  background: var(--card-header);
   display: flex;
   gap: var(--space-3);
   justify-content: space-between;
-  padding-bottom: var(--space-3);
 }
 
 .activity-card__research-plate {
@@ -439,7 +487,8 @@
   font-weight: var(--weight-semi);
   letter-spacing: var(--tracking-title);
   line-height: var(--leading-tight);
-  margin-top: var(--space-3);
+  margin-top: var(--space-4);
+  padding-inline: var(--space-4);
 }
 
 .activity-card__research-subtitle {
@@ -447,6 +496,7 @@
   font-size: var(--text-meta);
   line-height: var(--leading-body);
   margin-top: var(--space-2);
+  padding-inline: var(--space-4);
 }
 
 /**
@@ -459,11 +509,12 @@
   flex-direction: column;
   gap: var(--space-3);
   margin-top: var(--space-5);
+  padding: 0 var(--space-4) var(--space-4);
 }
 
 .activity-card__skeleton-line {
   animation: skeleton-breathe 1.6s var(--motion-ease) infinite alternate;
-  background: var(--muted);
+  background: var(--chrome-raised);
   border-radius: var(--radius-xs);
   height: 0.75rem;
 }
@@ -482,10 +533,10 @@
 
 @keyframes skeleton-breathe {
   from {
-    opacity: 0.45;
+    opacity: 0.4;
   }
   to {
-    opacity: 0.85;
+    opacity: 0.8;
   }
 }
 
@@ -536,12 +587,12 @@
 
 /* ---- Most recent search results ----
  *
- * The previous identity marked these with an infinite pulsing glow. Under Departure Board a
- * glow is off-system for three reasons: amber and blue both carry meaning, so a colour bloom
- * competes with state; a permanently animating border is motion the user did not ask for; and
- * the lattice is meant to be continuous, so a card that glows breaks the bezel.
+ * The previous identity marked these with an infinite pulsing glow. Under this system a glow is
+ * off-system for three reasons: amber and cyan both carry meaning, so a colour bloom competes
+ * with state; a permanently animating border is motion the user did not ask for; and the
+ * lattice is meant to be continuous, so a card that glows breaks the bezel.
  *
- * Recency is a *state*, so it takes the state colour: a 2px --accent edge. It holds still, it
+ * Recency is a *state*, so it takes the state colour: a 2px `--accent` edge. It holds still, it
  * survives `prefers-reduced-motion` without a special case, and it still reads as "these just
  * arrived" at a glance.
  */
@@ -549,7 +600,9 @@
 .activity-card--recent {
   border-color: var(--accent);
   border-width: 2px;
-  box-shadow: var(--shadow-lift);
+  box-shadow:
+    var(--shadow-lift),
+    inset 0 1px 0 var(--edge-light);
   position: relative;
   z-index: 2;
 }

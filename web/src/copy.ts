@@ -218,8 +218,8 @@ export const ACTIVITY_CARD_DISTRICT_LABEL = 'District';
 /**
  * Labels for the card's ruled data rows.
  *
- * These read as row headings in a departure board table, which is why they are written the
- * way a board operator would read them out — `Venue`, `Price`, `Listed` — rather than as field
+ * These read as row headings in a ruled table, which is why they are written the way a
+ * board operator would read them out — `Venue`, `Price`, `Listed` — rather than as field
  * names from the API (`location.venue`, `price.is_free`, `listed_at`).
  */
 export const ACTIVITY_CARD_ROW_VENUE_LABEL = 'Venue';

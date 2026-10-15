@@ -36,8 +36,33 @@ button {
 }
 
 /**
+ * Browser surfaces.
+ *
+ * Text selection, the caret and the scrollbars ship with the browser and belong to no design
+ * system, so on a themed canvas they are the loudest unfitted thing on the page — dragging
+ * across a card gives you a stock highlighter over a palette that has a point of view. They are
+ * themed here from the same tokens, in one place.
+ */
+::selection {
+  background: var(--accent);
+  color: var(--foreground-inverse);
+}
+
+input,
+textarea {
+  caret-color: var(--accent);
+}
+
+* {
+  scrollbar-color: var(--divider-strong) transparent;
+  scrollbar-width: thin;
+}
+
+/**
  * One focus policy for the whole app. Every interactive element gets the same ring;
- * components must not restate it.
+ * components must not restate it. The ring is amber so it reads as the app's own signal against
+ * a cyan-accented control, and it is the one place `--primary` is allowed outside the agent's
+ * pending state — focus is an instruction the user just gave, not a board state.
  */
 :where(a, button, input, select, textarea, [tabindex]):focus-visible {
   outline: var(--focus-ring-width) solid var(--ring);
@@ -72,18 +97,35 @@ button {
  * every viewport width, with the brand sitting quietly to one side, which is where identity
  * belongs in an Operate surface: present, not competing.
  *
- * The header is also the first thing to stop being a slab. It wears the canvas colour and a
- * single `--rule` underneath, so the only filled objects left on screen are the cards.
+ * The header is chrome, not canvas. It wears a two-step surface gradient rather than the
+ * background colour — a flat slab across the top is what makes a dark UI read as unstyled —
+ * and is closed off with the same `--rule` the cards are, so the board and the header belong to
+ * one lattice.
  */
 .app__header {
   align-items: center;
-  background: var(--background);
+  background: linear-gradient(180deg, var(--chrome-raised), var(--chrome));
   border-bottom: 1px solid var(--rule);
+  box-shadow: var(--shadow-contact);
   display: grid;
   flex-shrink: 0;
   gap: var(--space-5);
   grid-template-columns: 1fr auto 1fr;
-  padding: var(--space-3) var(--space-5);
+  padding: var(--space-4) var(--space-5);
+  position: relative;
+}
+
+/* One hairline of light along the very top of the chrome, so the header reads as a surface with
+   an edge under a light source rather than as a rectangle of a different grey. It runs cool at the
+   left and warms as it crosses the search — the palette stating its own relationship once, at the
+   only place on screen wide enough to say it. */
+.app__header::before {
+  background: linear-gradient(90deg, var(--accent) 0%, var(--primary) 30%, var(--primary-fade) 62%);
+  block-size: 2px;
+  content: '';
+  inset: 0 0 auto;
+  opacity: 0.85;
+  position: absolute;
 }
 
 .app__header-brand {
@@ -92,19 +134,24 @@ button {
   min-width: 0;
 }
 
-/* The wordmark is identity, not a headline: one step below the plate size, at the same weight
-   as a card title, so it reads as a signature on the chrome rather than as a page title that
-   happens to be sitting next to a search box. */
+/**
+ * The wordmark is the product's only display voice, so it gets the one size and the one piece of
+ * negative tracking the scale allows, and the tagline drops a step below it in muted ink. It is
+ * still a signature on the chrome rather than a page title: it does not outrank the search box
+ * sitting beside it.
+ */
 .app__header h1 {
-  font-size: var(--text-title);
+  color: var(--foreground);
+  font-size: var(--text-wordmark);
   font-weight: var(--weight-semi);
-  letter-spacing: var(--tracking-title);
+  letter-spacing: var(--tracking-display);
   line-height: var(--leading-tight);
 }
 
 .app__header p {
   color: var(--card-muted-foreground);
-  font-size: var(--text-label);
+  font-size: var(--text-meta);
+  letter-spacing: 0.01em;
   line-height: var(--leading-body);
   margin-top: var(--space-1);
 }

@@ -6,9 +6,12 @@
 
 .btn {
   align-items: center;
-  background: var(--card);
+  background: linear-gradient(180deg, var(--card-hover), var(--card));
   border: 1px solid var(--rule);
   border-radius: var(--radius-md);
+  /* The same light the cards get: one inset hairline along the top edge, so a control reads as
+     a solid object under the same light as everything else rather than as a flat swatch. */
+  box-shadow: inset 0 1px 0 var(--edge-light);
   color: var(--foreground);
   cursor: pointer;
   display: inline-flex;
@@ -21,45 +24,64 @@
   transition:
     background-color var(--motion-fast) var(--motion-ease),
     border-color var(--motion-fast) var(--motion-ease),
+    box-shadow var(--motion-fast) var(--motion-ease),
     color var(--motion-fast) var(--motion-ease);
   white-space: nowrap;
 }
 
 .btn:hover:not(:disabled) {
   background: var(--card-hover);
+  border-color: var(--accent-border);
 }
 
 .btn:active:not(:disabled) {
   background: var(--card-active);
+  box-shadow: none;
 }
 
 .btn:disabled {
   background: var(--muted);
   border-color: var(--divider);
+  box-shadow: none;
   color: var(--card-muted-foreground);
   cursor: not-allowed;
 }
 
+/**
+ * The product's single primary action.
+ *
+ * Harbour cyan, filled and flat, with the light on it and a shadow under it — the one control
+ * on the page allowed both, because it is genuinely floating above the header plane and genuinely
+ * the thing to press. It is flat rather than graded on purpose: a saturated gradient on a call to
+ * action is the most recognisable "assembled" tell there is, and the palette does not need one.
+ * Nothing else in the app gets a filled cyan.
+ */
 .btn--primary {
   background: var(--accent);
   border-color: var(--accent-strong);
-  color: var(--foreground-inverse);
+  box-shadow:
+    var(--shadow-lift),
+    inset 0 1px 0 var(--edge-light-strong);
+  color: var(--accent-foreground);
   font-weight: 600;
 }
 
 .btn--primary:hover:not(:disabled) {
   background: var(--accent-strong);
+  border-color: var(--accent-strong);
 }
 
 .btn--primary:active:not(:disabled) {
-  background: var(--accent-strong);
+  background: var(--accent);
+  box-shadow: inset 0 1px 2px var(--shadow-press);
 }
 
 .btn--primary:disabled {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--foreground-inverse);
-  opacity: 0.65;
+  background: var(--accent-soft);
+  border-color: var(--accent-border);
+  box-shadow: none;
+  color: var(--accent-foreground);
+  opacity: 0.7;
 }
 
 .btn--danger {
@@ -92,9 +114,10 @@
 /* ---- Text field ---- */
 
 .field {
-  background: var(--card);
+  background: var(--input);
   border: 1px solid var(--rule);
   border-radius: var(--radius-md);
+  box-shadow: inset 0 1px 2px var(--shadow-input-inset);
   color: var(--foreground);
   font: inherit;
   font-size: var(--control-font);
@@ -111,7 +134,7 @@
 }
 
 .field:hover:not(:disabled) {
-  border-color: var(--card-muted-foreground);
+  border-color: var(--accent-border);
 }
 
 .field:focus {
@@ -133,8 +156,8 @@
 /* ---- Chip: toggleable filter / availability pill ---- */
 
 .chip {
-  background: var(--muted);
-  border: 1px solid var(--rule);
+  background: var(--chip-face);
+  border: 1px solid var(--divider);
   border-radius: var(--radius-pill);
   color: var(--muted-foreground);
   cursor: pointer;
@@ -151,16 +174,20 @@
 
 .chip:hover {
   background: var(--card-hover);
+  border-color: var(--accent-border);
+  color: var(--foreground);
 }
 
 .chip--selected {
-  background: var(--accent);
-  border-color: var(--accent-strong);
-  color: var(--foreground-inverse);
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .chip--selected:hover {
-  background: var(--accent-strong);
+  background: var(--accent-soft);
+  border-color: var(--accent-strong);
+  color: var(--accent-strong);
 }
 
 /* ---- Segmented control ---- */
@@ -246,10 +273,15 @@
   align-items: stretch;
   backdrop-filter: var(--backdrop-blur-chrome);
   -webkit-backdrop-filter: var(--backdrop-blur-chrome);
-  background: var(--scrim);
+  background: var(--chrome-surface);
   border: 1px solid var(--rule);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-raised);
+  /* The rail genuinely floats over the canvas, so the wide shadow is describing the layer
+     rather than outlining an object — which is the case where a bezel and a shadow together
+     are correct rather than the ghost-card pattern. */
+  box-shadow:
+    var(--shadow-raised),
+    inset 0 1px 0 var(--edge-light);
   display: flex;
   flex-direction: column;
   overflow: visible;
@@ -396,7 +428,9 @@
   background: var(--popover);
   border: 1px solid var(--rule);
   border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-raised);
+  box-shadow:
+    var(--shadow-raised),
+    inset 0 1px 0 var(--edge-light);
   color: var(--foreground);
   font-size: var(--text-label);
   font-weight: var(--weight-medium);
@@ -440,10 +474,12 @@
 }
 
 .board-modal {
-  background: var(--card);
+  background: linear-gradient(180deg, var(--card-hover), var(--card));
   border: 1px solid var(--rule);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-drag);
+  border-radius: var(--radius-card);
+  box-shadow:
+    var(--shadow-drag),
+    inset 0 1px 0 var(--edge-light);
   display: flex;
   flex-direction: column;
   gap: var(--space-3);

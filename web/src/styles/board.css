@@ -42,6 +42,26 @@
     background-size var(--motion-base) var(--motion-ease);
 }
 
+/**
+ * The light in the room.
+ *
+ * An infinite canvas has no edges, so without a light source it renders as a flat field — which
+ * is the single biggest reason a dark board reads as an unfinished `<div>`. This is a broad cool
+ * wash from above the viewport and a vignette that closes the edges, so the board reads as a lit
+ * space that happens to continue past the frame.
+ *
+ * Screen space and painted behind everything: it is the room, not the board, so it neither pans
+ * nor zooms with the world, and it must never take a pointer event.
+ */
+.board::before {
+  background-image: var(--canvas-glow), var(--canvas-vignette);
+  content: '';
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+}
+
 .board--dragging {
   cursor: grabbing;
 }
@@ -220,17 +240,21 @@
 
 /**
  * The empty state is the one card-shaped thing allowed on an empty board, so it is built like
- * a card: `--card` face, `--rule` bezel, no shadow. Centred text with a ragged measure reads as
- * a placeholder; a narrow measure reads as a card waiting for rows.
+ * a card: `--card` face, `--rule` bezel, a contact shadow and the same light along its top edge.
+ * Centred text with a ragged measure reads as a placeholder; a narrow measure reads as a card
+ * waiting for rows.
  */
 .board__panel {
-  background: var(--card);
+  background: linear-gradient(180deg, var(--card-hover), var(--card));
   border: 1px solid var(--rule);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-card);
+  box-shadow:
+    var(--shadow-raised),
+    inset 0 1px 0 var(--edge-light);
   box-sizing: border-box;
   color: var(--muted-foreground);
   max-width: calc(100% - var(--space-8));
-  padding: var(--space-6) var(--space-5);
+  padding: var(--space-8) var(--space-6);
   text-align: center;
   width: min(30rem, 100%);
 }
@@ -251,20 +275,23 @@
   border-top: 1px solid var(--divider-subtle);
   color: var(--card-muted-foreground);
   font-size: var(--text-meta);
-  margin-top: var(--space-4);
-  padding-top: var(--space-4);
+  margin-top: var(--space-5);
+  padding-top: var(--space-5);
 }
 
 /**
  * The toast is transient, so it is a floating plate rather than a ruled cell: `--popover` face,
- * `--rule` bezel. It takes no accent edge — a confirmation is not a state, and colouring it
- * would spend the state colour on routine feedback.
+ * `--rule` bezel, and the wide shadow — which is correct here, because this genuinely floats
+ * above the board rather than sitting in the lattice. It takes no accent edge: a confirmation is
+ * not a state, and colouring it would spend the state colour on routine feedback.
  */
 .board__toast {
   background: var(--popover);
   border: 1px solid var(--rule);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-raised);
+  box-shadow:
+    var(--shadow-raised),
+    inset 0 1px 0 var(--edge-light);
   color: var(--foreground);
   font-size: var(--text-meta);
   max-width: calc(100% - var(--space-8));

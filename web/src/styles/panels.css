@@ -62,16 +62,18 @@
 /**
  * A status strip, not a second header.
  *
- * It shares the canvas colour with the header and is closed off with a decorative hairline, so
- * the two chrome blocks stack as one band. The message is the loudest thing in it (foreground at
- * body size); everything to the right is chrome and stays at label size.
+ * It continues the header's gradient rather than restarting it, so the two chrome blocks read as
+ * one band with a hairline between them instead of two slabs. The message is the loudest thing
+ * in it (foreground at body size); everything to the right is chrome and stays at label size.
  */
 .agent-status-panel {
-  background: var(--background);
-  border-bottom: 1px solid var(--divider);
+  background: linear-gradient(180deg, var(--chrome), var(--background));
+  border-bottom: 1px solid var(--rule);
+  box-shadow: var(--shadow-contact);
   flex-shrink: 0;
   font-size: var(--text-meta);
   padding: var(--space-2) var(--space-5);
+  position: relative;
   z-index: 4;
 }
 
@@ -94,6 +96,7 @@
   color: var(--foreground);
   font-size: var(--text-body);
   font-weight: var(--weight-medium);
+  letter-spacing: -0.005em;
 }
 
 .agent-status-panel__actions {
@@ -103,8 +106,17 @@
   gap: var(--space-2);
 }
 
+/**
+ * The lamp.
+ *
+ * A lit dot with a faint ring around it, the way an instrument lamp actually reads — the ring is
+ * the diffuser, not a glow. It is the only place in the app where a colour sits outside a
+ * surface's fill, because a stage state is the one thing that has to be legible at a glance
+ * from across a desk without anything else changing.
+ */
 .agent-status-dot {
   border-radius: var(--radius-pill);
+  box-shadow: 0 0 0 3px var(--lamp-halo);
   display: inline-block;
   flex-shrink: 0;
   height: var(--space-2);
@@ -113,6 +125,7 @@
 
 .agent-status-dot--idle {
   background: var(--card-muted-foreground);
+  box-shadow: none;
 }
 
 /* The only lamp that pulses. It is the agent log's running lamp and it is announcing a stage
@@ -135,7 +148,7 @@
 
 .agent-status-panel__log {
   background: var(--muted);
-  border: 1px solid var(--rule);
+  border: 1px solid var(--divider);
   border-radius: var(--radius-md);
   margin-top: var(--space-2);
   max-height: 12rem;
@@ -177,6 +190,7 @@
 .agent-log-entry__time {
   color: var(--card-muted-foreground);
   font-family: var(--font-mono);
+  font-size: var(--text-label);
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
 }
