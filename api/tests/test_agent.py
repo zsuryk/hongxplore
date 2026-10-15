@@ -50,7 +50,7 @@ async def test_demo_mode_zero_network_seed_fallback() -> None:
     assert response.query == request.query
     assert response.error is None
     assert len(response.matches) > 0
-    assert len(response.matches) <= 3
+    assert len(response.matches) <= settings.agent_match_limit
 
     for match in response.matches:
         assert match.activity.id
