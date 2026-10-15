@@ -135,7 +135,30 @@ type DragParticle = {
   dy: number;
 };
 
-const PARTICLE_COLORS = ['#38bdf8', '#818cf8', '#c084fc', '#f472b6', '#e0e7ff', '#34d399'];
+/**
+ * Drag particles dropped behind a card while it is being dragged.
+ *
+ * The palette is read from CSS custom properties rather than hardcoded here. These were six
+ * literal cosmic hexes living in `App.tsx` — a raw colour in JS is the same defect as a raw
+ * colour in a stylesheet, and the token contract test cannot see it, so the values now live in
+ * `tokens.css` alongside the rest of the palette.
+ *
+ * Read lazily and memoised, not at module scope: a module-scope `getComputedStyle` read depends
+ * on the stylesheet having been applied before this module executes, which is true in dev and
+ * true in the production build (the CSS link is render-blocking), but is a load-order assumption
+ * that nothing enforces and that a future import-site change could quietly break.
+ */
+let particlePalette: string[] | null = null;
+
+function particleColors(): string[] {
+  if (particlePalette) return particlePalette;
+  if (typeof window === 'undefined') return [];
+  const styles = getComputedStyle(document.documentElement);
+  particlePalette = ['--particle-1', '--particle-2', '--particle-3', '--particle-4', '--particle-5', '--particle-6']
+    .map((name) => styles.getPropertyValue(name).trim())
+    .filter(Boolean);
+  return particlePalette;
+}
 
 const EMPTY_CARD_POSITIONS: Record<string, Point> = {};
 
@@ -505,7 +528,8 @@ export function App({
       const newParticles: DragParticle[] = [];
       for (let i = 0; i < count; i++) {
         particleIdRef.current += 1;
-        const color = PARTICLE_COLORS[Math.floor(Math.random() * PARTICLE_COLORS.length)];
+        const palette = particleColors();
+        const color = palette[Math.floor(Math.random() * palette.length)];
         const size = Math.floor(Math.random() * 5) + 3; // 3 to 7px
         const dx = (Math.random() - 0.5) * 26;
         const dy = Math.random() * 24 + 10;
@@ -735,7 +759,8 @@ export function App({
     const newParticles: DragParticle[] = [];
     for (let i = 0; i < count; i++) {
       particleIdRef.current += 1;
-      const color = PARTICLE_COLORS[Math.floor(Math.random() * PARTICLE_COLORS.length)];
+      const palette = particleColors();
+      const color = palette[Math.floor(Math.random() * palette.length)];
       const size = Math.floor(Math.random() * 5) + 3;
       const dx = (Math.random() - 0.5) * 24;
       const dy = Math.random() * 22 + 8;

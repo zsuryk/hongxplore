@@ -15,25 +15,22 @@
  */
 
 .board {
-  background-color: var(--color-canvas);
+  background-color: var(--background);
   background-image:
-    radial-gradient(ellipse 65% 55% at 25% 25%, rgb(99 102 241 / 20%) 0%, transparent 70%),
-    radial-gradient(ellipse 55% 50% at 75% 70%, rgb(168 85 247 / 16%) 0%, transparent 65%),
-    radial-gradient(ellipse 45% 45% at 85% 20%, rgb(56 189 248 / 14%) 0%, transparent 60%),
-    linear-gradient(to right, var(--color-grid-line) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--color-grid-line) 1px, transparent 1px);
+    linear-gradient(to right, var(--canvas-grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--canvas-grid) 1px, transparent 1px),
+    linear-gradient(to right, var(--canvas-grid-major) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--canvas-grid-major) 1px, transparent 1px);
   background-position:
-    center,
-    center,
-    center,
+    var(--board-pan-x) var(--board-pan-y),
+    var(--board-pan-x) var(--board-pan-y),
     var(--board-pan-x) var(--board-pan-y),
     var(--board-pan-x) var(--board-pan-y);
   background-size:
-    100% 100%,
-    100% 100%,
-    100% 100%,
     var(--board-grid-size) var(--board-grid-size),
-    var(--board-grid-size) var(--board-grid-size);
+    var(--board-grid-size) var(--board-grid-size),
+    calc(var(--board-grid-size) * 5) calc(var(--board-grid-size) * 5),
+    calc(var(--board-grid-size) * 5) calc(var(--board-grid-size) * 5);
   cursor: grab;
   flex: 1 1 0%;
   min-height: 0;
@@ -41,8 +38,8 @@
   position: relative;
   touch-action: none;
   transition:
-    background-position var(--motion-duration-base) var(--motion-ease),
-    background-size var(--motion-duration-base) var(--motion-ease);
+    background-position var(--motion-base) var(--motion-ease),
+    background-size var(--motion-base) var(--motion-ease);
 }
 
 .board--dragging {
@@ -50,7 +47,7 @@
 }
 
 .board:focus-visible {
-  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline: var(--focus-ring-width) solid var(--ring);
   outline-offset: calc(-1 * var(--focus-ring-width));
 }
 
@@ -63,8 +60,8 @@
 .board__pan,
 .board__world {
   transition:
-    transform var(--motion-duration-base) var(--motion-ease),
-    zoom var(--motion-duration-base) var(--motion-ease);
+    transform var(--motion-base) var(--motion-ease),
+    zoom var(--motion-base) var(--motion-ease);
 }
 
 .board--gesturing .board__pan,
@@ -151,7 +148,7 @@
 }
 
 .board__drag-scale {
-  filter: drop-shadow(0 12px 28px rgb(99 102 241 / 30%));
+  filter: var(--filter-drag-lift);
   rotate: 0.3deg;
   scale: 1;
   transition: none;
@@ -160,7 +157,7 @@
 }
 
 .board__drag--docked .board__drag-scale {
-  filter: drop-shadow(0 4px 12px rgb(99 102 241 / 25%));
+  filter: var(--filter-drag-lift-sm);
   rotate: 0deg;
   scale: 1;
   width: 11rem;
@@ -178,7 +175,7 @@
 
 .board__drag-particle {
   animation: drag-particle-drop 0.6s cubic-bezier(0.2, 0.8, 0.4, 1) forwards;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill);
   pointer-events: none;
   position: absolute;
   will-change: transform, opacity;
@@ -222,12 +219,12 @@
 }
 
 .board__panel {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background: var(--card);
+  border: 1px solid var(--divider);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-raised);
   box-sizing: border-box;
-  color: var(--color-text-muted);
+  color: var(--muted-foreground);
   max-width: calc(100% - var(--space-8));
   padding: var(--space-5);
   text-align: center;
@@ -235,8 +232,8 @@
 }
 
 .board__panel h2 {
-  color: var(--color-text);
-  font-size: var(--text-lg);
+  color: var(--foreground);
+  font-size: var(--text-plate);
   line-height: var(--leading-tight);
 }
 
@@ -245,17 +242,17 @@
 }
 
 .board__panel p + p {
-  color: var(--color-text-subtle);
-  font-size: var(--text-sm);
+  color: var(--card-muted-foreground);
+  font-size: var(--text-meta);
 }
 
 .board__toast {
-  background: var(--color-surface);
-  border: 1px solid var(--color-accent-border);
+  background: var(--card);
+  border: 1px solid var(--accent-border);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
-  color: var(--color-text);
-  font-size: var(--text-sm);
+  box-shadow: var(--shadow-raised);
+  color: var(--foreground);
+  font-size: var(--text-meta);
   max-width: calc(100% - var(--space-8));
   padding: var(--space-3) var(--space-4);
   text-align: center;

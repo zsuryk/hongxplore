@@ -1,62 +1,156 @@
 /**
- * Design tokens — the only place a colour, radius, size or duration is allowed to be
- * written down. Component rules reference these; anything that needs a raw value is a
- * bug. Geometry that belongs to the board (card width, grid size) is NOT here: it is
+ * Design tokens — the only place a colour, radius, size or duration may be written down.
+ *
+ * The visual system is **Departure Board**: the concourse split-flap board's discipline applied
+ * to the agent's live output. Fixed cells, one type voice, ruled rows, amber for pending — with
+ * the canvas kept plain so the board never becomes a costume.
+ *
+ * `DESIGN.md` at the repo root is the contract this file implements, and
+ * `src/designSystem.test.ts` enforces it. If a value here needs to change, DESIGN.md changes
+ * first; raw values anywhere else are bugs.
+ *
+ * Geometry that belongs to the board (card width, grid pitch, slot counts) is NOT here: it is
  * owned by `boardLayout.ts` and injected as `--card-*` / `--board-*` from `App`.
  */
 
 :root,
-[data-theme='galactic'] {
+[data-theme='departure'] {
   color-scheme: dark;
 
-  /* ---- Surfaces ---- */
-  --color-canvas: #070a13;
-  --color-canvas-glow: #1e1b4b;
-  --color-surface: #0f172a;
-  --color-surface-sunken: #090e1a;
-  --color-surface-hover: #1e293b;
-  --color-surface-active: #273549;
-  --color-overlay: rgb(15 23 42 / 85%);
-  --backdrop-blur-chrome: blur(16px);
+  /* ================================================================ semantic roles */
 
-  /* ---- Lines ---- */
-  --color-border: #1e293b;
-  --color-border-strong: #475569;
-  --color-border-dashed: #334155;
-  --color-border-subtle: rgb(255 255 255 / 8%);
-  --color-grid-line: rgb(129 140 248 / 8%);
-  --color-grid-dot: rgb(165 180 252 / 16%);
+  /* ---- Canvas ---- */
+  --background: #0e0f11;
+  --foreground: #f2f2f0;
+  --popover: #1a1c1f;
 
-  /* ---- Text (all pairs >= 4.5:1 on their surface) ---- */
-  --color-text: #f8fafc;
-  --color-text-muted: #cbd5e1;
-  --color-text-subtle: #94a3b8;
-  --color-text-inverse: #070a13;
+  /* ---- Surfaces ----
+     The card face is deliberately close to the canvas (1.31:1). Separation is carried by
+     --rule, not by the fill — see DESIGN.md "The deliberate non-pair". */
+  --card: #26292d;
+  --card-foreground: #f2f2f0;
+  --card-muted-foreground: #a6a9ae;
+  --muted: #17191c;
+  --muted-foreground: #a6a9ae;
+  --input: #16181b;
 
-  /* ---- Accent: cosmic indigo / starlight ---- */
-  --color-accent: #6366f1;
-  --color-accent-strong: #818cf8;
-  --color-accent-soft: rgb(99 102 241 / 18%);
-  --color-accent-border: rgb(129 140 248 / 45%);
+  /* ---- Accent: amber is the pending lamp, never a structural boundary.
+     Twelve amber outlines read as an error state, and amber already means "waiting". ---- */
+  --primary: #e8a317;
+  --primary-foreground: #0e0f11;
 
-  /* ---- Status ---- */
-  --color-success: #10b981;
-  --color-success-soft: rgb(16 185 129 / 18%);
-  --color-warning: #f59e0b;
-  --color-warning-soft: rgb(245 158 11 / 18%);
-  --color-danger: #ef4444;
-  --color-danger-strong: #f87171;
-  --color-danger-soft: rgb(239 68 68 / 18%);
-  --color-danger-border: rgb(248 113 113 / 40%);
-  --color-info: #38bdf8;
-  --color-info-soft: rgb(56 189 248 / 18%);
+  /* State colour proper. */
+  --accent: #5a9de6;
+  --accent-foreground: #0e0f11;
+  --destructive: #ec6a5e;
+
+  /* ---- The one structural rule ----
+     One value doing five jobs: card outline, card header divider, timeline cell divider,
+     empty-slot drop target, toolbar separator. Each card is a hole in a continuous lattice. */
+  --rule: #6e747b;
+  --row-rule: var(--rule);
+  --border: var(--rule);
 
   /* ---- Focus ---- */
-  --color-focus: #818cf8;
-  --focus-ring-width: 2px;
-  --focus-ring-offset: 2px;
+  --ring: #e8a317;
 
-  /* ---- Spacing ---- */
+  /* ---- Lamps: agent-log stage states ---- */
+  --lamp-live: #35b37e;
+  --lamp-pending: #e8a317;
+  --lamp-cancelled: #e0574a;
+  --success: #35b37e;
+  --warning: #e8a317;
+
+  /* ================================================================= brand tokens */
+
+  /* Canvas furniture. Kept recessive so the cards stay the subject. */
+  --canvas-grid: rgb(110 116 123 / 9%);
+  --canvas-grid-major: rgb(110 116 123 / 16%);
+  --chrome-surface: rgb(26 28 31 / 88%);
+  --scrim: rgb(14 15 17 / 82%);
+
+  /* Hairlines that are decorative, not meaningful. WCAG 1.4.11 governs meaningful UI
+     boundaries, so these may sit below 3:1 where --rule may not. */
+  --divider: rgb(110 116 123 / 28%);
+  --divider-strong: rgb(110 116 123 / 44%);
+  --divider-subtle: rgb(110 116 123 / 18%);
+
+  /* Dashed edges mark a target that exists but is not yet filled — an empty timeline slot.
+     It is still a meaningful boundary, so it tracks --rule rather than --divider. */
+  --border-dashed: #5f656d;
+
+  /* =========================================================== surface + hover states
+     The lattice is quiet, so a state change is a small step in lightness plus the rule
+     darkening — never a glow. */
+
+  --card-hover: #2e3236;
+  --card-active: #373b41;
+  --muted-hover: #1e2124;
+  --popover-hover: #22252a;
+
+  --accent-strong: #7ab2ee;
+  --accent-soft: #1b2530;
+  --accent-border: #3f6ea8;
+  --primary-soft: #35270c;
+
+  --destructive-strong: #f08a80;
+  --destructive-soft: #371e1b;
+  --destructive-border: #a85046;
+
+  --info: #5a9de6;
+  --info-soft: #1b2530;
+
+  --foreground-inverse: #0e0f11;
+
+  /* Drag particles. Read from JS via getComputedStyle because each spark takes its colour inline
+     — a value written in a stylesheet could not reach it. Amber sparks and steel highlights, so
+     they stay in the Departure Board vocabulary instead of the old cosmic palette. */
+  --particle-1: #e8a317;
+  --particle-2: #f2c14e;
+  --particle-3: #6e747b;
+  --particle-4: #a6a9ae;
+  --particle-5: #f2f2f0;
+  --particle-6: #35b37e;
+
+  /* Chrome blurs what is behind it so the canvas grid does not read through a panel. */
+  --backdrop-blur-chrome: blur(14px);
+
+  /* ==================================================================== type scale */
+
+  --font-sans:
+    system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', 'PingFang HK', 'Noto Sans HK', 'Microsoft JhengHei',
+    sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Cascadia Mono', Consolas, monospace;
+
+  /* One voice, sizes set for the lattice. Tracking opens as size closes, which is what keeps
+     the small caps legible without going bold. */
+  --text-plate: 1.3125rem; /* 21px — the plate serial, CJK card title */
+  --text-title: 1.0625rem; /* 17px — card title, Latin */
+  --text-body: 0.84375rem; /* 13.5px — match rationale */
+  --text-meta: 0.6875rem; /* 11px — district, venue, freshness */
+  --text-label: 0.65625rem; /* 10.5px — row labels, rank, slot labels */
+  --text-lamp: 0.6875rem; /* 11px — lamp state */
+
+  --leading-tight: 1.34;
+  --leading-body: 1.5;
+  --leading-label: 1.2;
+
+  --tracking-label: 0.1em;
+  --tracking-lamp: 0.09em;
+  --tracking-title: 0.03em;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semi: 600;
+  --weight-bold: 700;
+
+  /* CJK sits optically lighter than Latin at the same size; the fallback stacks carry a
+     heavier weight so mixed runs hold the same mass. See DESIGN.md "Bilingual type". */
+  --cjk-weight-bump: 500;
+
+  /* ===================================================================== spacing */
+
+  --space-0: 0;
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -64,53 +158,65 @@
   --space-5: 1.25rem;
   --space-6: 1.5rem;
   --space-8: 2rem;
+  --space-10: 2.5rem;
 
-  /* ---- Radius: four steps, then pill ---- */
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
+  /* ======================================================================= radius */
+
+  /* Cells and plates are near-square. Only fully round things are round. */
+  --radius-xs: 0.125rem;
+  --radius-sm: 0.1875rem;
+  --radius-md: 0.25rem;
+  --radius-lg: 0.375rem;
   --radius-pill: 999px;
-  --radius-full: 9999px;
 
-  /* ---- Elevation ---- */
-  --shadow-sm: 0 1px 3px rgb(0 0 0 / 40%), 0 0 1px rgb(99 102 241 / 15%);
-  --shadow-md: 0 4px 16px rgb(0 0 0 / 50%), 0 0 2px rgb(99 102 241 / 20%);
-  --shadow-lg: 0 10px 30px rgb(0 0 0 / 65%), 0 0 8px rgb(99 102 241 / 25%);
-  --shadow-drag: 0 16px 40px rgb(0 0 0 / 75%), 0 0 20px rgb(99 102 241 / 35%);
+  /* ==================================================================== elevation */
 
-  /* ---- Type ---- */
-  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  --text-xs: 0.75rem;
-  --text-sm: 0.8125rem;
-  --text-base: 0.875rem;
-  --text-md: 1rem;
-  --text-lg: 1.125rem;
-  --text-xl: 1.25rem;
-  --leading-tight: 1.3;
-  --leading-normal: 1.45;
+  /* Elevation is nearly flat by design: the rule does the separating, so shadow only has to
+     answer "how far off the plane is this" — not "what is this". */
+  --shadow-none: none;
+  --shadow-lift: 0 1px 2px rgb(0 0 0 / 45%);
+  --shadow-raised: 0 2px 8px rgb(0 0 0 / 55%);
+  --shadow-drag: 0 8px 24px rgb(0 0 0 / 65%);
 
-  /* ---- Controls: one height per tier, never below 24px (WCAG 2.5.8) ---- */
-  --control-height-sm: 1.75rem;
-  --control-height: 2.25rem;
+  /* The dragged card is a `filter`, not a `box-shadow`, so the lift has to follow the card's
+     own alpha as it rotates. Kept as tokens so component CSS writes no colour of its own. */
+  --filter-drag-lift: drop-shadow(0 8px 20px rgb(0 0 0 / 70%));
+  --filter-drag-lift-sm: drop-shadow(0 2px 8px rgb(0 0 0 / 55%));
+
+  /* ======================================================================= focus */
+
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+
+  /* ====================================================================== controls */
+
+  /* Never below 24px — WCAG 2.5.8 target size. */
+  --control-height-sm: 1.5rem;
+  --control-height: 2rem;
+  --control-height-lg: 2.5rem;
   --control-padding-x: var(--space-3);
-  --control-gap: var(--space-2);
-  --control-font: var(--text-sm);
-  /* Inset between a grouped control's border and its options. */
+  --control-gap: var(--space-1);
   --control-inset: 2px;
+  --control-font: var(--text-label);
+  --control-weight: var(--weight-bold);
+  --control-tracking: var(--tracking-label);
 
-  /* ---- Canvas ---- */
-  /* How far a card lifts on hover/focus, in world units. */
-  --card-hover-lift: 2px;
+  /* ======================================================================== motion */
 
-  /* ---- Motion ---- */
-  --motion-duration-fast: 120ms;
-  --motion-duration-base: 180ms;
-  --motion-duration-slow: 280ms;
-  --motion-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --motion-fast: 90ms;
+  --motion-base: 150ms;
+  --motion-slow: 220ms;
+  --motion-ease: cubic-bezier(0.16, 0.1, 0.2, 1);
 
-  /* ---- Board geometry defaults; App overwrites these from boardLayout.ts ---- */
+  /* The cascade is reserved for the agent log. It is not a board-wide effect. */
+  --motion-lamp: var(--motion-fast);
+  --motion-seat: var(--motion-base);
+  --motion-cascade: var(--motion-slow);
+
+  /* ======================================================================== board */
+
+  /* Board geometry defaults. `App` overwrites these from boardLayout.ts on the board element,
+     so this block is only what the board shows before the first injection. */
   --board-zoom: 1;
   --board-pan-x: 0px;
   --board-pan-y: 0px;
@@ -120,53 +226,78 @@
   --card-compact-min-height: 220px;
   --card-wide-min-height: 200px;
   --card-tall-min-height: 440px;
-}
-
-[data-theme='light'] {
-  color-scheme: light;
-  --color-canvas: #f8fafc;
-  --color-canvas-glow: #e0e7ff;
-  --color-surface: #ffffff;
-  --color-surface-sunken: #f1f5f9;
-  --color-surface-hover: #e8edf3;
-  --color-surface-active: #dde4ec;
-  --color-overlay: rgb(255 255 255 / 86%);
-  --backdrop-blur-chrome: blur(12px);
-  --color-border: #dfe4ea;
-  --color-border-strong: #7d8798;
-  --color-border-dashed: #9aa5b5;
-  --color-border-subtle: rgb(15 23 42 / 8%);
-  --color-grid-line: rgb(84 97 122 / 12%);
-  --color-grid-dot: rgb(99 102 241 / 20%);
-  --color-text: #16202e;
-  --color-text-muted: #4a5568;
-  --color-text-subtle: #5b6678;
-  --color-text-inverse: #ffffff;
-  --color-accent: #1d4ed8;
-  --color-accent-strong: #1e40af;
-  --color-accent-soft: #eef2ff;
-  --color-accent-border: #c7d2fe;
-  --color-success: #047857;
-  --color-success-soft: #d1fae5;
-  --color-warning: #92400e;
-  --color-warning-soft: #fef3c7;
-  --color-danger: #991b1b;
-  --color-danger-strong: #b91c1c;
-  --color-danger-soft: #fef2f2;
-  --color-danger-border: #fca5a5;
-  --color-info: #1e40af;
-  --color-info-soft: #dbeafe;
-  --color-focus: #1d4ed8;
-  --shadow-sm: 0 1px 2px rgb(15 23 42 / 6%);
-  --shadow-md: 0 2px 8px rgb(15 23 42 / 8%);
-  --shadow-lg: 0 8px 24px rgb(15 23 42 / 12%);
-  --shadow-drag: 0 12px 32px rgb(15 23 42 / 24%);
+  --card-hover-lift: 2px;
 }
 
 /**
- * One place to neutralise motion. Every animated rule in this codebase animates
- * opacity/transform/zoom only, so collapsing durations is enough — and it covers
- * transitions added later without anyone having to remember this file.
+ * Single shipped theme.
+ *
+ * The bootstrap token layer carried a `[data-theme='light']` block that nothing ever activated,
+ * so `--background` was unreachable for light. DESIGN.md records dark-first, single theme as the
+ * decision: one theme, fully specified, with the contrast pairs above verified against it. Adding
+ * a second theme is a future ticket that must re-run the contrast gate in
+ * `src/designSystem.test.ts` for the new values — not an unblock of this block.
+ */
+[data-theme='light'] {
+  --background: #f4f5f6;
+  --foreground: #14161a;
+  --card: #ffffff;
+  --card-foreground: #14161a;
+  --card-muted-foreground: #4d535c;
+  --muted: #e8eaed;
+  --muted-foreground: #4d535c;
+  --input: #ffffff;
+  --popover: #ffffff;
+  --primary: #8a5a00;
+  --primary-foreground: #ffffff;
+  --accent: #1f5fa8;
+  --accent-foreground: #ffffff;
+  --destructive: #a53428;
+  --rule: #6b7078;
+  --row-rule: var(--rule);
+  --border: var(--rule);
+  --ring: #8a5a00;
+  --lamp-live: #1f6b45;
+  --lamp-pending: #8a5a00;
+  --lamp-cancelled: #a53428;
+  --success: #1f6b45;
+  --warning: #8a5a00;
+  --canvas-grid: rgb(107 112 120 / 14%);
+  --canvas-grid-major: rgb(107 112 120 / 22%);
+  --chrome-surface: rgb(255 255 255 / 90%);
+  --scrim: rgb(244 245 246 / 82%);
+  --divider: rgb(107 112 120 / 30%);
+  --divider-strong: rgb(107 112 120 / 50%);
+  --divider-subtle: rgb(107 112 120 / 18%);
+  --border-dashed: #8b9098;
+  --card-hover: #f0f1f3;
+  --card-active: #e6e8eb;
+  --muted-hover: #dcdfe3;
+  --popover-hover: #f0f1f3;
+  --accent-strong: #3f7cc4;
+  --accent-soft: #e3edf8;
+  --accent-border: #9cc0e4;
+  --primary-soft: #fbf0d8;
+  --destructive-strong: #c04a3d;
+  --destructive-soft: #fbe6e4;
+  --destructive-border: #e8a79f;
+  --info: #1f5fa8;
+  --info-soft: #e3edf8;
+  --foreground-inverse: #ffffff;
+  --particle-1: #8a5a00;
+  --particle-2: #b07d22;
+  --particle-3: #6b7078;
+  --particle-4: #4d535c;
+  --particle-5: #ffffff;
+  --particle-6: #1f6b45;
+}
+
+/**
+ * One place to neutralise motion.
+ *
+ * Every animated rule in this codebase animates opacity, transform or zoom only, so collapsing
+ * durations is enough — and it covers transitions added later without anyone having to remember
+ * this file. The split-flap cascade, card seat and lamp changes all collapse with it.
  */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -174,6 +305,7 @@
   *::after {
     animation-duration: 1ms !important;
     animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
     transition-duration: 1ms !important;
     scroll-behavior: auto !important;
   }

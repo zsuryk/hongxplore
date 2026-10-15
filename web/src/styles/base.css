@@ -14,11 +14,11 @@ html {
 }
 
 body {
-  background: var(--color-canvas);
-  color: var(--color-text);
+  background: var(--background);
+  color: var(--foreground);
   font-family: var(--font-sans);
-  font-size: var(--text-base);
-  line-height: var(--leading-normal);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
   margin: 0;
   min-width: 320px;
 }
@@ -40,7 +40,7 @@ button {
  * components must not restate it.
  */
 :where(a, button, input, select, textarea, [tabindex]):focus-visible {
-  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline: var(--focus-ring-width) solid var(--ring);
   outline-offset: var(--focus-ring-offset);
 }
 
@@ -65,8 +65,8 @@ button {
 
 .app__header {
   align-items: center;
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+  background: var(--card);
+  border-bottom: 1px solid var(--divider);
   display: flex;
   flex-shrink: 0;
   gap: var(--space-5);
@@ -79,14 +79,14 @@ button {
 }
 
 .app__header h1 {
-  font-size: var(--text-xl);
+  font-size: var(--text-plate);
   font-weight: 650;
   line-height: var(--leading-tight);
 }
 
 .app__header p {
-  color: var(--color-text-subtle);
-  font-size: var(--text-xs);
+  color: var(--card-muted-foreground);
+  font-size: var(--text-label);
   margin-top: var(--space-1);
 }
 
