@@ -299,6 +299,13 @@
   z-index: 10;
 }
 
+@media (max-height: 740px) {
+  .board-toolbar {
+    top: var(--space-4);
+    translate: none;
+  }
+}
+
 .board-toolbar--inert {
   pointer-events: none;
 }

@@ -172,3 +172,64 @@ export function isRectInViewport(
     screenBottom <= container.height - padding
   );
 }
+
+/**
+ * Smart-centers the viewport to 100% (scale 1.0) on active content.
+ *
+ * If content fits within the container at 100% scale, it is centered.
+ * If content is taller or wider than the container (e.g. large card clusters),
+ * it aligns to the top margin with padding so the primary / first row of cards
+ * remains clearly in view without zooming into an empty gap or black void.
+ */
+export function smartCenter100(
+  currentViewport: Viewport,
+  content: Rect | null | undefined,
+  container: { width: number; height: number },
+  padding: number = 48,
+): Viewport {
+  const containerW = container.width;
+  const containerH = container.height;
+
+  if (!content || content.width <= 0 || content.height <= 0 || containerW <= 0 || containerH <= 0) {
+    return zoomAtScreenPoint(currentViewport, { x: containerW / 2 || 0, y: containerH / 2 || 0 }, 1.0);
+  }
+
+  const availableWidth = Math.max(containerW - padding * 2, 1);
+  const availableHeight = Math.max(containerH - padding * 2, 1);
+
+  let targetX: number;
+  if (content.width <= availableWidth) {
+    targetX = (containerW - content.width) / 2 - content.x;
+  } else {
+    const minX = containerW - padding - (content.x + content.width);
+    const maxX = padding - content.x;
+    if (currentViewport.scale <= 0.85) {
+      targetX = maxX;
+    } else {
+      const worldCenter = screenToWorld({ x: containerW / 2, y: containerH / 2 }, currentViewport);
+      const naturalX = containerW / 2 - worldCenter.x * 1.0;
+      targetX = Math.max(minX, Math.min(maxX, naturalX));
+    }
+  }
+
+  let targetY: number;
+  if (content.height <= availableHeight) {
+    targetY = (containerH - content.height) / 2 - content.y;
+  } else {
+    const minY = containerH - padding - (content.y + content.height);
+    const maxY = padding - content.y;
+    if (currentViewport.scale <= 0.85) {
+      targetY = maxY;
+    } else {
+      const worldCenter = screenToWorld({ x: containerW / 2, y: containerH / 2 }, currentViewport);
+      const naturalY = containerH / 2 - worldCenter.y * 1.0;
+      targetY = Math.max(minY, Math.min(maxY, naturalY));
+    }
+  }
+
+  return {
+    scale: 1.0,
+    x: targetX,
+    y: targetY,
+  };
+}
