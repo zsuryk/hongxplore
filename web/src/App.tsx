@@ -1310,7 +1310,6 @@ export function App({
                     height: `${particle.size}px`,
                     backgroundColor: particle.color,
                     color: particle.color,
-                    boxShadow: `0 0 6px ${particle.color}`,
                     '--p-dx': `${particle.dx}px`,
                     '--p-dy': `${particle.dy}px`,
                   } as CSSProperties

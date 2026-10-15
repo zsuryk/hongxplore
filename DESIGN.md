@@ -148,6 +148,10 @@ information rather than decoration. **Banned:** glows, hover bloom, and any perm
 element. The old identity's infinite pulsing "recent search" border was removed for exactly this
 reason — recency is now a static 2px `--accent` edge, which needs no reduced-motion special case.
 
+The drag particles that fall behind a lifted card keep their motion but lost their bloom: they are
+flat `--particle-*` dots now. The motion is the information — something is being carried — and the
+glow was decoration competing with the accent colour.
+
 ---
 
 ## Board geometry and zoom
@@ -315,13 +319,15 @@ Recorded rather than hidden:
 5. **Only one theme ships.** See below.
 6. **The timeline is not yet day-agnostic.** `repeat(3, ...)` is hardcoded; see the timeline
    section. Owned by #69.
-7. **The drag particle effect is in tension with this document.** `App.tsx` drops coloured sparks
-   behind a dragged card. Its palette has been re-tokenised out of the old cosmic hexes and into
-   amber and steel, but a glow is still a glow, and "banned: glows" above does not currently
-   describe what the app does. Either relax the rule with a reason, or remove the effect. Not
-   decided here.
-8. **`grid-template-columns: repeat(3, …)` in `timeline.css` is also still a Saturday/Sunday
+7. **`grid-template-columns: repeat(3, …)` in `timeline.css` is also still a Saturday/Sunday
    assumption** in a second place, beyond the `copy.ts` ids named above. Same owner (#69).
+8. **Two of three card variants have never been seen rendered.** Every card resolves to `tall`
+   with the current seed data, so `compact` and `wide` were designed on paper only. Which variant a
+   card gets is a `boardLayout` heuristic decision, not a design one, but a reviewer should not
+   assume those two look right.
+9. **The card serial is an array index, not a board position.** It is stable across docking and
+   discarding, but it does not tell you where on the board a card sits. Deliberate, and noted in
+   the code.
 
 ---
 

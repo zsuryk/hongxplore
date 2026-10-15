@@ -183,7 +183,11 @@
   font: inherit;
   font-size: var(--text-label);
   font-weight: 500;
-  min-height: calc(var(--control-height-sm) - (var(--control-inset) * 2));
+  /* The *target* is this option, not the segmented container around it. WCAG 2.5.8 measures the
+     thing the pointer has to hit, so the option itself is sized to --control-height-sm and the
+     container's --control-inset padding simply makes the group taller. Subtracting the inset here
+     (as this rule used to) sized the group correctly but left a 20px target inside a 24px box. */
+  min-height: var(--control-height-sm);
   padding: 0 var(--space-2);
   transition:
     background-color var(--motion-fast) var(--motion-ease),
