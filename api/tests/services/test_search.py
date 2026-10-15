@@ -554,3 +554,33 @@ async def test_null_title_does_not_crash_search() -> None:
             results = await provider.search("null title test")
             assert len(results) == 1
             assert "Hong Kong Activity" in results[0].title
+
+
+@pytest.mark.anyio
+async def test_search_includes_images_in_payload_and_populates_activity_image() -> None:
+    captured_payload: dict[str, Any] | None = None
+    mock_snippets = [
+        {
+            "title": "Victoria Park Tennis Courts",
+            "url": "https://www.lcsd.gov.hk/facility/victoria-park-tennis",
+            "content": "Outdoor tennis courts in Causeway Bay",
+            "images": ["https://www.lcsd.gov.hk/images/vic-park-tennis.jpg"],
+        }
+    ]
+
+    def mock_handler(request: httpx.Request) -> httpx.Response:
+        nonlocal captured_payload
+        captured_payload = json.loads(request.content)
+        return httpx.Response(200, json=_sample_tavily_response(mock_snippets))
+
+    transport = httpx.MockTransport(mock_handler)
+    async with httpx.AsyncClient(transport=transport) as http_client:
+        cfg = Settings(tavily_api_key="valid-key", demo_mode=False)
+        with InMemoryActivityCache() as cache:
+            provider = TavilySearchProvider(config=cfg, cache=cache, http_client=http_client)
+
+            results = await provider.search("tennis causeway bay")
+            assert captured_payload is not None
+            assert captured_payload.get("include_images") is True
+            assert len(results) == 1
+            assert str(results[0].image) == "https://www.lcsd.gov.hk/images/vic-park-tennis.jpg"

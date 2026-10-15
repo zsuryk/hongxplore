@@ -15,25 +15,22 @@
  */
 
 .board {
-  background-color: var(--color-canvas);
+  background-color: var(--background);
   background-image:
-    radial-gradient(ellipse 65% 55% at 25% 25%, rgb(99 102 241 / 20%) 0%, transparent 70%),
-    radial-gradient(ellipse 55% 50% at 75% 70%, rgb(168 85 247 / 16%) 0%, transparent 65%),
-    radial-gradient(ellipse 45% 45% at 85% 20%, rgb(56 189 248 / 14%) 0%, transparent 60%),
-    linear-gradient(to right, var(--color-grid-line) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--color-grid-line) 1px, transparent 1px);
+    linear-gradient(to right, var(--canvas-grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--canvas-grid) 1px, transparent 1px),
+    linear-gradient(to right, var(--canvas-grid-major) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--canvas-grid-major) 1px, transparent 1px);
   background-position:
-    center,
-    center,
-    center,
+    var(--board-pan-x) var(--board-pan-y),
+    var(--board-pan-x) var(--board-pan-y),
     var(--board-pan-x) var(--board-pan-y),
     var(--board-pan-x) var(--board-pan-y);
   background-size:
-    100% 100%,
-    100% 100%,
-    100% 100%,
     var(--board-grid-size) var(--board-grid-size),
-    var(--board-grid-size) var(--board-grid-size);
+    var(--board-grid-size) var(--board-grid-size),
+    calc(var(--board-grid-size) * 5) calc(var(--board-grid-size) * 5),
+    calc(var(--board-grid-size) * 5) calc(var(--board-grid-size) * 5);
   cursor: grab;
   flex: 1 1 0%;
   min-height: 0;
@@ -41,8 +38,28 @@
   position: relative;
   touch-action: none;
   transition:
-    background-position var(--motion-duration-base) var(--motion-ease),
-    background-size var(--motion-duration-base) var(--motion-ease);
+    background-position var(--motion-base) var(--motion-ease),
+    background-size var(--motion-base) var(--motion-ease);
+}
+
+/**
+ * The light in the room.
+ *
+ * An infinite canvas has no edges, so without a light source it renders as a flat field — which
+ * is the single biggest reason a dark board reads as an unfinished `<div>`. This is a broad cool
+ * wash from above the viewport and a vignette that closes the edges, so the board reads as a lit
+ * space that happens to continue past the frame.
+ *
+ * Screen space and painted behind everything: it is the room, not the board, so it neither pans
+ * nor zooms with the world, and it must never take a pointer event.
+ */
+.board::before {
+  background-image: var(--canvas-glow), var(--canvas-vignette);
+  content: '';
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
 }
 
 .board--dragging {
@@ -50,7 +67,7 @@
 }
 
 .board:focus-visible {
-  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline: var(--focus-ring-width) solid var(--ring);
   outline-offset: calc(-1 * var(--focus-ring-width));
 }
 
@@ -63,13 +80,16 @@
 .board__pan,
 .board__world {
   transition:
-    transform var(--motion-duration-base) var(--motion-ease),
-    zoom var(--motion-duration-base) var(--motion-ease);
+    transform var(--motion-base) var(--motion-ease),
+    zoom var(--motion-base) var(--motion-ease);
 }
 
+/* `.board__drag-scale` is deliberately NOT in the gesture-suppression list below. It is
+   repositioned by `left`/`top` and never transitions them, and suppressing its transition
+   would kill the pill cross-fade for the first 160ms of every drag — which is precisely when
+   a user starts aiming at a drop zone. */
 .board--gesturing .board__pan,
-.board--gesturing .board__world,
-.board--gesturing .board__drag-scale {
+.board--gesturing .board__world {
   transition: none;
 }
 
@@ -103,15 +123,49 @@
   width: var(--card-width);
 }
 
-.board__cards--tiling .board__card {
-  transition:
-    left var(--motion-duration-slow) var(--motion-ease),
-    top var(--motion-duration-slow) var(--motion-ease);
+/**
+ * The deal.
+ *
+ * Auto-tile used to transition `left`/`top` on a `.board__cards--tiling` class — against an
+ * undefined token (`--motion-duration-slow`), so the whole `transition` shorthand was invalid
+ * and auto-tile snapped instantly. The deal replaces it with something that was worth animating
+ * in the first place.
+ *
+ * **Why a keyframe and not a FLIP.** The card's `left`/`top` are its *final* position for the
+ * whole sequence, and the animation only moves `transform`/`scale`/`rotate`. That buys three
+ * things over animating layout properties: no relayout of the whole world layer on every frame,
+ * a card whose box is final from the first frame (so the packing of the board is never
+ * observed mid-flight), and `animation-fill-mode: both`, which holds the pile state through the
+ * stagger delay with no JavaScript frame juggling at all.
+ *
+ * The durations and the offsets are custom properties injected per card from `dealTiming()` in
+ * `boardLayout.ts`. The stylesheet deliberately contains no number of its own: the budget lives
+ * with the geometry, because the budget *is* a statement about how many cards there are.
+ */
+.board__cards--dealing .board__card {
+  animation: card-deal var(--deal-travel) var(--motion-ease) var(--deal-delay) both;
+  /* Scoped to the class, so `will-change` exists only while a deal is actually running. */
+  will-change: transform;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .board__cards--tiling .board__card {
-    transition: none !important;
+/**
+ * The pile unpeels from the top: the first card to leave is the one drawn last, so the deal
+ * reads as taking cards off a stack rather than as cards vanishing from under one.
+ */
+.board__cards--dealing .board__card--dealing {
+  z-index: var(--deal-stack, 0);
+}
+
+@keyframes card-deal {
+  from {
+    rotate: var(--deal-tilt);
+    scale: var(--deal-pile-scale);
+    transform: translate(var(--deal-from-x), var(--deal-from-y));
+  }
+  to {
+    rotate: 0deg;
+    scale: 1;
+    transform: translate(0, 0);
   }
 }
 
@@ -150,17 +204,87 @@
   z-index: 1000;
 }
 
+/**
+ * The cross-fade that gets the card out of the way of the thing it is being aimed at.
+ *
+ * At 200% the board card is 640px of screen and it sits directly over the timeline slot it is
+ * about to be dropped into, so the slot highlight it is aiming at is invisible exactly when it
+ * matters. The fix is a pill carrying the serial — but the pill must not be the card *scaled
+ * down*. Scaling the proxy would shrink 17px type into a grey smudge and would pull the object
+ * out from under the cursor that is holding it.
+ *
+ * So the proxy's own geometry is left completely alone: it keeps every element, at its full
+ * size, at every moment of the drag. Only its **opacity** changes, and a small absolutely
+ * positioned pill cross-fades in over the top. Two consequences that matter more than the
+ * effect:
+ *
+ *  - the drag proxy's layout box is the card's layout box in *every* state, not merely at rest
+ *    (see `dragProxy.test.tsx`);
+ *  - the pill is `position: absolute`, so it is out of flow and cannot contribute a byte to the
+ *    proxy's box — the guarantee is structural, not a promise.
+ */
 .board__drag-scale {
-  filter: drop-shadow(0 12px 28px rgb(99 102 241 / 30%));
+  filter: var(--filter-drag-lift);
   rotate: 0.3deg;
   scale: 1;
-  transition: none;
+  transition: opacity var(--motion-base) var(--motion-ease);
   width: var(--card-width);
   zoom: var(--board-zoom);
 }
 
+.board__drag--pill .board__drag-scale {
+  opacity: 0;
+}
+
+/**
+ * The pill: the card's serial and nothing else, centred on the card's own top-left corner.
+ *
+ * That corner is where the serial plate lives, so the pill reads as the plate lifted off the
+ * card rather than as a new object that happened to appear — and it is the one anchor that
+ * cannot end up covering what the user is aiming at, because the card's corner is by
+ * definition the point furthest from the card's body. Anchoring on the pointer instead would
+ * put the pill squarely over the slot under the cursor.
+ *
+ * Cyan, because the card in hand is the user acting and `--accent` is the colour that means
+ * exactly that; amber would be indistinguishable from the drop-target highlight it exists to
+ * uncover.
+ *
+ * Under `prefers-reduced-motion` the global block in `tokens.css` collapses the cross-fade to a
+ * snap. The pill still appears and the card still gets out of the way — that is the point of
+ * the gesture, so it is not motion and it is never switched off.
+ */
+.board__drag-pill {
+  align-items: center;
+  background: var(--popover);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-pill);
+  box-shadow:
+    var(--shadow-lift),
+    inset 0 1px 0 var(--edge-light);
+  color: var(--accent);
+  display: flex;
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  font-variant-numeric: tabular-nums;
+  justify-content: center;
+  left: 0;
+  min-height: var(--control-height-sm);
+  min-width: var(--control-height-sm);
+  opacity: 0;
+  padding: 0 var(--space-2);
+  position: absolute;
+  top: 0;
+  transition: opacity var(--motion-base) var(--motion-ease);
+  translate: -50% -50%;
+  z-index: 1;
+}
+
+.board__drag--pill .board__drag-pill {
+  opacity: 1;
+}
+
 .board__drag--docked .board__drag-scale {
-  filter: drop-shadow(0 4px 12px rgb(99 102 241 / 25%));
+  filter: var(--filter-drag-lift-sm);
   rotate: 0deg;
   scale: 1;
   width: 11rem;
@@ -178,7 +302,7 @@
 
 .board__drag-particle {
   animation: drag-particle-drop 0.6s cubic-bezier(0.2, 0.8, 0.4, 1) forwards;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-pill);
   pointer-events: none;
   position: absolute;
   will-change: transform, opacity;
@@ -221,43 +345,64 @@
   padding: var(--space-5) var(--space-4) 0;
 }
 
+/**
+ * The empty state is the one card-shaped thing allowed on an empty board, so it is built like
+ * a card: `--card` face, `--rule` bezel, a contact shadow and the same light along its top edge.
+ * Centred text with a ragged measure reads as a placeholder; a narrow measure reads as a card
+ * waiting for rows.
+ */
 .board__panel {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  background: linear-gradient(180deg, var(--card-hover), var(--card));
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-card);
+  box-shadow:
+    var(--shadow-raised),
+    inset 0 1px 0 var(--edge-light);
   box-sizing: border-box;
-  color: var(--color-text-muted);
+  color: var(--muted-foreground);
   max-width: calc(100% - var(--space-8));
-  padding: var(--space-5);
+  padding: var(--space-8) var(--space-6);
   text-align: center;
-  width: min(34rem, 100%);
+  width: min(30rem, 100%);
 }
 
 .board__panel h2 {
-  color: var(--color-text);
-  font-size: var(--text-lg);
+  color: var(--foreground);
+  font-size: var(--text-title);
+  font-weight: var(--weight-semi);
+  letter-spacing: var(--tracking-title);
   line-height: var(--leading-tight);
 }
 
 .board__panel p {
-  margin-top: var(--space-2);
+  margin-top: var(--space-3);
 }
 
 .board__panel p + p {
-  color: var(--color-text-subtle);
-  font-size: var(--text-sm);
+  border-top: 1px solid var(--divider-subtle);
+  color: var(--card-muted-foreground);
+  font-size: var(--text-meta);
+  margin-top: var(--space-5);
+  padding-top: var(--space-5);
 }
 
+/**
+ * The toast is transient, so it is a floating plate rather than a ruled cell: `--popover` face,
+ * `--rule` bezel, and the wide shadow — which is correct here, because this genuinely floats
+ * above the board rather than sitting in the lattice. It takes no accent edge: a confirmation is
+ * not a state, and colouring it would spend the state colour on routine feedback.
+ */
 .board__toast {
-  background: var(--color-surface);
-  border: 1px solid var(--color-accent-border);
+  background: var(--popover);
+  border: 1px solid var(--rule);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
-  color: var(--color-text);
-  font-size: var(--text-sm);
+  box-shadow:
+    var(--shadow-raised),
+    inset 0 1px 0 var(--edge-light);
+  color: var(--foreground);
+  font-size: var(--text-meta);
   max-width: calc(100% - var(--space-8));
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-2) var(--space-4);
   text-align: center;
   width: fit-content;
 }

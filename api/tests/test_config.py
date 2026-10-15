@@ -1,6 +1,7 @@
 """Settings tests — defaults, `.env` / process-env overrides, fail-fast on bad values."""
 
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -12,12 +13,18 @@ from app.config import ENV_FILE, Settings, load_settings
 
 API_ROOT = Path(__file__).resolve().parents[1]
 ENV_KEYS = tuple(name.upper() for name in Settings.model_fields)
+DERIVED_KEYS = frozenset({"LLM_PROVIDERS"})
+"""Settings never read from the environment directly — see `_assemble_provider_pool`."""
+PROVIDER_ENV_KEY_RE = re.compile(r"^LLM_PROVIDER_\d+_")
 
 
 def _clear_env(monkeypatch: pytest.MonkeyPatch) -> None:
     """Make the test hermetic: no process env, so `api/.env` and defaults decide."""
     for key in ENV_KEYS:
         monkeypatch.delenv(key, raising=False)
+    for key in list(os.environ):
+        if PROVIDER_ENV_KEY_RE.match(key):
+            monkeypatch.delenv(key, raising=False)
 
 
 def _write_dotenv(tmp_path: Path, **values: str) -> Path:
@@ -36,6 +43,13 @@ def test_defaults_with_empty_env(monkeypatch: pytest.MonkeyPatch) -> None:
     assert settings.openai_base_url is None
     assert settings.openai_model == ""
     assert settings.tavily_api_key == ""
+    assert settings.tavily_cache_ttl_seconds == 86_400
+    assert settings.tavily_timeout_seconds == 15.0
+    assert settings.tavily_max_results == 10
+    assert settings.tavily_min_curated_results == 3
+    assert settings.tavily_extract_with_llm is False
+    assert settings.search_cache_path is None
+    assert settings.agent_match_limit == 6
     assert settings.demo_mode is True
 
 
@@ -79,6 +93,172 @@ def test_blank_optional_value_in_dotenv_is_unset(
     """`.env.example` ships `OPENAI_BASE_URL=` — blank means no override, not `""`."""
     _clear_env(monkeypatch)
     assert Settings(_env_file=_write_dotenv(tmp_path, OPENAI_BASE_URL="")).openai_base_url is None
+
+
+def test_search_policy_overrides_from_dotenv(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _clear_env(monkeypatch)
+    dotenv = _write_dotenv(
+        tmp_path,
+        TAVILY_CACHE_TTL_SECONDS="60",
+        TAVILY_TIMEOUT_SECONDS="2.5",
+        TAVILY_MAX_RESULTS="25",
+        TAVILY_MIN_CURATED_RESULTS="0",
+        TAVILY_EXTRACT_WITH_LLM="true",
+        SEARCH_CACHE_PATH="/tmp/hongxplore-cache.db",
+    )
+    settings = Settings(_env_file=dotenv)
+    assert settings.tavily_cache_ttl_seconds == 60
+    assert settings.tavily_timeout_seconds == 2.5
+    assert settings.tavily_max_results == 25
+    assert settings.tavily_min_curated_results == 0
+    assert settings.tavily_extract_with_llm is True
+    assert settings.search_cache_path == "/tmp/hongxplore-cache.db"
+
+
+def test_agent_match_limit_overrides_from_dotenv(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _clear_env(monkeypatch)
+    dotenv = _write_dotenv(tmp_path, AGENT_MATCH_LIMIT="10")
+    assert Settings(_env_file=dotenv).agent_match_limit == 10
+
+
+def test_blank_search_cache_path_is_unset(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """`.env.example` ships `SEARCH_CACHE_PATH=` — blank means the service default."""
+    _clear_env(monkeypatch)
+    assert (
+        Settings(_env_file=_write_dotenv(tmp_path, SEARCH_CACHE_PATH="")).search_cache_path is None
+    )
+
+
+@pytest.mark.parametrize(
+    ("key", "value"),
+    [
+        ("TAVILY_CACHE_TTL_SECONDS", "-1"),
+        ("TAVILY_TIMEOUT_SECONDS", "0"),
+        ("TAVILY_MAX_RESULTS", "0"),
+        ("TAVILY_MIN_CURATED_RESULTS", "-5"),
+        ("AGENT_MATCH_LIMIT", "2"),
+        ("AGENT_MATCH_LIMIT", "11"),
+    ],
+)
+def test_invalid_policy_value_raises_validation_error(
+    key: str, value: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A malformed policy value must break startup, not silently clamp to something plausible."""
+    _clear_env(monkeypatch)
+    monkeypatch.setenv(key, value)
+    with pytest.raises(ValidationError) as exc_info:
+        Settings(_env_file=None)
+    assert key.lower() in str(exc_info.value)
+
+
+def test_env_example_documents_every_setting() -> None:
+    """`.env.example` is the documented surface — a key missing from it is undiscoverable."""
+    example = (API_ROOT / ".env.example").read_text(encoding="utf-8")
+    documented = {
+        line.split("=", 1)[0].strip()
+        for line in example.splitlines()
+        if "=" in line and not line.lstrip().startswith("#")
+    }
+    missing = sorted(set(ENV_KEYS) - DERIVED_KEYS - documented)
+    assert not missing, f"undocumented in api/.env.example: {missing}"
+
+
+def test_provider_pool_defaults_to_degraded_but_valid(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A fresh clone configures no provider — the pool is empty, not malformed."""
+    _clear_env(monkeypatch)
+    settings = Settings(_env_file=None)
+    assert settings.llm_pool_size == 1
+    assert settings.llm_pool_failover_enabled is True
+    assert settings.llm_pool_timeout_seconds == 30.0
+    assert settings.llm_pool_max_retries == 2
+    assert settings.llm_providers == []
+
+
+def test_indexed_provider_triplets_become_an_ordered_pool(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """`LLM_PROVIDER_<n>_*` assemble in numeric order, not in the order they appear."""
+    _clear_env(monkeypatch)
+    dotenv = _write_dotenv(
+        tmp_path,
+        LLM_PROVIDER_2_BASE_URL="https://second.example/v1",
+        LLM_PROVIDER_2_MODEL="second-model",
+        LLM_PROVIDER_2_API_KEY="sk-second",
+        LLM_PROVIDER_1_BASE_URL="https://first.example/v1",
+        LLM_PROVIDER_1_MODEL="first-model",
+        LLM_PROVIDER_1_API_KEY="sk-first",
+    )
+    providers = Settings(_env_file=dotenv).llm_providers
+    assert [p.model for p in providers] == ["first-model", "second-model"]
+    assert providers[0].base_url == "https://first.example/v1"
+    assert providers[0].api_key == "sk-first"
+
+
+def test_indexed_triplets_win_over_the_legacy_openai_keys(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Once a triplet is configured the bridge steps aside."""
+    _clear_env(monkeypatch)
+    dotenv = _write_dotenv(
+        tmp_path,
+        OPENAI_API_KEY="sk-legacy",
+        OPENAI_MODEL="legacy-model",
+        LLM_PROVIDER_1_BASE_URL="https://pool.example/v1",
+        LLM_PROVIDER_1_MODEL="pool-model",
+        LLM_PROVIDER_1_API_KEY="sk-pool",
+    )
+    providers = Settings(_env_file=dotenv).llm_providers
+    assert [p.model for p in providers] == ["pool-model"]
+
+
+def test_legacy_openai_keys_still_populate_provider_one(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Upgrading must not silently drop an existing dev to the offline path."""
+    _clear_env(monkeypatch)
+    dotenv = _write_dotenv(
+        tmp_path,
+        OPENAI_API_KEY="sk-legacy",
+        OPENAI_BASE_URL="https://legacy.example/v1",
+        OPENAI_MODEL="legacy-model",
+    )
+    (provider,) = Settings(_env_file=dotenv).llm_providers
+    assert provider.base_url == "https://legacy.example/v1"
+    assert provider.model == "legacy-model"
+    assert provider.api_key == "sk-legacy"
+
+
+def test_blank_legacy_openai_keys_leave_the_pool_empty(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """`.env.example` ships `OPENAI_BASE_URL=` blank — blank is not a configured provider."""
+    _clear_env(monkeypatch)
+    dotenv = _write_dotenv(tmp_path, OPENAI_BASE_URL="", OPENAI_MODEL="")
+    assert Settings(_env_file=dotenv).llm_providers == []
+
+
+@pytest.mark.parametrize(
+    ("key", "value"),
+    [
+        ("LLM_POOL_SIZE", "0"),
+        ("LLM_POOL_TIMEOUT_SECONDS", "0"),
+        ("LLM_POOL_MAX_RETRIES", "-1"),
+    ],
+)
+def test_invalid_pool_policy_value_raises_validation_error(
+    key: str, value: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _clear_env(monkeypatch)
+    monkeypatch.setenv(key, value)
+    with pytest.raises(ValidationError) as exc_info:
+        Settings(_env_file=None)
+    assert key.lower() in str(exc_info.value)
 
 
 def test_invalid_demo_mode_raises_validation_error(monkeypatch: pytest.MonkeyPatch) -> None:

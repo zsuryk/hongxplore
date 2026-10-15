@@ -211,6 +211,41 @@ def _resolve_source_name(domain: str) -> str:
     return clean.replace("-", " ").replace(".", " ").title()
 
 
+def _extract_valid_image_url(item: dict[str, Any]) -> HttpUrl | None:
+    """Extract and validate the first valid HTTP/HTTPS image URL from a search snippet or item."""
+    candidates: list[Any] = []
+    raw_images = item.get("images")
+    if isinstance(raw_images, list):
+        candidates.extend(raw_images)
+    raw_image = item.get("image")
+    if raw_image is not None:
+        candidates.append(raw_image)
+
+    for candidate in candidates:
+        if not candidate:
+            continue
+        candidate_url: str | None = None
+        if isinstance(candidate, str):
+            candidate_url = candidate
+        elif isinstance(candidate, dict):
+            raw_url = candidate.get("url")
+            if isinstance(raw_url, str):
+                candidate_url = raw_url
+
+        if not candidate_url:
+            continue
+        cleaned = candidate_url.strip()
+        if not cleaned:
+            continue
+        try:
+            parsed = urlsplit(cleaned)
+            if parsed.scheme in ("http", "https") and parsed.netloc:
+                return HttpUrl(cleaned)
+        except Exception:
+            continue
+    return None
+
+
 def deterministic_extract(
     raw_results: list[dict[str, Any]],
     *,
@@ -246,6 +281,7 @@ def deterministic_extract(
 
             norm_url = normalize_url(url_str)
             stable_id = f"tavily-{hashlib.sha256(norm_url.encode()).hexdigest()[:12]}"
+            extracted_image = _extract_valid_image_url(item)
 
             act = Activity(
                 id=stable_id,
@@ -257,7 +293,7 @@ def deterministic_extract(
                 source=Source(name=source_name, url=HttpUrl(url_str)),
                 location=Location(district=district, venue=None, address=None),
                 url=HttpUrl(url_str),
-                image=None,
+                image=extracted_image,
             )
             activities.append(act)
         except Exception as exc:
@@ -375,6 +411,13 @@ async def extract_activities_from_snippets(
                         "venue": None,
                         "address": None,
                     }
+
+                # Enforce valid image: prioritize verified snippet image from Tavily search
+                raw_snippet = valid_url_map.get(norm_item_url)
+                snippet_img = _extract_valid_image_url(raw_snippet) if raw_snippet else None
+                llm_img = _extract_valid_image_url(item) if item.get("image") else None
+                resolved_img = snippet_img or llm_img
+                item["image"] = str(resolved_img) if resolved_img else None
 
                 try:
                     act = Activity.model_validate(item)

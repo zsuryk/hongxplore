@@ -13,6 +13,8 @@ from openai import AsyncOpenAI
 
 from app.config import Settings, settings
 
+_UNSET = object()
+
 
 class OpenAILLMClient:
     """Thin wrapper around AsyncOpenAI conforming to LLMClient.
@@ -25,11 +27,20 @@ class OpenAILLMClient:
         self,
         config: Settings | None = None,
         *,
+        api_key: str | None = None,
+        base_url: str | None | object = _UNSET,
+        model: str | None = None,
         timeout: float | None = None,
         max_retries: int | None = None,
         http_client: httpx.AsyncClient | None = None,
     ) -> None:
         self.config = config or settings
+        self._api_key = api_key if api_key is not None else self.config.openai_api_key
+        if base_url is _UNSET:
+            self._base_url = self.config.openai_base_url
+        else:
+            self._base_url = base_url  # type: ignore[assignment]
+        self._model = model if model is not None else self.config.openai_model
 
         # Timeouts and retries come from config if present, or explicit args, never magic numbers
         self._timeout = timeout if timeout is not None else self.config.openai_timeout_seconds
@@ -41,14 +52,14 @@ class OpenAILLMClient:
 
     def _get_client(self) -> AsyncOpenAI:
         if self._client is None:
-            if not self.config.openai_api_key:
+            if not self._api_key:
                 raise ValueError("OPENAI_API_KEY is not configured in settings or environment.")
 
             client_kwargs: dict[str, object] = {
-                "api_key": self.config.openai_api_key,
+                "api_key": self._api_key,
             }
-            if self.config.openai_base_url:
-                client_kwargs["base_url"] = self.config.openai_base_url
+            if self._base_url:
+                client_kwargs["base_url"] = self._base_url
             client_kwargs["timeout"] = self._timeout
             client_kwargs["max_retries"] = self._max_retries
             if self._http_client is not None:
@@ -62,14 +73,14 @@ class OpenAILLMClient:
 
         Raises ValueError if OPENAI_API_KEY or OPENAI_MODEL is not configured.
         """
-        if not self.config.openai_api_key:
+        if not self._api_key:
             raise ValueError("OPENAI_API_KEY is not configured in settings or environment.")
-        if not self.config.openai_model:
+        if not self._model:
             raise ValueError("OPENAI_MODEL is not configured in settings or environment.")
 
         client = self._get_client()
         response = await client.chat.completions.create(
-            model=self.config.openai_model,
+            model=self._model,
             messages=[
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},

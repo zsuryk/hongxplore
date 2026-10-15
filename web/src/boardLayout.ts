@@ -44,10 +44,135 @@ export const BOARD_GRID_SIZE = 40;
 export const BOARD_FIT_PADDING = 64;
 
 /**
- * How long the discard animation runs. Must match `--motion-duration-base` in
- * `styles/card.css`; the card is removed from the store when it finishes.
+ * How long the discard animation runs. The card is removed from the store when it finishes.
+ *
+ * (The comment used to say "must match `--motion-duration-base` in styles/card.css". No such
+ * token exists: the discard animation reads `--motion-base`. Corrected rather than propagated.)
  */
 export const CARD_DISCARD_DURATION_MS = 180;
+
+/* ------------------------------------------------------------------ the deal */
+
+/**
+ * The total settle budget for one auto-tile deal, in milliseconds.
+ *
+ * This is a **budget, not a duration**: nothing in the deal may finish after it, at any card
+ * count. It is measured from the start of the deal, so `delay + travel ≤ DEAL_DURATION_MS` for
+ * every card, and `dealTiming` is written so the last card lands exactly on it.
+ */
+export const DEAL_DURATION_MS = 1200;
+
+/**
+ * Longest a single card may take to reach its slot, which is what a nearly empty board gets.
+ *
+ * Three cards travelling for 558ms reads as a deliberate arc. The same three travelling for
+ * 260ms reads as a glitch, so the travel has to be able to stretch when there is room for it —
+ * while the *total* stays fixed. That tension is the whole design of the deal.
+ */
+export const DEAL_TRAVEL_MAX_MS = 700;
+
+/**
+ * Shortest travel a card may be given once the board is crowded.
+ *
+ * At 30 cards this leaves a ~32ms step between departures, which is the point at which the
+ * cascade still reads as a cascade rather than as a single jump.
+ */
+export const DEAL_TRAVEL_MIN_MS = 260;
+
+/**
+ * Card count at which the cascade is *fully* compressed — the travel has bottomed out at
+ * `DEAL_TRAVEL_MIN_MS` and the whole 1200ms budget is spent on the stagger.
+ */
+export const DEAL_COMPRESSION_REFERENCE = 30;
+
+/**
+ * Peak fan of the dealt pile, in degrees, per index step.
+ *
+ * A stack of perfectly aligned rectangles reads as one rectangle. A few degrees of fan is what
+ * makes the collapsed state legible as *a pile*, and it unwinds to 0 as each card leaves.
+ */
+export const DEAL_TILT_DEG = 1.1;
+
+/** How much smaller than life a card is while it is still in the pile. */
+export const DEAL_PILE_SCALE = 0.92;
+
+export type DealStep = {
+  /** When this card leaves the pile, measured from the start of the deal. */
+  delayMs: number;
+  /** How long this card's journey takes once it has left the pile. */
+  travelMs: number;
+  /** When this card is seated. Always ≤ `DEAL_DURATION_MS`. */
+  endsAtMs: number;
+};
+
+/**
+ * The deal's timing, one step per card.
+ *
+ * **The problem.** A naive sibling stagger — "60ms apart, 700ms each" — reads well for four
+ * cards and blows the budget completely at thirty. Measured in a browser against the real
+ * easing, a 60ms step settles at **827ms for 3 cards, 1134ms for 8, 1849ms for 20 and 2449ms
+ * for 30** — the duration scales with the card count, which is exactly the thing the board
+ * cannot afford, because a board is re-dealt every time the user hits auto-tile.
+ *
+ * **The fix.** Hold the total still and spend it differently as the board fills. Travel is
+ * compressed on a log curve of the card count (so the *feeling* of the change is even across
+ * 3→8→20, not even per card), the remaining budget becomes the stagger, and the stagger is
+ * divided across the cards rather than multiplied by them. Six lines of arithmetic buy a deal
+ * whose wall-clock cost is identical for one card and for thirty.
+ *
+ * **The guarantee.** `staggerSpan + travel === DEAL_DURATION_MS` by construction, the last
+ * card is given the whole span, and every delay is additionally clamped so that
+ * `delay + travel` can never exceed the budget even if the curve is retuned later. The test
+ * in `boardLayout.test.ts` asserts the invariant over a wide sweep of counts rather than
+ * trusting this paragraph.
+ */
+export function dealTiming(cardCount: number): DealStep[] {
+  const count = Math.max(0, Math.floor(cardCount));
+
+  if (count === 0) {
+    return [];
+  }
+
+  if (count === 1) {
+    // Nothing to stagger against, so the one card gets the entire budget as travel. A lone card
+    // that finished in `DEAL_TRAVEL_MAX_MS` would leave 500ms of the budget unspent, which is the
+    // same "the duration depends on the card count" defect in its smallest form.
+    return [{ delayMs: 0, travelMs: DEAL_DURATION_MS, endsAtMs: DEAL_DURATION_MS }];
+  }
+
+  // Log, not linear: the difference between 3 and 8 cards should feel like the difference
+  // between 8 and 20, and a linear curve spends the entire budget change on the first step.
+  const compression = Math.min(1, Math.log2(count) / Math.log2(DEAL_COMPRESSION_REFERENCE));
+  const travelMs = Math.round(DEAL_TRAVEL_MAX_MS - (DEAL_TRAVEL_MAX_MS - DEAL_TRAVEL_MIN_MS) * compression);
+  const staggerSpanMs = DEAL_DURATION_MS - travelMs;
+  const stepGap = staggerSpanMs / (count - 1);
+  const latestStart = Math.max(0, DEAL_DURATION_MS - travelMs);
+
+  return Array.from({ length: count }, (_, index) => {
+    const delayMs = Math.min(Math.round(index * stepGap), latestStart);
+
+    return { delayMs, travelMs, endsAtMs: delayMs + travelMs };
+  });
+}
+
+/**
+ * The point every card is dealt *from*: the centre of the packed arrangement.
+ *
+ * It is derived from the target layout rather than from the viewport or the grid origin,
+ * because the deal reads as a pile only if every card has real distance to travel. A deck at
+ * the corner of the grid would leave the first card essentially where it started.
+ *
+ * World units, like every other number in this module: the deal happens inside `.board__world`,
+ * where `zoom` is in scope and screen-space lengths would be wrong at every zoom level but one.
+ */
+export function dealDeckOrigin(tiled: readonly PlacedCard[]): Point {
+  const bounds = contentBounds(tiled);
+
+  return {
+    x: Math.round(bounds.x + bounds.width / 2),
+    y: Math.round(bounds.y + bounds.height / 2),
+  };
+}
 
 /** Bounds used before anything has been laid out. */
 export const EMPTY_BOARD_BOUNDS: Rect = {
@@ -559,6 +684,24 @@ export type AutoTileOptions = {
   gapY?: number;
   columnCount?: number;
 };
+
+/**
+ * Projects a laid-out card onto a *proposed* position, keeping its measured shape.
+ *
+ * The deal needs two things from the same set of cards: where they are going, and how big they
+ * will be when they get there. `autoTileBoard` and `dealDeckOrigin` both have to agree on the
+ * second, so the projection lives here rather than being spelled out twice in `App`.
+ */
+export function placedCardAt<T extends ActivityMatch>(card: PlacedBoardCard<T>, position: Point): PlacedCard {
+  const variant = card.variant;
+
+  return {
+    position,
+    variant,
+    height: card.height,
+    width: CARD_VARIANT_DIMENSIONS[variant].width,
+  };
+}
 
 /**
  * Calculates the optimal number of columns for auto-tiling `cardCount` cards.

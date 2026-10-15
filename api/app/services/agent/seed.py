@@ -236,8 +236,13 @@ def match_seed_activities(
     # Sort descending by score
     scored.sort(key=lambda x: x[0], reverse=True)
 
-    # Return top matches
-    top_matches = [activity for score, activity in scored[:limit]]
+    # Return top matches: prefer positive relevance matches without padding weak matches
+    positive_matches = [activity for score, activity in scored if score > 0]
+    if positive_matches:
+        top_matches = positive_matches[:limit]
+    else:
+        top_matches = [activity for score, activity in scored[:limit]]
+
     if not top_matches and activities:
         top_matches = activities[:limit]
 

@@ -18,6 +18,8 @@ A standalone HTML prototype from earlier exploration lives in the separate `kult
 
 Start here: [`docs/PLAN.md`](docs/PLAN.md) (phased tickets + ownership) and the [issue backlog](https://github.com/zsuryk/hongxplore/issues).
 
+For the UI: [`DESIGN.md`](DESIGN.md) is the design contract — tokens, card anatomy, board/zoom geometry, component behaviour and the accessibility gates. It is a design-system document, not a product spec (see [ADR-0004](docs/adr/0004-spec-and-prototype-kept-out-of-repo)).
+
 ## Quickstart
 
 Prerequisites: Python ≥ 3.12 + [uv](https://docs.astral.sh/uv/), Node ≥ 20 + [pnpm](https://pnpm.io/).
