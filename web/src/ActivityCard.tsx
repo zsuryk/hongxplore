@@ -8,10 +8,10 @@ import {
   ACTIVITY_CARD_ROW_LISTED_LABEL,
   ACTIVITY_CARD_ROW_PRICE_LABEL,
   ACTIVITY_CARD_ROW_VENUE_LABEL,
-  ACTIVITY_CARD_SOURCE_LABEL,
   ACTIVITY_CARD_TIME_UNAVAILABLE,
   FIND_SIMILAR_LABEL,
   activityCardAccessibleLabel,
+  activityCardCtaLabel,
   activityCardListedLabel,
   activityCardLocation,
   activityCardPriceLabel,
@@ -185,16 +185,20 @@ export function ActivityCard({
 
       <footer className="activity-card__foot">
         {variant !== 'compact' ? (
-          <p className="activity-card__source">
-            <span className="activity-card__source-label">{ACTIVITY_CARD_SOURCE_LABEL}: </span>
-            {activity.source.url ? (
-              <a href={activity.source.url} rel="noreferrer" target="_blank">
-                {activity.source.name}
-              </a>
-            ) : (
-              activity.source.name
-            )}
-          </p>
+          /* Ported from #112. `stopPropagation` matters more than it looks: the whole card is a
+             drag handle, so without it, pressing the CTA would start a drag instead of opening the
+             link — the one interaction on the card a user is guaranteed to try. */
+          <a
+            aria-label={activityCardCtaLabel(activity.source.name)}
+            className="btn btn--sm activity-card__cta"
+            href={activity.url}
+            onPointerDown={(event) => event.stopPropagation()}
+            rel="noreferrer"
+            target="_blank"
+            title={activityCardCtaLabel(activity.source.name)}
+          >
+            <span className="activity-card__cta-text">{activityCardCtaLabel(activity.source.name)}</span>
+          </a>
         ) : null}
         {onFindSimilar ? (
           <button
