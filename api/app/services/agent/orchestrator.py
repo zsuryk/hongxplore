@@ -7,6 +7,7 @@ canonical AgentResponse contract models.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from collections.abc import Sequence
 from datetime import UTC, datetime
@@ -519,7 +520,9 @@ class AgentOrchestrator:
                 all_seed = load_seed_activities(
                     str(self.seed_data_path) if self.seed_data_path else None
                 )
-                candidates = match_seed_activities(all_seed, parsed_intent, limit=3)
+                candidates = match_seed_activities(
+                    all_seed, parsed_intent, limit=self.settings.agent_match_limit
+                )
                 log.append(
                     AgentLogEntry(
                         ts=datetime.now(UTC),
@@ -531,7 +534,9 @@ class AgentOrchestrator:
                 raw_results = await self.search_provider.search(
                     parsed_intent.search_query, limit=10
                 )
-                candidates = match_seed_activities(raw_results, parsed_intent, limit=3)
+                candidates = match_seed_activities(
+                    raw_results, parsed_intent, limit=self.settings.agent_match_limit
+                )
                 log.append(
                     AgentLogEntry(
                         ts=datetime.now(UTC),
@@ -541,8 +546,9 @@ class AgentOrchestrator:
                 )
 
             # 3. Match rationales
-            matched_activities: list[MatchedActivity] = []
-            for activity in candidates:
+            semaphore = asyncio.Semaphore(3)
+
+            async def _generate_single_matched_activity(activity: Activity) -> MatchedActivity:
                 if self.llm_client is not None and not self.settings.demo_mode:
                     try:
                         sys_prompt, usr_prompt = render_rationale_prompt(
@@ -550,10 +556,11 @@ class AgentOrchestrator:
                             activity=activity,
                             free_slots=request.free_slots,
                         )
-                        raw_rationale = await self.llm_client.complete(
-                            system=sys_prompt, user=usr_prompt
-                        )
-                        matched_activity = build_matched_activity(activity, raw_rationale)
+                        async with semaphore:
+                            raw_rationale = await self.llm_client.complete(
+                                system=sys_prompt, user=usr_prompt
+                            )
+                        return build_matched_activity(activity, raw_rationale)
                     except Exception as exc:
                         logger.warning(
                             "Live rationale generation failed for activity %s: %s",
@@ -563,14 +570,18 @@ class AgentOrchestrator:
                         rationale_text = _format_deterministic_rationale(
                             activity, parsed_intent, request.free_slots
                         )
-                        matched_activity = build_matched_activity(activity, rationale_text)
+                        return build_matched_activity(activity, rationale_text)
                 else:
                     rationale_text = _format_deterministic_rationale(
                         activity, parsed_intent, request.free_slots
                     )
-                    matched_activity = build_matched_activity(activity, rationale_text)
+                    return build_matched_activity(activity, rationale_text)
 
-                matched_activities.append(matched_activity)
+            matched_activities: list[MatchedActivity] = list(
+                await asyncio.gather(
+                    *(_generate_single_matched_activity(act) for act in candidates)
+                )
+            )
 
             log.append(
                 AgentLogEntry(
