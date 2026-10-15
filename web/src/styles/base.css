@@ -63,44 +63,72 @@ button {
 
 /* ---- Header ---- */
 
+/**
+ * Three columns: brand, search, and an empty third that gives the search the optical centre.
+ *
+ * `justify-content: space-between` was the bug — it pushed the search to whatever the brand's
+ * width left over, so the primary action of the whole product drifted right and read as a
+ * toolbar attached to the edge. A symmetric `1fr auto 1fr` puts the search dead centre at
+ * every viewport width, with the brand sitting quietly to one side, which is where identity
+ * belongs in an Operate surface: present, not competing.
+ *
+ * The header is also the first thing to stop being a slab. It wears the canvas colour and a
+ * single `--rule` underneath, so the only filled objects left on screen are the cards.
+ */
 .app__header {
   align-items: center;
-  background: var(--card);
-  border-bottom: 1px solid var(--divider);
-  display: flex;
+  background: var(--background);
+  border-bottom: 1px solid var(--rule);
+  display: grid;
   flex-shrink: 0;
   gap: var(--space-5);
-  justify-content: space-between;
-  padding: var(--space-4) var(--space-5);
+  grid-template-columns: 1fr auto 1fr;
+  padding: var(--space-3) var(--space-5);
 }
 
 .app__header-brand {
-  flex-shrink: 0;
+  grid-column: 1;
+  justify-self: start;
+  min-width: 0;
 }
 
+/* The wordmark is identity, not a headline: one step below the plate size, at the same weight
+   as a card title, so it reads as a signature on the chrome rather than as a page title that
+   happens to be sitting next to a search box. */
 .app__header h1 {
-  font-size: var(--text-plate);
-  font-weight: 650;
+  font-size: var(--text-title);
+  font-weight: var(--weight-semi);
+  letter-spacing: var(--tracking-title);
   line-height: var(--leading-tight);
 }
 
 .app__header p {
   color: var(--card-muted-foreground);
   font-size: var(--text-label);
+  line-height: var(--leading-body);
   margin-top: var(--space-1);
 }
 
 .app__header-search {
-  flex: 1 1 auto;
-  max-width: 44rem;
-  min-width: 0;
+  grid-column: 2;
+  width: min(38rem, 100%);
 }
 
+/* Narrow: the grid collapses to one column and the order flips to brand-then-search. The
+   search still leads the eye because it is the taller, filled, actionable thing — the brand is
+   now a two-line signature above it. */
 @media (width <= 640px) {
   .app__header {
     align-items: stretch;
-    flex-direction: column;
     gap: var(--space-3);
+    grid-template-columns: minmax(0, 1fr);
     padding: var(--space-3);
+  }
+
+  .app__header-brand,
+  .app__header-search {
+    grid-column: 1;
+    justify-self: stretch;
+    width: 100%;
   }
 }

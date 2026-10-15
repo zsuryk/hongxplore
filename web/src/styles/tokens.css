@@ -39,6 +39,11 @@
   --primary: #e8a317;
   --primary-foreground: #0e0f11;
 
+  /* The pending cell's face. An 8% amber wash rather than the full `--primary-soft`, which is
+     a saturated brown that outshouts the result cards it is only standing in for. Amber still
+     does the work — it is on the plate and the label — it just stops shouting. */
+  --surface-pending: rgb(232 163 23 / 8%);
+
   /* State colour proper. */
   --accent: #5a9de6;
   --accent-foreground: #0e0f11;
@@ -75,9 +80,11 @@
   --divider-strong: rgb(110 116 123 / 44%);
   --divider-subtle: rgb(110 116 123 / 18%);
 
-  /* Dashed edges mark a target that exists but is not yet filled — an empty timeline slot.
-     It is still a meaningful boundary, so it tracks --rule rather than --divider. */
-  --border-dashed: #5f656d;
+  /* Dashed edges mark a target that exists but is not yet filled — an empty timeline slot, the
+     discard bin. There is deliberately no second dashed value: a dashed edge is still a
+     *meaningful* boundary, so it draws in `--rule`, the same value as every solid one. An
+     earlier `--border-dashed` sat between `--rule` and `--divider` and made a third rule out of
+     one, which is the thing this system is against. */
 
   /* =========================================================== surface + hover states
      The lattice is quiet, so a state change is a small step in lightness plus the rule
@@ -138,6 +145,9 @@
   --tracking-label: 0.1em;
   --tracking-lamp: 0.09em;
   --tracking-title: 0.03em;
+  /* The serial plate is set large but must not read as a heading, so it tracks open and
+     keeps its ink weight at the muted foreground role rather than stepping up to --foreground. */
+  --tracking-plate: 0.06em;
 
   --weight-regular: 400;
   --weight-medium: 500;
@@ -200,6 +210,19 @@
   --control-font: var(--text-label);
   --control-weight: var(--weight-bold);
   --control-tracking: var(--tracking-label);
+
+  /* ==================================================================== iconography */
+
+  /* Icons are authored as inline SVG on a 24-unit grid (see `src/icons.tsx`). One stroke
+     weight, round caps, no fills — so a 16px glyph and a 24px glyph are the same drawing.
+     Nothing here scales with board zoom: the toolbar is screen space (ADR-0009). */
+  --icon-size: 1rem;
+  --icon-size-lg: 1.25rem;
+  --icon-stroke: 1.5;
+
+  /* The board toolbar is an icon rail, so its width is the button hit target plus the rail's
+     own inset — not a column of text labels. `--rule` is its left/right bezel. */
+  --rail-width: 2.5rem;
 
   /* ======================================================================== motion */
 
@@ -269,7 +292,6 @@
   --divider: rgb(107 112 120 / 30%);
   --divider-strong: rgb(107 112 120 / 50%);
   --divider-subtle: rgb(107 112 120 / 18%);
-  --border-dashed: #8b9098;
   --card-hover: #f0f1f3;
   --card-active: #e6e8eb;
   --muted-hover: #dcdfe3;
@@ -278,6 +300,7 @@
   --accent-soft: #e3edf8;
   --accent-border: #9cc0e4;
   --primary-soft: #fbf0d8;
+  --surface-pending: rgb(138 90 0 / 10%);
   --destructive-strong: #c04a3d;
   --destructive-soft: #fbe6e4;
   --destructive-border: #e8a79f;

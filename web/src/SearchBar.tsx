@@ -9,6 +9,7 @@ import {
   SEARCH_SUBMIT_LABEL,
   SEARCH_SUBMIT_LOADING,
 } from './copy';
+import { IconSearch } from './icons';
 import { type AgentStatus, useBoardStore } from './state/boardStore';
 
 export type SearchBarProps = {
@@ -51,18 +52,21 @@ export function SearchBar({
   return (
     <form aria-label={SEARCH_PANEL_LABEL} className="search-bar" onSubmit={handleSubmit}>
       <div className="search-bar__input-row">
-        <label className="sr-only" htmlFor="search-input">
-          {SEARCH_INPUT_LABEL}
-        </label>
-        <input
-          className="field search-bar__input"
-          disabled={isSearching}
-          id="search-input"
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder={SEARCH_INPUT_PLACEHOLDER}
-          type="text"
-          value={query}
-        />
+        <span className="search-bar__field">
+          <IconSearch className="search-bar__field-icon" />
+          <label className="sr-only" htmlFor="search-input">
+            {SEARCH_INPUT_LABEL}
+          </label>
+          <input
+            className="field search-bar__input"
+            disabled={isSearching}
+            id="search-input"
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder={SEARCH_INPUT_PLACEHOLDER}
+            type="text"
+            value={query}
+          />
+        </span>
         <button className="btn btn--primary search-bar__submit" disabled={isSearching || !query.trim()} type="submit">
           {isSearching ? SEARCH_SUBMIT_LOADING : SEARCH_SUBMIT_LABEL}
         </button>

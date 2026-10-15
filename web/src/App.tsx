@@ -1334,6 +1334,9 @@ export function App({
               {canvasCards.map(({ card: match, position, variant }) => {
                 const isDragging = cardDragState?.card.activity.id === match.activity.id;
                 const isDiscarding = discardingCardId === match.activity.id;
+                // The serial is the card's index in the *full* list, not in `canvasCards`, so
+                // docking or discarding a card never renumbers the ones that stay.
+                const serialIndex = cards.findIndex((candidate) => candidate.activity.id === match.activity.id);
 
                 return (
                   <div
@@ -1348,6 +1351,7 @@ export function App({
                     style={{ left: position.x, top: position.y }}
                   >
                     <ActivityCard
+                      index={serialIndex}
                       isRecent={recentCardIds.includes(match.activity.id)}
                       match={match}
                       onFindSimilar={handleFindSimilar}

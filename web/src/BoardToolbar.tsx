@@ -15,14 +15,20 @@ import {
   ZOOM_CONTROL_LABEL,
   ZOOM_IN_LABEL,
   ZOOM_OUT_LABEL,
+  resetZoomLabel,
   zoomPercentage,
+  zoomReadout,
 } from './copy';
+import { IconAutoFit, IconClear, IconFit, IconTile, IconZoomIn, IconZoomOut } from './icons';
+
+type GlyphComponent = (props: { className?: string }) => React.ReactElement;
 
 export type BoardActionItem = {
   id: string;
   label: string;
   ariaLabel?: string;
   tooltip?: string;
+  icon?: GlyphComponent;
   shortcut?: string;
   disabled?: boolean;
   isToggle?: boolean;
@@ -51,6 +57,26 @@ export type BoardToolbarProps = {
   extraActions?: BoardActionItem[];
 };
 
+/**
+ * The board rail.
+ *
+ * Icon-only, with the text label revealed on hover **and** on focus. The label is a sibling
+ * element rather than a `title` attribute, because a native tooltip is mouse-only — and a
+ * keyboard user driving a canvas needs to know what `0`, `1` and `T` do at least as much as a
+ * mouse user does. Every control keeps its real accessible name in `aria-label`; the revealed
+ * label is decoration on top of that name, never the name itself.
+ *
+ * Three things here are deliberate:
+ *
+ * - **The zoom readout is the reset control.** "You are at 40%" and "click here for 100%" are
+ *   one statement, and a 40px rail has room for one of them. The visible number is
+ *   `aria-hidden`; a separate `aria-live` region announces the long form, so a screen-reader
+ *   user hears "Zoom: 40%" rather than a bare figure.
+ * - **Auto-fit is a switch, not a button.** It is the only control with two states, so it is
+ *   the only one that carries a lamp — and the lamp is what a 16px icon cannot say on its own.
+ * - **The rail is narrow.** The previous text stack ate a full column of the viewport for six
+ *   controls. At `--rail-width` the board gets that column back.
+ */
 export function BoardToolbar({
   scale,
   canZoomIn,
@@ -76,20 +102,11 @@ export function BoardToolbar({
       label: FIT_VIEW_LABEL,
       ariaLabel: FIT_VIEW_LABEL,
       tooltip: `${FIT_VIEW_LABEL} (0)`,
+      icon: IconFit,
       shortcut: '0',
       onClick: onFitContent,
       disabled: !canFitContent,
       variant: 'default',
-    },
-    {
-      id: 'auto-fit',
-      label: AUTO_FIT_LABEL,
-      ariaLabel: autoFitEnabled ? AUTO_FIT_ACTIVE_LABEL : AUTO_FIT_INACTIVE_LABEL,
-      tooltip: AUTO_FIT_DESCRIPTION,
-      onClick: () => onToggleAutoFit(!autoFitEnabled),
-      isToggle: true,
-      isPressed: autoFitEnabled,
-      variant: 'toggle',
     },
     ...(onAutoTile
       ? [
@@ -98,6 +115,7 @@ export function BoardToolbar({
             label: AUTO_TILE_LABEL,
             ariaLabel: AUTO_TILE_LABEL,
             tooltip: `${AUTO_TILE_TOOLTIP} (T)`,
+            icon: IconTile,
             shortcut: 'T',
             onClick: onAutoTile,
             disabled: !canAutoTile,
@@ -107,10 +125,22 @@ export function BoardToolbar({
       : []),
     ...extraActions,
     {
+      id: 'auto-fit',
+      label: AUTO_FIT_LABEL,
+      ariaLabel: autoFitEnabled ? AUTO_FIT_ACTIVE_LABEL : AUTO_FIT_INACTIVE_LABEL,
+      tooltip: AUTO_FIT_DESCRIPTION,
+      icon: IconAutoFit,
+      onClick: () => onToggleAutoFit(!autoFitEnabled),
+      isToggle: true,
+      isPressed: autoFitEnabled,
+      variant: 'toggle',
+    },
+    {
       id: 'clear-board',
       label: CLEAR_BOARD_LABEL,
       ariaLabel: CLEAR_BOARD_LABEL,
       tooltip: CLEAR_BOARD_TOOLTIP,
+      icon: IconClear,
       onClick: onClearBoard,
       disabled: !canClearBoard,
       variant: 'danger',
@@ -123,116 +153,103 @@ export function BoardToolbar({
       className={`board-toolbar${isDragging ? ' board-toolbar--inert' : ''}`}
       onPointerDown={(event) => event.stopPropagation()}
     >
-      <div aria-label={ZOOM_CONTROL_LABEL} className="board-toolbar__group board-toolbar__group--zoom" role="group">
+      <div aria-label={ZOOM_CONTROL_LABEL} className="board-toolbar__group" role="group">
         <div className="board-toolbar__item">
           <button
             aria-label={ZOOM_OUT_LABEL}
-            className="btn btn--sm btn--icon"
+            className="btn btn--sm btn--icon board-toolbar__btn"
             disabled={!canZoomOut}
             onClick={onZoomOut}
             type="button"
           >
-            &minus;
+            <IconZoomOut />
           </button>
+          <span aria-hidden="true" className="board-toolbar__label">
+            {ZOOM_OUT_LABEL}
+          </span>
         </div>
-        <output aria-live="polite" className="board-toolbar__readout">
+
+        <output aria-live="polite" className="sr-only">
           {zoomPercentage(scale)}
         </output>
+        <button
+          aria-label={canResetZoom ? resetZoomLabel(scale) : RESET_ZOOM_LABEL}
+          className="board-toolbar__readout"
+          disabled={!canResetZoom}
+          onClick={onResetZoom}
+          type="button"
+        >
+          <span aria-hidden="true">{zoomReadout(scale)}</span>
+        </button>
+
         <div className="board-toolbar__item">
           <button
             aria-label={ZOOM_IN_LABEL}
-            className="btn btn--sm btn--icon"
+            className="btn btn--sm btn--icon board-toolbar__btn"
             disabled={!canZoomIn}
             onClick={onZoomIn}
             type="button"
           >
-            +
+            <IconZoomIn />
           </button>
+          <span aria-hidden="true" className="board-toolbar__label">
+            {ZOOM_IN_LABEL}
+          </span>
         </div>
-        <div className="board-toolbar__item">
-          <button
-            aria-label={RESET_ZOOM_LABEL}
-            className="btn btn--sm"
-            disabled={!canResetZoom}
-            onClick={onResetZoom}
-            type="button"
-          >
-            100%
-          </button>
-        </div>
-      </div>
 
-      <div aria-hidden="true" className="board-toolbar__divider" />
+        {/* The one structural rule, doing its fifth job: the separator between two groups of
+            controls, drawn the same as every other divider in the app. */}
+        <div aria-hidden="true" className="board-toolbar__divider" />
 
-      <div aria-label={BOARD_TOOLBAR_LABEL} className="board-toolbar__group board-toolbar__group--actions" role="group">
         {actions.map((action) => {
           if (action.variant === 'toggle') {
+            const stateLabel = action.isPressed ? AUTO_FIT_TOGGLE_ON : AUTO_FIT_TOGGLE_OFF;
+
             return (
-              <div className="board-toolbar__item board-toolbar__item--toggle" key={action.id}>
+              <div className="board-toolbar__item" key={action.id}>
                 <button
                   aria-checked={action.isPressed}
                   aria-describedby="autofit-description"
                   aria-label={action.ariaLabel ?? action.label}
-                  className={`btn btn--sm board-toolbar__toggle${action.isPressed ? ' board-toolbar__toggle--active' : ''}`}
+                  className={`btn btn--sm btn--icon board-toolbar__btn board-toolbar__btn--toggle${action.isPressed ? ' board-toolbar__btn--on' : ''}`}
                   id="autofit-toggle"
                   onClick={action.onClick}
                   role="switch"
                   type="button"
                 >
-                  <span aria-hidden="true" className="board-toolbar__toggle-indicator" />
-                  <span className="board-toolbar__toggle-label">{action.label}</span>
-                  <span aria-hidden="true" className="board-toolbar__toggle-badge">
-                    {action.isPressed ? AUTO_FIT_TOGGLE_ON : AUTO_FIT_TOGGLE_OFF}
-                  </span>
+                  {action.icon ? <action.icon /> : null}
+                  <span aria-hidden="true" className="board-toolbar__lamp" />
                 </button>
-                {action.tooltip ? (
-                  <span className="board-toolbar__tooltip" id="autofit-description" role="tooltip">
-                    {action.tooltip}
-                  </span>
-                ) : null}
+                {/* aria-hidden: the switch is already named by its own aria-label, and this
+                    text is the pointer affordance. The always-available description lives in
+                    the sr-only node below, which `aria-describedby` points at — a `visibility:
+                    hidden` tooltip is not reliably read out. */}
+                <span aria-hidden="true" className="board-toolbar__label">
+                  {action.label}: {stateLabel} — {action.tooltip}
+                </span>
+                <span className="sr-only" id="autofit-description">
+                  {action.tooltip}
+                </span>
               </div>
             );
           }
 
-          if (action.variant === 'danger') {
-            return (
-              <div className="board-toolbar__item" key={action.id}>
-                <button
-                  aria-label={action.ariaLabel ?? action.label}
-                  className="btn btn--sm btn--danger board-toolbar__btn--danger"
-                  disabled={action.disabled}
-                  onClick={action.onClick}
-                  title={action.tooltip}
-                  type="button"
-                >
-                  {action.label}
-                </button>
-                {action.tooltip ? (
-                  <span className="board-toolbar__tooltip" role="tooltip">
-                    {action.tooltip}
-                  </span>
-                ) : null}
-              </div>
-            );
-          }
+          const Glyph = action.icon ?? IconFit;
 
           return (
             <div className="board-toolbar__item" key={action.id}>
               <button
                 aria-label={action.ariaLabel ?? action.label}
-                className="btn btn--sm"
+                className={`btn btn--sm btn--icon board-toolbar__btn${action.variant === 'danger' ? ' board-toolbar__btn--danger' : ''}`}
                 disabled={action.disabled}
                 onClick={action.onClick}
-                title={action.tooltip}
                 type="button"
               >
-                {action.label}
+                <Glyph />
               </button>
-              {action.tooltip ? (
-                <span className="board-toolbar__tooltip" role="tooltip">
-                  {action.tooltip}
-                </span>
-              ) : null}
+              <span aria-hidden="true" className="board-toolbar__label">
+                {action.tooltip ?? action.label}
+              </span>
             </div>
           );
         })}

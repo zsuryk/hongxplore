@@ -92,10 +92,11 @@ describe('App shell', () => {
   it('disables zoom controls that would not change anything', () => {
     const markup = renderToStaticMarkup(<App />);
 
-    // At 100% "reset" is a no-op, while both ladder ends stay available.
-    expect(markup).toContain('<button aria-label="Reset zoom to 100%" class="btn btn--sm" disabled="" type="button">');
-    expect(markup).toContain('<button aria-label="Zoom out" class="btn btn--sm btn--icon" type="button">');
-    expect(markup).toContain('<button aria-label="Zoom in" class="btn btn--sm btn--icon" type="button">');
+    // At 100% "reset" is a no-op, while both ladder ends stay available. The rail is
+    // icon-only, so the zoom steps are `btn--icon` and the readout doubles as the reset.
+    expect(markup).toContain('<button aria-label="Reset zoom to 100%" class="board-toolbar__readout" disabled=""');
+    expect(markup).toContain('<button aria-label="Zoom out" class="btn btn--sm btn--icon board-toolbar__btn"');
+    expect(markup).toContain('<button aria-label="Zoom in" class="btn btn--sm btn--icon board-toolbar__btn"');
   });
 
   it('renders the AI research canvas placeholder when searching', () => {
@@ -233,7 +234,9 @@ describe('App shell', () => {
 
   it('renders the auto-tile button in the board toolbar, enabled with cards and disabled when empty', () => {
     const emptyMarkup = renderToStaticMarkup(<App cards={[]} />);
-    expect(emptyMarkup).toContain(`<button aria-label="${AUTO_TILE_LABEL}" class="btn btn--sm" disabled=""`);
+    expect(emptyMarkup).toContain(
+      `<button aria-label="${AUTO_TILE_LABEL}" class="btn btn--sm btn--icon board-toolbar__btn" disabled=""`,
+    );
 
     const mockCards = [
       {
@@ -252,7 +255,36 @@ describe('App shell', () => {
       },
     ];
     const cardsMarkup = renderToStaticMarkup(<App cards={mockCards} />);
-    expect(cardsMarkup).toContain(`<button aria-label="${AUTO_TILE_LABEL}" class="btn btn--sm"`);
-    expect(cardsMarkup).not.toContain(`<button aria-label="${AUTO_TILE_LABEL}" class="btn btn--sm" disabled=""`);
+    expect(cardsMarkup).toContain(
+      `<button aria-label="${AUTO_TILE_LABEL}" class="btn btn--sm btn--icon board-toolbar__btn"`,
+    );
+    expect(cardsMarkup).not.toContain(
+      `<button aria-label="${AUTO_TILE_LABEL}" class="btn btn--sm btn--icon board-toolbar__btn" disabled=""`,
+    );
+  });
+
+  it('numbers canvas cards with a zero-padded serial in the header plate', () => {
+    const mockCards = [
+      {
+        activity: {
+          id: 'serial-card-1',
+          title: 'First card',
+          title_en: 'First card',
+          lang: 'en' as const,
+          url: 'https://example.com',
+          tags: ['culture'],
+          parts: [{ start: '2026-10-10T06:00:00Z', end: '2026-10-10T08:00:00Z' }],
+          source: { name: 'Source' },
+          location: { district: 'Central', venue: 'Venue' },
+        },
+        match_rationale: 'Perfect fit',
+      },
+    ];
+    const markup = renderToStaticMarkup(<App cards={mockCards} />);
+
+    // The serial is aria-hidden: the card's accessible name is its title, and "01" adds
+    // nothing to it. It is the row number you read, not something to hear.
+    expect(markup).toContain('class="activity-card__plate">01<');
+    expect(markup).toContain('<span aria-hidden="true" class="activity-card__plate">');
   });
 });

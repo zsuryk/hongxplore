@@ -7,14 +7,14 @@
   backdrop-filter: var(--backdrop-blur-chrome);
   -webkit-backdrop-filter: var(--backdrop-blur-chrome);
   background: var(--scrim);
-  border: 1px solid var(--divider);
+  border: 1px solid var(--rule);
   border-radius: var(--radius-lg);
   bottom: var(--space-5);
   box-shadow: var(--shadow-raised);
   left: var(--space-5);
-  padding: var(--space-3);
+  padding: var(--space-2) var(--space-3) var(--space-3);
   position: absolute;
-  width: min(42rem, calc(100% - 16rem));
+  width: min(42rem, calc(100% - 10rem));
   z-index: 3;
 }
 
@@ -25,39 +25,47 @@
   font-family: inherit;
   font-size: inherit;
   line-height: inherit;
+  padding: var(--space-2) var(--space-3);
   text-align: left;
   transition:
     background-color var(--motion-fast) var(--motion-ease),
-    border-color var(--motion-fast) var(--motion-ease),
-    transform var(--motion-fast) var(--motion-ease);
-  width: min(24rem, calc(100% - 16rem));
+    border-color var(--motion-fast) var(--motion-ease);
+  width: min(22rem, calc(100% - 10rem));
 }
 
 .timeline--collapsed:hover,
 .timeline--collapsed:focus-visible {
-  border-color: var(--accent-border);
+  background: var(--card-hover);
+  border-color: var(--card-muted-foreground);
   outline: none;
-  transform: translateY(-1px);
 }
 
 .timeline__collapsed-header {
-  align-items: center;
+  align-items: baseline;
   display: flex;
   gap: var(--space-2);
 }
 
 .timeline__collapsed-header strong {
   color: var(--foreground);
-  font-size: var(--text-meta);
+  font-size: var(--text-label);
+  font-weight: var(--weight-semi);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
 }
 
-.timeline__collapsed-badge {
-  background: var(--accent-soft);
-  border-radius: var(--radius-pill);
-  color: var(--accent-strong);
+/* A count is not a state, so it does not take `--accent`. */
+.timeline__collapsed-badge,
+.timeline__count-badge {
+  background: var(--muted);
+  border: 1px solid var(--divider);
+  border-radius: var(--radius-xs);
+  color: var(--card-muted-foreground);
+  font-family: var(--font-mono);
   font-size: var(--text-label);
-  font-weight: 600;
-  padding: 1px var(--space-2);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--weight-medium);
+  padding: 0 var(--space-1);
 }
 
 .timeline__collapsed-hint {
@@ -71,41 +79,38 @@
   display: flex;
   justify-content: space-between;
   margin-bottom: var(--space-2);
+  padding-left: var(--space-1);
 }
 
 .timeline__header-left {
-  align-items: center;
+  align-items: baseline;
   display: flex;
   gap: var(--space-2);
 }
 
 .timeline__header h2 {
+  color: var(--foreground);
   font-size: var(--text-label);
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  font-weight: var(--weight-semi);
+  letter-spacing: var(--tracking-label);
   margin-bottom: 0;
   text-transform: uppercase;
 }
 
-.timeline__count-badge {
-  background: var(--accent-soft);
-  border-radius: var(--radius-pill);
-  color: var(--accent-strong);
-  font-size: var(--text-label);
-  font-weight: 600;
-  padding: 1px var(--space-2);
-}
-
 .timeline__minimize-button {
+  align-items: center;
   background: transparent;
   border-color: transparent;
+  border-radius: var(--radius-sm);
   color: var(--card-muted-foreground);
   cursor: pointer;
+  display: flex;
   font-size: var(--text-body);
   font-weight: 700;
   height: var(--control-height-sm);
+  justify-content: center;
   line-height: 1;
-  padding: 0 var(--space-2);
+  padding: 0;
   width: var(--control-height-sm);
 }
 
@@ -116,61 +121,77 @@
 
 .timeline__slots {
   display: grid;
-  gap: var(--space-2);
+  gap: var(--space-1);
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+/**
+ * Slot states, specified as states in DESIGN.md rather than as sizes, because they change
+ * shape with the day set. Empty is transparent with a dashed `--rule` and a label that is
+ * already readable — the label *is* the affordance; the dashed edge only announces the
+ * boundary to assistive tech and to a hurried eye.
+ */
 .timeline__slot {
-  background: var(--muted);
-  border: 1.5px dashed var(--border-dashed);
+  background: transparent;
+  border: 1px dashed var(--rule);
   border-radius: var(--radius-md);
   display: flex;
   flex-direction: column;
-  min-height: 5.75rem;
+  min-height: 5.5rem;
   min-width: 0;
-  padding: var(--space-2);
+  padding: var(--space-1) var(--space-2) var(--space-2);
   transition:
     background-color var(--motion-fast) var(--motion-ease),
-    border-color var(--motion-fast) var(--motion-ease),
-    box-shadow var(--motion-fast) var(--motion-ease);
+    border-color var(--motion-fast) var(--motion-ease);
 }
 
+/**
+ * The slot the dragged card is scheduled for. Static: the previous build pulsed it forever,
+ * which is motion nobody asked for and tells a user nothing they cannot already read. `--accent`
+ * is the state colour and this is a state — "this one matches".
+ */
 .timeline__slot--suggested {
-  animation: slot-pulse 1.6s ease-in-out infinite alternate;
   background: var(--accent-soft);
   border-color: var(--accent);
   border-style: solid;
 }
 
+/* Drop target, per DESIGN.md: a 2px `--primary` edge replacing the rule. Amber is the one
+   colour that means "waiting on you" and dropping is exactly that. */
 .timeline__slot--dragover {
-  background: var(--accent-soft);
-  border-color: var(--accent-strong);
+  background: var(--primary-soft);
+  border-color: var(--primary);
   border-style: solid;
-  box-shadow: 0 0 12px var(--accent-soft);
+  border-width: 2px;
 }
 
 .timeline__slot--incompatible {
   background: var(--destructive-soft);
-  border-color: var(--destructive-border);
+  border-color: var(--destructive);
+  border-style: solid;
+  border-width: 2px;
   cursor: not-allowed;
 }
 
 /* Replacing an occupied slot is a *decision*, not a state — it needs the amber lamp, which is
- * the only colour in the system that means "waiting on you". It takes a 2px edge rather than a
- * bloom, per DESIGN.md: amber already means pending, so a glow would say it twice. */
+ * the only colour in the system that means "waiting on you". */
 .timeline__slot--replacing {
   background: var(--primary-soft);
-  border: 2px solid var(--warning);
+  border-color: var(--primary);
   border-style: solid;
+  border-width: 2px;
 }
 
 .timeline__slot--docked {
+  background: var(--card);
   border-color: var(--rule);
   border-style: solid;
 }
 
+/* The card has just seated. A scale settle is enough — the slot's job is to confirm arrival,
+ * and a bloom would say the same thing louder. */
 .timeline__slot--settling {
-  animation: slot-settle 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: slot-settle var(--motion-slow) var(--motion-ease);
   background: var(--accent-soft);
   border-color: var(--accent);
   border-style: solid;
@@ -179,37 +200,18 @@
 .timeline__replace-toast {
   animation: none;
   background: var(--card);
-  border-color: var(--warning);
+  border-color: var(--primary);
   box-shadow: var(--shadow-raised);
   color: var(--foreground);
   opacity: 1;
 }
 
-@keyframes slot-pulse {
+@keyframes slot-settle {
   from {
-    border-color: var(--accent);
-    box-shadow: 0 0 4px var(--accent-soft);
+    scale: 0.96;
   }
   to {
-    border-color: var(--accent-strong);
-    box-shadow: 0 0 14px var(--accent-soft);
-  }
-}
-
-@keyframes slot-settle {
-  0% {
-    background-color: var(--accent-soft);
-    border-color: var(--accent);
-    box-shadow: 0 0 20px var(--accent);
-    scale: 0.95;
-  }
-  50% {
-    scale: 1.04;
-    box-shadow: 0 0 16px var(--accent-soft);
-  }
-  100% {
     scale: 1;
-    box-shadow: none;
   }
 }
 
@@ -222,16 +224,21 @@
   min-height: var(--control-height-sm);
 }
 
+/* The slot label is read before anything is ever dragged here, so it is a tracked-caps label
+   rather than muted body text. */
 .timeline__slot-header > span {
   color: var(--card-muted-foreground);
   font-size: var(--text-label);
-  font-weight: 600;
+  font-weight: var(--weight-semi);
+  letter-spacing: var(--tracking-label);
   overflow-wrap: anywhere;
+  text-transform: uppercase;
 }
 
 .timeline__slot-remove {
   background: transparent;
   border-color: transparent;
+  border-radius: var(--radius-xs);
   color: var(--card-muted-foreground);
   cursor: pointer;
   flex-shrink: 0;
@@ -254,7 +261,7 @@
 }
 
 .timeline__docked-card {
-  animation: docked-card-snap 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: docked-card-snap var(--motion-base) var(--motion-ease);
   cursor: grab;
   min-width: 0;
   touch-action: none;
@@ -262,17 +269,12 @@
 }
 
 @keyframes docked-card-snap {
-  0% {
-    opacity: 0.4;
-    scale: 0.88;
-    translate: 0 -12px;
+  from {
+    opacity: 0;
+    scale: 0.96;
+    translate: 0 -8px;
   }
-  60% {
-    opacity: 1;
-    scale: 1.03;
-    translate: 0 2px;
-  }
-  100% {
+  to {
     opacity: 1;
     scale: 1;
     translate: 0 0;
@@ -285,10 +287,15 @@
 
 /* ---- Discard bin ---- */
 
+/**
+ * A dashed drop target in screen space. It is a boundary the user has to see to aim at, so it
+ * is drawn with `--rule` and not with the decorative `--divider` — and it is 1px, because it is
+ * an empty cell waiting to be filled, not a live warning.
+ */
 .discard-bin {
   align-items: center;
   background: var(--scrim);
-  border: 2px dashed var(--border-dashed);
+  border: 1px dashed var(--rule);
   border-radius: var(--radius-lg);
   bottom: var(--space-5);
   color: var(--muted-foreground);
@@ -304,18 +311,21 @@
     background-color var(--motion-fast) var(--motion-ease),
     border-color var(--motion-fast) var(--motion-ease),
     color var(--motion-fast) var(--motion-ease);
-  width: 12rem;
+  width: 11rem;
   z-index: 2;
 }
 
 .discard-bin strong {
   color: var(--foreground);
-  font-size: var(--text-meta);
+  font-size: var(--text-label);
+  font-weight: var(--weight-semi);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
 }
 
 .discard-bin--active {
   background: var(--destructive-soft);
-  border-color: var(--destructive-strong);
+  border-color: var(--destructive);
   color: var(--destructive);
 }
 
@@ -323,8 +333,14 @@
   color: var(--destructive);
 }
 
-/* ---- Narrow screens: the bin moves above the timeline instead of squeezing it ---- */
+/* ---- Narrow screens ---- */
 
+/**
+ * At 390px the timeline takes the full width and the discard bin moves to the top-right corner,
+ * where it cannot be confused for a slot. The board toolbar stays on the right edge: it is now
+ * a 40px rail, so it occupies a column the board can be read through instead of the 112px
+ * column the old text stack took.
+ */
 @media (width <= 720px) {
   .timeline {
     left: var(--space-3);
@@ -332,11 +348,16 @@
     width: auto;
   }
 
+  .timeline--collapsed {
+    width: auto;
+  }
+
   .discard-bin {
     bottom: auto;
-    right: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    right: calc(var(--space-3) + var(--rail-width) + var(--space-2));
     top: var(--space-3);
-    width: 10rem;
+    width: 9rem;
   }
 }
 
@@ -363,12 +384,11 @@
 .discard-bin__guide-hint {
   animation: guide-hint-fade 8s var(--motion-ease) forwards;
   bottom: calc(100% + var(--space-3));
-  left: 50%;
   max-width: 16rem;
   pointer-events: none;
   position: absolute;
+  right: 0;
   text-align: center;
-  translate: -50% 0;
   width: max-content;
   z-index: 10;
 }

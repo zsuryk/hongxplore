@@ -81,6 +81,12 @@ Semantic roles, in the order components reach for them:
 | `--ring` | `#e8a317` | focus |
 | `--popover` / `--input` | `#1a1c1f` / `#16181b` | floating surfaces |
 
+One more role carries the amber theme without carrying its weight: `--surface-pending`, an 8%
+amber wash used only by the research placeholder's face. `--primary-soft` is the saturated brown
+the amber drop-targets and the "replace this slot" decision use; at card size it outshouts the
+result cards it is only standing in for, so the placeholder gets a wash instead and keeps the
+saturated version for the 2px drop-target edges where the contrast against the slot is the point.
+
 Brand tokens: `--lamp-live #35b37e`, `--lamp-pending #e8a317`, `--lamp-cancelled #e0574a`,
 `--success`, `--warning`.
 
@@ -165,28 +171,67 @@ The canvas is a lattice: a fine `--board-grid-size` grid plus major lines every 
 
 ## Components
 
+### App shell
+
+The header is a three-column grid — brand, search, empty — so the search sits at the optical
+centre at every width instead of drifting right behind the wordmark. The search is the product's
+primary action; identity sits quietly to one side of it. Header and agent-status strip wear
+`--background` and are closed off with a rule, so the **cards are the only filled objects on
+screen** — that is what "the canvas is furniture" has to mean in practice.
+
 ### Activity card
 
-Anatomy, in order: **topline** (language badge + time) → **title** (with original CJK title
-beneath) → **location** (venue, district) → **rationale** callout → **source link** → **actions**
-(find similar, discard).
+Anatomy, in order: **header row** (`--text-plate` serial plate in mono, district as a tracked
+caps label, then a sub-row of language chip and departure time) → **1px `--rule` divider** →
+**title** (with the original CJK title beneath it when the title was translated) → **ruled data
+rows** (`Venue` / `Price` / `Listed`, a fixed label gutter so every card's values align) →
+**rationale** in a recessed cell → **footer** (source link + find similar).
 
-The **content-driven height rule**: the card's height is set by its content, never by a hard-coded
-value. Variants (`compact`, `wide`, `tall`) set a *minimum* via `--card-min-height`,
+The serial is the card's index in the **full** card list, not in the cards currently on the
+canvas, so docking or discarding never renumbers the cards that remain. It is `aria-hidden`: a
+row number the eye reads adds nothing to the card's accessible name.
+
+The **content-driven height rule**: the card's height is set by its content, never by a
+hard-coded value. Variants (`compact`, `wide`, `tall`) set a *minimum* via `--card-min-height`,
 `--card-compact-min-height`, `--card-wide-min-height`, `--card-tall-min-height` — all injected by
 `boardLayout.ts` — and grow past it. A title that wraps to three lines must push the card taller,
 not clip or overflow. This is why `--card-min-height` is the one number written in two languages,
 and why that coupling is commented in both.
 
-The rationale gets a callout treatment (accent edge, recessed fill) because it is the reason the
-card exists. The same component renders at two sizes — `size="canvas"` on the board and
-`size="docked"` in a timeline slot — sharing one token set.
+The rationale is a **recessed `--muted` cell with a 1px `--rule` edge**, distinguished by
+recession and by its tracked-caps label rather than by a coloured stripe: a 3px accent
+`border-left` on every card would turn the board into a set of callout boxes and spend `--accent`
+— the state colour — on something that is not a state. Cards carry **no resting shadow**; the
+bezel already says where the card ends, and `--shadow-drag` is the only one with real presence.
+
+The same component renders at two sizes — `size="canvas"` on the board and `size="docked"` in a
+timeline slot — sharing one token set. The docked size drops the serial, the data rows and the
+rationale and re-reads the card as a time, a title and a place.
+
+### Iconography
+
+Glyphs are **inline SVG authored in `src/icons.tsx`**, not an icon package and not a font. One
+24-unit grid, one stroke weight (`--icon-stroke`), round caps, no fills — which is what makes a
+16px glyph and a 24px glyph read as the same hand. They take their colour from `currentColor` and
+their size from `--icon-size`, so no component restates either.
 
 ### Right-edge toolbar
 
-Zoom out / zoom in / reset to 100% / fit / auto-fit / clear board. It lives in screen space, never
-scales, and states the current zoom in an `aria-live` region. Zoom steps animate; continuous wheel
-and pinch gestures apply instantly, because a transition on those makes the board lag the pointer.
+An **icon rail**, `--rail-width` wide, holding zoom out / zoom in / fit / auto-tile / auto-fit /
+clear board, separated by the `--rule`. It lives in screen space, never scales, and states the
+current zoom in an `aria-live` region.
+
+- The **text label is revealed on hover *and* on focus**, as an `aria-hidden` sibling element
+  positioned outside the rail — never a `title` attribute, because a native tooltip is
+  mouse-only, and never the accessible name, because every control keeps a real one in
+  `aria-label`.
+- The **zoom readout is the reset control**: the visible number is `aria-hidden` and a separate
+  live region announces the long form, so a screen-reader user hears "Zoom: 80%", not a bare
+  figure. Clicking the number resets.
+- **Auto-fit is a switch**, the only two-state control in the rail, so it is the only one that
+  carries a lamp.
+- **Clear board is destructive** and keeps its danger variant so it cannot be misread as another
+  zoom control.
 
 ### Weekend timeline
 
@@ -254,9 +299,10 @@ These are gates, not aspirations. `designSystem.test.ts` enforces the numeric on
 
 Recorded rather than hidden:
 
-1. **Mobile layout is broken and predates this redesign.** At 390px the right-edge toolbar and the
-   discard bin overlap the cards. Verified by rendering the pre-redesign UI at the same viewport and
-   getting the identical overlap, so this is structural, not a rebrand regression. It wants its own
+1. **Mobile layout was broken and predates the redesign, and is much improved but not finished.**
+   The icon rail gives the board back the ~72px of viewport the old text toolbar stack was
+   eating, and the discard bin now clears it. Cards still scroll *under* the chrome at 390px,
+   which is inherent to an infinite canvas rather than a defect to patch here. It wants its own
    ticket.
 2. **shadcn is configured, not yet adopted.** `web/components.json` and the `@/*` alias exist so the
    CLI works, and the token layer is shadcn-shaped. No shadcn primitives are in the tree yet: the
@@ -274,6 +320,8 @@ Recorded rather than hidden:
    amber and steel, but a glow is still a glow, and "banned: glows" above does not currently
    describe what the app does. Either relax the rule with a reason, or remove the effect. Not
    decided here.
+8. **`grid-template-columns: repeat(3, …)` in `timeline.css` is also still a Saturday/Sunday
+   assumption** in a second place, beyond the `copy.ts` ids named above. Same owner (#69).
 
 ---
 

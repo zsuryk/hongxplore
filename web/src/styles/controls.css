@@ -212,29 +212,50 @@
   text-transform: uppercase;
 }
 
+/* ---- Iconography ---- */
+
+/**
+ * One place decides icon size. The SVGs in `icons.tsx` carry no width/height attributes and
+ * inherit `currentColor`, so a component can restyle an icon by setting `color` and nothing
+ * else. `geometricPrecision` keeps the curves from being re-snapped to the pixel grid, which is
+ * what makes a 16px glyph stay crisp when the browser is at 125% or 200% zoom.
+ */
+.icon {
+  display: block;
+  flex-shrink: 0;
+  height: var(--icon-size);
+  stroke-width: var(--icon-stroke);
+  width: var(--icon-size);
+}
+
 /* ---- Right-edge board toolbar ---- */
 
+/**
+ * An icon rail, not a column of buttons.
+ *
+ * Screen space and never scaled (ADR-0009), so the icons stay the same pixel size at 25% board
+ * zoom and at 300%. The revealed label is absolutely positioned *outside* the rail, which is why
+ * the rail itself must not clip — `overflow-y: auto` would silently compute the cross axis to
+ * `auto` as well and cut the labels off.
+ */
 .board-toolbar {
   align-items: stretch;
   backdrop-filter: var(--backdrop-blur-chrome);
   -webkit-backdrop-filter: var(--backdrop-blur-chrome);
   background: var(--scrim);
-  border: 1px solid var(--divider);
+  border: 1px solid var(--rule);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-raised);
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  max-height: calc(100% - 15rem);
-  overflow-x: visible;
-  overflow-y: auto;
-  padding: var(--space-2);
+  overflow: visible;
+  padding: var(--space-1);
   position: absolute;
   right: var(--space-4);
   top: 50%;
   translate: 0 -50%;
   user-select: none;
-  width: 7rem;
+  width: var(--rail-width);
   z-index: 10;
 }
 
@@ -249,122 +270,139 @@
   gap: var(--space-1);
 }
 
-.board-toolbar__group--zoom {
-  align-items: center;
-}
-
 .board-toolbar__item {
   display: flex;
-  flex-direction: column;
   position: relative;
-  width: 100%;
 }
 
 .board-toolbar__btn {
   justify-content: center;
-  min-height: var(--control-height-sm);
+  min-height: var(--control-height);
   width: 100%;
 }
 
-.board-toolbar__btn--reset {
-  font-size: var(--text-label);
-  font-weight: 600;
-  padding: 0 var(--space-2);
+/* The only destructive control in the rail. It keeps the danger fill so it cannot be
+   misread as another zoom control, and it sits below a rule so the rail splits into
+   "framing the board" and "changing the board" without a heading. */
+.board-toolbar__btn--danger {
+  border-color: var(--destructive-border);
+  color: var(--destructive);
 }
 
-.board-toolbar__readout {
-  color: var(--muted-foreground);
-  font-size: var(--text-label);
-  font-variant-numeric: tabular-nums;
-  padding: var(--space-1) 0;
-  text-align: center;
-  white-space: nowrap;
+.board-toolbar__btn--danger:hover:not(:disabled) {
+  background: var(--destructive-soft);
+  color: var(--destructive-strong);
 }
 
-.board-toolbar__divider {
-  background: var(--divider);
-  height: 1px;
-  margin: var(--space-1) 0;
-  width: 100%;
+/**
+ * Auto-fit's lamp. The only two-state control in the rail, so the only one that needs to say
+ * so at 16px: `--accent` when it is framing, the muted rule when it is not. It sits on the
+ * icon rather than beside it so the rail width stays the hit-target width.
+ */
+.board-toolbar__btn--toggle {
+  position: relative;
 }
 
-.board-toolbar__toggle {
-  align-items: center;
-  background: var(--card);
-  border: 1px solid var(--rule);
-  border-radius: var(--radius-md);
-  color: var(--muted-foreground);
-  display: flex;
-  gap: var(--space-2);
-  justify-content: space-between;
-  min-height: var(--control-height-sm);
-  padding: 0 var(--space-2);
-  width: 100%;
-}
-
-.board-toolbar__toggle:hover:not(:disabled) {
-  background: var(--card-hover);
-  color: var(--foreground);
-}
-
-.board-toolbar__toggle--active {
-  background: var(--accent-soft);
-  border-color: var(--accent-strong);
-  color: var(--foreground);
-}
-
-.board-toolbar__toggle-indicator {
+.board-toolbar__lamp {
   background: var(--rule);
   border-radius: var(--radius-pill);
-  flex-shrink: 0;
-  height: 6px;
+  bottom: 3px;
+  height: 4px;
+  position: absolute;
+  right: 3px;
+  transition: background-color var(--motion-fast) var(--motion-ease);
+  width: 4px;
+}
+
+.board-toolbar__btn--on {
+  border-color: var(--accent-border);
+  color: var(--accent-strong);
+}
+
+.board-toolbar__btn--on:hover:not(:disabled) {
+  color: var(--accent-strong);
+}
+
+.board-toolbar__btn--on .board-toolbar__lamp {
+  background: var(--accent);
+}
+
+/**
+ * The readout / reset control.
+ *
+ * Reads as a number, not a button — until you hover or focus it, at which point it takes a
+ * border. It is the one control in the rail with no icon, because the number *is* the label.
+ */
+.board-toolbar__readout {
+  align-items: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  display: flex;
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  font-variant-numeric: tabular-nums;
+  justify-content: center;
+  letter-spacing: 0;
+  min-height: var(--control-height-sm);
+  padding: 0;
   transition:
     background-color var(--motion-fast) var(--motion-ease),
-    box-shadow var(--motion-fast) var(--motion-ease);
-  width: 6px;
+    border-color var(--motion-fast) var(--motion-ease),
+    color var(--motion-fast) var(--motion-ease);
+  width: 100%;
 }
 
-.board-toolbar__toggle--active .board-toolbar__toggle-indicator {
-  background: var(--success);
-  box-shadow: 0 0 6px var(--success);
+.board-toolbar__readout:hover:not(:disabled),
+.board-toolbar__readout:focus-visible:not(:disabled) {
+  background: var(--card-hover);
+  border-color: var(--rule);
+  color: var(--foreground);
 }
 
-.board-toolbar__toggle-label {
-  font-size: var(--text-label);
-  font-weight: 500;
-}
-
-.board-toolbar__toggle-badge {
-  background: var(--muted);
-  border-radius: var(--radius-sm);
+.board-toolbar__readout:disabled {
   color: var(--card-muted-foreground);
-  font-size: 0.65rem;
-  font-weight: 700;
-  padding: 1px 4px;
+  cursor: default;
 }
 
-.board-toolbar__toggle--active .board-toolbar__toggle-badge {
-  background: var(--accent);
-  color: var(--foreground-inverse);
+/* The one structural rule, as the rail's internal separator. */
+.board-toolbar__divider {
+  background: var(--rule);
+  flex-shrink: 0;
+  height: 1px;
+  margin: var(--space-1) var(--space-2);
 }
 
-.board-toolbar__tooltip {
+/**
+ * The revealed label.
+ *
+ * Revealed on `:hover` of the item **and** on `:focus-within` of the button, because a
+ * keyboard user tabbing the rail needs the same information a pointer user gets. It is
+ * `aria-hidden` in the markup and positioned outside the rail, so it never widens the rail and
+ * never becomes the accessible name.
+ *
+ * It opens to the *left*, not the right: the rail is pinned to the right edge of the board, so
+ * a label anchored to the button's left edge would sit under the window edge.
+ */
+.board-toolbar__label {
   backdrop-filter: var(--backdrop-blur-chrome);
   -webkit-backdrop-filter: var(--backdrop-blur-chrome);
-  background: var(--card);
+  background: var(--popover);
   border: 1px solid var(--rule);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   box-shadow: var(--shadow-raised);
-  color: var(--muted-foreground);
+  color: var(--foreground);
   font-size: var(--text-label);
-  font-weight: 400;
+  font-weight: var(--weight-medium);
   line-height: var(--leading-tight);
   max-width: 14rem;
   opacity: 0;
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-1) var(--space-2);
   pointer-events: none;
   position: absolute;
-  right: calc(100% + var(--space-2));
+  right: calc(100% + var(--space-3));
   text-align: left;
   top: 50%;
   translate: 0 -50%;
@@ -377,9 +415,8 @@
   z-index: 100;
 }
 
-.board-toolbar__item:hover .board-toolbar__tooltip,
-.board-toolbar__btn:focus-visible ~ .board-toolbar__tooltip,
-.board-toolbar__toggle:focus-visible ~ .board-toolbar__tooltip {
+.board-toolbar__item:hover .board-toolbar__label,
+.board-toolbar__item:focus-within .board-toolbar__label {
   opacity: 1;
   visibility: visible;
 }
