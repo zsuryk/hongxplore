@@ -240,8 +240,13 @@ Per [ADR-0009](docs/adr/0009-canvas-zoom-with-css-zoom), unchanged by this redes
 - `.board__pan` is **screen space** and carries the pan offset only.
 - `.board__world` is **world space** and carries `zoom`, so the browser re-rasterises type at the
   new scale instead of stretching a bitmap.
-- **Chrome renders outside `.board__pan`** — toolbar, timeline, discard bin, guide, empty state,
-  toasts. Chrome never blurs or drifts under pan/zoom.
+- **Chrome renders outside `.board__pan`** — toolbar, timeline, discard bin, **agent log**, guide,
+  empty state, toasts. Chrome never blurs or drifts under pan/zoom. The agent log is the one piece
+  of chrome that is *also* a popover: it is promoted to the top layer, so opening it is out of
+  flow by construction rather than by `position: absolute`, and it is anchored to its trigger with
+  CSS anchor positioning. It is non-modal by construction too — no `aria-modal`, no focus trap —
+  because it is a read-out, not an interruption. Opening it must not move, resize or reflow
+  anything.
 - World-space content must not use `vh`/`vw`; `zoom` multiplies those.
 
 **Geometry is owned by `boardLayout.ts` in TypeScript** — card width, grid pitch, fit bounds — and
@@ -320,6 +325,16 @@ The same component renders at two sizes — `size="canvas"` on the board and `si
 timeline slot — sharing one token set. The docked size drops the serial, the data rows and the
 rationale and re-reads the card as a time, a title and a place. Because it has no header plate to
 bleed into, it takes its own padding back at `--radius-md`.
+
+**The drag renders the same anatomy, never a reduced one.** A card in hand is the same card with
+`state="dragging"`, not a stand-in: the serial plate and the Find similar button stay in the DOM,
+and the lifted surface is `inert` rather than stripped of its controls. This is not cosmetic. The
+card's height is content-driven, so *removing* those two elements moved the card's height by 45
+world units at the exact moment the user is looking at it to aim — the layout changing under the
+one moment it must not. Because the proxy is the same component with the same props, its box is
+the card's box at every zoom, and any future change to the anatomy carries into the drag for free.
+The dropped variants are now exactly the ones that genuinely lack the anatomy: the docked view,
+which has no header plate to put a serial in.
 
 ### Iconography
 
@@ -405,6 +420,15 @@ These are gates, not aspirations. `designSystem.test.ts` enforces the numeric on
   `--ring` at 2px offset. Components must not restate it. The board is fully keyboard-operable —
   arrows pan, `+`/`-` zoom, `0` fits, `1` resets — and does not claim `role="application"`.
 - **Target size.** ≥ 24×24 (WCAG 2.5.8). `--control-height-sm` may not go below it.
+- **Control tier.** Controls sitting side by side share one box, and a composite control — the
+  segmented data-source switch is the app's only one — occupies a tier of its own:
+  `--control-height-composite`, which is the 24px target plus the tray's `--control-inset` and
+  `--control-border-width` on each side, i.e. 30px. That arithmetic is forced: no way of drawing a
+  24px tray holds two 24px targets without them touching its bezel. So the controls **beside** the
+  tray take the tray's box rather than the tray's target, and 24px is not available to both —
+  shrinking the target instead would undo WCAG 2.5.8, which is what commit `2dcc616` fixed.
+  Both sides read the one token, so the tier is a value they share, not a number kept in sync by
+  hand. `designSystem.test.ts` asserts the derivation and both call sites.
 - **Accessible names.** Every control has a real one. Icon-only buttons carry `aria-label` from
   `copy.ts`; state changes announce through `aria-live`.
 - **Reduced motion.** Honoured everywhere via the single block in `tokens.css`.

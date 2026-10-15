@@ -153,6 +153,10 @@ export const AGENT_LOG_LABEL = 'Agent log';
 export const AGENT_LOG_EMPTY = 'No agent steps recorded yet.';
 export const AGENT_LOG_SHOW = 'Show agent log';
 export const AGENT_LOG_HIDE = 'Hide agent log';
+/** Explicit close for the floating popover. Escape and an outside click already close it, but a
+    touch user has no Escape key, and a dismissable surface with no visible way out reads as
+    stuck. */
+export const AGENT_LOG_CLOSE = 'Close agent log';
 export const AGENT_USE_DEMO = 'Load mock data';
 export const DATA_SOURCE_LABEL = 'Data source mode';
 export const DATA_SOURCE_LIVE = 'Live API';

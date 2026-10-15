@@ -280,6 +280,25 @@
   --control-padding-x: var(--space-3);
   --control-gap: var(--space-1);
   --control-inset: 2px;
+  /* The bezel weight every control wears, as a token rather than a literal 1px in the calc below,
+     so "one border weight" is a value both sides of an equation read instead of a convention. */
+  --control-border-width: 1px;
+  /**
+   * The tier a **composite** control occupies, which is not a height anyone types in.
+   *
+   * A single control's box *is* its target. A composite one — the segmented data-source switch is
+   * the app's only — insets its targets inside a tray, so its box is the target plus the tray's
+   * inset and bezel on each side: 24 + 2 + 2 + 1 + 1 = 30px. That arithmetic is forced (there is
+   * no way to draw a 24px tray around two 24px targets that do not touch its bezel), so the
+   * honest fix is to name it rather than to nudge either neighbour toward the other by hand.
+   *
+   * The neighbours have to match this box, not the 24px target inside it: a 30px tray sitting
+   * beside a 24px button reads as two different controls, which is the inconsistency
+   * `--control-height-composite` exists to end. See `.agent-status-panel__actions > .btn`.
+   */
+  --control-height-composite: calc(
+    var(--control-height-sm) + (2 * var(--control-inset)) + (2 * var(--control-border-width))
+  );
   --control-font: var(--text-label);
   --control-weight: var(--weight-bold);
   --control-tracking: var(--tracking-label);

@@ -1278,8 +1278,26 @@ export function App({
           </div>
         ) : null}
         {cardDragState ? (
+          /**
+           * The proxy is the *same card*, not a simplified stand-in.
+           *
+           * It used to render `<ActivityCard>` with no `index` and no `onFindSimilar`, which made
+           * the serial plate and the Find similar button vanish from the DOM — and because the
+           * card's height is content-driven (DESIGN.md), the card you were carrying came up 45
+           * world units shorter than the one you picked it up from, at the exact moment you are
+           * looking at it to aim. Removing the elements was the bug; dimming them was never
+           * asked for. Both props are passed so the proxy's box is the card's box by construction,
+           * at every board zoom, and any future change to the card's anatomy carries into the drag
+           * for free.
+           *
+           * `inert` is what makes rendering the real controls safe here: the proxy must not
+           * contribute a second tab stop or a second "Find similar" to the accessibility tree
+           * while the real card is still on the board underneath it. It changes nothing about
+           * layout or paint — `.board__drag` is already `pointer-events: none`.
+           */
           <div
             className={`board__drag${cardDragState.source === 'timeline' ? ' board__drag--docked' : ''}`}
+            inert
             style={{
               left: cardDragState.screenPoint.x - cardDragState.grabOffset.x,
               top: cardDragState.screenPoint.y - cardDragState.grabOffset.y,
@@ -1287,8 +1305,14 @@ export function App({
           >
             <div className="board__drag-scale">
               <ActivityCard
+                index={
+                  cardDragState.source === 'timeline'
+                    ? undefined
+                    : cards.findIndex((c) => c.activity.id === cardDragState.card.activity.id)
+                }
                 isRecent={recentCardIds.includes(cardDragState.card.activity.id)}
                 match={cardDragState.card}
+                onFindSimilar={cardDragState.source === 'timeline' ? undefined : handleFindSimilar}
                 size={cardDragState.source === 'timeline' ? 'docked' : 'canvas'}
                 state="dragging"
                 variant={boardLayout.variantsById[cardDragState.card.activity.id] ?? getCardVariant(cardDragState.card)}

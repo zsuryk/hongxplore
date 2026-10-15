@@ -194,10 +194,14 @@
 
 .segmented {
   background: var(--muted);
-  border: 1px solid var(--rule);
+  border: var(--control-border-width) solid var(--rule);
   border-radius: var(--radius-md);
   display: inline-flex;
   gap: var(--control-inset);
+  /* The tray's tier, declared rather than left to fall out of padding + border + target. Both the
+     tray and the controls standing next to it size off this one token, so "one control tier" is
+     something they read rather than something they have to be kept in sync by hand. */
+  min-height: var(--control-height-composite);
   padding: var(--control-inset);
 }
 

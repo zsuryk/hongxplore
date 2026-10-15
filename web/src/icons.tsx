@@ -17,7 +17,8 @@
  */
 import type { SVGProps } from 'react';
 
-export type IconName = 'zoom-in' | 'zoom-out' | 'reset' | 'fit' | 'auto-fit' | 'tile' | 'clear' | 'search' | 'pending';
+export type IconName =
+  'zoom-in' | 'zoom-out' | 'reset' | 'fit' | 'auto-fit' | 'tile' | 'clear' | 'close' | 'search' | 'pending';
 
 type IconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'strokeWidth'>;
 
@@ -154,10 +155,24 @@ export function IconPending(props: IconProps) {
   );
 }
 
+/**
+ * Dismiss. Two diagonals at the same 45° the grid's own rule runs at, so it reads as part of the
+ * instrument rather than as a typographic `×` — an SVG keeps it on the 24-unit grid with the rest
+ * of the set, where a text glyph would sit on the baseline at whatever size the font guessed.
+ */
+export function IconClose(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M6.5 6.5l11 11M17.5 6.5l-11 11" />
+    </Svg>
+  );
+}
+
 /** Kept as a lookup so a control can declare an icon by name instead of by element. */
 export const ICONS = {
   'auto-fit': IconAutoFit,
   clear: IconClear,
+  close: IconClose,
   fit: IconFit,
   pending: IconPending,
   reset: IconReset,

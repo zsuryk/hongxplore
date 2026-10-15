@@ -267,3 +267,94 @@ describe('WCAG contrast, recomputed from the token layer', () => {
     expect(hex('rule')).not.toBe(hex('lamp-pending'));
   });
 });
+
+/* --------------------------------------------------- 4. the composite control tier */
+
+/**
+ * One control tier in the status strip.
+ *
+ * A composite control — the segmented data-source switch is the app's only one — insets its
+ * targets inside a tray, so its box is necessarily taller than a single control's. That is
+ * arithmetic, not taste: `target + 2×inset + 2×bezel` = 24 + 4 + 2 = 30px, and no way of drawing
+ * it makes a 24px tray hold two 24px targets without them touching its bezel.
+ *
+ * The consequence is that the controls standing beside it have to match the tray's *box* rather
+ * than its 24px target, or two same-weight controls in one row read as two unrelated controls.
+ * Getting that wrong is the bug this section pins: the tray sat at 30px next to a 24px button,
+ * vertically centred against each other, with the same bezel and the same corner.
+ *
+ * The assertions are on the *declaration*, not the rendered pixel, because the runner has no
+ * layout engine. Both selectors must consume the one token — that is what makes the tier a value
+ * they read rather than a number somebody has to remember.
+ */
+describe('composite control tier', () => {
+  const t = tokens();
+  const controlsCss = read('controls.css');
+  const panelsCss = read('panels.css');
+
+  /** Resolve a rem/px token to CSS pixels. The control scale is authored in both units. */
+  function px(name: string): number {
+    const raw = t.get(name);
+    if (raw === undefined) throw new Error(`missing token --${name}`);
+    const rem = raw.match(/^([\d.]+)rem$/);
+    if (rem) return Number(rem[1]) * 16;
+    const literal = raw.match(/^([\d.]+)px$/);
+    if (literal) return Number(literal[1]);
+    throw new Error(`token --${name} is "${raw}", which is not a px/rem length`);
+  }
+
+  it('derives the composite tier from the small target rather than restating it', () => {
+    // Guards against someone "simplifying" the calc into a literal 30px, which would silently
+    // decouple the tier from `--control-height-sm` and let a future target-size change drift.
+    expect(t.get('control-height-composite')).toContain('var(--control-height-sm)');
+    expect(t.get('control-height-composite')).toContain('var(--control-inset)');
+  });
+
+  it('resolves to exactly target + 2×inset + 2×bezel', () => {
+    const expected = px('control-height-sm') + 2 * px('control-inset') + 2 * px('control-border-width');
+    const declared = t.get('control-height-composite') ?? '';
+
+    // Evaluate the calc rather than pattern-matching it. `2 * var(--control-inset)` has to be
+    // read as a product: summing the bare `2` and the var separately silently passes a wrong
+    // expression, which is the failure this test is here to catch.
+    const total = declared
+      // Substitute the var() references *first* — their parens are part of the reference, so
+      // stripping parens before this would shred `var(--x)` into two bare words.
+      .replace(/var\(--([a-z0-9-]+)\)/gi, (_, name: string) => String(px(name)))
+      // What is left is `calc( A + B + C )`: drop the wrapper, then evaluate it as a sum of
+      // products so `2 * 2` is read as a product rather than summed into 4 by accident.
+      .replace(/\bcalc\b/gi, ' ')
+      .replace(/[()]/g, ' ')
+      .split('+')
+      .map((term) =>
+        term
+          .split('*')
+          .map((factor) => Number(factor.trim()))
+          .reduce((a, b) => a * b),
+      )
+      .reduce((a, b) => a + b, 0);
+
+    expect(total, `--control-height-composite evaluates to ${total}px, expected ${expected}px`).toBe(expected);
+    expect(expected).toBe(30);
+  });
+
+  it('never drops a composite control target below the 24px floor', () => {
+    // The whole reason the tray is 30px rather than 24px. WCAG 2.5.8 measures the thing the
+    // pointer has to hit, which for a segmented control is the option, not the tray around it.
+    expect(px('control-height-sm')).toBeGreaterThanOrEqual(24);
+    expect(controlsCss).toMatch(/\.segmented__option\s*\{[^}]*min-height:\s*var\(--control-height-sm\)/);
+  });
+
+  it('sizes the tray and its neighbours off the same token', () => {
+    expect(controlsCss).toMatch(/\.segmented\s*\{[^}]*min-height:\s*var\(--control-height-composite\)/);
+    expect(panelsCss).toMatch(
+      /\.agent-status-panel__actions\s*>\s*\.btn\s*\{[^}]*min-height:\s*var\(--control-height-composite\)/,
+    );
+  });
+
+  it('gives the composite tray the same radius and bezel weight as the buttons beside it', () => {
+    const tray = controlsCss.match(/\.segmented\s*\{([^}]*)\}/)?.[1] ?? '';
+    expect(tray).toMatch(/border:\s*var\(--control-border-width\)\s+solid\s+var\(--rule\)/);
+    expect(tray).toMatch(/border-radius:\s*var\(--radius-md\)/);
+  });
+});

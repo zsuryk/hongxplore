@@ -107,6 +107,26 @@
 }
 
 /**
+ * One tier for the whole action row.
+ *
+ * The segmented data-source switch is a composite control: its box is `--control-height-composite`
+ * (30px) because it insets two 24px targets, while a plain `.btn--sm` is 24px. Two controls of the
+ * same weight in the same row, with the same `--rule` bezel and the same `--radius-md` corner,
+ * but six pixels apart in height and vertically centred against each other, read as two unrelated
+ * controls — that misalignment was the bug, not the six pixels.
+ *
+ * 24px is not available to both: the tray's height is `target + 2×inset + 2×bezel`, and dropping
+ * its target to 20px to make the arithmetic come out would put a sub-24px hit target back (WCAG
+ * 2.5.8) — the regression `2dcc616` deliberately undid. So the row takes the tray's tier and the
+ * target stays. Written as a child selector rather than a class on each button so the error-state
+ * "Load mock data" button, which only exists when the request fails, cannot drift off the tier by
+ * being forgotten.
+ */
+.agent-status-panel__actions > .btn {
+  min-height: var(--control-height-composite);
+}
+
+/**
  * The lamp.
  *
  * A lit dot with a faint ring around it, the way an instrument lamp actually reads — the ring is
@@ -144,25 +164,120 @@
   background: var(--destructive-strong);
 }
 
-/* ---- Agent log: ruled rows, not a list of pills ---- */
+/* ---- Agent log: a floating popover, ruled rows inside ---- */
 
-.agent-status-panel__log {
-  background: var(--muted);
-  border: 1px solid var(--divider);
+/**
+ * Anchored to its trigger, in the top layer.
+ *
+ * `.agent-log` carries **no** `display` outside `:popover-open` on purpose. The UA rule that keeps
+ * a closed popover out of the layout is `[popover]:not(:popover-open) { display: none }`, and any
+ * author `display` beats it — writing `.agent-log { display: flex }` is the standard way to end up
+ * with a popover that is permanently on screen and still "closes" perfectly well.
+ *
+ * `position: fixed` is the unanchored fallback: a browser without CSS anchor positioning still
+ * gets a floating surface in a corner of the viewport rather than a block appended to the strip.
+ */
+.agent-log {
+  background: var(--popover);
+  border: var(--control-border-width) solid var(--rule);
   border-radius: var(--radius-md);
-  margin-top: var(--space-2);
-  max-height: 12rem;
-  overflow-y: auto;
-  padding: var(--space-1) var(--space-3);
+  box-shadow:
+    var(--shadow-raised),
+    inset 0 1px 0 var(--edge-light);
+  color: var(--foreground);
+  inset: auto;
+  margin: 0;
+  max-inline-size: min(28rem, 100vw);
+  overflow: hidden;
+  padding: 0;
+  position: fixed;
+  z-index: 200;
 }
 
-.agent-status-panel__empty-log {
+.agent-log:popover-open {
+  display: flex;
+  flex-direction: column;
+}
+
+/**
+ * Anchoring, declaratively.
+ *
+ * CSS anchor positioning rather than a `getBoundingClientRect` + `position: fixed` loop, because
+ * the hard part is not the coordinates — it is staying inside the viewport after a resize, a
+ * scroll, or a zoom change, which is what re-measuring on every event gets wrong. `position-area`
+ * places the panel below its trigger, right-aligned to the trigger's trailing edge so it hangs off
+ * the same edge the button does; `position-try-fallbacks` then flips it above, or to the leading
+ * side, whenever the preferred position would leave the viewport. No JS, no listeners, no stale
+ * coordinates.
+ *
+ * Guarded by `@supports` so the `position: fixed` fallback above stands where it is unsupported.
+ */
+@supports (anchor-name: --a) {
+  /* The trigger keeps its BEM name — it really is a button in the strip's action row. The popover
+     does not: it has escaped the strip's box entirely, so `agent-log` rather than a `__` child of
+     the panel. */
+  .agent-status-panel__log-trigger {
+    anchor-name: --agent-log-trigger;
+  }
+
+  .agent-log {
+    margin-block-start: var(--space-2);
+    max-block-size: calc(100dvh - var(--space-4));
+    position-anchor: --agent-log-trigger;
+    position-area: block-end span-inline-end;
+    position-try-fallbacks:
+      flip-block,
+      flip-inline,
+      flip-block flip-inline;
+    position-try-order: most-height;
+  }
+}
+
+/* The cap on the log itself, so a long run cannot outgrow a short window. 12rem is the height it
+   already had; `dvh` is correct here precisely because this is screen-space chrome — ADR-0009
+   bans viewport units in *world* space, where `zoom` would multiply them. */
+.agent-log__body {
+  max-block-size: min(12rem, 40dvh);
+  overflow-y: auto;
+  padding: 0 var(--space-3) var(--space-2);
+}
+
+.agent-log__head {
+  align-items: center;
+  border-bottom: var(--control-border-width) solid var(--divider);
+  display: flex;
+  gap: var(--space-2);
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3);
+}
+
+.agent-log__title {
   color: var(--card-muted-foreground);
   font-size: var(--text-label);
-  padding: var(--space-1) 0;
+  font-weight: var(--weight-semi);
+  letter-spacing: var(--tracking-label);
+  margin: 0;
+  text-transform: uppercase;
 }
 
-.agent-status-panel__log-list {
+.agent-log__close {
+  flex-shrink: 0;
+  /* The only thing in the panel that is not `currentColor`-inheriting chrome; the glyph takes its
+     colour from the button, per DESIGN.md "Iconography". */
+  color: var(--card-muted-foreground);
+}
+
+.agent-log__close:hover:not(:disabled) {
+  color: var(--foreground);
+}
+
+.agent-log__empty {
+  color: var(--card-muted-foreground);
+  font-size: var(--text-label);
+  padding: var(--space-2) 0;
+}
+
+.agent-log__list {
   display: flex;
   flex-direction: column;
   list-style: none;

@@ -37,8 +37,10 @@ export type ActivityCardProps = {
    * This is the card's *row number*, not its grid cell: it is taken from the full card list
    * rather than from the cards currently on the canvas, so docking or discarding a card does
    * not renumber the ones that remain. A board row number that changes under you is worse than
-   * no number. Omitting the prop (the docked view, the drag ghost) drops the plate entirely,
-   * because a serial on a card the user is carrying around would be a lie about where it lives.
+   * no number. Omitting the prop drops the plate entirely — the docked view does, because it has
+   * no header plate to put one in. **The drag proxy does not**: it passes the index, because
+   * dropping the plate changed the card's content-driven height by 45 world units mid-drag, at
+   * the moment the user is looking at the card to aim it. See `dragProxy.test.tsx`.
    */
   index?: number;
   onFindSimilar?: (match: MatchedActivity) => void;
