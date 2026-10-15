@@ -155,6 +155,26 @@ describe('token layer', () => {
     expect(tokenCss).toContain("[data-theme='light']");
     expect(tokenCss).toMatch(/Single shipped theme/);
   });
+
+  it('gives every injected deal duration a valid pre-injection default', () => {
+    // The card deal's `animation` shorthand reads `--deal-delay` and `--deal-travel`. Those are
+    // injected per card from `dealTiming()`, but between the stylesheet parsing and the first
+    // React render they are *unset* — and an unresolved `var()` inside a shorthand does not fall
+    // back, it invalidates the entire declaration. That is not hypothetical: auto-tile's old
+    // transition read `--motion-duration-slow`, which no block ever defined, so the whole
+    // shorthand was dead and auto-tile snapped instantly for as long as that rule existed.
+    //
+    // This assertion is the guard against repeating it. A `0ms` default is also the *correct*
+    // pre-injection behaviour: a card with no deal placement must not be animated at all.
+    const declared = tokens();
+    for (const name of ['deal-delay', 'deal-travel']) {
+      const value = declared.get(name);
+      expect(value, `--${name} has no :root default`).toBeDefined();
+      expect(value, `--${name} is "${value}", which is not a time value`).toMatch(/^\d+(\.\d+)?m?s$/);
+    }
+    expect(declared.get('deal-pile-scale')).toMatch(/^0?\.\d+$/);
+    expect(declared.get('deal-tilt')).toMatch(/^-?\d+(\.\d+)?deg$/);
+  });
 });
 
 /* ---------------------------------------------------------- 2. no raw colour values */
@@ -239,6 +259,12 @@ describe('WCAG contrast, recomputed from the token layer', () => {
     ['rule', 'muted', 3, 'timeline cell divider — a meaningful UI boundary'],
     ['ring', 'card', 3, 'focus ring against a card — WCAG 1.4.11'],
     ['ring', 'background', 3, 'focus ring against the canvas — WCAG 1.4.11'],
+    // The drag pill. Its border and its serial are the only things identifying it while the card
+    // it belongs to is faded out, and it sits over whatever drop zone the user is aiming at —
+    // a slot, or the discard bin. So it is gated against both faces it can land on.
+    ['accent', 'popover', 3, 'drag pill border against its own face — WCAG 1.4.11'],
+    ['accent', 'primary-soft', 3, 'drag pill over the amber drop-target slot'],
+    ['accent', 'destructive-soft', 3, 'drag pill over the active discard bin'],
   ];
 
   it.each(boundaryPairs)('%s against %s clears 3:1 (%s)', (fg, bg, threshold, what) => {
@@ -246,6 +272,14 @@ describe('WCAG contrast, recomputed from the token layer', () => {
     expect(ratio, `${what}: ${fg} ${hex(fg)} on ${bg} ${hex(bg)} = ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(
       threshold,
     );
+  });
+
+  it('keeps the drag pill serial readable as text, not just as a boundary', () => {
+    // The pill's whole content is the serial. A 3:1 pass on its border would leave a 12px glyph
+    // failing the body-text floor, which is the more likely failure and the more useless one.
+    const ratio = contrast(hex('accent'), hex('popover'));
+
+    expect(ratio, `drag pill serial: accent on popover = ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);
   });
 
   /**

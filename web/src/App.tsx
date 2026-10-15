@@ -41,6 +41,7 @@ import {
   TIMELINE_SLOT_EMPTY,
   TIMELINE_SLOTS,
   UNDOCK_CARD_LABEL,
+  activityCardSerial,
   findSimilarConfirmation,
   timelineActivityReplacedConfirmation,
   timelineActivityDockedConfirmation,
@@ -55,14 +56,21 @@ import {
   CARD_DISCARD_DURATION_MS,
   CARD_MIN_HEIGHT,
   CARD_WIDTH,
+  DEAL_DURATION_MS,
+  DEAL_TILT_DEG,
+  type DealStep,
+  type PlacedBoardCard,
   type PlacedCard,
   areAnyCardsOutOfFrame,
   autoTileBoard,
   computeBoardLayout,
   contentBounds,
+  dealDeckOrigin,
+  dealTiming,
   findBestSquareSlot,
   getActivityMatchingSlotId,
   getCardVariant,
+  placedCardAt,
   tiledCardPosition,
 } from './boardLayout';
 import {
@@ -97,6 +105,75 @@ const GESTURE_SETTLE_MS = 160;
 const CONFIRMATION_MS = 4000;
 /** How long the initial floating hints are displayed above docks. */
 const GUIDE_HINTS_MS = 8000;
+/**
+ * How long the board waits for its re-framing to land before releasing the deal.
+ *
+ * Auto-tile moves cards *and* re-frames, and both start together. Running the deal while the
+ * camera is still gliding means the first fifth of it plays against a moving board, and on a
+ * cold load the pile is off-screen for most of it. One `--motion-base` of settle turns that
+ * into two readable beats: *here is your board*, then *here is your weekend*. The deal itself
+ * is unaffected — it is still `DEAL_DURATION_MS` from release to last card seated.
+ */
+const BOARD_FRAME_SETTLE_MS = 150;
+/**
+ * Longest the on-load deal waits for the card measurement pass.
+ *
+ * `autoTileBoard` packs by height, and at first paint `computeBoardLayout` has no measured
+ * heights, so it packs by `calculateContentCardHeight`'s estimate — which on the shipped seed
+ * data under-reports the tallest card by 31 world units and so packs a 9-unit gap where a
+ * 40-unit one was asked for. Waiting one ResizeObserver round costs a frame and buys the real
+ * numbers. This cap exists so a browser that never fires the observer still deals rather than
+ * leaving the user with a board that never moves.
+ */
+const CARD_MEASURE_FALLBACK_MS = 250;
+/**
+ * How long the pointer must rest on the collapsed timeline before it opens.
+ *
+ * The collapsed panel sits in the bottom-left corner of the board, which is exactly where a
+ * user reaches for a card. Reacting to entry alone makes an accidental expansion likely, so
+ * expansion takes a deliberate dwell. A key press, a click or a card drop are all unambiguous
+ * and none of them wait for this.
+ */
+const TIMELINE_HOVER_EXPAND_MS = 220;
+/**
+ * How long the timeline stays open after the pointer leaves it.
+ *
+ * Without a grace period, crossing the boundary while moving toward a slot collapses the panel
+ * under the pointer and immediately re-expands it: a flicker, and on a trackpad a stutter.
+ * Leaving has to be slower than entering so that a momentary exit is not treated as a decision.
+ */
+const TIMELINE_HOVER_COLLAPSE_MS = 420;
+
+/**
+ * Whether the user has asked for less motion.
+ *
+ * Read once per decision rather than cached: it can change while the tab is open, and a stale
+ * answer here would either animate at somebody who opted out or strand somebody who did not.
+ * Every consumer also has the `prefers-reduced-motion` block in `tokens.css` behind it — this
+ * is the fast path that skips the animation entirely rather than collapsing it to 1ms.
+ */
+function prefersReducedMotion(): boolean {
+  return typeof window !== 'undefined' && Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
+}
+
+/** One card's place in a running deal: its timing plus where it starts from. */
+type DealPlacement = DealStep & {
+  fromX: number;
+  fromY: number;
+  tiltDeg: number;
+  /** Reverse paint order, so the pile unpeels from the top rather than from the bottom. */
+  stack: number;
+};
+
+/**
+ * A deal in flight. `runId` is what makes an interrupted or superseded deal safe: a late timer
+ * from a previous run cannot clear the state belonging to this one.
+ */
+type ActiveDeal = {
+  runId: number;
+  placements: Record<string, DealPlacement>;
+  count: number;
+};
 
 type Size = {
   width: number;
@@ -195,7 +272,11 @@ export function App({
   const cardJustLandedRef = useRef(false);
   const particleIdRef = useRef(0);
   const particleCleanupTimerRef = useRef<number | null>(null);
-  const tilingTimerRef = useRef<number | null>(null);
+  const dealRunIdRef = useRef(0);
+  const dealStartTimerRef = useRef<number | null>(null);
+  const dealEndTimerRef = useRef<number | null>(null);
+  const hoverExpandTimerRef = useRef<number | null>(null);
+  const hoverCollapseTimerRef = useRef<number | null>(null);
 
   const storeCards = useBoardStore((state) => state.cards);
   const cards = propCards ?? storeCards;
@@ -236,16 +317,34 @@ export function App({
   const [cardDragState, setCardDragState] = useState<CardDragState | null>(null);
   const [isGesturing, setIsGesturing] = useState(false);
   const [hoveredSlotId, setHoveredSlotId] = useState<string | null>(null);
+  /**
+   * The dragged card is over somewhere it can be dropped — a timeline slot, the timeline panel
+   * itself, or the discard bin. Drives the pill. Reset on every drag end and cancel, because a
+   * stale `true` would leave the next drag invisible.
+   */
+  const [isOverDropZone, setIsOverDropZone] = useState(false);
   const [cardHeightsById, setCardHeightsById] = useState<Record<string, number>>({});
   const [discardingCardId, setDiscardingCardId] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<string | null>(initialConfirmation ?? null);
+  /**
+   * Three separate expansion states, because they are three different promises to the user and
+   * conflating them leaks one into another. It did: with hover and drag sharing one flag, a plain
+   * hover showed the *drag* hint — "press Esc to minimize" — to somebody holding no card.
+   *
+   *   isTimelineExpanded       pinned: clicked, or a card was docked into it
+   *   isDragTimelineExpanded   a card in hand is near the timeline
+   *   isTimelinePreviewed      the pointer is resting on the collapsed control
+   */
   const [isTimelineExpanded, setIsTimelineExpanded] = useState(initialTimelineExpanded ?? false);
-  const [isHoverExpanded, setIsHoverExpanded] = useState(initialHoverExpanded ?? false);
+  const [isDragTimelineExpanded, setIsDragTimelineExpanded] = useState(initialHoverExpanded ?? false);
+  /** Previewed open: the pointer is resting on the collapsed control. Collapses again on leave. */
+  const [isTimelinePreviewed, setIsTimelinePreviewed] = useState(false);
   const [showGuideHints, setShowGuideHints] = useState(true);
   const [settlingSlotId, setSettlingSlotId] = useState<string | null>(null);
   const [dragParticles, setDragParticles] = useState<DragParticle[]>([]);
   const [autoFitEnabled, setAutoFitEnabled] = useState(true);
-  const [isTiling, setIsTiling] = useState(false);
+  /** The deal in flight, or null. Non-null drives `.board__cards--dealing`. */
+  const [deal, setDeal] = useState<ActiveDeal | null>(null);
 
   useLayoutEffect(() => {
     cardDragStateRef.current = cardDragState;
@@ -334,37 +433,112 @@ export function App({
     [boardSize.height, boardSize.width, canvasCards],
   );
 
-  const handleAutoTile = useCallback(() => {
-    if (canvasCards.length === 0) {
-      return;
+  /**
+   * Cancels a deal in flight and every timer belonging to it.
+   *
+   * Used when the user takes over: picking a card up, or clearing the board, must drop the
+   * choreography rather than fight it. A card that is mid-flight snaps to its resting position,
+   * which is honest — the deal was an invitation, not a state the board is stuck in.
+   */
+  const cancelDeal = useCallback(() => {
+    dealRunIdRef.current += 1;
+    if (dealStartTimerRef.current !== null) {
+      window.clearTimeout(dealStartTimerRef.current);
+      dealStartTimerRef.current = null;
     }
-
-    const newPositions = autoTileBoard(canvasCards, {
-      origin: BOARD_GRID_ORIGIN,
-    });
-
-    if (tilingTimerRef.current !== null) {
-      window.clearTimeout(tilingTimerRef.current);
+    if (dealEndTimerRef.current !== null) {
+      window.clearTimeout(dealEndTimerRef.current);
+      dealEndTimerRef.current = null;
     }
+    setDeal(null);
+  }, []);
 
-    setIsTiling(true);
-    setCardPositions(newPositions);
+  /**
+   * Schedules a deal from the pile over the next `DEAL_DURATION_MS`.
+   *
+   * `placed` is the set of cards being dealt and `tiledPlaced` is where each of them is going.
+   * Both are needed here rather than recomputed from state, because React has not committed the
+   * new positions yet when this is called and reading them back would get the old ones.
+   */
+  const startDeal = useCallback(
+    (placed: readonly PlacedBoardCard<BoardActivityCard>[], tiledPlaced: readonly PlacedCard[]) => {
+      if (dealStartTimerRef.current !== null) {
+        window.clearTimeout(dealStartTimerRef.current);
+        dealStartTimerRef.current = null;
+      }
+      if (dealEndTimerRef.current !== null) {
+        window.clearTimeout(dealEndTimerRef.current);
+        dealEndTimerRef.current = null;
+      }
 
-    const prefersReducedMotion =
-      typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    const settleDuration = prefersReducedMotion ? 0 : 300;
+      if (placed.length === 0 || prefersReducedMotion()) {
+        // Reduced motion is not "the same animation, faster". The deal is a way of *placing*
+        // the cards, so without it the cards are simply placed.
+        dealRunIdRef.current += 1;
+        setDeal(null);
+        return;
+      }
 
-    tilingTimerRef.current = window.setTimeout(() => {
-      setIsTiling(false);
-      tilingTimerRef.current = null;
+      const steps = dealTiming(placed.length);
+      const deck = dealDeckOrigin(tiledPlaced);
+      const placements: Record<string, DealPlacement> = {};
 
-      if (autoFitEnabled) {
-        const updatedCanvasCards = canvasCards.map((c) => ({
-          ...c,
-          position: newPositions[c.card.activity.id] ?? c.position,
-        }));
-        const bounds = contentBounds(updatedCanvasCards);
-        contentBoundsRef.current = bounds;
+      placed.forEach((card, index) => {
+        const id = card.card.activity.id;
+        const at = tiledPlaced[index].position;
+        const step = steps[index];
+        placements[id] = {
+          ...step,
+          fromX: deck.x - at.x,
+          fromY: deck.y - at.y,
+          // A fixed, deterministic fan: the pile reads as a hand of cards rather than as
+          // noise, and the same board always deals the same way.
+          tiltDeg: ((index % 5) - 2) * DEAL_TILT_DEG,
+          stack: placed.length - index,
+        };
+      });
+
+      dealRunIdRef.current += 1;
+      const runId = dealRunIdRef.current;
+      const count = placed.length;
+
+      dealStartTimerRef.current = window.setTimeout(() => {
+        dealStartTimerRef.current = null;
+        if (dealRunIdRef.current !== runId) {
+          return;
+        }
+        setDeal({ runId, placements, count });
+        dealEndTimerRef.current = window.setTimeout(() => {
+          dealEndTimerRef.current = null;
+          setDeal((current) => (current?.runId === runId ? null : current));
+        }, DEAL_DURATION_MS);
+      }, BOARD_FRAME_SETTLE_MS);
+    },
+    [],
+  );
+
+  /**
+   * Auto-tile: re-pack every canvas card, re-frame onto the result, and deal the cards in.
+   *
+   * The fit and the deal are two separate beats rather than one. The camera move tells the user
+   * *where* the board went; the deal then tells them *what happened to the cards*. Running both
+   * at once meant the first fifth of the deal played against a moving board.
+   *
+   * Every geometric decision stays in `boardLayout.ts`: which slot each card takes, where the
+   * pile sits, and how long it all takes. This function only decides *when*.
+   */
+  const runAutoTile = useCallback(
+    (placed: readonly PlacedBoardCard<BoardActivityCard>[], options: { reframe: boolean }) => {
+      if (placed.length === 0) {
+        return;
+      }
+
+      const positions = autoTileBoard(placed, { origin: BOARD_GRID_ORIGIN });
+      const tiledPlaced = placed.map((card) => placedCardAt(card, positions[card.card.activity.id] ?? card.position));
+
+      setCardPositions(positions);
+
+      if (options.reframe) {
         const width =
           boardSize.width || previousSizeRef.current.width || boardRef.current?.clientWidth || window.innerWidth || 0;
         const height =
@@ -374,16 +548,28 @@ export function App({
           window.innerHeight ||
           0;
         if (width > 0 && height > 0) {
+          const bounds = contentBounds(tiledPlaced);
+          contentBoundsRef.current = bounds;
           setViewport(fitViewport(bounds, { x: 0, y: 0, width, height }, BOARD_FIT_PADDING, 1.0));
         }
       }
-    }, settleDuration);
-  }, [canvasCards, autoFitEnabled, boardSize.height, boardSize.width, setCardPositions]);
+
+      startDeal(placed, tiledPlaced);
+    },
+    [boardSize.height, boardSize.width, setCardPositions, startDeal],
+  );
+
+  const handleAutoTile = useCallback(() => {
+    runAutoTile(canvasCards, { reframe: autoFitEnabled });
+  }, [autoFitEnabled, canvasCards, runAutoTile]);
 
   useEffect(() => {
     return () => {
-      if (tilingTimerRef.current !== null) {
-        window.clearTimeout(tilingTimerRef.current);
+      if (dealStartTimerRef.current !== null) {
+        window.clearTimeout(dealStartTimerRef.current);
+      }
+      if (dealEndTimerRef.current !== null) {
+        window.clearTimeout(dealEndTimerRef.current);
       }
     };
   }, []);
@@ -489,10 +675,10 @@ export function App({
     const cardsAdded = cards.length > previousCardsLengthRef.current;
     previousCardsLengthRef.current = cards.length;
 
-    // One-time initial framing when cards first arrive on canvas
-    if (!initialFramedRef.current && canvasCards.length > 0) {
-      fitContent(1.0);
-      initialFramedRef.current = true;
+    // The opening deal owns the first framing. Until it has run, leave the camera alone —
+    // otherwise this effect would frame the board against `computeBoardLayout`'s organic
+    // placement, and the deal would then re-frame it against the tiled one a frame later.
+    if (!initialFramedRef.current) {
       return;
     }
 
@@ -503,6 +689,44 @@ export function App({
     }
     cardJustLandedRef.current = false;
   }, [agentStatus, autoFitEnabled, boardSize, canvasCards, cards.length, fitContent, researchCardPosition]);
+
+  /**
+   * The opening beat: auto-tile the board and deal the cards onto it.
+   *
+   * Gated on the measurement pass above, because auto-tile packs by height and packing by
+   * `calculateContentCardHeight`'s first-paint estimate leaves a 9-unit gap where a 40-unit one
+   * was asked for on the shipped seed data — and the positions it writes are then pinned by
+   * `customPositions`, so an error here would be permanent rather than transient. Waiting one
+   * ResizeObserver round costs a frame and makes the deal animate the layout the board is
+   * actually going to keep.
+   *
+   * The fallback timer is not belt-and-braces, it is the only path on a browser that never
+   * reports: without it a board could load, be measured by nothing, and simply never deal. It
+   * re-reads `canvasCards` from the closure of the render that armed it, which is the same list
+   * the observer is watching.
+   */
+  useEffect(() => {
+    if (initialFramedRef.current || canvasCards.length === 0) {
+      return;
+    }
+
+    const begin = () => {
+      if (initialFramedRef.current) {
+        return;
+      }
+      initialFramedRef.current = true;
+      runAutoTile(canvasCards, { reframe: true });
+    };
+
+    if (canvasCards.every((card) => (cardHeightsById[card.card.activity.id] ?? 0) > 0)) {
+      begin();
+      return;
+    }
+
+    const timer = window.setTimeout(begin, CARD_MEASURE_FALLBACK_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [canvasCards, cardHeightsById, runAutoTile]);
 
   // Continuous particle bleed emitter while dragging: continuously drops glowing stardust
   const isDraggingAnyCard = Boolean(cardDragState);
@@ -579,17 +803,21 @@ export function App({
       if (event.key === 'Escape') {
         if (cardDragState) {
           setIsTimelineExpanded(false);
-          setIsHoverExpanded(false);
+          setIsDragTimelineExpanded(false);
           userCollapsedDuringDragRef.current = true;
         } else if (isTimelineExpanded) {
           setIsTimelineExpanded(false);
+        } else if (isTimelinePreviewed) {
+          // Escape is the keyboard route out of the hover preview, for the same reason the
+          // minimise button is: leaving the timeline open is not a state worth being trapped in.
+          setIsTimelinePreviewed(false);
         }
       }
     }
 
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, [cardDragState, isTimelineExpanded]);
+  }, [cardDragState, isTimelineExpanded, isTimelinePreviewed]);
 
   // React registers `wheel` passively at the root, so `preventDefault()` from an
   // onWheel handler is ignored. Only a native non-passive listener keeps the page from
@@ -633,6 +861,77 @@ export function App({
       }) as CSSProperties,
     [viewport],
   );
+
+  /* ------------------------------------------------------- timeline hover intent */
+
+  /**
+   * The collapsed timeline is a preview on hover and a pin on click.
+   *
+   * That split is the whole answer to "hover must expand it without the usual hover problems",
+   * and it is only safe because of one geometric fact: **the collapsed panel's rect is
+   * contained in the expanded panel's rect.** Both are anchored to `bottom: var(--space-5)`,
+   * and the expanded one is both wider and taller, so growing never ejects the pointer from
+   * under itself. That rules out the classic expand/shrink oscillation, and it means the only
+   * way back to collapsed is a pointer that has genuinely left.
+   *
+   * The three failure modes that remain are handled by three separate decisions:
+   *
+   *  - **accidental trigger** — the panel sits in the bottom-left of the board, right where a
+   *    user reaches for a card, so opening takes a `TIMELINE_HOVER_EXPAND_MS` dwell rather
+   *    than happening on entry;
+   *  - **flicker** — leaving takes `TIMELINE_HOVER_COLLAPSE_MS`, deliberately longer than
+   *    entering, so crossing the boundary while heading for a slot is not read as a decision;
+   *  - **pointer escape** — handled above, by containment rather than by a timer.
+   *
+   * Hover is a mouse affordance and never the only route: the collapsed control is a real
+   * button that a keyboard user activates, which *pins* the timeline open. Focus alone
+   * deliberately does not expand — a tab-through that opened the panel would move the panel
+   * out from under the tab order on every pass.
+   */
+  const clearTimelineHoverTimers = useCallback(() => {
+    if (hoverExpandTimerRef.current !== null) {
+      window.clearTimeout(hoverExpandTimerRef.current);
+      hoverExpandTimerRef.current = null;
+    }
+    if (hoverCollapseTimerRef.current !== null) {
+      window.clearTimeout(hoverCollapseTimerRef.current);
+      hoverCollapseTimerRef.current = null;
+    }
+  }, []);
+
+  const cancelHoverCollapse = useCallback(() => {
+    if (hoverCollapseTimerRef.current !== null) {
+      window.clearTimeout(hoverCollapseTimerRef.current);
+      hoverCollapseTimerRef.current = null;
+    }
+  }, []);
+
+  const requestHoverExpand = useCallback(() => {
+    // Pinned open: hover has nothing to add, and must not be able to close it either.
+    if (isTimelineExpanded) {
+      return;
+    }
+    clearTimelineHoverTimers();
+    hoverExpandTimerRef.current = window.setTimeout(() => {
+      hoverExpandTimerRef.current = null;
+      setIsTimelinePreviewed(true);
+    }, TIMELINE_HOVER_EXPAND_MS);
+  }, [clearTimelineHoverTimers, isTimelineExpanded]);
+
+  const requestHoverCollapse = useCallback(() => {
+    // Pinned open, or a card in hand is holding the panel open on its own account. In both cases
+    // this preview owns nothing and must not touch either state.
+    if (isTimelineExpanded || cardDragState) {
+      return;
+    }
+    clearTimelineHoverTimers();
+    hoverCollapseTimerRef.current = window.setTimeout(() => {
+      hoverCollapseTimerRef.current = null;
+      setIsTimelinePreviewed(false);
+    }, TIMELINE_HOVER_COLLAPSE_MS);
+  }, [cardDragState, clearTimelineHoverTimers, isTimelineExpanded]);
+
+  useEffect(() => clearTimelineHoverTimers, [clearTimelineHoverTimers]);
 
   function screenPointFromClient(clientX: number, clientY: number): Point | null {
     const bounds = boardRef.current?.getBoundingClientRect();
@@ -711,6 +1010,10 @@ export function App({
     }
 
     userCollapsedDuringDragRef.current = false;
+    // A deal is an invitation, not a state the board is stuck in: the moment the user picks
+    // something up, the choreography gets out of the way.
+    cancelDeal();
+    clearTimelineHoverTimers();
     const screenPoint = screenPointWithin(boardBounds, event.clientX, event.clientY);
     setCardDragState({
       card,
@@ -776,18 +1079,29 @@ export function App({
     }
     setDragParticles((prev) => [...prev.slice(-36), ...newParticles]);
 
-    const slotId = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>('[data-timeline-slot]')
-      ?.dataset.timelineSlot;
+    // One hit-test per move, reused for the slot, the panel and the discard bin. Three separate
+    // `elementFromPoint` calls meant the pill could disagree with the highlight it is meant to
+    // uncover, because two of them could land on different frames of a moving pointer.
+    //
+    // `.board__drag` is `pointer-events: none`, so this never reports the card in hand.
+    const hit = typeof document !== 'undefined' ? document.elementFromPoint(event.clientX, event.clientY) : null;
+    const slotId = hit?.closest<HTMLElement>('[data-timeline-slot]')?.dataset.timelineSlot;
     setHoveredSlotId(slotId ?? null);
+
+    const overTimeline = Boolean(hit?.closest('.timeline'));
+    const overDiscardBin = isOverDiscardBin(event.clientX, event.clientY);
+    // The card gets out of the way over the *whole* drop area, not only over a slot: the
+    // timeline's own padding and header are the parts a user crosses on the way to a slot.
+    setIsOverDropZone(Boolean(slotId) || overTimeline || overDiscardBin);
 
     const timelineElement = typeof document !== 'undefined' ? document.querySelector<HTMLElement>('.timeline') : null;
     let nearTimeline = false;
     if (timelineElement) {
-      if (document.elementFromPoint(event.clientX, event.clientY)?.closest('.timeline')) {
+      if (overTimeline) {
         nearTimeline = true;
       } else {
         const bounds = timelineElement.getBoundingClientRect();
-        const proximityPadding = isHoverExpanded ? 8 : 50;
+        const proximityPadding = isDragTimelineExpanded ? 8 : 50;
         const cursorNear =
           event.clientX >= bounds.left - proximityPadding &&
           event.clientX <= bounds.right + proximityPadding &&
@@ -809,7 +1123,7 @@ export function App({
     }
 
     if (!userCollapsedDuringDragRef.current && !isTimelineExpanded) {
-      setIsHoverExpanded(nearTimeline);
+      setIsDragTimelineExpanded(nearTimeline);
     }
   }
 
@@ -822,7 +1136,9 @@ export function App({
   }
 
   function handleCardPointerUp(event: PointerEvent<HTMLElement>) {
-    setIsHoverExpanded(false);
+    // The drag releases the timeline; the hover preview owns itself and is left alone.
+    setIsDragTimelineExpanded(false);
+    setIsOverDropZone(false);
     userCollapsedDuringDragRef.current = false;
 
     if (!cardDragState || cardDragState.pointerId !== event.pointerId) {
@@ -929,7 +1245,8 @@ export function App({
 
   function handleCardPointerCancel(event: PointerEvent<HTMLElement>) {
     if (cardDragState?.pointerId === event.pointerId) {
-      setIsHoverExpanded(false);
+      setIsDragTimelineExpanded(false);
+      setIsOverDropZone(false);
       userCollapsedDuringDragRef.current = false;
       setCardDragState(null);
       setHoveredSlotId(null);
@@ -1070,7 +1387,7 @@ export function App({
     }
   }
 
-  const isTimelineVisible = isTimelineExpanded || isHoverExpanded;
+  const isTimelineVisible = isTimelineExpanded || isDragTimelineExpanded || isTimelinePreviewed;
   const dockedCount = timelineSlots.filter((slot) => Boolean(slot.activityId)).length;
   const activeMatchingSlotId = cardDragState
     ? getActivityMatchingSlotId(cardDragState.card.activity.parts[0]?.start)
@@ -1089,6 +1406,24 @@ export function App({
     isReplacingHoveredSlot && hoveredOccupiedSlot?.activityId
       ? cards.find((c) => c.activity.id === hoveredOccupiedSlot.activityId)
       : null;
+
+  /**
+   * The serial the pill carries.
+   *
+   * Taken from the full card list even when the card is being dragged *out of* a timeline slot,
+   * because the docked card is the one view that has no serial of its own and the pill still has
+   * to name the thing the user is carrying. `activityCardSerial` is the same function the card's
+   * own plate uses, so the two can never drift.
+   */
+  const draggedCardSerial = cardDragState
+    ? activityCardSerial(
+        Math.max(
+          0,
+          cards.findIndex((c) => c.activity.id === cardDragState.card.activity.id),
+        ),
+      )
+    : null;
+  const isDragProxyPill = Boolean(cardDragState && isOverDropZone);
 
   return (
     <main className="app">
@@ -1121,11 +1456,24 @@ export function App({
         tabIndex={0}
       >
         {!isTimelineVisible ? (
+          /**
+           * The collapsed summary is a real disclosure button, and it stays the keyboard route
+           * into the timeline now that hover is one too: hover previews, activation pins. The
+           * `aria-label` is the accessible name and `aria-expanded` is the state, neither of
+           * which the visible content provides — the hint text below is decoration on top of
+           * the name, and it names all three ways in (hover, click, drop).
+           */
           <button
             aria-expanded={false}
             aria-label={TIMELINE_EXPAND_LABEL}
             className="timeline timeline--collapsed"
-            onClick={() => setIsTimelineExpanded(true)}
+            onBlur={requestHoverCollapse}
+            onClick={() => {
+              clearTimelineHoverTimers();
+              setIsTimelineExpanded(true);
+            }}
+            onPointerEnter={requestHoverExpand}
+            onPointerLeave={requestHoverCollapse}
             type="button"
           >
             {showGuideHints ? <div className="timeline__guide-hint board__toast">{TIMELINE_GUIDE_TOAST}</div> : null}
@@ -1140,15 +1488,26 @@ export function App({
             </div>
           </button>
         ) : (
+          /**
+           * Enter and leave are both needed here, and only leave is obvious. `onPointerEnter`
+           * exists to cancel a collapse the pointer is already inside the effect of undoing:
+           * moving from the timeline's edge to a slot must not read as leaving and coming back.
+           */
           <section
             aria-label={TIMELINE_LABEL}
-            className={`timeline timeline--expanded${isHoverExpanded ? ' timeline--hover-expanded' : ''}`}
+            className={`timeline timeline--expanded${
+              isDragTimelineExpanded ? ' timeline--hover-expanded' : isTimelinePreviewed ? ' timeline--preview' : ''
+            }`}
+            onPointerEnter={cancelHoverCollapse}
+            onPointerLeave={requestHoverCollapse}
           >
             {isReplacingHoveredSlot && hoveredExistingCard ? (
               <div className="timeline__guide-hint timeline__replace-toast board__toast">
                 {timelineSlotReplaceAlert(hoveredExistingCard.activity.title_en ?? hoveredExistingCard.activity.title)}
               </div>
-            ) : isHoverExpanded ? (
+            ) : isDragTimelineExpanded ? (
+              /* Drag-only. Offering "press Esc to minimize" to somebody who is only hovering
+                 would be offering to undo something they never did. */
               <div className="timeline__guide-hint board__toast">{TIMELINE_DRAG_COLLAPSE_HINT}</div>
             ) : showGuideHints ? (
               <div className="timeline__guide-hint board__toast">{TIMELINE_GUIDE_TOAST}</div>
@@ -1166,7 +1525,9 @@ export function App({
                 className="timeline__minimize-button"
                 onClick={() => {
                   setIsTimelineExpanded(false);
-                  setIsHoverExpanded(false);
+                  setIsDragTimelineExpanded(false);
+                  setIsTimelinePreviewed(false);
+                  clearTimelineHoverTimers();
                   userCollapsedDuringDragRef.current = true;
                 }}
                 title={TIMELINE_COLLAPSE_LABEL}
@@ -1294,9 +1655,23 @@ export function App({
            * contribute a second tab stop or a second "Find similar" to the accessibility tree
            * while the real card is still on the board underneath it. It changes nothing about
            * layout or paint — `.board__drag` is already `pointer-events: none`.
+           *
+           * The pill is a **sibling** of the card, not a state of it, and that is the whole
+           * reconciliation with the layout-stability guarantee above. While the pointer is over
+           * a drop zone the card cross-fades to a small serial pill so the slot highlight it is
+           * aimed at becomes visible — but the card is not scaled down, not re-rendered and not
+           * given fewer props. It stays at full size with every element in the DOM and loses
+           * only its **opacity**, so the proxy's layout box is the card's layout box in every
+           * state of the drag, not merely at rest. The pill is `position: absolute`, so it is
+           * out of flow and cannot contribute to that box even by accident.
+           *
+           * Under `prefers-reduced-motion` the cross-fade snaps; the pill still appears, because
+           * getting the card out of the way is information, not decoration.
            */
           <div
-            className={`board__drag${cardDragState.source === 'timeline' ? ' board__drag--docked' : ''}`}
+            className={`board__drag${cardDragState.source === 'timeline' ? ' board__drag--docked' : ''}${
+              isDragProxyPill ? ' board__drag--pill' : ''
+            }`}
             inert
             style={{
               left: cardDragState.screenPoint.x - cardDragState.grabOffset.x,
@@ -1318,6 +1693,11 @@ export function App({
                 variant={boardLayout.variantsById[cardDragState.card.activity.id] ?? getCardVariant(cardDragState.card)}
               />
             </div>
+            {draggedCardSerial ? (
+              <span aria-hidden="true" className="board__drag-pill">
+                {draggedCardSerial}
+              </span>
+            ) : null}
           </div>
         ) : null}
         {dragParticles.length > 0 ? (
@@ -1344,7 +1724,7 @@ export function App({
         ) : null}
         <div className="board__pan">
           <div className="board__world">
-            <div className={`board__cards${isTiling ? ' board__cards--tiling' : ''}`}>
+            <div className={`board__cards${deal ? ' board__cards--dealing' : ''}`}>
               {agentStatus === 'searching' ? (
                 <div
                   className="board__card board__card--research"
@@ -1360,10 +1740,13 @@ export function App({
                 // The serial is the card's index in the *full* list, not in `canvasCards`, so
                 // docking or discarding a card never renumbers the ones that stay.
                 const serialIndex = cards.findIndex((candidate) => candidate.activity.id === match.activity.id);
+                const placement = deal?.placements[match.activity.id];
 
                 return (
                   <div
-                    className={`board__card board__card--${variant}${isDragging ? ' board__card--ghost' : ''}`}
+                    className={`board__card board__card--${variant}${isDragging ? ' board__card--ghost' : ''}${
+                      placement ? ' board__card--dealing' : ''
+                    }`}
                     data-activity-card
                     data-activity-card-id={match.activity.id}
                     key={match.activity.id}
@@ -1371,7 +1754,25 @@ export function App({
                     onPointerDown={(event) => handleCardPointerDown(event, match)}
                     onPointerMove={handleCardPointerMove}
                     onPointerUp={handleCardPointerUp}
-                    style={{ left: position.x, top: position.y }}
+                    style={
+                      {
+                        left: position.x,
+                        top: position.y,
+                        // `left`/`top` are the card's *final* slot for the whole deal. Only
+                        // these offsets and the two durations are per-card, and all of them come
+                        // from `dealTiming()`, so the stylesheet contains no timing of its own.
+                        ...(placement
+                          ? {
+                              '--deal-from-x': `${placement.fromX}px`,
+                              '--deal-from-y': `${placement.fromY}px`,
+                              '--deal-tilt': `${placement.tiltDeg}deg`,
+                              '--deal-stack': placement.stack,
+                              '--deal-delay': `${placement.delayMs}ms`,
+                              '--deal-travel': `${placement.travelMs}ms`,
+                            }
+                          : null),
+                      } as CSSProperties
+                    }
                   >
                     <ActivityCard
                       index={serialIndex}
@@ -1409,7 +1810,10 @@ export function App({
                 onClick={() => {
                   confirmClearBoard();
                   hasAdjustedRef.current = false;
+                  // Re-arm the opening deal: a cleared board is a fresh board, and the cards
+                  // that come back should be dealt onto it rather than appearing already tiled.
                   initialFramedRef.current = false;
+                  cancelDeal();
                 }}
                 type="button"
               >

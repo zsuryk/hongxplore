@@ -231,6 +231,47 @@ The drag particles that fall behind a lifted card keep their motion but lost the
 flat `--particle-*` dots now. The motion is the information — something is being carried — and the
 glow was decoration competing with the accent colour.
 
+#### One exception to the ladder: the card deal
+
+`DEAL_DURATION_MS` is **1200ms**, and it is the only duration in the app outside the table above.
+It is the board's one authored entrance, it runs once per load and once per auto-tile press, and
+it is a *budget* rather than a duration.
+
+The budget is the point. A naive sibling stagger — a fixed gap between cards, a fixed travel each
+— reads well on four cards and takes **2449ms on thirty**, measured in Chromium against the real
+easing (827ms at 3, 1134ms at 8, 1849ms at 20, 2449ms at 30). That is the defect, and it is fatal
+here specifically because a board is re-dealt every time the user presses auto-tile. So:
+
+- **The total is fixed.** `delay + travel ≤ DEAL_DURATION_MS` for every card, at every count, by
+  construction rather than by tuning. `dealTiming()` in `boardLayout.ts` owns the arithmetic and
+  `boardLayout.test.ts` asserts the invariant across counts from 1 to 120.
+- **Travel compresses, the stagger absorbs the difference.** A few cards get a long confident arc
+  (558ms at three cards); a crowded board gets 260ms and spends the rest on the cascade. The
+  compression is a log curve of the card count, so the *feeling* of the change is even across
+  3→8→20 rather than spending the whole budget in the first step.
+- **One card gets the whole budget.** Nothing to stagger against means nothing is gained by
+  finishing early.
+
+Measured in the app at 1600×1000: the last card seats at a planned **1200ms** and the board is
+still at **1205 / 1211 / 1218 / 1224ms** at 3 / 8 / 20 / 30 cards. Nineteen milliseconds of
+variance across a tenfold change in card count.
+
+Three further rules the deal holds to:
+
+- **It is world-space.** The pile sits at `dealDeckOrigin()` — the centre of the packed
+  arrangement — in world units, inside `.board__world`, so `zoom` applies to it exactly as it
+  applies to the cards. No `vh`/`vw`, no screen-space offsets.
+- **It animates `transform`/`scale`/`rotate`, never `left`/`top`.** A card's final slot is its
+  layout position for the entire sequence; the animation only offsets it. So the board's packing
+  is never observed mid-flight, and there is no relayout per frame.
+- **Under reduced motion it does not run at all.** The deal is a way of *placing* the cards, so
+  without it the cards are simply placed. The `prefers-reduced-motion` block in `tokens.css`
+  remains the safety net for anything that reaches the CSS at all.
+
+Auto-tile **runs on load**. Cards arrive stacked and deal onto the board rather than appearing
+already tiled; the deck is framed first (one `--motion-base` of settle) so the deal plays against a
+still camera rather than a moving one.
+
 ---
 
 ## Board geometry and zoom
@@ -336,6 +377,33 @@ the card's box at every zoom, and any future change to the anatomy carries into 
 The dropped variants are now exactly the ones that genuinely lack the anatomy: the docked view,
 which has no header plate to put a serial in.
 
+**The card in hand gets out of the way — without moving.** At 150% the board card is 480×700 of
+screen and it sits directly over the timeline slot it is being aimed at, so the highlight it is
+aiming at is invisible at exactly the moment it matters. Over a drop zone (the timeline panel, a
+slot within it, or the discard bin) the proxy cross-fades to a small **pill** carrying the card's
+serial, centred on the card's own top-left corner — where the serial plate is, so it reads as the
+plate lifted off the card rather than as a new object.
+
+This is a *conditional* transformation and it is deliberately reconciled with the guarantee above
+rather than traded against it. The pill is a **sibling** of the card inside `.board__drag`, not a
+state of it:
+
+- the card keeps every element, at full size, in every state of the drag — it loses only
+  **opacity**;
+- the pill is `position: absolute`, so it is out of flow and cannot contribute a byte to the
+  proxy's box;
+- scaling the proxy instead was rejected outright: it shrinks 17px type into a smudge and pulls
+  the object out from under the cursor holding it.
+
+Measured at 150% zoom, in the one drag: proxy box `483×663` with the pill hidden, `483×663` with
+the pill showing, `transform: none` in both. The layout-stability guarantee is therefore
+*stronger* here than at rest, not weaker — it holds in every state of the drag rather than only
+at the start of it. `dragProxy.test.tsx` asserts both halves: that the pill state may change
+opacity and nothing else, and that the pill is out of flow.
+
+Under `prefers-reduced-motion` the cross-fade snaps. The pill still appears — getting the card
+out of the way is information, not decoration.
+
 ### Iconography
 
 Glyphs are **inline SVG authored in `src/icons.tsx`**, not an icon package and not a font. One
@@ -400,6 +468,41 @@ edge is what announces the slot as a boundary to assistive tech, not only to the
 
 > Known constraint: the day label sits in a fixed-width column and wraps at longer localised
 > strings. Flagged, not fixed.
+
+#### Opening the timeline: preview on hover, pin on click
+
+Two states, and the distinction is the design:
+
+| | Hover | Click / Enter |
+| --- | --- | --- |
+| effect | previews, collapses again on leave | **pins** it open until Escape, minimise, or a drop |
+| delay to open | 220ms dwell | none |
+| delay to close | 420ms grace | none |
+
+Hover is a *preview*, not an action, and the three ways that usually goes wrong are each handled
+by a separate decision:
+
+- **Accidental trigger.** The collapsed panel sits in the bottom-left of the board, which is
+  exactly where a user reaches for a card. Opening takes a deliberate dwell rather than happening
+  on entry.
+- **Flicker.** Closing is deliberately *slower* than opening (420ms vs 220ms), so crossing the
+  boundary while heading for a slot is not read as a decision. Measured: two state transitions in
+  three seconds of deliberate 4.4Hz oscillation across the boundary edge, where a naive `:hover`
+  rule would have produced roughly twenty.
+- **The pointer escaping the element as it grows.** Solved by geometry rather than by a timer:
+  **the collapsed panel's rect is contained in the expanded panel's rect.** Both are anchored to
+  `bottom: var(--space-5)` and the expanded one is both wider and taller, so growing can never
+  eject the pointer from under itself — which is what turns a naive `:hover` rule into an
+  open/close loop. Measured at 1600×1000: collapsed `(20, 922) 352×58`, expanded
+  `(20, 742) 672×238`. `App.test.tsx` asserts the anchoring and the width ordering that make the
+  containment true, so a future restyle cannot quietly break it.
+
+**Hover is never the only route.** The collapsed control is a real `<button>` carrying its own
+`aria-label` and `aria-expanded`, and activating it — with a pointer or with Enter or Space —
+opens the timeline and pins it. Focus alone deliberately does *not* open it: a panel that opened
+on every tab-through would move itself out of the tab order on each pass. Moving between the
+timeline's own regions cancels a pending collapse, so travelling to a slot never reads as
+leaving and coming back.
 
 ### Discard bin
 
@@ -478,10 +581,42 @@ Recorded rather than hidden:
     padding, leading or font metrics can reintroduce the overlap. The fix is to stop trusting a
     first-paint measurement — re-measure after layout settles, or pack against
     `CARD_FIT_HEIGHT` the way `contentBounds` already does.
+
+    **The card deal came within one frame of turning this into a visible defect, and the numbers
+    are recorded here because the fix is *not* in this repository's hands.** `autoTileBoard` packs
+    by height, and `computeBoardLayout` has no measured heights on first paint, so an auto-tile
+    run before the measurement pass packs by `calculateContentCardHeight`'s estimate. Measured
+    against the shipped seed data at three cards:
+
+    | | card 1 | card 2 | card 3 |
+    | --- | --- | --- | --- |
+    | estimate | 440 | 440 | 440 |
+    | rendered | **471** | 443 | 443 |
+
+    Packing on the estimate leaves a **9-unit** gap between stacked cards where 40 was asked for.
+    It does not overlap today, but it is one font-metric change away from doing so, and the
+    positions would then be pinned by `customPositions` and stay wrong.
+
+    The deal therefore **waits for the measurement pass** (capped at 250ms, so a browser that
+    never reports still deals rather than leaving a board that never moves) before packing. That
+    is a decision about *when to animate*, not a repair to `boardLayout`: with the gate, the same
+    three cards pack at a full 40-unit gap, and zero overlaps were found at 3, 8, 20 and 30 cards
+    after the deal settled. The underlying estimate error is untouched and still belongs to the
+    board-layout pass.
 11. **The canvas is still mostly empty at 1600×1000 with three cards.** Framing and auto-fit are
     layout decisions owned by the same pass as item 10. Appearance-wise the vignette and lattice
     now make an unbounded board read as a lit space rather than as a void, but the composition is
     still three cards in the middle of a very large dark field.
+12. **Auto-tile now runs on load, which changes where three cards sit.** The opening deal packs
+    the board on arrival rather than leaving `computeBoardLayout`'s organic three-cluster
+    placement in place, so with the shipped seed data the board opens as a two-column grid instead
+    of the 01/02/03 cluster. That is what was asked for, and it reads better, but it is a
+    composition change to the board's resting state and the framing pass in item 11 should be
+    reviewed against it.
+13. **The deal's cascade is not reviewed at scale by eye.** It was measured (1.2s at 3, 8, 20 and
+    30 cards) and the per-card arithmetic is asserted from 1 to 120 cards, but 30 cards in
+    particular has only been seen as a freeze-frame. Item 4's "twenty-card density is untested"
+    applies to the deal as well as to the layout.
 
 ---
 

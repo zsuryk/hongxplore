@@ -323,6 +323,18 @@
   --motion-slow: 220ms;
   --motion-ease: cubic-bezier(0.16, 0.1, 0.2, 1);
 
+  /**
+   * The card deal: the one authored entrance the board earns, so it is allowed to exceed
+   * `--motion-slow`. It is a *budget* rather than a duration — see `dealTiming()` in
+   * `boardLayout.ts`, which spends it as travel plus a compressible stagger so the total is
+   * the same for three cards and for thirty. The per-card values are injected as
+   * `--deal-delay` / `--deal-travel`; these are the pre-injection defaults, which must stay
+   * valid lengths because an unresolved `var()` would invalidate the whole `animation` shorthand
+   * and silently drop the deal.
+   */
+  --deal-delay: 0ms;
+  --deal-travel: 0ms;
+
   /* The cascade is reserved for the agent log. It is not a board-wide effect. */
   --motion-lamp: var(--motion-fast);
   --motion-seat: var(--motion-base);
@@ -342,6 +354,19 @@
   --card-wide-min-height: 200px;
   --card-tall-min-height: 440px;
   --card-hover-lift: 3px;
+
+  /**
+   * Where a card sits before the deal releases it: the pile.
+   *
+   * `--deal-from-x` / `--deal-from-y` are injected per card from `dealDeckOrigin()` in
+   * `boardLayout.ts` — world units, because the deal runs inside `.board__world` where `zoom`
+   * multiplies anything a stylesheet might otherwise reach for in `vh`/`vw`.
+   */
+  --deal-from-x: 0px;
+  --deal-from-y: 0px;
+  --deal-tilt: 0deg;
+  --deal-stack: 0;
+  --deal-pile-scale: 0.92;
 }
 
 /**

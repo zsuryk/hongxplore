@@ -108,3 +108,72 @@ describe('drag proxy layout stability', () => {
     expect(cardCss).not.toMatch(/\.activity-card--dragging\b/);
   });
 });
+
+/**
+ * The pill: the card gets out of the way when it is over a drop zone.
+ *
+ * At 150% the board card is 480×700 of screen and it sits directly over the timeline slot it is
+ * about to be dropped into, so the highlight it is aiming at is invisible at exactly the moment
+ * it matters. The card cross-fades to a small serial pill — but **the pill must not cost the
+ * layout guarantee above**. These assertions are what hold the two together, because the obvious
+ * implementations (scale the proxy down, or re-render it without its anatomy) both quietly break
+ * it, and a screenshot cannot tell you that.
+ */
+describe('drag pill does not move the card in hand', () => {
+  const boardCss = readFileSync(join(import.meta.dirname, 'styles/board.css'), 'utf8');
+
+  /** The declarations inside one rule, so a match cannot be satisfied by a different selector. */
+  function rule(selector: string): string {
+    const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return boardCss.match(new RegExp(`${escaped}\\s*\\{([^}]*)\\}`))?.[1] ?? '';
+  }
+
+  it('fades the card out with opacity, and never resizes or re-transforms it', () => {
+    const scale = rule('.board__drag-scale');
+    const pillState = rule('.board__drag--pill .board__drag-scale');
+
+    // Opacity is the *only* property allowed to change. A `scale`, a `width`, a `transform` or a
+    // `zoom` here would either shrink the type into a smudge or drag the object out from under
+    // the cursor holding it — and, for `transform`, would make the proxy's rendered box disagree
+    // with the card's box for the first time.
+    expect(pillState).toMatch(/opacity:\s*0/);
+    for (const forbidden of ['scale', 'width', 'height', 'transform', 'zoom', 'rotate', 'translate']) {
+      expect(
+        pillState,
+        `.board__drag--pill .board__drag-scale declares \`${forbidden}\`, which would change the proxy's box`,
+      ).not.toMatch(new RegExp(`(^|[;{\\s])${forbidden}\\s*:`));
+    }
+    // And the proxy's own sizing must still be the card's sizing, read from the one token
+    // `boardLayout.ts` owns — not a number, and not a second width declared for the pill state.
+    expect(scale).toMatch(/width:\s*var\(--card-width\)/);
+    expect(scale).toMatch(/zoom:\s*var\(--board-zoom\)/);
+  });
+
+  it('takes the pill out of flow, so it cannot contribute a byte to the proxy box', () => {
+    // This is what makes the guarantee structural rather than a promise. The pill is a sibling
+    // of the card inside `.board__drag`; `position: absolute` is what keeps the proxy's box the
+    // card's box.
+    expect(rule('.board__drag-pill')).toMatch(/position:\s*absolute/);
+    expect(rule('.board__drag-pill')).not.toMatch(/position:\s*(relative|static)/);
+  });
+
+  it('keeps the pill itself above the 24px target floor', () => {
+    // The pill is a read-out, not a control, so it has no hit area — but a serial rendered
+    // smaller than the label scale everywhere else in the app reads as an artefact.
+    expect(rule('.board__drag-pill')).toMatch(/min-height:\s*var\(--control-height-sm\)/);
+    expect(rule('.board__drag-pill')).toMatch(/min-width:\s*var\(--control-height-sm\)/);
+  });
+
+  it('still gets the card out of the way under prefers-reduced-motion', () => {
+    const tokenCss = readFileSync(join(import.meta.dirname, 'styles/tokens.css'), 'utf8');
+
+    // The pill may snap instead of cross-fading — that is what the single global block does. What
+    // it must never do is vanish, because the card has to uncover the drop target either way.
+    // The assertion is that the *opacity* rules are plain (so they survive the duration collapse)
+    // and carry no `display`/`visibility` switch the block could not undo.
+    expect(rule('.board__drag--pill .board__drag-pill')).toMatch(/opacity:\s*1/);
+    expect(boardCss).not.toMatch(/\.board__drag-pill[^{]*\{[^}]*visibility\s*:/);
+    expect(boardCss).not.toMatch(/\.board__drag-pill[^{]*\{[^}]*display\s*:\s*none/);
+    expect(tokenCss).toMatch(/@media \(prefers-reduced-motion: reduce\)/);
+  });
+});

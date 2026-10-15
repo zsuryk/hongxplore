@@ -38,7 +38,14 @@ export const TIMELINE_SLOTS = [
 ] as const;
 
 export const TIMELINE_COLLAPSED_LABEL = 'Weekend Timeline';
-export const TIMELINE_COLLAPSED_HINT = 'Click to expand · Drop cards here';
+/**
+ * The three ways in, because hover now is one of them.
+ *
+ * Written as affordances rather than instructions, and the whole thing is decorative on top of
+ * the button's `aria-label`: a hover is meaningless to a screen-reader user, so the copy they
+ * actually hear is `TIMELINE_EXPAND_LABEL` and this text is only what the eye reads.
+ */
+export const TIMELINE_COLLAPSED_HINT = 'Hover to preview · Click to expand · Drop cards here';
 export const TIMELINE_EXPAND_LABEL = 'Expand weekend timeline';
 export const TIMELINE_COLLAPSE_LABEL = 'Minimize timeline';
 export const TIMELINE_DRAG_COLLAPSE_HINT = 'Press Esc or click _ to minimize';
@@ -46,7 +53,7 @@ export function timelinePlannedCount(docked: number, total: number): string {
   return `${docked}/${total} planned`;
 }
 export const TIMELINE_GUIDE_TOAST =
-  'Weekend timeline: drag activities here to schedule your weekend, or click to expand.';
+  'Weekend timeline: hover to preview, click to keep it open, or drop activities here to schedule your weekend.';
 export const DISCARD_GUIDE_TOAST = 'Discard bin: drag unwanted cards here to remove them from your board.';
 export const AUTOFIT_GUIDE_TOAST = 'Auto-fit: automatically frames new cards into view.';
 export const AUTO_FIT_DESCRIPTION = 'Automatically frames new cards into view.';
