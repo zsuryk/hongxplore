@@ -74,7 +74,11 @@ Specifically:
   pair from the token layer, which is what stops a palette change shipping an unreadable UI. If an
   assertion is genuinely obsolete, change it deliberately, in the open, with the reason in the
   commit.
-- **Run `impeccable detect` over changed UI targets** before calling a visual task done.
+- **Run `impeccable detect` over changed UI targets** before calling a visual task done. The
+  `impeccable` skill is **not installed for everyone** — if `impeccable` is not on your PATH,
+  skip that step rather than installing it uninvited, and say in the PR body that you did. The
+  design gates above are enforced by `designSystem.test.ts` in CI regardless of who runs them, so
+  a missing detector never means an unenforced rule.
 - **A design decision that is not written down has not been made.** Where a future change would
   find it — `DESIGN.md`, a code comment carrying the *why*, or both.
 
