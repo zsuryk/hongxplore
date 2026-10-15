@@ -169,3 +169,14 @@ def test_upcoming_weekend_dates_derivation() -> None:
     dates_mon = compute_upcoming_weekend_dates(mon)
     assert dates_mon["saturday"] == "2026-10-24"
     assert dates_mon["sunday"] == "2026-10-25"
+
+
+def test_seed_dataset_all_entries_carry_valid_cover_images() -> None:
+    """Every entry in data/activities.json carries a valid HTTP/HTTPS image URL."""
+    activities = load_seed_activities()
+    assert len(activities) == 120
+    for a in activities:
+        assert a.image is not None, f"Activity {a.id} missing image URL"
+        assert str(a.image).startswith(("http://", "https://")), (
+            f"Activity {a.id} invalid image URL: {a.image}"
+        )
