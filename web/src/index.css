@@ -1,3 +1,23 @@
+/**
+ * Tailwind entry point.
+ *
+ * Tailwind is imported here as **theme + utilities, deliberately without preflight**. This app
+ * has carried its own reset in `styles/base.css` since bootstrap; adding a second, broader
+ * reset on top of it would silently restyle every element already tuned against the first one.
+ * Preflight can be switched on later as its own ticket, once the whole app has been checked
+ * against it — not as a side effect of adopting a build tool.
+ *
+ * Tokens live in `styles/tokens.css`, which stays the single place a colour may be written.
+ * The `@theme inline` block below only *projects* those tokens into Tailwind's namespace so
+ * utilities like `bg-card` and `text-muted-foreground` resolve to the same values. Adding a
+ * colour here instead of there would create a second source of truth, which is exactly what
+ * `src/designSystem.test.ts` exists to prevent.
+ */
+@layer theme, components, utilities;
+
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
 @import './styles/tokens.css';
 @import './styles/base.css';
 @import './styles/controls.css';
@@ -5,3 +25,42 @@
 @import './styles/card.css';
 @import './styles/timeline.css';
 @import './styles/panels.css';
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-popover: var(--popover);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-card-muted-foreground: var(--card-muted-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-input: var(--input);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+
+  --color-border: var(--divider);
+  --color-rule: var(--rule);
+  --color-ring: var(--ring);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xs: var(--radius-xs);
+
+  --text-body: var(--text-body);
+  --text-meta: var(--text-meta);
+  --text-label: var(--text-label);
+  --text-title: var(--text-title);
+  --text-plate: var(--text-plate);
+}

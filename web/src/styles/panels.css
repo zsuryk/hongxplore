@@ -1,5 +1,9 @@
 /**
- * Search bar and agent status panel — the two fixed panels above the canvas.
+ * Search bar and agent status panel — the two fixed chrome blocks above the canvas.
+ *
+ * Both sit on the canvas colour and are separated from it by a single rule, so the header,
+ * the status strip and the board read as one continuous concourse and the cards stay the only
+ * filled objects on screen. See DESIGN.md, "The canvas is furniture".
  */
 
 .search-bar {
@@ -13,8 +17,38 @@
   gap: var(--space-2);
 }
 
+/**
+ * The search field is the product's primary action, so it is sized like one: the tall control
+ * height rather than the default, with the glyph sitting in the gutter rather than floating
+ * over the text. The glyph is decorative — the field's accessible name is the label.
+ */
+.search-bar__field {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  position: relative;
+}
+
+.search-bar__field-icon {
+  color: var(--card-muted-foreground);
+  height: var(--icon-size-lg);
+  left: var(--space-3);
+  position: absolute;
+  top: 50%;
+  translate: 0 -50%;
+  width: var(--icon-size-lg);
+}
+
+.search-bar__input {
+  min-height: var(--control-height-lg);
+  padding-left: calc(var(--space-3) + var(--icon-size-lg) + var(--space-2));
+}
+
 .search-bar__submit {
   flex-shrink: 0;
+  font-size: var(--text-body);
+  min-height: var(--control-height-lg);
+  padding: 0 var(--space-4);
 }
 
 .search-bar__chips {
@@ -25,12 +59,21 @@
 
 /* ---- Agent status panel ---- */
 
+/**
+ * A status strip, not a second header.
+ *
+ * It continues the header's gradient rather than restarting it, so the two chrome blocks read as
+ * one band with a hairline between them instead of two slabs. The message is the loudest thing
+ * in it (foreground at body size); everything to the right is chrome and stays at label size.
+ */
 .agent-status-panel {
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+  background: linear-gradient(180deg, var(--chrome), var(--background));
+  border-bottom: 1px solid var(--rule);
+  box-shadow: var(--shadow-contact);
   flex-shrink: 0;
-  font-size: var(--text-sm);
+  font-size: var(--text-meta);
   padding: var(--space-2) var(--space-5);
+  position: relative;
   z-index: 4;
 }
 
@@ -38,7 +81,7 @@
   align-items: center;
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  gap: var(--space-2) var(--space-4);
   justify-content: space-between;
 }
 
@@ -50,8 +93,10 @@
 }
 
 .agent-status-panel__message {
-  color: var(--color-text);
-  font-weight: 500;
+  color: var(--foreground);
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  letter-spacing: -0.005em;
 }
 
 .agent-status-panel__actions {
@@ -61,8 +106,37 @@
   gap: var(--space-2);
 }
 
+/**
+ * One tier for the whole action row.
+ *
+ * The segmented data-source switch is a composite control: its box is `--control-height-composite`
+ * (30px) because it insets two 24px targets, while a plain `.btn--sm` is 24px. Two controls of the
+ * same weight in the same row, with the same `--rule` bezel and the same `--radius-md` corner,
+ * but six pixels apart in height and vertically centred against each other, read as two unrelated
+ * controls — that misalignment was the bug, not the six pixels.
+ *
+ * 24px is not available to both: the tray's height is `target + 2×inset + 2×bezel`, and dropping
+ * its target to 20px to make the arithmetic come out would put a sub-24px hit target back (WCAG
+ * 2.5.8) — the regression `2dcc616` deliberately undid. So the row takes the tray's tier and the
+ * target stays. Written as a child selector rather than a class on each button so the error-state
+ * "Load mock data" button, which only exists when the request fails, cannot drift off the tier by
+ * being forgotten.
+ */
+.agent-status-panel__actions > .btn {
+  min-height: var(--control-height-composite);
+}
+
+/**
+ * The lamp.
+ *
+ * A lit dot with a faint ring around it, the way an instrument lamp actually reads — the ring is
+ * the diffuser, not a glow. It is the only place in the app where a colour sits outside a
+ * surface's fill, because a stage state is the one thing that has to be legible at a glance
+ * from across a desk without anything else changing.
+ */
 .agent-status-dot {
   border-radius: var(--radius-pill);
+  box-shadow: 0 0 0 3px var(--lamp-halo);
   display: inline-block;
   flex-shrink: 0;
   height: var(--space-2);
@@ -70,89 +144,199 @@
 }
 
 .agent-status-dot--idle {
-  background: var(--color-text-subtle);
+  background: var(--card-muted-foreground);
+  box-shadow: none;
 }
 
+/* The only lamp that pulses. It is the agent log's running lamp and it is announcing a stage
+   transition, which is information; DESIGN.md bans permanent motion as decoration, not a
+   status that is genuinely changing. It collapses under the single reduced-motion block. */
 .agent-status-dot--searching {
   animation: status-pulse 1.2s var(--motion-ease) infinite;
-  background: var(--color-accent);
+  background: var(--lamp-pending);
 }
 
 .agent-status-dot--results {
-  background: var(--color-success);
+  background: var(--lamp-live);
 }
 
 .agent-status-dot--error {
-  background: var(--color-danger-strong);
+  background: var(--destructive-strong);
 }
 
-.agent-status-panel__log {
-  background: var(--color-surface-sunken);
-  border: 1px solid var(--color-border);
+/* ---- Agent log: a floating popover, ruled rows inside ---- */
+
+/**
+ * Anchored to its trigger, in the top layer.
+ *
+ * `.agent-log` carries **no** `display` outside `:popover-open` on purpose. The UA rule that keeps
+ * a closed popover out of the layout is `[popover]:not(:popover-open) { display: none }`, and any
+ * author `display` beats it — writing `.agent-log { display: flex }` is the standard way to end up
+ * with a popover that is permanently on screen and still "closes" perfectly well.
+ *
+ * `position: fixed` is the unanchored fallback: a browser without CSS anchor positioning still
+ * gets a floating surface in a corner of the viewport rather than a block appended to the strip.
+ */
+.agent-log {
+  background: var(--popover);
+  border: var(--control-border-width) solid var(--rule);
   border-radius: var(--radius-md);
-  margin-top: var(--space-2);
-  max-height: 12rem;
-  overflow-y: auto;
-  padding: var(--space-2) var(--space-3);
+  box-shadow:
+    var(--shadow-raised),
+    inset 0 1px 0 var(--edge-light);
+  color: var(--foreground);
+  inset: auto;
+  margin: 0;
+  max-inline-size: min(28rem, 100vw);
+  overflow: hidden;
+  padding: 0;
+  position: fixed;
+  z-index: 200;
 }
 
-.agent-status-panel__empty-log {
-  color: var(--color-text-subtle);
-  font-size: var(--text-xs);
-}
-
-.agent-status-panel__log-list {
+.agent-log:popover-open {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+}
+
+/**
+ * Anchoring, declaratively.
+ *
+ * CSS anchor positioning rather than a `getBoundingClientRect` + `position: fixed` loop, because
+ * the hard part is not the coordinates — it is staying inside the viewport after a resize, a
+ * scroll, or a zoom change, which is what re-measuring on every event gets wrong. `position-area`
+ * places the panel below its trigger, right-aligned to the trigger's trailing edge so it hangs off
+ * the same edge the button does; `position-try-fallbacks` then flips it above, or to the leading
+ * side, whenever the preferred position would leave the viewport. No JS, no listeners, no stale
+ * coordinates.
+ *
+ * Guarded by `@supports` so the `position: fixed` fallback above stands where it is unsupported.
+ */
+@supports (anchor-name: --a) {
+  /* The trigger keeps its BEM name — it really is a button in the strip's action row. The popover
+     does not: it has escaped the strip's box entirely, so `agent-log` rather than a `__` child of
+     the panel. */
+  .agent-status-panel__log-trigger {
+    anchor-name: --agent-log-trigger;
+  }
+
+  .agent-log {
+    margin-block-start: var(--space-2);
+    max-block-size: calc(100dvh - var(--space-4));
+    position-anchor: --agent-log-trigger;
+    position-area: block-end span-inline-end;
+    position-try-fallbacks:
+      flip-block,
+      flip-inline,
+      flip-block flip-inline;
+    position-try-order: most-height;
+  }
+}
+
+/* The cap on the log itself, so a long run cannot outgrow a short window. 12rem is the height it
+   already had; `dvh` is correct here precisely because this is screen-space chrome — ADR-0009
+   bans viewport units in *world* space, where `zoom` would multiply them. */
+.agent-log__body {
+  max-block-size: min(12rem, 40dvh);
+  overflow-y: auto;
+  padding: 0 var(--space-3) var(--space-2);
+}
+
+.agent-log__head {
+  align-items: center;
+  border-bottom: var(--control-border-width) solid var(--divider);
+  display: flex;
+  gap: var(--space-2);
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3);
+}
+
+.agent-log__title {
+  color: var(--card-muted-foreground);
+  font-size: var(--text-label);
+  font-weight: var(--weight-semi);
+  letter-spacing: var(--tracking-label);
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.agent-log__close {
+  flex-shrink: 0;
+  /* The only thing in the panel that is not `currentColor`-inheriting chrome; the glyph takes its
+     colour from the button, per DESIGN.md "Iconography". */
+  color: var(--card-muted-foreground);
+}
+
+.agent-log__close:hover:not(:disabled) {
+  color: var(--foreground);
+}
+
+.agent-log__empty {
+  color: var(--card-muted-foreground);
+  font-size: var(--text-label);
+  padding: var(--space-2) 0;
+}
+
+.agent-log__list {
+  display: flex;
+  flex-direction: column;
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
+/* The log is the one place the cascade is information rather than decoration, so its rows are
+   ruled: each entry is separated from the one above it by the decorative hairline, and the
+   level lamp carries the state. */
 .agent-log-entry {
   align-items: baseline;
-  color: var(--color-text-muted);
+  color: var(--muted-foreground);
   display: flex;
-  font-size: var(--text-xs);
+  font-size: var(--text-label);
   gap: var(--space-2);
+  line-height: var(--leading-body);
+  padding: var(--space-1) 0;
+}
+
+.agent-log-entry + .agent-log-entry {
+  border-top: 1px solid var(--divider-subtle);
 }
 
 .agent-log-entry__time {
-  color: var(--color-text-subtle);
+  color: var(--card-muted-foreground);
   font-family: var(--font-mono);
+  font-size: var(--text-label);
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
 }
 
 .agent-log-entry__level {
-  background: var(--color-surface-active);
-  border-radius: var(--radius-sm);
-  color: var(--color-text-muted);
+  border-radius: var(--radius-xs);
   flex-shrink: 0;
-  font-size: var(--text-xs);
-  font-weight: 700;
+  font-size: var(--text-label);
+  font-weight: var(--weight-semi);
+  letter-spacing: var(--tracking-label);
   padding: 0 var(--space-1);
   text-transform: uppercase;
 }
 
 .agent-log-entry__level--info {
-  background: var(--color-info-soft);
-  color: var(--color-info);
+  background: var(--info-soft);
+  color: var(--info);
 }
 
 .agent-log-entry__level--warn {
-  background: var(--color-warning-soft);
-  color: var(--color-warning);
+  background: var(--primary-soft);
+  color: var(--warning);
 }
 
 .agent-log-entry__level--error {
-  background: var(--color-danger-soft);
-  color: var(--color-danger);
+  background: var(--destructive-soft);
+  color: var(--destructive);
 }
 
 .agent-log-entry__msg {
-  color: var(--color-text);
+  color: var(--foreground);
   min-width: 0;
   overflow-wrap: anywhere;
 }

@@ -38,7 +38,14 @@ export const TIMELINE_SLOTS = [
 ] as const;
 
 export const TIMELINE_COLLAPSED_LABEL = 'Weekend Timeline';
-export const TIMELINE_COLLAPSED_HINT = 'Click to expand · Drop cards here';
+/**
+ * The three ways in, because hover now is one of them.
+ *
+ * Written as affordances rather than instructions, and the whole thing is decorative on top of
+ * the button's `aria-label`: a hover is meaningless to a screen-reader user, so the copy they
+ * actually hear is `TIMELINE_EXPAND_LABEL` and this text is only what the eye reads.
+ */
+export const TIMELINE_COLLAPSED_HINT = 'Hover to preview · Click to expand · Drop cards here';
 export const TIMELINE_EXPAND_LABEL = 'Expand weekend timeline';
 export const TIMELINE_COLLAPSE_LABEL = 'Minimize timeline';
 export const TIMELINE_DRAG_COLLAPSE_HINT = 'Press Esc or click _ to minimize';
@@ -46,7 +53,7 @@ export function timelinePlannedCount(docked: number, total: number): string {
   return `${docked}/${total} planned`;
 }
 export const TIMELINE_GUIDE_TOAST =
-  'Weekend timeline: drag activities here to schedule your weekend, or click to expand.';
+  'Weekend timeline: hover to preview, click to keep it open, or drop activities here to schedule your weekend.';
 export const DISCARD_GUIDE_TOAST = 'Discard bin: drag unwanted cards here to remove them from your board.';
 export const AUTOFIT_GUIDE_TOAST = 'Auto-fit: automatically frames new cards into view.';
 export const AUTO_FIT_DESCRIPTION = 'Automatically frames new cards into view.';
@@ -153,6 +160,10 @@ export const AGENT_LOG_LABEL = 'Agent log';
 export const AGENT_LOG_EMPTY = 'No agent steps recorded yet.';
 export const AGENT_LOG_SHOW = 'Show agent log';
 export const AGENT_LOG_HIDE = 'Hide agent log';
+/** Explicit close for the floating popover. Escape and an outside click already close it, but a
+    touch user has no Escape key, and a dismissable surface with no visible way out reads as
+    stuck. */
+export const AGENT_LOG_CLOSE = 'Close agent log';
 export const AGENT_USE_DEMO = 'Load mock data';
 export const DATA_SOURCE_LABEL = 'Data source mode';
 export const DATA_SOURCE_LIVE = 'Live API';
@@ -213,6 +224,86 @@ export function getActivityLanguageBadge(
 export const ACTIVITY_CARD_TIME_UNAVAILABLE = 'Time to be confirmed';
 export const ACTIVITY_CARD_SOURCE_LABEL = 'Source';
 export const ACTIVITY_CARD_MATCH_RATIONALE_LABEL = 'Why it matches';
+export const ACTIVITY_CARD_DISTRICT_LABEL = 'District';
+
+/**
+ * Labels for the card's ruled data rows.
+ *
+ * These read as row headings in a ruled table, which is why they are written the way a
+ * board operator would read them out — `Venue`, `Price`, `Listed` — rather than as field
+ * names from the API (`location.venue`, `price.is_free`, `listed_at`).
+ */
+export const ACTIVITY_CARD_ROW_VENUE_LABEL = 'Venue';
+export const ACTIVITY_CARD_ROW_PRICE_LABEL = 'Price';
+export const ACTIVITY_CARD_ROW_LISTED_LABEL = 'Listed';
+export const ACTIVITY_CARD_PRICE_FREE = 'Free';
+export const ACTIVITY_CARD_PRICE_UNKNOWN = 'Not listed';
+export const ACTIVITY_CARD_LISTED_UNKNOWN = 'No date';
+
+/**
+ * Price cell.
+ *
+ * The schema distinguishes "free of charge" (`is_free`, no amount) from "priced" (an amount
+ * plus a currency), and also allows a null price — so all three get their own cell text rather
+ * than collapsing into one blank. An unknown price is written out rather than left empty,
+ * because an empty cell in a ruled table reads as a bug.
+ */
+export function activityCardPriceLabel(
+  price:
+    | {
+        amount?: string | null;
+        currency: string;
+        is_free: boolean;
+      }
+    | null
+    | undefined,
+): string {
+  if (!price) {
+    return ACTIVITY_CARD_PRICE_UNKNOWN;
+  }
+
+  if (price.is_free) {
+    return ACTIVITY_CARD_PRICE_FREE;
+  }
+
+  return price.amount ? `${price.amount} ${price.currency}` : ACTIVITY_CARD_PRICE_UNKNOWN;
+}
+
+const listedOnFormatter = new Intl.DateTimeFormat('en-HK', {
+  day: '2-digit',
+  month: 'short',
+  timeZone: 'Asia/Hong_Kong',
+});
+
+/**
+ * Freshness cell.
+ *
+ * Absolute, not relative. A split-flap board states when a row was posted; it does not count
+ * down. It also means the cell cannot go stale or silently change width as the clock runs.
+ * Stored UTC, displayed HKT — the repo rule.
+ */
+export function activityCardListedLabel(listedAt: string | null | undefined): string {
+  if (!listedAt) {
+    return ACTIVITY_CARD_LISTED_UNKNOWN;
+  }
+
+  const date = new Date(listedAt);
+
+  if (Number.isNaN(date.getTime())) {
+    return ACTIVITY_CARD_LISTED_UNKNOWN;
+  }
+
+  return listedOnFormatter.format(date);
+}
+
+/** The serial plate in the card header. Zero-padded to two digits, like a board row. */
+export function activityCardSerial(index: number): string {
+  return String(index + 1).padStart(2, '0');
+}
+
+/** Index of the research placeholder, so the pending card carries the same plate as the results. */
+export const ACTIVITY_CARD_PENDING_SERIAL = '00';
+
 export const FIND_SIMILAR_LABEL = 'Find similar';
 export const DISCARD_BIN_LABEL = 'Discard bin';
 export const DISCARD_BIN_HINT = 'Drop a card here to remove it from the board.';
@@ -238,6 +329,23 @@ export function zoomPercentage(value: number): string {
   return `Zoom: ${Math.round(value * 100)}%`;
 }
 
+/**
+ * The toolbar readout cell: the bare number, because the rail is 40px wide and the control
+ * that carries it is an icon rail rather than a column of text.
+ *
+ * The accessible name stays the long form — the visible string is `aria-hidden` and the live
+ * region announces `zoomPercentage()` instead, so what a screen reader hears is "Zoom: 80%"
+ * and not a number with nothing to attach it to.
+ */
+export function zoomReadout(value: number): string {
+  return `${Math.round(value * 100)}%`;
+}
+
+/** The reset control doubles as the readout, so its name states what clicking it does now. */
+export function resetZoomLabel(value: number): string {
+  return `${RESET_ZOOM_LABEL} — ${zoomPercentage(value)}`;
+}
+
 export function formatLogTimestamp(isoString: string): string {
   try {
     const date = new Date(isoString);
@@ -259,3 +367,5 @@ export const TAGLINE = 'Infinite whiteboard + AI activity agent for students in 
 export const GATHERING_INFO_TITLE = 'Gathering info for you...';
 export const GATHERING_INFO_SUBTITLE = 'Researching and ranking weekend activities...';
 export const GATHERING_INFO_LABEL = 'AI research in progress: gathering activities';
+/** Tracked caps on the pending card's header row. Amber means pending, and this is pending. */
+export const GATHERING_INFO_PLATE_LABEL = 'Gathering';

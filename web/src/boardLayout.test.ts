@@ -3,7 +3,12 @@ import {
   BOARD_COLUMNS,
   BOARD_GRID_ORIGIN,
   CARD_FIT_HEIGHT,
+  CARD_VARIANT_DIMENSIONS,
   CARD_WIDTH,
+  DEAL_COMPRESSION_REFERENCE,
+  DEAL_DURATION_MS,
+  DEAL_TRAVEL_MAX_MS,
+  DEAL_TRAVEL_MIN_MS,
   EMPTY_BOARD_BOUNDS,
   areAnyCardsOutOfFrame,
   autoTileBoard,
@@ -11,6 +16,8 @@ import {
   cardBounds,
   computeBoardLayout,
   contentBounds,
+  dealDeckOrigin,
+  dealTiming,
   defaultCardPosition,
   findBestSquareSlot,
   getActivityMatchingSlotId,
@@ -18,6 +25,7 @@ import {
   getCardVariant,
   getCardVariantFromContent,
   getClustersPerRow,
+  placedCardAt,
   rectsOverlap,
   tiledCardPosition,
   type ActivityMatch,
@@ -574,6 +582,195 @@ describe('content-driven card shapes and pure board layout (Issue #76)', () => {
           expect(rectsOverlap(rects[i], rects[j])).toBe(false);
         }
       }
+    });
+  });
+});
+
+/* ------------------------------------------------------------------ the deal */
+
+/**
+ * The deal's budget is the contract.
+ *
+ * A naive sibling stagger — a fixed gap between cards, a fixed travel each — reads beautifully
+ * on a board of four and takes 2449ms on a board of thirty, measured in Chromium against the
+ * real easing. A board is re-dealt every time the user presses auto-tile and every time it
+ * loads, so a duration that scales with the card count is not a nice-to-have; it is the thing
+ * this design exists to prevent.
+ *
+ * These assertions are on the **arithmetic**, not on a snapshot, because the property that
+ * matters is one a snapshot cannot express: that the last card seated is the same moment
+ * whether there are three cards or thirty. The browser confirmation of the same numbers is
+ * recorded in the PR body — planned 1200ms and measured 1205/1211/1218/1224ms at 3/8/20/30.
+ */
+describe('deal timing', () => {
+  const COUNTS = [1, 2, 3, 5, 8, 12, 20, 30, 48, 120];
+
+  it('never lets any card settle after the budget, at any card count', () => {
+    for (const count of COUNTS) {
+      for (const step of dealTiming(count)) {
+        expect(
+          step.endsAtMs,
+          `${count} cards: a card seated at ${step.endsAtMs}ms, past the ${DEAL_DURATION_MS}ms budget`,
+        ).toBeLessThanOrEqual(DEAL_DURATION_MS);
+        expect(step.delayMs + step.travelMs).toBe(step.endsAtMs);
+      }
+    }
+  });
+
+  it('spends the whole budget, so the last card lands on it rather than short', () => {
+    // The bound alone would be satisfied by a deal that finishes at 40ms. What matters is that
+    // it uses the time it was given at every count.
+    for (const count of COUNTS) {
+      const steps = dealTiming(count);
+      expect(steps[steps.length - 1].endsAtMs, `${count} cards did not use the full budget`).toBe(DEAL_DURATION_MS);
+    }
+  });
+
+  it('settles in the same wall-clock time for three cards and for thirty', () => {
+    // The headline requirement, asserted as a difference rather than as two absolutes.
+    const settle = (count: number) => dealTiming(count).at(-1)!.endsAtMs;
+    const spread = Math.max(...COUNTS.map(settle)) - Math.min(...COUNTS.map(settle));
+
+    expect(spread, `settle time varies by ${spread}ms across card counts`).toBe(0);
+  });
+
+  it('compresses the stagger and the travel as the board fills', () => {
+    // A few cards must be allowed a long, confident arc, or a two-card deal reads as a glitch;
+    // many cards must not, or the budget is gone. Both directions are asserted, because either
+    // one on its own would satisfy "bounded".
+    //
+    // Strictly decreasing only up to the reference count, and flat after it: the curve is
+    // clamped on purpose, and a floor that kept sliding past the reference would make 120 cards
+    // run a 4ms-per-card cascade that reads as one jump.
+    const belowReference = COUNTS.filter((c) => c > 1 && c <= DEAL_COMPRESSION_REFERENCE).map(
+      (c) => dealTiming(c)[0].travelMs,
+    );
+
+    for (let i = 1; i < belowReference.length; i++) {
+      expect(
+        belowReference[i],
+        `travel grew from ${belowReference[i - 1]}ms to ${belowReference[i]}ms at ${COUNTS.filter((c) => c > 1 && c <= DEAL_COMPRESSION_REFERENCE)[i]} cards`,
+      ).toBeLessThan(belowReference[i - 1]);
+    }
+
+    for (const count of COUNTS.filter((c) => c > DEAL_COMPRESSION_REFERENCE)) {
+      expect(dealTiming(count)[0].travelMs, `travel kept sliding past the floor at ${count} cards`).toBe(
+        DEAL_TRAVEL_MIN_MS,
+      );
+    }
+
+    const sparse = dealTiming(3)[0].travelMs;
+    const crowded = dealTiming(DEAL_COMPRESSION_REFERENCE)[0].travelMs;
+
+    expect(sparse).toBeGreaterThan(DEAL_TRAVEL_MIN_MS);
+    expect(crowded).toBe(DEAL_TRAVEL_MIN_MS);
+    expect(dealTiming(2)[0].travelMs).toBeLessThan(DEAL_TRAVEL_MAX_MS);
+    for (const step of dealTiming(DEAL_COMPRESSION_REFERENCE)) {
+      expect(step.travelMs).toBeGreaterThanOrEqual(DEAL_TRAVEL_MIN_MS);
+      expect(step.travelMs).toBeLessThanOrEqual(DEAL_TRAVEL_MAX_MS);
+    }
+  });
+
+  it('releases the first card immediately and the rest in a strictly ordered cascade', () => {
+    for (const count of COUNTS) {
+      const steps = dealTiming(count);
+      expect(steps[0].delayMs, `${count} cards: the first card waited before leaving the pile`).toBe(0);
+      for (let i = 1; i < count; i++) {
+        expect(steps[i].delayMs, `${count} cards: card ${i} left before card ${i - 1}`).toBeGreaterThan(
+          steps[i - 1].delayMs,
+        );
+      }
+    }
+  });
+
+  it('keeps the cascade legible at thirty cards — a step short enough to still read as one', () => {
+    // Below roughly 25ms the departures merge into a single jump and the deal stops reading as
+    // a deal. This is the number that decides DEAL_COMPRESSION_REFERENCE.
+    const steps = dealTiming(30);
+    const smallestStep = Math.min(...steps.slice(1).map((s, i) => s.delayMs - steps[i].delayMs));
+
+    expect(smallestStep).toBeGreaterThan(20);
+  });
+
+  it('treats a zero or negative card count as nothing to deal', () => {
+    expect(dealTiming(0)).toEqual([]);
+    expect(dealTiming(-4)).toEqual([]);
+  });
+});
+
+describe('deal deck origin', () => {
+  const H = CARD_FIT_HEIGHT;
+  const W = CARD_WIDTH;
+  const tiled = (positions: { x: number; y: number }[], height = H): PlacedCard[] =>
+    positions.map((position) => ({ position, variant: 'tall' as const, height, width: W }));
+
+  it('sits at the centre of the packed arrangement, in world units', () => {
+    // Centre rather than a corner: a deck at the corner of the grid leaves the first card
+    // essentially where it already started, and a deal needs every card to have real distance
+    // to travel to read as a pile emptying.
+    //
+    // One card at (0,0): bounds 0,0 → 320×432, so the centre is (160, 216).
+    expect(dealDeckOrigin(tiled([{ x: 0, y: 0 }]))).toEqual({ x: W / 2, y: H / 2 });
+
+    // Three cards: the column at x=0 runs two deep (0 → 864) and the widest is x=0 → 680.
+    expect(
+      dealDeckOrigin(
+        tiled([
+          { x: 0, y: 0 },
+          { x: 360, y: 0 },
+          { x: 0, y: H },
+        ]),
+      ),
+    ).toEqual({ x: (360 + W) / 2, y: H });
+  });
+
+  it('moves the deck with the arrangement rather than sitting at a fixed board point', () => {
+    const atOrigin = dealDeckOrigin(
+      tiled([
+        { x: 0, y: 0 },
+        { x: 360, y: 0 },
+      ]),
+    );
+    const shifted = dealDeckOrigin(
+      tiled([
+        { x: 2000, y: 0 },
+        { x: 2360, y: 0 },
+      ]),
+    );
+
+    // A deck pinned to world (0,0) would put two cards 2000 units away in the pile, which at
+    // any real zoom is a card halfway to the next county.
+    expect(shifted).toEqual({ x: atOrigin.x + 2000, y: atOrigin.y });
+  });
+
+  it('falls back to the board origin for an empty board rather than dividing by nothing', () => {
+    const origin = dealDeckOrigin([]);
+
+    expect(origin).toEqual({
+      x: Math.round(EMPTY_BOARD_BOUNDS.x + EMPTY_BOARD_BOUNDS.width / 2),
+      y: Math.round(EMPTY_BOARD_BOUNDS.y + EMPTY_BOARD_BOUNDS.height / 2),
+    });
+  });
+});
+
+describe('placedCardAt', () => {
+  it('projects a card onto a proposed position while keeping its measured shape', () => {
+    // `autoTileBoard` packs by height and `dealDeckOrigin` measures the result, so the two have
+    // to agree on what a card *is*. Keeping the projection in one place is what stops them
+    // drifting apart.
+    const card = {
+      card: { activity: { id: 'x', title: 'x' } },
+      position: { x: 9, y: 9 },
+      variant: 'tall' as const,
+      height: 471,
+      isDocked: false,
+    };
+
+    expect(placedCardAt(card, { x: 100, y: 200 })).toEqual({
+      position: { x: 100, y: 200 },
+      variant: 'tall',
+      height: 471,
+      width: CARD_VARIANT_DIMENSIONS.tall.width,
     });
   });
 });

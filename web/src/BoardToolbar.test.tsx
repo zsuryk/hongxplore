@@ -6,14 +6,17 @@ import {
   AUTO_FIT_DESCRIPTION,
   AUTO_FIT_INACTIVE_LABEL,
   AUTO_FIT_LABEL,
+  AUTO_FIT_TOGGLE_ON,
   AUTO_TILE_LABEL,
   AUTO_TILE_TOOLTIP,
   BOARD_TOOLBAR_LABEL,
   CLEAR_BOARD_LABEL,
+  CLEAR_BOARD_TOOLTIP,
   FIT_VIEW_LABEL,
   RESET_ZOOM_LABEL,
   ZOOM_IN_LABEL,
   ZOOM_OUT_LABEL,
+  zoomPercentage,
 } from './copy';
 
 describe('BoardToolbar', () => {
@@ -60,12 +63,21 @@ describe('BoardToolbar', () => {
       />,
     );
 
-    expect(markup).toContain(`<button aria-label="${ZOOM_OUT_LABEL}" class="btn btn--sm btn--icon" disabled=""`);
-    expect(markup).toContain(`<button aria-label="${ZOOM_IN_LABEL}" class="btn btn--sm btn--icon" disabled=""`);
-    expect(markup).toContain(`<button aria-label="${RESET_ZOOM_LABEL}" class="btn btn--sm" disabled=""`);
-    expect(markup).toContain(`<button aria-label="${FIT_VIEW_LABEL}" class="btn btn--sm" disabled=""`);
+    // Every rail control is an icon button, so the class list carries `btn--icon` and the
+    // rail's own `board-toolbar__btn`. The clear control keeps its `btn--danger` variant so
+    // the one destructive action in the rail is still identifiable in the markup.
     expect(markup).toContain(
-      `<button aria-label="${CLEAR_BOARD_LABEL}" class="btn btn--sm btn--danger board-toolbar__btn--danger" disabled=""`,
+      `<button aria-label="${ZOOM_OUT_LABEL}" class="btn btn--sm btn--icon board-toolbar__btn" disabled=""`,
+    );
+    expect(markup).toContain(
+      `<button aria-label="${ZOOM_IN_LABEL}" class="btn btn--sm btn--icon board-toolbar__btn" disabled=""`,
+    );
+    expect(markup).toContain(`<button aria-label="${RESET_ZOOM_LABEL}" class="board-toolbar__readout" disabled=""`);
+    expect(markup).toContain(
+      `<button aria-label="${FIT_VIEW_LABEL}" class="btn btn--sm btn--icon board-toolbar__btn" disabled=""`,
+    );
+    expect(markup).toContain(
+      `<button aria-label="${CLEAR_BOARD_LABEL}" class="btn btn--sm btn--icon board-toolbar__btn board-toolbar__btn--danger" disabled=""`,
     );
   });
 
@@ -81,11 +93,46 @@ describe('BoardToolbar', () => {
       />,
     );
 
-    expect(markup).toContain(`<button aria-label="${RESET_ZOOM_LABEL}" class="btn btn--sm"`);
-    expect(markup).not.toContain(`<button aria-label="${RESET_ZOOM_LABEL}" class="btn btn--sm" disabled=""`);
+    expect(markup).toContain(`<button aria-label="${RESET_ZOOM_LABEL}`);
+    expect(markup).toContain('class="board-toolbar__readout" type="button"');
+    expect(markup).not.toContain('class="board-toolbar__readout" disabled=""');
     expect(markup).not.toContain(
-      `<button aria-label="${CLEAR_BOARD_LABEL}" class="btn btn--sm btn--danger board-toolbar__btn--danger" disabled=""`,
+      `<button aria-label="${CLEAR_BOARD_LABEL}" class="btn btn--sm btn--icon board-toolbar__btn board-toolbar__btn--danger" disabled=""`,
     );
+  });
+
+  it('is an icon rail: every control is icon-only and its label is revealed, not rendered', () => {
+    const markup = renderToStaticMarkup(<BoardToolbar {...defaultProps} onAutoTile={() => undefined} />);
+
+    // Six controls, six inline glyphs — no text label is painted into a button, and no
+    // `title` attribute is used, because a native tooltip is mouse-only. The readout/reset
+    // is the seventh control and is deliberately glyph-free: the number is its label.
+    expect([...markup.matchAll(/<svg aria-hidden="true" class="icon"/g)]).toHaveLength(6);
+    expect(markup).not.toContain('title=');
+
+    // Each revealed label is `aria-hidden`: it is a pointer affordance sitting on top of a
+    // control that already has a real accessible name, never the name itself.
+    const labels = [...markup.matchAll(/<span aria-hidden="true" class="board-toolbar__label">([^<]*)</g)];
+    expect(labels.map((match) => match[1])).toEqual([
+      ZOOM_OUT_LABEL,
+      ZOOM_IN_LABEL,
+      `${FIT_VIEW_LABEL} (0)`,
+      `${AUTO_TILE_TOOLTIP} (T)`,
+      `${AUTO_FIT_LABEL}: ${AUTO_FIT_TOGGLE_ON} — ${AUTO_FIT_DESCRIPTION}`,
+      CLEAR_BOARD_TOOLTIP,
+    ]);
+  });
+
+  it('doubles the zoom readout as the reset control and announces the long form politely', () => {
+    const markup = renderToStaticMarkup(<BoardToolbar {...defaultProps} scale={0.8} canResetZoom={true} />);
+
+    // What you see is the bare number; what is announced is the number with its subject. The
+    // visible string is aria-hidden so the two never disagree.
+    expect(markup).toContain('<span aria-hidden="true">80%</span>');
+    expect(markup).toContain('aria-live="polite"');
+    expect(markup).toContain('Zoom: 80%');
+    // Clicking the readout resets, and says so.
+    expect(markup).toContain(`aria-label="${RESET_ZOOM_LABEL} — ${zoomPercentage(0.8)}"`);
   });
 
   it('renders auto-fit toggle with visible on/off state and accessible tooltip', () => {
@@ -95,7 +142,7 @@ describe('BoardToolbar', () => {
     expect(onMarkup).toContain('aria-checked="true"');
     expect(onMarkup).toContain(`aria-label="${AUTO_FIT_ACTIVE_LABEL}"`);
     expect(onMarkup).toContain(AUTO_FIT_LABEL);
-    expect(onMarkup).toContain('board-toolbar__toggle--active');
+    expect(onMarkup).toContain('board-toolbar__btn--on');
     expect(onMarkup).toContain('On');
     expect(onMarkup).toContain(AUTO_FIT_DESCRIPTION);
     expect(onMarkup).toContain('aria-describedby="autofit-description"');
@@ -104,7 +151,7 @@ describe('BoardToolbar', () => {
     const offMarkup = renderToStaticMarkup(<BoardToolbar {...defaultProps} autoFitEnabled={false} />);
     expect(offMarkup).toContain('aria-checked="false"');
     expect(offMarkup).toContain(`aria-label="${AUTO_FIT_INACTIVE_LABEL}"`);
-    expect(offMarkup).not.toContain('board-toolbar__toggle--active');
+    expect(offMarkup).not.toContain('board-toolbar__btn--on');
     expect(offMarkup).toContain('Off');
   });
 
@@ -140,11 +187,15 @@ describe('BoardToolbar', () => {
     expect(enabledMarkup).toContain(`aria-label="${AUTO_TILE_LABEL}"`);
     expect(enabledMarkup).toContain(AUTO_TILE_LABEL);
     expect(enabledMarkup).toContain(AUTO_TILE_TOOLTIP);
-    expect(enabledMarkup).not.toContain(`<button aria-label="${AUTO_TILE_LABEL}" class="btn btn--sm" disabled=""`);
+    expect(enabledMarkup).not.toContain(
+      `<button aria-label="${AUTO_TILE_LABEL}" class="btn btn--sm btn--icon board-toolbar__btn" disabled=""`,
+    );
 
     const disabledMarkup = renderToStaticMarkup(
       <BoardToolbar {...defaultProps} canAutoTile={false} onAutoTile={() => undefined} />,
     );
-    expect(disabledMarkup).toContain(`<button aria-label="${AUTO_TILE_LABEL}" class="btn btn--sm" disabled=""`);
+    expect(disabledMarkup).toContain(
+      `<button aria-label="${AUTO_TILE_LABEL}" class="btn btn--sm btn--icon board-toolbar__btn" disabled=""`,
+    );
   });
 });

@@ -6,10 +6,13 @@
 
 .btn {
   align-items: center;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border-strong);
+  background: linear-gradient(180deg, var(--card-hover), var(--card));
+  border: 1px solid var(--rule);
   border-radius: var(--radius-md);
-  color: var(--color-text);
+  /* The same light the cards get: one inset hairline along the top edge, so a control reads as
+     a solid object under the same light as everything else rather than as a flat swatch. */
+  box-shadow: inset 0 1px 0 var(--edge-light);
+  color: var(--foreground);
   cursor: pointer;
   display: inline-flex;
   font-size: var(--control-font);
@@ -19,62 +22,81 @@
   min-height: var(--control-height);
   padding: 0 var(--control-padding-x);
   transition:
-    background-color var(--motion-duration-fast) var(--motion-ease),
-    border-color var(--motion-duration-fast) var(--motion-ease),
-    color var(--motion-duration-fast) var(--motion-ease);
+    background-color var(--motion-fast) var(--motion-ease),
+    border-color var(--motion-fast) var(--motion-ease),
+    box-shadow var(--motion-fast) var(--motion-ease),
+    color var(--motion-fast) var(--motion-ease);
   white-space: nowrap;
 }
 
 .btn:hover:not(:disabled) {
-  background: var(--color-surface-hover);
+  background: var(--card-hover);
+  border-color: var(--accent-border);
 }
 
 .btn:active:not(:disabled) {
-  background: var(--color-surface-active);
+  background: var(--card-active);
+  box-shadow: none;
 }
 
 .btn:disabled {
-  background: var(--color-surface-sunken);
-  border-color: var(--color-border);
-  color: var(--color-text-subtle);
+  background: var(--muted);
+  border-color: var(--divider);
+  box-shadow: none;
+  color: var(--card-muted-foreground);
   cursor: not-allowed;
 }
 
+/**
+ * The product's single primary action.
+ *
+ * Harbour cyan, filled and flat, with the light on it and a shadow under it — the one control
+ * on the page allowed both, because it is genuinely floating above the header plane and genuinely
+ * the thing to press. It is flat rather than graded on purpose: a saturated gradient on a call to
+ * action is the most recognisable "assembled" tell there is, and the palette does not need one.
+ * Nothing else in the app gets a filled cyan.
+ */
 .btn--primary {
-  background: var(--color-accent);
-  border-color: var(--color-accent-strong);
-  color: var(--color-text-inverse);
+  background: var(--accent);
+  border-color: var(--accent-strong);
+  box-shadow:
+    var(--shadow-lift),
+    inset 0 1px 0 var(--edge-light-strong);
+  color: var(--accent-foreground);
   font-weight: 600;
 }
 
 .btn--primary:hover:not(:disabled) {
-  background: var(--color-accent-strong);
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
 }
 
 .btn--primary:active:not(:disabled) {
-  background: var(--color-accent-strong);
+  background: var(--accent);
+  box-shadow: inset 0 1px 2px var(--shadow-press);
 }
 
 .btn--primary:disabled {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-  color: var(--color-text-inverse);
-  opacity: 0.65;
+  background: var(--accent-soft);
+  border-color: var(--accent-border);
+  box-shadow: none;
+  color: var(--accent-foreground);
+  opacity: 0.7;
 }
 
 .btn--danger {
-  background: var(--color-danger-soft);
-  border-color: var(--color-danger-border);
-  color: var(--color-danger);
+  background: var(--destructive-soft);
+  border-color: var(--destructive-border);
+  color: var(--destructive);
   font-weight: 600;
 }
 
 .btn--danger:hover:not(:disabled) {
-  background: var(--color-danger-border);
+  background: var(--destructive-border);
 }
 
 .btn--sm {
-  font-size: var(--text-xs);
+  font-size: var(--text-label);
   min-height: var(--control-height-sm);
   padding: 0 var(--space-2);
 }
@@ -92,85 +114,94 @@
 /* ---- Text field ---- */
 
 .field {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border-strong);
+  background: var(--input);
+  border: 1px solid var(--rule);
   border-radius: var(--radius-md);
-  color: var(--color-text);
+  box-shadow: inset 0 1px 2px var(--shadow-input-inset);
+  color: var(--foreground);
   font: inherit;
   font-size: var(--control-font);
   min-height: var(--control-height);
   padding: 0 var(--space-3);
   transition:
-    border-color var(--motion-duration-fast) var(--motion-ease),
-    box-shadow var(--motion-duration-fast) var(--motion-ease);
+    border-color var(--motion-fast) var(--motion-ease),
+    box-shadow var(--motion-fast) var(--motion-ease);
   width: 100%;
 }
 
 .field::placeholder {
-  color: var(--color-text-subtle);
+  color: var(--card-muted-foreground);
 }
 
 .field:hover:not(:disabled) {
-  border-color: var(--color-text-subtle);
+  border-color: var(--accent-border);
 }
 
 .field:focus {
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px var(--color-accent-soft);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
   outline: none;
 }
 
 .field:focus-visible {
-  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline: var(--focus-ring-width) solid var(--ring);
   outline-offset: var(--focus-ring-offset);
 }
 
 .field:disabled {
-  background: var(--color-surface-sunken);
+  background: var(--muted);
   cursor: not-allowed;
 }
 
 /* ---- Chip: toggleable filter / availability pill ---- */
 
 .chip {
-  background: var(--color-surface-sunken);
-  border: 1px solid var(--color-border-strong);
+  background: var(--chip-face);
+  border: 1px solid var(--divider);
   border-radius: var(--radius-pill);
-  color: var(--color-text-muted);
+  color: var(--muted-foreground);
   cursor: pointer;
   font: inherit;
-  font-size: var(--text-xs);
+  font-size: var(--text-label);
   font-weight: 500;
   min-height: var(--control-height-sm);
   padding: 0 var(--space-3);
   transition:
-    background-color var(--motion-duration-fast) var(--motion-ease),
-    border-color var(--motion-duration-fast) var(--motion-ease),
-    color var(--motion-duration-fast) var(--motion-ease);
+    background-color var(--motion-fast) var(--motion-ease),
+    border-color var(--motion-fast) var(--motion-ease),
+    color var(--motion-fast) var(--motion-ease);
 }
 
 .chip:hover {
-  background: var(--color-surface-hover);
+  background: var(--card-hover);
+  border-color: var(--accent-border);
+  color: var(--foreground);
 }
 
 .chip--selected {
-  background: var(--color-accent);
-  border-color: var(--color-accent-strong);
-  color: var(--color-text-inverse);
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .chip--selected:hover {
-  background: var(--color-accent-strong);
+  background: var(--accent-soft);
+  border-color: var(--accent-strong);
+  color: var(--accent-strong);
 }
 
 /* ---- Segmented control ---- */
 
 .segmented {
-  background: var(--color-surface-sunken);
-  border: 1px solid var(--color-border-strong);
+  background: var(--muted);
+  border: var(--control-border-width) solid var(--rule);
   border-radius: var(--radius-md);
   display: inline-flex;
   gap: var(--control-inset);
+  /* The tray's tier, declared rather than left to fall out of padding + border + target. Both the
+     tray and the controls standing next to it size off this one token, so "one control tier" is
+     something they read rather than something they have to be kept in sync by hand. */
+  min-height: var(--control-height-composite);
   padding: var(--control-inset);
 }
 
@@ -178,63 +209,93 @@
   background: transparent;
   border: none;
   border-radius: var(--radius-sm);
-  color: var(--color-text-subtle);
+  color: var(--card-muted-foreground);
   cursor: pointer;
   font: inherit;
-  font-size: var(--text-xs);
+  font-size: var(--text-label);
   font-weight: 500;
-  min-height: calc(var(--control-height-sm) - (var(--control-inset) * 2));
+  /* The *target* is this option, not the segmented container around it. WCAG 2.5.8 measures the
+     thing the pointer has to hit, so the option itself is sized to --control-height-sm and the
+     container's --control-inset padding simply makes the group taller. Subtracting the inset here
+     (as this rule used to) sized the group correctly but left a 20px target inside a 24px box. */
+  min-height: var(--control-height-sm);
   padding: 0 var(--space-2);
   transition:
-    background-color var(--motion-duration-fast) var(--motion-ease),
-    color var(--motion-duration-fast) var(--motion-ease);
+    background-color var(--motion-fast) var(--motion-ease),
+    color var(--motion-fast) var(--motion-ease);
 }
 
 .segmented__option:hover {
-  color: var(--color-text);
+  color: var(--foreground);
 }
 
 .segmented__option--active {
-  background: var(--color-surface);
-  box-shadow: var(--shadow-sm);
-  color: var(--color-text);
+  background: var(--card);
+  box-shadow: var(--shadow-lift);
+  color: var(--foreground);
   font-weight: 600;
 }
 
 /* ---- Labelled group ---- */
 
 .field-label {
-  color: var(--color-text-subtle);
+  color: var(--card-muted-foreground);
   display: block;
-  font-size: var(--text-xs);
+  font-size: var(--text-label);
   font-weight: 600;
   letter-spacing: 0.02em;
   text-transform: uppercase;
 }
 
+/* ---- Iconography ---- */
+
+/**
+ * One place decides icon size. The SVGs in `icons.tsx` carry no width/height attributes and
+ * inherit `currentColor`, so a component can restyle an icon by setting `color` and nothing
+ * else. `geometricPrecision` keeps the curves from being re-snapped to the pixel grid, which is
+ * what makes a 16px glyph stay crisp when the browser is at 125% or 200% zoom.
+ */
+.icon {
+  display: block;
+  flex-shrink: 0;
+  height: var(--icon-size);
+  stroke-width: var(--icon-stroke);
+  width: var(--icon-size);
+}
+
 /* ---- Right-edge board toolbar ---- */
 
+/**
+ * An icon rail, not a column of buttons.
+ *
+ * Screen space and never scaled (ADR-0009), so the icons stay the same pixel size at 25% board
+ * zoom and at 300%. The revealed label is absolutely positioned *outside* the rail, which is why
+ * the rail itself must not clip — `overflow-y: auto` would silently compute the cross axis to
+ * `auto` as well and cut the labels off.
+ */
 .board-toolbar {
   align-items: stretch;
   backdrop-filter: var(--backdrop-blur-chrome);
   -webkit-backdrop-filter: var(--backdrop-blur-chrome);
-  background: var(--color-overlay);
-  border: 1px solid var(--color-border);
+  background: var(--chrome-surface);
+  border: 1px solid var(--rule);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  /* The rail genuinely floats over the canvas, so the wide shadow is describing the layer
+     rather than outlining an object — which is the case where a bezel and a shadow together
+     are correct rather than the ghost-card pattern. */
+  box-shadow:
+    var(--shadow-raised),
+    inset 0 1px 0 var(--edge-light);
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  max-height: calc(100% - 15rem);
-  overflow-x: visible;
-  overflow-y: auto;
-  padding: var(--space-2);
+  overflow: visible;
+  padding: var(--space-1);
   position: absolute;
   right: var(--space-4);
   top: 50%;
   translate: 0 -50%;
   user-select: none;
-  width: 7rem;
+  width: var(--rail-width);
   z-index: 10;
 }
 
@@ -249,137 +310,155 @@
   gap: var(--space-1);
 }
 
-.board-toolbar__group--zoom {
-  align-items: center;
-}
-
 .board-toolbar__item {
   display: flex;
-  flex-direction: column;
   position: relative;
-  width: 100%;
 }
 
 .board-toolbar__btn {
   justify-content: center;
-  min-height: var(--control-height-sm);
+  min-height: var(--control-height);
   width: 100%;
 }
 
-.board-toolbar__btn--reset {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  padding: 0 var(--space-2);
+/* The only destructive control in the rail. It keeps the danger fill so it cannot be
+   misread as another zoom control, and it sits below a rule so the rail splits into
+   "framing the board" and "changing the board" without a heading. */
+.board-toolbar__btn--danger {
+  border-color: var(--destructive-border);
+  color: var(--destructive);
 }
 
-.board-toolbar__readout {
-  color: var(--color-text-muted);
-  font-size: var(--text-xs);
-  font-variant-numeric: tabular-nums;
-  padding: var(--space-1) 0;
-  text-align: center;
-  white-space: nowrap;
+.board-toolbar__btn--danger:hover:not(:disabled) {
+  background: var(--destructive-soft);
+  color: var(--destructive-strong);
 }
 
-.board-toolbar__divider {
-  background: var(--color-border);
-  height: 1px;
-  margin: var(--space-1) 0;
-  width: 100%;
+/**
+ * Auto-fit's lamp. The only two-state control in the rail, so the only one that needs to say
+ * so at 16px: `--accent` when it is framing, the muted rule when it is not. It sits on the
+ * icon rather than beside it so the rail width stays the hit-target width.
+ */
+.board-toolbar__btn--toggle {
+  position: relative;
 }
 
-.board-toolbar__toggle {
-  align-items: center;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-md);
-  color: var(--color-text-muted);
-  display: flex;
-  gap: var(--space-2);
-  justify-content: space-between;
-  min-height: var(--control-height-sm);
-  padding: 0 var(--space-2);
-  width: 100%;
-}
-
-.board-toolbar__toggle:hover:not(:disabled) {
-  background: var(--color-surface-hover);
-  color: var(--color-text);
-}
-
-.board-toolbar__toggle--active {
-  background: var(--color-accent-soft);
-  border-color: var(--color-accent-strong);
-  color: var(--color-text);
-}
-
-.board-toolbar__toggle-indicator {
-  background: var(--color-border-strong);
+.board-toolbar__lamp {
+  background: var(--rule);
   border-radius: var(--radius-pill);
-  flex-shrink: 0;
-  height: 6px;
-  transition:
-    background-color var(--motion-duration-fast) var(--motion-ease),
-    box-shadow var(--motion-duration-fast) var(--motion-ease);
-  width: 6px;
+  bottom: 3px;
+  height: 4px;
+  position: absolute;
+  right: 3px;
+  transition: background-color var(--motion-fast) var(--motion-ease);
+  width: 4px;
 }
 
-.board-toolbar__toggle--active .board-toolbar__toggle-indicator {
-  background: var(--color-success);
-  box-shadow: 0 0 6px var(--color-success);
+.board-toolbar__btn--on {
+  border-color: var(--accent-border);
+  color: var(--accent-strong);
 }
 
-.board-toolbar__toggle-label {
-  font-size: var(--text-xs);
-  font-weight: 500;
+.board-toolbar__btn--on:hover:not(:disabled) {
+  color: var(--accent-strong);
 }
 
-.board-toolbar__toggle-badge {
-  background: var(--color-surface-sunken);
+.board-toolbar__btn--on .board-toolbar__lamp {
+  background: var(--accent);
+}
+
+/**
+ * The readout / reset control.
+ *
+ * Reads as a number, not a button — until you hover or focus it, at which point it takes a
+ * border. It is the one control in the rail with no icon, because the number *is* the label.
+ */
+.board-toolbar__readout {
+  align-items: center;
+  background: transparent;
+  border: 1px solid transparent;
   border-radius: var(--radius-sm);
-  color: var(--color-text-subtle);
-  font-size: 0.65rem;
-  font-weight: 700;
-  padding: 1px 4px;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  display: flex;
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  font-variant-numeric: tabular-nums;
+  justify-content: center;
+  letter-spacing: 0;
+  min-height: var(--control-height-sm);
+  padding: 0;
+  transition:
+    background-color var(--motion-fast) var(--motion-ease),
+    border-color var(--motion-fast) var(--motion-ease),
+    color var(--motion-fast) var(--motion-ease);
+  width: 100%;
 }
 
-.board-toolbar__toggle--active .board-toolbar__toggle-badge {
-  background: var(--color-accent);
-  color: var(--color-text-inverse);
+.board-toolbar__readout:hover:not(:disabled),
+.board-toolbar__readout:focus-visible:not(:disabled) {
+  background: var(--card-hover);
+  border-color: var(--rule);
+  color: var(--foreground);
 }
 
-.board-toolbar__tooltip {
+.board-toolbar__readout:disabled {
+  color: var(--card-muted-foreground);
+  cursor: default;
+}
+
+/* The one structural rule, as the rail's internal separator. */
+.board-toolbar__divider {
+  background: var(--rule);
+  flex-shrink: 0;
+  height: 1px;
+  margin: var(--space-1) var(--space-2);
+}
+
+/**
+ * The revealed label.
+ *
+ * Revealed on `:hover` of the item **and** on `:focus-within` of the button, because a
+ * keyboard user tabbing the rail needs the same information a pointer user gets. It is
+ * `aria-hidden` in the markup and positioned outside the rail, so it never widens the rail and
+ * never becomes the accessible name.
+ *
+ * It opens to the *left*, not the right: the rail is pinned to the right edge of the board, so
+ * a label anchored to the button's left edge would sit under the window edge.
+ */
+.board-toolbar__label {
   backdrop-filter: var(--backdrop-blur-chrome);
   -webkit-backdrop-filter: var(--backdrop-blur-chrome);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
-  color: var(--color-text-muted);
-  font-size: var(--text-xs);
-  font-weight: 400;
+  background: var(--popover);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  box-shadow:
+    var(--shadow-raised),
+    inset 0 1px 0 var(--edge-light);
+  color: var(--foreground);
+  font-size: var(--text-label);
+  font-weight: var(--weight-medium);
   line-height: var(--leading-tight);
   max-width: 14rem;
   opacity: 0;
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-1) var(--space-2);
   pointer-events: none;
   position: absolute;
-  right: calc(100% + var(--space-2));
+  right: calc(100% + var(--space-3));
   text-align: left;
   top: 50%;
   translate: 0 -50%;
   transition:
-    opacity var(--motion-duration-fast) var(--motion-ease),
-    visibility var(--motion-duration-fast) var(--motion-ease);
+    opacity var(--motion-fast) var(--motion-ease),
+    visibility var(--motion-fast) var(--motion-ease);
   visibility: hidden;
   white-space: normal;
   width: max-content;
   z-index: 100;
 }
 
-.board-toolbar__item:hover .board-toolbar__tooltip,
-.board-toolbar__btn:focus-visible ~ .board-toolbar__tooltip,
-.board-toolbar__toggle:focus-visible ~ .board-toolbar__tooltip {
+.board-toolbar__item:hover .board-toolbar__label,
+.board-toolbar__item:focus-within .board-toolbar__label {
   opacity: 1;
   visibility: visible;
 }
@@ -390,7 +469,7 @@
   align-items: center;
   backdrop-filter: var(--backdrop-blur-chrome);
   -webkit-backdrop-filter: var(--backdrop-blur-chrome);
-  background: rgb(0 0 0 / 60%);
+  background: var(--scrim);
   display: flex;
   inset: 0;
   justify-content: center;
@@ -399,10 +478,12 @@
 }
 
 .board-modal {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
+  background: linear-gradient(180deg, var(--card-hover), var(--card));
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-card);
+  box-shadow:
+    var(--shadow-drag),
+    inset 0 1px 0 var(--edge-light);
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
@@ -412,16 +493,16 @@
 }
 
 .board-modal h2 {
-  color: var(--color-text);
-  font-size: var(--text-base);
+  color: var(--foreground);
+  font-size: var(--text-body);
   font-weight: 600;
   margin: 0;
 }
 
 .board-modal p {
-  color: var(--color-text-muted);
-  font-size: var(--text-sm);
-  line-height: var(--leading-normal);
+  color: var(--muted-foreground);
+  font-size: var(--text-meta);
+  line-height: var(--leading-body);
   margin: 0;
 }
 

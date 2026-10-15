@@ -1,14 +1,21 @@
 import type { CSSProperties } from 'react';
 import type { CardVariant } from './boardLayout';
 import {
+  ACTIVITY_CARD_DISTRICT_LABEL,
   ACTIVITY_CARD_LANGUAGE_LABEL,
   ACTIVITY_CARD_MATCH_RATIONALE_LABEL,
   ACTIVITY_CARD_ORIGINAL_TITLE_LABEL,
+  ACTIVITY_CARD_ROW_LISTED_LABEL,
+  ACTIVITY_CARD_ROW_PRICE_LABEL,
+  ACTIVITY_CARD_ROW_VENUE_LABEL,
   ACTIVITY_CARD_SOURCE_LABEL,
   ACTIVITY_CARD_TIME_UNAVAILABLE,
   FIND_SIMILAR_LABEL,
   activityCardAccessibleLabel,
+  activityCardListedLabel,
   activityCardLocation,
+  activityCardPriceLabel,
+  activityCardSerial,
   getActivityLanguageBadge,
 } from './copy';
 import type { components } from './api/schema';
@@ -24,6 +31,18 @@ export type ActivityCardSize = 'canvas' | 'docked';
 export type ActivityCardProps = {
   isRecent?: boolean;
   match: MatchedActivity;
+  /**
+   * Zero-based position in the board's card order, rendered as the serial plate (`01`, `02`).
+   *
+   * This is the card's *row number*, not its grid cell: it is taken from the full card list
+   * rather than from the cards currently on the canvas, so docking or discarding a card does
+   * not renumber the ones that remain. A board row number that changes under you is worse than
+   * no number. Omitting the prop drops the plate entirely — the docked view does, because it has
+   * no header plate to put one in. **The drag proxy does not**: it passes the index, because
+   * dropping the plate changed the card's content-driven height by 45 world units mid-drag, at
+   * the moment the user is looking at the card to aim it. See `dragProxy.test.tsx`.
+   */
+  index?: number;
   onFindSimilar?: (match: MatchedActivity) => void;
   size?: ActivityCardSize;
   state?: 'spawning' | 'discarding' | 'dragging' | 'bouncing';
@@ -41,6 +60,7 @@ const hktDateFormatter = new Intl.DateTimeFormat('en-HK', {
 });
 
 export function ActivityCard({
+  index,
   isRecent = false,
   match,
   onFindSimilar,
@@ -54,10 +74,16 @@ export function ActivityCard({
   const start = activity.parts[0]?.start;
   const title = activity.title_en ?? activity.title;
   const hasTranslatedTitle = activity.title_en && activity.title_en !== activity.title;
+  // A Traditional-Chinese title is set a step larger than a Latin one (see DESIGN.md "Bilingual
+  // type"): the CJK glyphs are denser at the same nominal size and would otherwise read as
+  // smaller than the Latin text they sit beside.
+  const isCjkTitle = !activity.title_en && /[\u4e00-\u9fa5]/.test(activity.title ?? '');
 
   const stateClass = state ? ` activity-card--${state}` : '';
   const variantClass = size === 'canvas' ? ` activity-card--${variant}` : '';
   const recentClass = isRecent ? ' activity-card--recent' : '';
+  const district = activity.location.district;
+  const serial = index === undefined ? null : activityCardSerial(index);
 
   // Minimal view for docked timeline cards to prevent vertical blowout
   if (size === 'docked') {
@@ -77,9 +103,7 @@ export function ActivityCard({
           )}
         </div>
         <h2 className="activity-card__docked-title">{title}</h2>
-        <p className="activity-card__location">
-          {activityCardLocation(activity.location.venue, activity.location.district)}
-        </p>
+        <p className="activity-card__location">{activityCardLocation(activity.location.venue, district)}</p>
       </article>
     );
   }
@@ -90,62 +114,99 @@ export function ActivityCard({
       className={`activity-card activity-card--${size}${variantClass}${stateClass}${recentClass}`}
       style={style}
     >
-      <div className="activity-card__topline">
-        <span
-          aria-label={`${ACTIVITY_CARD_LANGUAGE_LABEL}: ${language}`}
-          className="activity-card__language"
-          tabIndex={0}
-          title={`${ACTIVITY_CARD_LANGUAGE_LABEL}: ${language}`}
-        >
-          {language}
-        </span>
-        {start ? (
-          <span
-            className={`activity-card__time-badge${variant === 'compact' ? ' activity-card__compact-badge' : ''}`}
-            title={formatActivityTime(start)}
-          >
-            <time dateTime={start}>{formatActivityTime(start)}</time>
+      {/* Header row: the board's own coordinates — row number, where, when. The 1px --rule
+          under it is the same rule that draws the card's bezel; nothing else separates them. */}
+      <header className="activity-card__head">
+        {serial ? (
+          <span aria-hidden="true" className="activity-card__plate">
+            {serial}
           </span>
-        ) : (
-          <span>{ACTIVITY_CARD_TIME_UNAVAILABLE}</span>
-        )}
-      </div>
-      <h2>{title}</h2>
-      {hasTranslatedTitle && variant !== 'compact' ? (
-        <p className="activity-card__original-title">
-          <span className="sr-only">{ACTIVITY_CARD_ORIGINAL_TITLE_LABEL}: </span>
-          {activity.title}
-        </p>
-      ) : null}
-      <p className="activity-card__location">
-        {activityCardLocation(activity.location.venue, activity.location.district)}
-      </p>
-      <p className="activity-card__rationale" tabIndex={0}>
-        <span className="activity-card__rationale-label">{ACTIVITY_CARD_MATCH_RATIONALE_LABEL}</span>
-        {matchRationale}
-      </p>
-      {variant !== 'compact' ? (
-        <p className="activity-card__source">
-          <span className="activity-card__source-label">{ACTIVITY_CARD_SOURCE_LABEL}: </span>
-          {activity.source.url ? (
-            <a href={activity.source.url} rel="noreferrer" target="_blank">
-              {activity.source.name}
-            </a>
+        ) : null}
+        <span className="activity-card__district" title={`${ACTIVITY_CARD_DISTRICT_LABEL}: ${district}`}>
+          {district}
+        </span>
+        <span className="activity-card__head-sub">
+          <span
+            aria-label={`${ACTIVITY_CARD_LANGUAGE_LABEL}: ${language}`}
+            className="activity-card__language"
+            tabIndex={0}
+            title={`${ACTIVITY_CARD_LANGUAGE_LABEL}: ${language}`}
+          >
+            {language}
+          </span>
+          {start ? (
+            <span
+              className={`activity-card__time-badge${variant === 'compact' ? ' activity-card__compact-badge' : ''}`}
+              title={formatActivityTime(start)}
+            >
+              <time dateTime={start}>{formatActivityTime(start)}</time>
+            </span>
           ) : (
-            activity.source.name
+            <span className="activity-card__time-badge">{ACTIVITY_CARD_TIME_UNAVAILABLE}</span>
           )}
+        </span>
+      </header>
+
+      <div className="activity-card__body">
+        <h2 className={isCjkTitle ? 'activity-card__title activity-card__title--cjk' : 'activity-card__title'}>
+          {title}
+        </h2>
+        {hasTranslatedTitle && variant !== 'compact' ? (
+          <p className="activity-card__original-title">
+            <span className="sr-only">{ACTIVITY_CARD_ORIGINAL_TITLE_LABEL}: </span>
+            {activity.title}
+          </p>
+        ) : null}
+
+        {/* The metadata that used to be loose text, now as a ruled data row: a label column and
+            a value column, so district / price / freshness scan down the same edge on every card. */}
+        <dl className="activity-card__data">
+          {activity.location.venue ? (
+            <div className="activity-card__data-row">
+              <dt>{ACTIVITY_CARD_ROW_VENUE_LABEL}</dt>
+              <dd>{activity.location.venue}</dd>
+            </div>
+          ) : null}
+          <div className="activity-card__data-row">
+            <dt>{ACTIVITY_CARD_ROW_PRICE_LABEL}</dt>
+            <dd>{activityCardPriceLabel(activity.price)}</dd>
+          </div>
+          <div className="activity-card__data-row activity-card__data-row--listed">
+            <dt>{ACTIVITY_CARD_ROW_LISTED_LABEL}</dt>
+            <dd>{activityCardListedLabel(activity.listed_at)}</dd>
+          </div>
+        </dl>
+
+        <p className="activity-card__rationale" tabIndex={0}>
+          <span className="activity-card__rationale-label">{ACTIVITY_CARD_MATCH_RATIONALE_LABEL}</span>
+          <span className="activity-card__rationale-text">{matchRationale}</span>
         </p>
-      ) : null}
-      {onFindSimilar ? (
-        <button
-          className="btn btn--sm activity-card__similar-button"
-          onClick={() => onFindSimilar(match)}
-          onPointerDown={(event) => event.stopPropagation()}
-          type="button"
-        >
-          {FIND_SIMILAR_LABEL}
-        </button>
-      ) : null}
+      </div>
+
+      <footer className="activity-card__foot">
+        {variant !== 'compact' ? (
+          <p className="activity-card__source">
+            <span className="activity-card__source-label">{ACTIVITY_CARD_SOURCE_LABEL}: </span>
+            {activity.source.url ? (
+              <a href={activity.source.url} rel="noreferrer" target="_blank">
+                {activity.source.name}
+              </a>
+            ) : (
+              activity.source.name
+            )}
+          </p>
+        ) : null}
+        {onFindSimilar ? (
+          <button
+            className="btn btn--sm activity-card__similar-button"
+            onClick={() => onFindSimilar(match)}
+            onPointerDown={(event) => event.stopPropagation()}
+            type="button"
+          >
+            {FIND_SIMILAR_LABEL}
+          </button>
+        ) : null}
+      </footer>
     </article>
   );
 }
