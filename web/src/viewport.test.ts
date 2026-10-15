@@ -3,6 +3,8 @@ import {
   MAX_ZOOM,
   MIN_ZOOM,
   ZOOM_LEVELS,
+  SAFE_BOTTOM_DOCK,
+  SAFE_TOP_CHROME,
   canZoomIn,
   canZoomOut,
   fitViewport,
@@ -11,6 +13,7 @@ import {
   panViewport,
   preserveViewportCenter,
   screenToWorld,
+  smartCenter100,
   worldToScreen,
   zoomAtScreenPoint,
 } from './viewport';
@@ -102,5 +105,83 @@ describe('zoom ladder', () => {
     expect(isRectInViewport({ x: 900, y: 100, width: 200, height: 200 }, vp, container, 24)).toBe(false);
     expect(isRectInViewport({ x: -50, y: 100, width: 200, height: 200 }, vp, container, 24)).toBe(false);
     expect(isRectInViewport({ x: 10, y: 10, width: 100, height: 100 }, vp, container, 24)).toBe(false);
+  });
+});
+
+describe('smartCenter100 (#104)', () => {
+  const container = { width: 1000, height: 700 };
+  const overviewViewport = { x: 50, y: 50, scale: 0.4 };
+
+  const cards = [
+    { x: 100, y: 100, width: 320, height: 200 }, // Card 1 center: (260, 200)
+    { x: 460, y: 100, width: 320, height: 200 }, // Card 2 center: (620, 200)
+    { x: 100, y: 340, width: 320, height: 200 }, // Card 3 center: (260, 440)
+    { x: 460, y: 340, width: 320, height: 200 }, // Card 4 center: (620, 440)
+  ];
+
+  it('resets to 100% at container center when no cards exist', () => {
+    const result = smartCenter100(overviewViewport, [], container);
+    expect(result.scale).toBe(1.0);
+    expect(worldToScreen(screenToWorld({ x: 500, y: 350 }, result), result)).toEqual({ x: 500, y: 350 });
+  });
+
+  it('preserves existing focal point with zero camera jump for subtle zoom changes', () => {
+    const subtleViewport = { x: 120, y: -40, scale: 0.9 };
+    const result = smartCenter100(subtleViewport, cards, container);
+
+    expect(result.scale).toBe(1.0);
+    // World point at screen center should remain at screen center
+    const centerBefore = screenToWorld({ x: 500, y: 350 }, subtleViewport);
+    const centerAfter = screenToWorld({ x: 500, y: 350 }, result);
+    expect(centerAfter.x).toBeCloseTo(centerBefore.x, 2);
+    expect(centerAfter.y).toBeCloseTo(centerBefore.y, 2);
+  });
+
+  it('preserves focal point when screen center is already directly over a card', () => {
+    // Viewport positioned so screen center (500, 350) lands inside Card 1 (100..420, 100..300)
+    const cardCenteredViewport = { x: 300, y: 150, scale: 1.0 };
+    const result = smartCenter100(cardCenteredViewport, cards, container);
+
+    expect(result.scale).toBe(1.0);
+    expect(result.x).toBe(cardCenteredViewport.x);
+    expect(result.y).toBe(cardCenteredViewport.y);
+  });
+
+  it('snaps to nearest card medoid and frames in safe viewing area when jumping from overview', () => {
+    // Overview viewport where screen center (500, 350) lands in the empty gap (430, 250)
+    // Between Card 1 center (260, 200) and Card 2 center (620, 200)
+    // Distance to Card 4 is sqrt((620-500)^2 + (440-350)^2) = 150 (nearest card)
+    const gapViewport = { x: -20, y: 50, scale: 0.4 };
+    const result = smartCenter100(gapViewport, cards, container);
+
+    expect(result.scale).toBe(1.0);
+    // Card 4 should be horizontally centered
+    const worldCenter = screenToWorld({ x: 500, y: 350 }, result);
+    expect(worldCenter.x).toBeCloseTo(620, 1);
+
+    // Card 4 must be completely visible with clearance from top chrome and bottom timeline dock
+    const card4ScreenTop = 340 * result.scale + result.y;
+    const card4ScreenBottom = (340 + 200) * result.scale + result.y;
+    expect(card4ScreenTop).toBeGreaterThanOrEqual(SAFE_TOP_CHROME);
+    expect(card4ScreenBottom).toBeLessThanOrEqual(container.height - SAFE_BOTTOM_DOCK);
+  });
+
+  it('automatically fits tall cards on compact laptop screens without clipping', () => {
+    // Compact laptop screen: 1024x580
+    const compactContainer = { width: 1024, height: 580 };
+    // Full detail card: 320x460 (would exceed safe area at 1.0)
+    const tallCard = [{ x: 200, y: 200, width: 320, height: 460 }];
+    const overview = { x: 0, y: 0, scale: 0.35 };
+
+    const result = smartCenter100(overview, tallCard, compactContainer);
+
+    // Scale should safely scale down so the full card fits inside safe area
+    expect(result.scale).toBeLessThanOrEqual(1.0);
+    expect(result.scale).toBeGreaterThan(0.5);
+
+    const screenTop = 200 * result.scale + result.y;
+    const screenBottom = (200 + 460) * result.scale + result.y;
+    expect(screenTop).toBeGreaterThanOrEqual(SAFE_TOP_CHROME);
+    expect(screenBottom).toBeLessThanOrEqual(compactContainer.height - SAFE_BOTTOM_DOCK);
   });
 });

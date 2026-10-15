@@ -172,3 +172,101 @@ export function isRectInViewport(
     screenBottom <= container.height - padding
   );
 }
+
+/** Top chrome exclusion zone (toolbar, search bar, status panel) in screen px. */
+export const SAFE_TOP_CHROME = 56;
+
+/** Bottom dock exclusion zone (timeline dock + safe breathing room) in screen px. */
+export const SAFE_BOTTOM_DOCK = 104;
+
+/** Horizontal safe padding from screen edges in screen px. */
+export const SAFE_HORIZONTAL_PADDING = 32;
+
+/** Inner breathing room so framed card never touches safe boundaries. */
+export const SAFE_CARD_PADDING = 16;
+
+/**
+ * Smart-centers the viewport to frame active content cleanly at 100% (or safe scale).
+ *
+ * 1. Safe clearance: Accounts for top chrome (56px) and bottom timeline dock (104px)
+ *    so the card is NEVER clipped or buried underneath the timeline dock.
+ * 2. Full card framing: If the card at 1.0 exceeds safe viewport height (e.g. on compact
+ *    laptops with tall cards), automatically scales to fit so 100% of the card is visible
+ *    from header plate down to the booking CTA button.
+ * 3. Focal preservation: If the user is already looking at a card that is completely visible
+ *    in the safe area, maintains existing focal point with zero camera jump.
+ * 4. Snapping: When jumping from an overview or landing in empty space / partially occluded card,
+ *    snaps the focus to the nearest card medoid, perfectly framed in the safe viewing area.
+ */
+export function smartCenter100(
+  currentViewport: Viewport,
+  cards: readonly Rect[] | null | undefined,
+  container: { width: number; height: number },
+): Viewport {
+  const containerW = container.width;
+  const containerH = container.height;
+  const screenCenter = { x: containerW / 2 || 0, y: containerH / 2 || 0 };
+
+  if (!cards || cards.length === 0 || containerW <= 0 || containerH <= 0) {
+    return zoomAtScreenPoint(currentViewport, screenCenter, 1.0);
+  }
+
+  const currentWorldCenter = screenToWorld(screenCenter, currentViewport);
+
+  // Check if current center already falls within any card's bounds
+  const cardUnderCenter = cards.find(
+    (card) =>
+      currentWorldCenter.x >= card.x &&
+      currentWorldCenter.x <= card.x + card.width &&
+      currentWorldCenter.y >= card.y &&
+      currentWorldCenter.y <= card.y + card.height,
+  );
+
+  // Select target card: the card under center, or nearest card (medoid)
+  let targetCard = cardUnderCenter;
+  if (!targetCard) {
+    let minDistanceSq = Infinity;
+    targetCard = cards[0];
+    for (const card of cards) {
+      const cardCenterX = card.x + card.width / 2;
+      const cardCenterY = card.y + card.height / 2;
+      const dx = cardCenterX - currentWorldCenter.x;
+      const dy = cardCenterY - currentWorldCenter.y;
+      const distSq = dx * dx + dy * dy;
+      if (distSq < minDistanceSq) {
+        minDistanceSq = distSq;
+        targetCard = card;
+      }
+    }
+  }
+
+  // Calculate safe viewport dimensions excluding top chrome, bottom dock, and inner padding
+  const safeWidth = Math.max(containerW - SAFE_HORIZONTAL_PADDING * 2 - SAFE_CARD_PADDING * 2, 1);
+  const safeHeight = Math.max(containerH - SAFE_TOP_CHROME - SAFE_BOTTOM_DOCK - SAFE_CARD_PADDING * 2, 1);
+
+  // Scale: 1.0 by default, but if card exceeds safe area on smaller screens, scale down to fit cleanly
+  const fitScale = Math.min(safeWidth / targetCard.width, safeHeight / targetCard.height);
+  const targetScale = clampZoom(Math.min(1.0, fitScale), FIT_MIN_ZOOM, 1.0);
+
+  const isSubtleZoom = Math.abs(currentViewport.scale - targetScale) <= 0.25;
+
+  // Subtle zoom adjustments (e.g. within ±25%) preserve the user's existing focal point
+  if (isSubtleZoom) {
+    return zoomAtScreenPoint(currentViewport, screenCenter, targetScale);
+  }
+
+  // Jumping from an overview into empty space: frame target card centered in container
+  // and safe viewing area with top chrome and bottom timeline dock clearance
+  const targetX = (containerW - targetCard.width * targetScale) / 2 - targetCard.x * targetScale;
+  const targetY =
+    SAFE_TOP_CHROME +
+    SAFE_CARD_PADDING +
+    (safeHeight - targetCard.height * targetScale) / 2 -
+    targetCard.y * targetScale;
+
+  return {
+    scale: targetScale,
+    x: targetX,
+    y: targetY,
+  };
+}

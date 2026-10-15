@@ -94,6 +94,7 @@ import {
   pinchViewport,
   preserveViewportCenter,
   screenToWorld,
+  smartCenter100,
   zoomAtScreenPoint,
 } from './viewport';
 
@@ -1391,7 +1392,18 @@ export function App({
 
   function resetZoom() {
     markAdjusted();
-    setViewport((current) => zoomAtScreenPoint(current, boardCentre(), 1));
+    const width =
+      boardSize.width || previousSizeRef.current.width || boardRef.current?.clientWidth || window.innerWidth || 0;
+    const height =
+      boardSize.height || previousSizeRef.current.height || boardRef.current?.clientHeight || window.innerHeight || 0;
+
+    const cardRects = canvasCards.map((c) => ({
+      x: c.position.x,
+      y: c.position.y,
+      width: CARD_WIDTH,
+      height: cardHeightsById[c.card.activity.id] ?? CARD_MIN_HEIGHT,
+    }));
+    setViewport((current) => smartCenter100(current, cardRects, { width, height }));
   }
 
   function handleBoardKeyDown(event: KeyboardEvent<HTMLDivElement>) {
