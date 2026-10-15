@@ -170,13 +170,15 @@ export function ActivityCard({
       ) : null}
       <div className="activity-card__actions">
         <a
+          aria-label={activityCardCtaLabel(activity.source.name)}
           className="btn btn--sm btn--primary activity-card__cta"
           href={activity.url}
           onPointerDown={(event) => event.stopPropagation()}
           rel="noreferrer"
           target="_blank"
+          title={activityCardCtaLabel(activity.source.name)}
         >
-          {activityCardCtaLabel(activity.source.name)}
+          <span className="activity-card__cta-text">{activityCardCtaLabel(activity.source.name)}</span>
         </a>
         {onFindSimilar ? (
           <button

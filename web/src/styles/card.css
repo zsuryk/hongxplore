@@ -264,14 +264,35 @@
   flex-wrap: wrap;
   gap: var(--space-2);
   margin-top: var(--space-3);
+  min-width: 0;
+  width: 100%;
 }
 
 .activity-card__cta {
+  align-items: center;
+  display: inline-flex;
+  flex: 1 1 auto;
+  justify-content: center;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
   text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.activity-card__cta-text {
+  display: inline-block;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .activity-card__similar-button {
   align-self: flex-start;
+  flex-shrink: 0;
 }
 
 /* ---- Canvas Shape Variants (Compact, Wide, Tall) ---- */

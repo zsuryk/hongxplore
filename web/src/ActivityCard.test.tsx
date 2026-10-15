@@ -167,11 +167,14 @@ describe('ActivityCard', () => {
       expect(markup).toContain('Yau Tsim Mong');
     });
 
-    it('renders visible booking CTA linking to activity url with source organization name', () => {
+    it('renders visible booking CTA linking to activity url with source organization name and dynamic truncation attributes', () => {
       const markup = renderToStaticMarkup(<ActivityCard match={response.matches[0]} />);
 
       expect(markup).toContain('activity-card__cta');
+      expect(markup).toContain('activity-card__cta-text');
       expect(markup).toContain('href="https://www.heritagemuseum.gov.hk/"');
+      expect(markup).toContain('title="Visit Hong Kong Heritage Discovery Centre"');
+      expect(markup).toContain('aria-label="Visit Hong Kong Heritage Discovery Centre"');
       expect(markup).toContain('Visit Hong Kong Heritage Discovery Centre');
     });
 
