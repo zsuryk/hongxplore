@@ -1,13 +1,14 @@
 import { useState, type FormEvent } from 'react';
 import {
   FREE_SLOTS_LABEL,
-  FREE_TIME_SLOTS,
   INITIAL_ACTIVITY_QUERY,
   SEARCH_INPUT_LABEL,
   SEARCH_INPUT_PLACEHOLDER,
   SEARCH_PANEL_LABEL,
   SEARCH_SUBMIT_LABEL,
   SEARCH_SUBMIT_LOADING,
+  getUpcomingWeekendFreeSlots,
+  type FreeSlotChipDefinition,
 } from './copy';
 import { IconSearch } from './icons';
 import { type AgentStatus, useBoardStore } from './state/boardStore';
@@ -16,6 +17,7 @@ export type SearchBarProps = {
   status?: AgentStatus;
   selectedSlotIds?: string[];
   initialQuery?: string;
+  availableSlots?: readonly FreeSlotChipDefinition[];
   onSearch?: (query: string) => void;
   onToggleSlot?: (slotId: string) => void;
 };
@@ -24,6 +26,7 @@ export function SearchBar({
   status: propStatus,
   selectedSlotIds: propSlotIds,
   initialQuery = INITIAL_ACTIVITY_QUERY,
+  availableSlots: propSlots,
   onSearch,
   onToggleSlot,
 }: SearchBarProps = {}) {
@@ -49,6 +52,8 @@ export function SearchBar({
     void submitSearch(query.trim());
   }
 
+  const availableSlots = propSlots ?? getUpcomingWeekendFreeSlots();
+
   return (
     <form aria-label={SEARCH_PANEL_LABEL} className="search-bar" onSubmit={handleSubmit}>
       <div className="search-bar__input-row">
@@ -72,7 +77,7 @@ export function SearchBar({
         </button>
       </div>
       <div aria-label={FREE_SLOTS_LABEL} className="search-bar__chips" role="group">
-        {FREE_TIME_SLOTS.map((slot) => {
+        {availableSlots.map((slot) => {
           const isSelected = selectedFreeSlotIds.includes(slot.id);
 
           return (

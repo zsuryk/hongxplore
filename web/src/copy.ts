@@ -80,44 +80,96 @@ export type FreeSlotChipDefinition = {
   end: string;
 };
 
-export const FREE_TIME_SLOTS: readonly FreeSlotChipDefinition[] = [
-  {
-    id: 'saturday-morning',
-    label: 'Sat Morning',
-    start: '2026-10-10T01:00:00Z',
-    end: '2026-10-10T04:00:00Z',
-  },
-  {
-    id: 'saturday-afternoon',
-    label: 'Sat Afternoon',
-    start: '2026-10-10T05:00:00Z',
-    end: '2026-10-10T10:00:00Z',
-  },
-  {
-    id: 'saturday-evening',
-    label: 'Sat Evening',
-    start: '2026-10-10T10:00:00Z',
-    end: '2026-10-10T14:00:00Z',
-  },
-  {
-    id: 'sunday-morning',
-    label: 'Sun Morning',
-    start: '2026-10-11T01:00:00Z',
-    end: '2026-10-11T04:00:00Z',
-  },
-  {
-    id: 'sunday-afternoon',
-    label: 'Sun Afternoon',
-    start: '2026-10-11T05:00:00Z',
-    end: '2026-10-11T10:00:00Z',
-  },
-  {
-    id: 'sunday-evening',
-    label: 'Sun Evening',
-    start: '2026-10-11T10:00:00Z',
-    end: '2026-10-11T14:00:00Z',
-  },
+/**
+ * Standard operating time windows in HKT (Asia/Hong_Kong, UTC+8):
+ * - Morning: 09:00 - 12:00 HKT (01:00 - 04:00 UTC)
+ * - Afternoon: 13:00 - 18:00 HKT (05:00 - 10:00 UTC)
+ * - Evening: 18:00 - 22:00 HKT (10:00 - 14:00 UTC)
+ */
+const FREE_SLOT_WINDOWS = [
+  { id: 'saturday-morning', label: 'Sat Morning', day: 'saturday', startUtc: '01:00:00Z', endUtc: '04:00:00Z' },
+  { id: 'saturday-afternoon', label: 'Sat Afternoon', day: 'saturday', startUtc: '05:00:00Z', endUtc: '10:00:00Z' },
+  { id: 'saturday-evening', label: 'Sat Evening', day: 'saturday', startUtc: '10:00:00Z', endUtc: '14:00:00Z' },
+  { id: 'sunday-morning', label: 'Sun Morning', day: 'sunday', startUtc: '01:00:00Z', endUtc: '04:00:00Z' },
+  { id: 'sunday-afternoon', label: 'Sun Afternoon', day: 'sunday', startUtc: '05:00:00Z', endUtc: '10:00:00Z' },
+  { id: 'sunday-evening', label: 'Sun Evening', day: 'sunday', startUtc: '10:00:00Z', endUtc: '14:00:00Z' },
 ] as const;
+
+function padTwoDigits(n: number): string {
+  return n < 10 ? `0${n}` : `${n}`;
+}
+
+/**
+ * Derives upcoming weekend dates in HKT (`Asia/Hong_Kong`, UTC+8) dynamically (Issue #69).
+ * Matches backend `compute_upcoming_weekend_dates`:
+ * - Mon–Fri: upcoming Saturday and Sunday.
+ * - Sat: Saturday is today, Sunday is tomorrow.
+ * - Sun: Saturday is yesterday, Sunday is today.
+ * - Mon rolls over to the next weekend.
+ */
+export function computeUpcomingWeekendDates(referenceTime: Date = new Date()): {
+  saturday: string;
+  sunday: string;
+} {
+  const HKT_OFFSET_MS = 8 * 60 * 60 * 1000;
+  const hkt = new Date(referenceTime.getTime() + HKT_OFFSET_MS);
+
+  const year = hkt.getUTCFullYear();
+  const month = hkt.getUTCMonth();
+  const date = hkt.getUTCDate();
+  const day = hkt.getUTCDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+
+  const daysToSat = day === 0 ? -1 : 6 - day;
+  const sat = new Date(Date.UTC(year, month, date + daysToSat));
+  const sun = new Date(Date.UTC(year, month, date + daysToSat + 1));
+
+  const satStr = `${sat.getUTCFullYear()}-${padTwoDigits(sat.getUTCMonth() + 1)}-${padTwoDigits(sat.getUTCDate())}`;
+  const sunStr = `${sun.getUTCFullYear()}-${padTwoDigits(sun.getUTCMonth() + 1)}-${padTwoDigits(sun.getUTCDate())}`;
+
+  return { saturday: satStr, sunday: sunStr };
+}
+
+/**
+ * Computes live free-slot chips for the upcoming weekend in HKT (Issue #69).
+ *
+ * 1. Computes upcoming Saturday and Sunday dates dynamically in HKT; no hardcoded dates remain.
+ * 2. Enforces that no chip ever names a period that has already started (`start > referenceTime`).
+ * 3. If all periods of the current weekend have already started (e.g. late Sunday evening),
+ *    rolls forward to the following weekend so the user always has upcoming slots to plan.
+ */
+export function getUpcomingWeekendFreeSlots(referenceTime: Date = new Date()): FreeSlotChipDefinition[] {
+  const dates = computeUpcomingWeekendDates(referenceTime);
+
+  const candidateSlots: FreeSlotChipDefinition[] = FREE_SLOT_WINDOWS.map((window) => ({
+    id: window.id,
+    label: window.label,
+    start: `${dates[window.day]}T${window.startUtc}`,
+    end: `${dates[window.day]}T${window.endUtc}`,
+  }));
+
+  const nowMs = referenceTime.getTime();
+  let available = candidateSlots.filter((slot) => new Date(slot.start).getTime() > nowMs);
+
+  if (available.length === 0) {
+    // Current weekend has passed or all slots have started; roll forward by 7 days to next weekend
+    const nextWeekendRef = new Date(referenceTime.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const nextDates = computeUpcomingWeekendDates(nextWeekendRef);
+    available = FREE_SLOT_WINDOWS.map((window) => ({
+      id: window.id,
+      label: window.label,
+      start: `${nextDates[window.day]}T${window.startUtc}`,
+      end: `${nextDates[window.day]}T${window.endUtc}`,
+    }));
+  }
+
+  return available;
+}
+
+/**
+ * Live upcoming weekend free-slot chips for the current instant.
+ * Dynamically computed so no hardcoded calendar date survives in copy.
+ */
+export const FREE_TIME_SLOTS: readonly FreeSlotChipDefinition[] = getUpcomingWeekendFreeSlots();
 
 export const SEARCH_INPUT_LABEL = 'Search query';
 export const SEARCH_PANEL_LABEL = 'Find activities';
