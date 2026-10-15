@@ -3,6 +3,8 @@ import {
   MAX_ZOOM,
   MIN_ZOOM,
   ZOOM_LEVELS,
+  SAFE_BOTTOM_DOCK,
+  SAFE_TOP_CHROME,
   canZoomIn,
   canZoomOut,
   fitViewport,
@@ -145,19 +147,41 @@ describe('smartCenter100 (#104)', () => {
     expect(result.y).toBe(cardCenteredViewport.y);
   });
 
-  it('snaps to nearest card medoid when jumping from overview and center is in empty gap', () => {
+  it('snaps to nearest card medoid and frames in safe viewing area when jumping from overview', () => {
     // Overview viewport where screen center (500, 350) lands in the empty gap (430, 250)
     // Between Card 1 center (260, 200) and Card 2 center (620, 200)
-    // Distance to Card 2 is sqrt((620-500)^2 + (200-350)^2) = sqrt(14400 + 22500) = sqrt(36900)
-    // Distance to Card 4 is sqrt((620-500)^2 + (440-350)^2) = sqrt(14400 + 8100) = sqrt(22500) = 150
-    // So Card 4 is the nearest card
+    // Distance to Card 4 is sqrt((620-500)^2 + (440-350)^2) = 150 (nearest card)
     const gapViewport = { x: -20, y: 50, scale: 0.4 };
     const result = smartCenter100(gapViewport, cards, container);
 
     expect(result.scale).toBe(1.0);
-    // Camera center should now land directly on the nearest card's center (Card 4: 620, 440)
+    // Card 4 should be horizontally centered
     const worldCenter = screenToWorld({ x: 500, y: 350 }, result);
     expect(worldCenter.x).toBeCloseTo(620, 1);
-    expect(worldCenter.y).toBeCloseTo(440, 1);
+
+    // Card 4 must be completely visible with clearance from top chrome and bottom timeline dock
+    const card4ScreenTop = 340 * result.scale + result.y;
+    const card4ScreenBottom = (340 + 200) * result.scale + result.y;
+    expect(card4ScreenTop).toBeGreaterThanOrEqual(SAFE_TOP_CHROME);
+    expect(card4ScreenBottom).toBeLessThanOrEqual(container.height - SAFE_BOTTOM_DOCK);
+  });
+
+  it('automatically fits tall cards on compact laptop screens without clipping', () => {
+    // Compact laptop screen: 1024x580
+    const compactContainer = { width: 1024, height: 580 };
+    // Full detail card: 320x460 (would exceed safe area at 1.0)
+    const tallCard = [{ x: 200, y: 200, width: 320, height: 460 }];
+    const overview = { x: 0, y: 0, scale: 0.35 };
+
+    const result = smartCenter100(overview, tallCard, compactContainer);
+
+    // Scale should safely scale down so the full card fits inside safe area
+    expect(result.scale).toBeLessThanOrEqual(1.0);
+    expect(result.scale).toBeGreaterThan(0.5);
+
+    const screenTop = 200 * result.scale + result.y;
+    const screenBottom = (200 + 460) * result.scale + result.y;
+    expect(screenTop).toBeGreaterThanOrEqual(SAFE_TOP_CHROME);
+    expect(screenBottom).toBeLessThanOrEqual(compactContainer.height - SAFE_BOTTOM_DOCK);
   });
 });
