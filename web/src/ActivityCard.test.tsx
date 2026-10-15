@@ -118,4 +118,67 @@ describe('ActivityCard', () => {
       'A comprehensive 6-line rationale explaining why this activity is an outstanding choice',
     );
   });
+
+  describe('three-state pricing', () => {
+    it('renders "Free" price badge when is_free is true', () => {
+      const markup = renderToStaticMarkup(<ActivityCard match={response.matches[0]} />);
+
+      expect(markup).toContain('activity-card__price-badge');
+      expect(markup).toContain('Free');
+    });
+
+    it('renders formatted price badge with currency and parsed amount when priced', () => {
+      const markup = renderToStaticMarkup(<ActivityCard match={response.matches[2]} />);
+
+      expect(markup).toContain('activity-card__price-badge');
+      expect(markup).toContain('HKD 59');
+    });
+
+    it('omits price row entirely when price is absent (never defaults to free)', () => {
+      const markup = renderToStaticMarkup(<ActivityCard match={response.matches[1]} />);
+
+      expect(markup).not.toContain('activity-card__price-badge');
+      // match[1] does not contain "Free" anywhere
+      expect(markup).not.toContain('Free');
+    });
+  });
+
+  describe('freshness timestamp in HKT', () => {
+    it('renders listed_at date formatted in HKT when present', () => {
+      const markup = renderToStaticMarkup(<ActivityCard match={response.matches[0]} />);
+
+      expect(markup).toContain('activity-card__freshness');
+      expect(markup).toContain('Listed 28 Sept 2026');
+    });
+
+    it('omits freshness timestamp when listed_at is absent', () => {
+      const markup = renderToStaticMarkup(<ActivityCard match={response.matches[1]} />);
+
+      expect(markup).not.toContain('activity-card__freshness');
+      expect(markup).not.toContain('Listed');
+    });
+  });
+
+  describe('district and source CTA', () => {
+    it('surfaces the district visibly in a district badge on the card face', () => {
+      const markup = renderToStaticMarkup(<ActivityCard match={response.matches[0]} />);
+
+      expect(markup).toContain('activity-card__district-badge');
+      expect(markup).toContain('Yau Tsim Mong');
+    });
+
+    it('renders visible booking CTA linking to activity url with source organization name', () => {
+      const markup = renderToStaticMarkup(<ActivityCard match={response.matches[0]} />);
+
+      expect(markup).toContain('activity-card__cta');
+      expect(markup).toContain('href="https://www.heritagemuseum.gov.hk/"');
+      expect(markup).toContain('Visit Hong Kong Heritage Discovery Centre');
+    });
+
+    it('promotes original Cantonese title without expanding even in compact variant', () => {
+      const markup = renderToStaticMarkup(<ActivityCard match={response.matches[0]} variant="compact" />);
+
+      expect(markup).toContain('香港歷史博物館 導賞團');
+    });
+  });
 });

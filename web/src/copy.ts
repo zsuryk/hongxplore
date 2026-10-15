@@ -213,11 +213,62 @@ export function getActivityLanguageBadge(
 export const ACTIVITY_CARD_TIME_UNAVAILABLE = 'Time to be confirmed';
 export const ACTIVITY_CARD_SOURCE_LABEL = 'Source';
 export const ACTIVITY_CARD_MATCH_RATIONALE_LABEL = 'Why it matches';
+export const ACTIVITY_CARD_PRICE_FREE = 'Free';
+export const ACTIVITY_CARD_PRICE_LABEL = 'Price';
+export const ACTIVITY_CARD_DISTRICT_LABEL = 'District';
+export const ACTIVITY_CARD_FRESHNESS_PREFIX = 'Listed';
 export const FIND_SIMILAR_LABEL = 'Find similar';
 export const DISCARD_BIN_LABEL = 'Discard bin';
 export const DISCARD_BIN_HINT = 'Drop a card here to remove it from the board.';
 export const BOARD_EMPTY_STATE = 'Your board is clear. Find similar activities to explore more.';
 export const INITIAL_ACTIVITY_QUERY = 'free saturday afternoon, something cultural in Kowloon, English friendly';
+
+export function formatActivityPrice(
+  price?: { amount?: string | null; currency: string; is_free: boolean } | null,
+): string | null {
+  if (!price) {
+    return null;
+  }
+  if (price.is_free) {
+    return ACTIVITY_CARD_PRICE_FREE;
+  }
+  if (price.amount != null) {
+    const num = Number(price.amount);
+    if (!Number.isNaN(num)) {
+      const formatted = num % 1 === 0 ? num.toFixed(0) : num.toFixed(2);
+      return `${price.currency} ${formatted}`;
+    }
+    return `${price.currency} ${price.amount}`;
+  }
+  return null;
+}
+
+export function formatActivityFreshness(listedAt: string): string {
+  try {
+    const date = new Date(listedAt);
+    const formatted = new Intl.DateTimeFormat('en-HK', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      timeZone: 'Asia/Hong_Kong',
+    }).format(date);
+    return `${ACTIVITY_CARD_FRESHNESS_PREFIX} ${formatted}`;
+  } catch {
+    return `${ACTIVITY_CARD_FRESHNESS_PREFIX} ${listedAt}`;
+  }
+}
+
+export function activityCardCtaLabel(sourceName: string): string {
+  return `Visit ${sourceName}`;
+}
+
+export function activityCardDistrictLabel(district: string): string {
+  return `${ACTIVITY_CARD_DISTRICT_LABEL}: ${district}`;
+}
+
+export function activityCardPriceLabel(priceText: string): string {
+  return `${ACTIVITY_CARD_PRICE_LABEL}: ${priceText}`;
+}
 
 export function activityCardAccessibleLabel(title: string, language?: string): string {
   if (language) {

@@ -8,7 +8,12 @@ import {
   ACTIVITY_CARD_TIME_UNAVAILABLE,
   FIND_SIMILAR_LABEL,
   activityCardAccessibleLabel,
+  activityCardCtaLabel,
+  activityCardDistrictLabel,
   activityCardLocation,
+  activityCardPriceLabel,
+  formatActivityFreshness,
+  formatActivityPrice,
   getActivityLanguageBadge,
 } from './copy';
 import type { components } from './api/schema';
@@ -54,6 +59,8 @@ export function ActivityCard({
   const start = activity.parts[0]?.start;
   const title = activity.title_en ?? activity.title;
   const hasTranslatedTitle = activity.title_en && activity.title_en !== activity.title;
+  const priceFormatted = formatActivityPrice(activity.price);
+  const freshnessFormatted = activity.listed_at ? formatActivityFreshness(activity.listed_at) : null;
 
   const stateClass = state ? ` activity-card--${state}` : '';
   const variantClass = size === 'canvas' ? ` activity-card--${variant}` : '';
@@ -91,14 +98,39 @@ export function ActivityCard({
       style={style}
     >
       <div className="activity-card__topline">
-        <span
-          aria-label={`${ACTIVITY_CARD_LANGUAGE_LABEL}: ${language}`}
-          className="activity-card__language"
-          tabIndex={0}
-          title={`${ACTIVITY_CARD_LANGUAGE_LABEL}: ${language}`}
-        >
-          {language}
-        </span>
+        <div className="activity-card__badges">
+          <span
+            aria-label={`${ACTIVITY_CARD_LANGUAGE_LABEL}: ${language}`}
+            className="activity-card__language"
+            tabIndex={0}
+            title={`${ACTIVITY_CARD_LANGUAGE_LABEL}: ${language}`}
+          >
+            {language}
+          </span>
+          <span
+            aria-label={activityCardDistrictLabel(activity.location.district)}
+            className="activity-card__district-badge"
+            tabIndex={0}
+            title={activityCardDistrictLabel(activity.location.district)}
+          >
+            {activity.location.district}
+          </span>
+          {priceFormatted ? (
+            <span
+              aria-label={activityCardPriceLabel(priceFormatted)}
+              className="activity-card__price-badge"
+              tabIndex={0}
+              title={activityCardPriceLabel(priceFormatted)}
+            >
+              {priceFormatted}
+            </span>
+          ) : null}
+          {freshnessFormatted ? (
+            <span className="activity-card__freshness" tabIndex={0} title={freshnessFormatted}>
+              {freshnessFormatted}
+            </span>
+          ) : null}
+        </div>
         {start ? (
           <span
             className={`activity-card__time-badge${variant === 'compact' ? ' activity-card__compact-badge' : ''}`}
@@ -110,8 +142,12 @@ export function ActivityCard({
           <span>{ACTIVITY_CARD_TIME_UNAVAILABLE}</span>
         )}
       </div>
+      <p className="activity-card__rationale" tabIndex={0}>
+        <span className="activity-card__rationale-label">{ACTIVITY_CARD_MATCH_RATIONALE_LABEL}</span>
+        {matchRationale}
+      </p>
       <h2>{title}</h2>
-      {hasTranslatedTitle && variant !== 'compact' ? (
+      {hasTranslatedTitle ? (
         <p className="activity-card__original-title">
           <span className="sr-only">{ACTIVITY_CARD_ORIGINAL_TITLE_LABEL}: </span>
           {activity.title}
@@ -119,10 +155,6 @@ export function ActivityCard({
       ) : null}
       <p className="activity-card__location">
         {activityCardLocation(activity.location.venue, activity.location.district)}
-      </p>
-      <p className="activity-card__rationale" tabIndex={0}>
-        <span className="activity-card__rationale-label">{ACTIVITY_CARD_MATCH_RATIONALE_LABEL}</span>
-        {matchRationale}
       </p>
       {variant !== 'compact' ? (
         <p className="activity-card__source">
@@ -136,16 +168,27 @@ export function ActivityCard({
           )}
         </p>
       ) : null}
-      {onFindSimilar ? (
-        <button
-          className="btn btn--sm activity-card__similar-button"
-          onClick={() => onFindSimilar(match)}
+      <div className="activity-card__actions">
+        <a
+          className="btn btn--sm btn--primary activity-card__cta"
+          href={activity.url}
           onPointerDown={(event) => event.stopPropagation()}
-          type="button"
+          rel="noreferrer"
+          target="_blank"
         >
-          {FIND_SIMILAR_LABEL}
-        </button>
-      ) : null}
+          {activityCardCtaLabel(activity.source.name)}
+        </a>
+        {onFindSimilar ? (
+          <button
+            className="btn btn--sm activity-card__similar-button"
+            onClick={() => onFindSimilar(match)}
+            onPointerDown={(event) => event.stopPropagation()}
+            type="button"
+          >
+            {FIND_SIMILAR_LABEL}
+          </button>
+        ) : null}
+      </div>
     </article>
   );
 }
