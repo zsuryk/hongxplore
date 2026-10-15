@@ -13,6 +13,8 @@ import {
   CLEAR_BOARD_LABEL,
   CLEAR_BOARD_TOOLTIP,
   FIT_VIEW_LABEL,
+  HELP_LABEL,
+  HELP_TOOLTIP,
   RESET_ZOOM_LABEL,
   ZOOM_IN_LABEL,
   ZOOM_OUT_LABEL,
@@ -46,6 +48,7 @@ describe('BoardToolbar', () => {
     expect(markup).toContain(`aria-label="${RESET_ZOOM_LABEL}"`);
     expect(markup).toContain(`aria-label="${FIT_VIEW_LABEL}"`);
     expect(markup).toContain(`aria-label="${AUTO_FIT_ACTIVE_LABEL}"`);
+    expect(markup).toContain(`aria-label="${HELP_LABEL}"`);
     expect(markup).toContain(`aria-label="${CLEAR_BOARD_LABEL}"`);
     expect(markup).toContain('aria-live="polite"');
     expect(markup).toContain('Zoom: 100%');
@@ -104,10 +107,10 @@ describe('BoardToolbar', () => {
   it('is an icon rail: every control is icon-only and its label is revealed, not rendered', () => {
     const markup = renderToStaticMarkup(<BoardToolbar {...defaultProps} onAutoTile={() => undefined} />);
 
-    // Six controls, six inline glyphs — no text label is painted into a button, and no
+    // Seven controls, seven inline glyphs — no text label is painted into a button, and no
     // `title` attribute is used, because a native tooltip is mouse-only. The readout/reset
-    // is the seventh control and is deliberately glyph-free: the number is its label.
-    expect([...markup.matchAll(/<svg aria-hidden="true" class="icon"/g)]).toHaveLength(6);
+    // is the eighth control and is deliberately glyph-free: the number is its label.
+    expect([...markup.matchAll(/<svg aria-hidden="true" class="icon"/g)]).toHaveLength(7);
     expect(markup).not.toContain('title=');
 
     // Each revealed label is `aria-hidden`: it is a pointer affordance sitting on top of a
@@ -119,8 +122,16 @@ describe('BoardToolbar', () => {
       `${FIT_VIEW_LABEL} (0)`,
       `${AUTO_TILE_TOOLTIP} (T)`,
       `${AUTO_FIT_LABEL}: ${AUTO_FIT_TOGGLE_ON} — ${AUTO_FIT_DESCRIPTION}`,
+      `${HELP_TOOLTIP} (?)`,
       CLEAR_BOARD_TOOLTIP,
     ]);
+  });
+
+  it('renders persistent Help control in toolbar and exposes shortcut tooltip', () => {
+    const markup = renderToStaticMarkup(<BoardToolbar {...defaultProps} onOpenHelp={() => undefined} />);
+    expect(markup).toContain(`aria-label="${HELP_LABEL}"`);
+    expect(markup).toContain(`${HELP_TOOLTIP} (?)`);
+    expect(markup).toContain('data-tour-anchor="toolbar"');
   });
 
   it('doubles the zoom readout as the reset control and announces the long form politely', () => {

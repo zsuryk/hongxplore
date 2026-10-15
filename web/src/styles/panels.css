@@ -359,3 +359,108 @@
     padding: var(--space-2) var(--space-3);
   }
 }
+
+/* ---- Product Tour ---- */
+
+.product-tour-container {
+  inset: 0;
+  pointer-events: none;
+  position: fixed;
+  z-index: 150;
+}
+
+.product-tour__spotlight {
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-card);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+  pointer-events: none;
+  position: fixed;
+  transition:
+    top var(--motion-fast) var(--motion-ease),
+    left var(--motion-fast) var(--motion-ease),
+    width var(--motion-fast) var(--motion-ease),
+    height var(--motion-fast) var(--motion-ease);
+  z-index: 151;
+}
+
+.product-tour {
+  background: linear-gradient(180deg, var(--card-hover), var(--card));
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-card);
+  box-shadow:
+    var(--shadow-drag),
+    inset 0 1px 0 var(--edge-light);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 20rem;
+  padding: var(--space-4);
+  pointer-events: auto;
+  position: fixed;
+  transition:
+    top var(--motion-fast) var(--motion-ease),
+    left var(--motion-fast) var(--motion-ease);
+  width: calc(100vw - var(--space-8));
+  z-index: 152;
+}
+
+.product-tour:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.product-tour__header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.product-tour__badge {
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius-xs);
+  color: var(--accent-foreground);
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  font-weight: var(--weight-semi);
+  letter-spacing: var(--tracking-label);
+  padding: var(--space-1) var(--space-2);
+  text-transform: uppercase;
+}
+
+.product-tour__skip-btn {
+  color: var(--card-muted-foreground);
+  font-size: var(--text-label);
+}
+
+.product-tour__skip-btn:hover:not(:disabled) {
+  color: var(--foreground);
+}
+
+.product-tour__title {
+  color: var(--foreground);
+  font-size: var(--text-body);
+  font-weight: var(--weight-semi);
+  margin: 0;
+}
+
+.product-tour__body {
+  color: var(--muted-foreground);
+  font-size: var(--text-meta);
+  line-height: var(--leading-body);
+  margin: 0;
+}
+
+.product-tour__actions {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: flex-end;
+  margin-top: var(--space-1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-tour,
+  .product-tour__spotlight {
+    transition: none;
+  }
+}

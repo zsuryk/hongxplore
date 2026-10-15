@@ -21,6 +21,8 @@ export const CLEAR_BOARD_CONFIRM_MESSAGE =
   'This will remove all activities from the board and reset your weekend plan. This action cannot be undone.';
 export const CLEAR_BOARD_CONFIRM_ACTION = 'Clear board';
 export const CLEAR_BOARD_CANCEL_ACTION = 'Keep board';
+export const HELP_LABEL = 'Help';
+export const HELP_TOOLTIP = 'Product guide';
 export const AUTO_FIT_TOGGLE_ON = 'On';
 export const AUTO_FIT_TOGGLE_OFF = 'Off';
 export const AUTO_FIT_ACTIVE_LABEL = 'Auto-fit is enabled';
@@ -57,6 +59,33 @@ export const TIMELINE_GUIDE_TOAST =
 export const DISCARD_GUIDE_TOAST = 'Discard bin: drag unwanted cards here to remove them from your board.';
 export const AUTOFIT_GUIDE_TOAST = 'Auto-fit: automatically frames new cards into view.';
 export const AUTO_FIT_DESCRIPTION = 'Automatically frames new cards into view.';
+
+export const PRODUCT_TOUR_LABEL = 'Product guide';
+export const TOUR_SEARCH_TITLE = 'Ask the agent';
+export const TOUR_SEARCH_BODY =
+  'Describe what you want to do this weekend, or select your free time slots to discover matching activities.';
+export const TOUR_CARD_TITLE = 'Explore activities';
+export const TOUR_CARD_BODY =
+  'Review matched activities with timing, district, price, and direct links to official booking sites.';
+export const TOUR_TIMELINE_TITLE = 'Plan your weekend';
+export const TOUR_TIMELINE_BODY =
+  'Drag activities into the timeline slots at the bottom to build and organize your weekend itinerary.';
+export const TOUR_TOOLBAR_TITLE = 'Board controls';
+export const TOUR_TOOLBAR_BODY =
+  'Pan and zoom the canvas, fit or tile cards, toggle auto-fit, or click Help (?) anytime to reopen this guide.';
+
+export const TOUR_NEXT_LABEL = 'Next';
+export const TOUR_PREV_LABEL = 'Back';
+export const TOUR_FINISH_LABEL = 'Got it';
+export const TOUR_SKIP_LABEL = 'Skip guide';
+
+export function tourStepCount(current: number, total: number): string {
+  return `Step ${current} of ${total}`;
+}
+
+export function tourStepAnnouncement(current: number, total: number, title: string): string {
+  return `Product guide, step ${current} of ${total}: ${title}`;
+}
 export function timelineSlotMismatchMessage(expectedSlotLabel: string): string {
   return `This activity is scheduled for ${expectedSlotLabel}. Drop it in that slot!`;
 }
