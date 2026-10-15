@@ -127,6 +127,7 @@ class TavilySearchProvider(SearchProvider):
         payload: dict[str, Any] = {
             "query": query,
             "search_depth": "basic",
+            "include_images": True,
             "max_results": max_results,
         }
         if include_domains:
