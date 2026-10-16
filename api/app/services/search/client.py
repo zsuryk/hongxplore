@@ -53,6 +53,22 @@ CURATED_HK_DOMAINS: list[str] = [
 ]
 
 
+def ground_query_for_search(query: str) -> str:
+    """Ensure search queries dispatched to Tavily are grounded in Hong Kong context.
+
+    If the query does not already mention Hong Kong ('hong kong', 'hongkong', 'hk', '香港'),
+    appends ' Hong Kong' so upstream web searches and image retrieval reflect the authentic
+    Hong Kong environment.
+    """
+    q = query.strip()
+    if not q:
+        return q
+    lower = q.lower()
+    if any(k in lower for k in ("hong kong", "hongkong", "hk", "香港")):
+        return q
+    return f"{q} Hong Kong"
+
+
 class TavilySearchProvider(SearchProvider):
     """Tavily web search service satisfying the SearchProvider protocol."""
 
@@ -124,8 +140,9 @@ class TavilySearchProvider(SearchProvider):
         max_results: int = 10,
     ) -> list[dict[str, Any]]:
         """Perform a single HTTP request to Tavily API with typed error translation."""
+        grounded_query = ground_query_for_search(query)
         payload: dict[str, Any] = {
-            "query": query,
+            "query": grounded_query,
             "search_depth": "basic",
             "include_images": True,
             "max_results": max_results,
@@ -176,7 +193,24 @@ class TavilySearchProvider(SearchProvider):
                 )
 
             results = data.get("results", [])
-            return results if isinstance(results, list) else []
+            raw_images = data.get("images", [])
+            images_list = (
+                [img for img in raw_images if isinstance(img, (str, dict))]
+                if isinstance(raw_images, list)
+                else []
+            )
+
+            if isinstance(results, list):
+                for idx, item in enumerate(results):
+                    if isinstance(item, dict):
+                        # Retain root images on item for downstream extractor
+                        if images_list and "root_images" not in item:
+                            item["root_images"] = images_list
+                        # If snippet lacks its own image, associate from root images
+                        if not item.get("images") and not item.get("image") and images_list:
+                            item["image"] = images_list[idx % len(images_list)]
+                return results
+            return []
 
         except httpx.HTTPStatusError as exc:
             logger.warning("Tavily HTTP error status %d", exc.response.status_code)

@@ -584,3 +584,79 @@ async def test_search_includes_images_in_payload_and_populates_activity_image() 
             assert captured_payload.get("include_images") is True
             assert len(results) == 1
             assert str(results[0].image) == "https://www.lcsd.gov.hk/images/vic-park-tennis.jpg"
+
+
+@pytest.mark.anyio
+async def test_search_geotags_queries_without_hong_kong() -> None:
+    """Queries lacking Hong Kong keywords are automatically geotagged with ' Hong Kong'."""
+    captured_payloads: list[dict[str, Any]] = []
+
+    def mock_handler(request: httpx.Request) -> httpx.Response:
+        captured_payloads.append(json.loads(request.content))
+        return httpx.Response(200, json=_sample_tavily_response([]))
+
+    transport = httpx.MockTransport(mock_handler)
+    async with httpx.AsyncClient(transport=transport) as http_client:
+        cfg = Settings(tavily_api_key="valid-key", demo_mode=False)
+        with InMemoryActivityCache() as cache:
+            provider = TavilySearchProvider(config=cfg, cache=cache, http_client=http_client)
+
+            # 1. Query without Hong Kong keywords -> geotagged
+            await provider.search("badminton in wan chai")
+            assert captured_payloads[-1]["query"] == "badminton in wan chai Hong Kong"
+
+            # 2. Query already containing 'hong kong' -> not redundantly appended
+            await provider.search("hiking in sai kung hong kong")
+            assert captured_payloads[-1]["query"] == "hiking in sai kung hong kong"
+
+            # 3. Query already containing '香港' -> not redundantly appended
+            await provider.search("香港 故宮文化博物館")
+            assert captured_payloads[-1]["query"] == "香港 故宮文化博物館"
+
+
+@pytest.mark.anyio
+async def test_search_preserves_root_images_from_tavily_payload() -> None:
+    """Root images from Tavily response are preserved and associated with candidate
+    snippets lacking images.
+    """
+    mock_snippets = [
+        {
+            "title": "Kowloon Park Indoor Swimming Pool",
+            "url": "https://www.lcsd.gov.hk/facility/kowloon-park-pool",
+            "content": "Heated swimming pools in Tsim Sha Tsui",
+        },
+        {
+            "title": "Victoria Park Swimming Pool",
+            "url": "https://www.lcsd.gov.hk/facility/victoria-park-pool",
+            "content": "Public swimming pool in Causeway Bay",
+        },
+    ]
+
+    tavily_data = {
+        "query": "swimming pools Hong Kong",
+        "results": mock_snippets,
+        "images": [
+            "https://upload.wikimedia.org/wikipedia/commons/1/11/kowloon_park_pool.jpg",
+            "https://upload.wikimedia.org/wikipedia/commons/2/22/victoria_park_pool.jpg",
+        ],
+    }
+
+    def mock_handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json=tavily_data)
+
+    transport = httpx.MockTransport(mock_handler)
+    async with httpx.AsyncClient(transport=transport) as http_client:
+        cfg = Settings(tavily_api_key="valid-key", demo_mode=False)
+        with InMemoryActivityCache() as cache:
+            provider = TavilySearchProvider(config=cfg, cache=cache, http_client=http_client)
+
+            results = await provider.search("swimming pools")
+            assert len(results) == 2
+            assert (
+                str(results[0].image)
+                == "https://upload.wikimedia.org/wikipedia/commons/1/11/kowloon_park_pool.jpg"
+            )
+            assert (
+                str(results[1].image)
+                == "https://upload.wikimedia.org/wikipedia/commons/2/22/victoria_park_pool.jpg"
+            )
