@@ -18,7 +18,20 @@
 import type { SVGProps } from 'react';
 
 export type IconName =
-  'zoom-in' | 'zoom-out' | 'reset' | 'fit' | 'auto-fit' | 'tile' | 'clear' | 'close' | 'search' | 'pending' | 'help';
+  | 'zoom-in'
+  | 'zoom-out'
+  | 'reset'
+  | 'fit'
+  | 'auto-fit'
+  | 'tile'
+  | 'clear'
+  | 'close'
+  | 'search'
+  | 'pending'
+  | 'help'
+  | 'mode-grab'
+  | 'mode-pan'
+  | 'mode-inspect';
 
 type IconProps = Omit<SVGProps<SVGSVGElement>, 'children' | 'strokeWidth'>;
 
@@ -181,6 +194,38 @@ export function IconHelp(props: IconProps) {
   );
 }
 
+/** Drag & grab mode — a card plate with an active cursor arrow picking it up. */
+export function IconModeGrab(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect height="13" rx="1.5" width="11" x="3.5" y="3.5" />
+      <path d="M6.5 7.5h5M6.5 10.5h3" />
+      <path d="M13 12.5l7.5 3-3.2 1.4-1.4 3.2-2.9-7.6z" />
+    </Svg>
+  );
+}
+
+/** Just drag (pan only) mode — four-axis compass arrows moving the board plane. */
+export function IconModePan(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M12 3v18M3 12h18M9.5 5.5 12 3l2.5 2.5M9.5 18.5 12 21l2.5-2.5M5.5 9.5 3 12l2.5 2.5M18.5 9.5 21 12l-2.5 2.5" />
+    </Svg>
+  );
+}
+
+/** Drag & inspect mode — a card plate with a magnifier lens reading its title. */
+export function IconModeInspect(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M14.5 10V5.5a1.5 1.5 0 0 0-1.5-1.5H5a1.5 1.5 0 0 0-1.5 1.5v11A1.5 1.5 0 0 0 5 18h4.5" />
+      <path d="M6.5 8h5.5M6.5 11.5h3.5" />
+      <circle cx="16" cy="15.5" r="3.5" />
+      <path d="M18.6 18.1 21 20.5" />
+    </Svg>
+  );
+}
+
 /** Kept as a lookup so a control can declare an icon by name instead of by element. */
 export const ICONS = {
   'auto-fit': IconAutoFit,
@@ -188,6 +233,9 @@ export const ICONS = {
   close: IconClose,
   fit: IconFit,
   help: IconHelp,
+  'mode-grab': IconModeGrab,
+  'mode-inspect': IconModeInspect,
+  'mode-pan': IconModePan,
   pending: IconPending,
   reset: IconReset,
   search: IconSearch,

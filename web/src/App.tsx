@@ -1,7 +1,9 @@
 import {
   type CSSProperties,
   type KeyboardEvent,
+  type MouseEvent,
   type PointerEvent,
+  type ReactElement,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -12,6 +14,7 @@ import {
 import { ActivityCard } from './ActivityCard';
 import { AgentStatusPanel } from './AgentStatusPanel';
 import { BoardToolbar } from './BoardToolbar';
+import { IconClose, IconModeGrab, IconModeInspect, IconModePan } from './icons';
 import { ProductTour } from './ProductTour';
 import { ResearchCard } from './ResearchCard';
 import { SearchBar } from './SearchBar';
@@ -19,9 +22,20 @@ import {
   BOARD_EMPTY_STATE,
   BOARD_GUIDE_BODY,
   BOARD_GUIDE_TITLE,
+  BOARD_INSPECT_CALLOUT_LABEL,
   BOARD_KEYBOARD_HINT,
   BOARD_KEYBOARD_SHORTCUTS,
   BOARD_LABEL,
+  BOARD_MODE_DROPDOWN_LABEL,
+  BOARD_MODE_GRAB_HINT,
+  BOARD_MODE_GRAB_LABEL,
+  BOARD_MODE_INSPECT_HINT,
+  BOARD_MODE_INSPECT_LABEL,
+  BOARD_MODE_PAN_HINT,
+  BOARD_MODE_PAN_LABEL,
+  BOARD_MODE_TRIGGER_LABEL,
+  BOARD_MODE_WHEEL_CLOSE_LABEL,
+  BOARD_MODE_WHEEL_LABEL,
   CLEAR_BOARD_CANCEL_ACTION,
   CLEAR_BOARD_CONFIRM_ACTION,
   CLEAR_BOARD_CONFIRM_MESSAGE,
@@ -41,6 +55,8 @@ import {
   TIMELINE_SLOTS,
   UNDOCK_CARD_LABEL,
   activityCardSerial,
+  boardModeActiveLabel,
+  boardModeSelectedConfirmation,
   findSimilarConfirmation,
   findSimilarExhaustedConfirmation,
   timelineActivityReplacedConfirmation,
@@ -240,14 +256,57 @@ function particleColors(): string[] {
 
 const EMPTY_CARD_POSITIONS: Record<string, Point> = {};
 
+export type BoardInteractionMode = 'grab' | 'pan' | 'inspect';
+
+const MODE_OPTIONS: ReadonlyArray<{
+  id: BoardInteractionMode;
+  label: string;
+  hint: string;
+  Icon: (props: { className?: string }) => ReactElement;
+  posClass: string;
+  sectorPath: string;
+}> = [
+  {
+    id: 'grab',
+    label: BOARD_MODE_GRAB_LABEL,
+    hint: BOARD_MODE_GRAB_HINT,
+    Icon: IconModeGrab,
+    posClass: 'board-wheel__option--top',
+    sectorPath: 'M 17.81 61 A 118 118 0 0 1 222.19 61 L 144.25 106 A 28 28 0 0 0 95.75 106 Z',
+  },
+  {
+    id: 'pan',
+    label: BOARD_MODE_PAN_LABEL,
+    hint: BOARD_MODE_PAN_HINT,
+    Icon: IconModePan,
+    posClass: 'board-wheel__option--left',
+    sectorPath: 'M 120 238 A 118 118 0 0 1 17.81 61 L 95.75 106 A 28 28 0 0 0 120 148 Z',
+  },
+  {
+    id: 'inspect',
+    label: BOARD_MODE_INSPECT_LABEL,
+    hint: BOARD_MODE_INSPECT_HINT,
+    Icon: IconModeInspect,
+    posClass: 'board-wheel__option--right',
+    sectorPath: 'M 222.19 61 A 118 118 0 0 1 120 238 L 120 148 A 28 28 0 0 0 144.25 106 Z',
+  },
+];
+
+const INSPECT_MAX_ZOOM_PERCENT = 50;
+
 export type AppProps = {
   agentStatus?: AgentStatus;
   cards?: BoardActivityCard[];
   initialClearConfirmOpen?: boolean;
   initialConfirmation?: string;
   initialHoverExpanded?: boolean;
+  initialInspectedCardId?: string;
+  initialInteractionMode?: BoardInteractionMode;
+  initialModeDropdownOpen?: boolean;
   initialTimelineExpanded?: boolean;
   initialTourOpen?: boolean;
+  initialViewportScale?: number;
+  initialWheelPosition?: Point;
   timelineSlots?: TimelineSlot[];
 };
 
@@ -257,8 +316,13 @@ export function App({
   initialClearConfirmOpen,
   initialConfirmation,
   initialHoverExpanded,
+  initialInspectedCardId,
+  initialInteractionMode,
+  initialModeDropdownOpen,
   initialTimelineExpanded,
   initialTourOpen,
+  initialViewportScale,
+  initialWheelPosition,
   timelineSlots: propTimelineSlots,
 }: AppProps = {}) {
   const boardRef = useRef<HTMLDivElement>(null);
@@ -309,7 +373,9 @@ export function App({
   const storeIsClearConfirmOpen = useBoardStore((state) => state.isClearConfirmOpen);
   const isClearConfirmOpen = initialClearConfirmOpen ?? storeIsClearConfirmOpen;
 
-  const [viewport, setViewport] = useState<Viewport>(initialViewport);
+  const [viewport, setViewport] = useState<Viewport>(() =>
+    initialViewportScale !== undefined ? { ...initialViewport, scale: initialViewportScale } : initialViewport,
+  );
   const viewportRef = useRef<Viewport>(viewport);
   useLayoutEffect(() => {
     viewportRef.current = viewport;
@@ -357,6 +423,13 @@ export function App({
   const [autoFitEnabled, setAutoFitEnabled] = useState(true);
   /** The deal in flight, or null. Non-null drives `.board__cards--dealing`. */
   const [deal, setDeal] = useState<ActiveDeal | null>(null);
+  const [interactionMode, setInteractionMode] = useState<BoardInteractionMode>(initialInteractionMode ?? 'grab');
+  const [isModeDropdownOpen, setIsModeDropdownOpen] = useState(initialModeDropdownOpen ?? false);
+  const [wheelPosition, setWheelPosition] = useState<Point | null>(initialWheelPosition ?? null);
+  const [hoveredWheelMode, setHoveredWheelMode] = useState<BoardInteractionMode | null>(null);
+  const [inspectedCardId, setInspectedCardId] = useState<string | null>(initialInspectedCardId ?? null);
+  const lastPointerTypeRef = useRef<string>('mouse');
+  const wheelMouseEnteredRef = useRef(false);
 
   const handleCloseTour = useCallback(() => {
     setIsTourOpen(false);
@@ -373,6 +446,13 @@ export function App({
 
   useEffect(() => {
     const handleKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (event.key === 'Escape' && (wheelPosition !== null || isModeDropdownOpen)) {
+        event.preventDefault();
+        setWheelPosition(null);
+        setHoveredWheelMode(null);
+        setIsModeDropdownOpen(false);
+        return;
+      }
       if (event.key === '?' && !isTourOpen) {
         const target = event.target as HTMLElement | null;
         const isInput =
@@ -385,7 +465,7 @@ export function App({
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleOpenTour, isTourOpen]);
+  }, [handleOpenTour, isModeDropdownOpen, isTourOpen, wheelPosition]);
 
   useLayoutEffect(() => {
     cardDragStateRef.current = cardDragState;
@@ -982,14 +1062,108 @@ export function App({
     return { x: boardSize.width / 2, y: boardSize.height / 2 };
   }
 
-  function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
+  function isTouchOrPhoneDevice(): boolean {
+    if (lastPointerTypeRef.current === 'touch') {
+      return true;
+    }
+    if (typeof window !== 'undefined') {
+      if (window.matchMedia?.('(pointer: coarse)')?.matches) {
+        return true;
+      }
+      if (window.innerWidth <= 720) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function closeModeWheel() {
+    setWheelPosition(null);
+    setHoveredWheelMode(null);
+    wheelMouseEnteredRef.current = false;
+  }
+
+  function handleBoardContextMenu(event: MouseEvent<HTMLDivElement>) {
+    if (isTouchOrPhoneDevice()) {
+      return;
+    }
+
     if (
       event.target instanceof Element &&
-      (event.target.closest('[data-activity-card]') ||
+      (event.target.closest('.timeline') ||
+        event.target.closest('.discard-bin') ||
+        event.target.closest('.board-toolbar') ||
+        event.target.closest('.board-mode-control') ||
+        event.target.closest('.board-modal'))
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    const bounds = boardRef.current?.getBoundingClientRect();
+    const rawPoint = bounds ? screenPointWithin(bounds, event.clientX, event.clientY) : { x: 240, y: 240 };
+    const width = bounds?.width || boardSize.width || 800;
+    const height = bounds?.height || boardSize.height || 600;
+    const pad = 128;
+    const clampedPoint: Point = {
+      x: Math.min(Math.max(rawPoint.x, pad), Math.max(pad, width - pad)),
+      y: Math.min(Math.max(rawPoint.y, pad), Math.max(pad, height - pad)),
+    };
+    setIsModeDropdownOpen(false);
+    wheelMouseEnteredRef.current = true;
+    setHoveredWheelMode(null);
+    setWheelPosition(clampedPoint);
+  }
+
+  function handleToggleModeDropdown() {
+    closeModeWheel();
+    setIsModeDropdownOpen((prev) => !prev);
+  }
+
+  function selectInteractionMode(mode: BoardInteractionMode) {
+    setInteractionMode(mode);
+    setIsModeDropdownOpen(false);
+    closeModeWheel();
+    if (mode !== 'inspect') {
+      setInspectedCardId(null);
+    }
+    const option = MODE_OPTIONS.find((item) => item.id === mode);
+    if (option) {
+      setConfirmation(boardModeSelectedConfirmation(option.label));
+    }
+  }
+
+  function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
+    lastPointerTypeRef.current = event.pointerType || 'mouse';
+
+    if (event.button === 2) {
+      return;
+    }
+
+    if (isModeDropdownOpen && event.target instanceof Element && !event.target.closest('.board-mode-control')) {
+      setIsModeDropdownOpen(false);
+    }
+
+    if (
+      wheelPosition &&
+      event.target instanceof Element &&
+      !event.target.closest('.board-wheel') &&
+      !event.target.closest('.board-mode-control')
+    ) {
+      closeModeWheel();
+    }
+
+    if (
+      event.target instanceof Element &&
+      ((interactionMode === 'grab' && event.target.closest('[data-activity-card]')) ||
+        event.target.closest('button') ||
+        event.target.closest('a') ||
         event.target.closest('[data-timeline-slot]') ||
         event.target.closest('.timeline') ||
         event.target.closest('.discard-bin') ||
         event.target.closest('.board-toolbar') ||
+        event.target.closest('.board-wheel') ||
+        event.target.closest('.board-mode-control') ||
         event.target.closest('.board-modal'))
     ) {
       return;
@@ -1027,6 +1201,17 @@ export function App({
   }
 
   function handleCardPointerDown(event: PointerEvent<HTMLElement>, card: BoardActivityCard, from?: { slotId: string }) {
+    if (event.button === 2) {
+      return;
+    }
+
+    if (!from && interactionMode !== 'grab') {
+      if (interactionMode === 'inspect') {
+        setInspectedCardId(card.activity.id);
+      }
+      return;
+    }
+
     if (event.target instanceof Element && (event.target.closest('button') || event.target.closest('a'))) {
       return;
     }
@@ -1374,6 +1559,15 @@ export function App({
       return;
     }
 
+    if (
+      wheelPosition &&
+      wheelMouseEnteredRef.current &&
+      (event.pointerType === 'mouse' || !event.pointerType) &&
+      distanceBetween(screenPoint, wheelPosition) > 128
+    ) {
+      closeModeWheel();
+    }
+
     activePointersRef.current.set(event.pointerId, screenPoint);
     const activePointers = [...activePointersRef.current.values()];
 
@@ -1534,6 +1728,34 @@ export function App({
       )
     : null;
   const isDragProxyPill = Boolean(cardDragState && isOverDropZone);
+  const activeModeOption = MODE_OPTIONS.find((item) => item.id === interactionMode) ?? MODE_OPTIONS[0];
+  const ActiveModeIcon = activeModeOption.Icon;
+
+  const isInspectZoomActive = Math.round(viewport.scale * 100) <= INSPECT_MAX_ZOOM_PERCENT;
+  const inspectedPlaced =
+    interactionMode === 'inspect' && isInspectZoomActive && inspectedCardId
+      ? (canvasCards.find((entry) => entry.card.activity.id === inspectedCardId) ?? null)
+      : null;
+  const inspectedSerialIndex = inspectedPlaced
+    ? cards.findIndex((candidate) => candidate.activity.id === inspectedPlaced.card.activity.id)
+    : -1;
+  const inspectedGeometry = useMemo(() => {
+    if (!inspectedPlaced) {
+      return null;
+    }
+    const cardCenterX = viewport.x + (inspectedPlaced.position.x + CARD_WIDTH / 2) * viewport.scale;
+    const cardTopY = viewport.y + inspectedPlaced.position.y * viewport.scale;
+    const cardHeight = cardHeightsById[inspectedPlaced.card.activity.id] ?? CARD_MIN_HEIGHT;
+    const cardBottomY = viewport.y + (inspectedPlaced.position.y + cardHeight) * viewport.scale;
+    const below = cardTopY < 130;
+    const clampedX =
+      boardSize.width > 0 ? Math.min(Math.max(cardCenterX, 176), Math.max(176, boardSize.width - 176)) : cardCenterX;
+    return {
+      left: Math.round(clampedX),
+      top: Math.round(below ? cardBottomY : cardTopY),
+      below,
+    };
+  }, [boardSize.width, cardHeightsById, inspectedPlaced, viewport.scale, viewport.x, viewport.y]);
 
   return (
     <main className="app">
@@ -1554,7 +1776,10 @@ export function App({
         aria-describedby="board-keyboard-hint"
         aria-keyshortcuts={BOARD_KEYBOARD_SHORTCUTS}
         aria-label={BOARD_LABEL}
-        className={`board${dragState || pinchState ? ' board--dragging' : ''}${isGesturing ? ' board--gesturing' : ''}`}
+        className={`board board--mode-${interactionMode}${dragState || pinchState ? ' board--dragging' : ''}${
+          isGesturing ? ' board--gesturing' : ''
+        }`}
+        onContextMenu={handleBoardContextMenu}
         onKeyDown={handleBoardKeyDown}
         onPointerCancel={stopDragging}
         onPointerDown={handlePointerDown}
@@ -1715,6 +1940,165 @@ export function App({
           <strong>{DISCARD_BIN_LABEL}</strong>
           <span>{DISCARD_BIN_HINT}</span>
         </aside>
+        <div className="board-mode-control" data-tour-anchor="mode">
+          <button
+            aria-expanded={isModeDropdownOpen}
+            aria-haspopup="menu"
+            aria-label={`${BOARD_MODE_TRIGGER_LABEL} (${boardModeActiveLabel(activeModeOption.label)})`}
+            className={`board-mode-trigger${
+              interactionMode !== 'grab' || isModeDropdownOpen ? ' board-mode-trigger--active' : ''
+            }`}
+            onClick={handleToggleModeDropdown}
+            title={`${BOARD_MODE_TRIGGER_LABEL} — ${activeModeOption.hint}`}
+            type="button"
+          >
+            <ActiveModeIcon />
+            <span className="board-mode-trigger__label">{activeModeOption.label}</span>
+          </button>
+          {isModeDropdownOpen ? (
+            <div aria-label={BOARD_MODE_DROPDOWN_LABEL} className="board-mode-dropdown" role="menu">
+              {MODE_OPTIONS.map((option) => {
+                const OptionIcon = option.Icon;
+                const isSelected = interactionMode === option.id;
+                return (
+                  <button
+                    aria-checked={isSelected}
+                    className={`board-mode-dropdown__option${isSelected ? ' board-mode-dropdown__option--active' : ''}`}
+                    key={option.id}
+                    onClick={() => selectInteractionMode(option.id)}
+                    role="menuitemradio"
+                    type="button"
+                  >
+                    <OptionIcon />
+                    <span>{option.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
+        </div>
+        {wheelPosition ? (
+          <div
+            aria-label={BOARD_MODE_WHEEL_LABEL}
+            className="board-wheel"
+            onPointerEnter={(event) => {
+              if (event.pointerType === 'mouse' || !event.pointerType) {
+                wheelMouseEnteredRef.current = true;
+              }
+            }}
+            onPointerLeave={(event) => {
+              setHoveredWheelMode(null);
+              if (event.pointerType === 'mouse' || !event.pointerType) {
+                closeModeWheel();
+              }
+            }}
+            role="menu"
+            style={{ left: wheelPosition.x, top: wheelPosition.y }}
+          >
+            <div aria-hidden="true" className="board-wheel__ring" />
+            <svg aria-hidden="true" className="board-wheel__sectors" viewBox="0 0 240 240">
+              <defs>
+                <radialGradient cx="50%" cy="50%" id="wheel-grad-idle" r="50%">
+                  <stop offset="30%" stopColor="var(--card-hover)" stopOpacity="0.22" />
+                  <stop offset="100%" stopColor="var(--chrome)" stopOpacity="0.58" />
+                </radialGradient>
+                <radialGradient cx="50%" cy="50%" id="wheel-grad-active" r="50%">
+                  <stop offset="25%" stopColor="var(--accent-soft)" stopOpacity="0.45" />
+                  <stop offset="100%" stopColor="var(--accent)" stopOpacity="0.32" />
+                </radialGradient>
+                <radialGradient cx="50%" cy="50%" id="wheel-grad-hover" r="50%">
+                  <stop offset="20%" stopColor="var(--accent-soft)" stopOpacity="0.65" />
+                  <stop offset="100%" stopColor="var(--accent-strong)" stopOpacity="0.46" />
+                </radialGradient>
+              </defs>
+              {MODE_OPTIONS.map((option) => {
+                const isHovered = hoveredWheelMode === option.id;
+                const isSelected = interactionMode === option.id;
+                const fillUrl = isHovered
+                  ? 'url(#wheel-grad-hover)'
+                  : isSelected
+                    ? 'url(#wheel-grad-active)'
+                    : 'url(#wheel-grad-idle)';
+                return (
+                  <path
+                    className={`board-wheel__sector${
+                      isHovered ? ' board-wheel__sector--hover' : isSelected ? ' board-wheel__sector--active' : ''
+                    }`}
+                    d={option.sectorPath}
+                    fill={fillUrl}
+                    key={option.id}
+                  />
+                );
+              })}
+              <line className="board-wheel__divider" x1="95.75" x2="17.81" y1="106" y2="61" />
+              <line className="board-wheel__divider" x1="144.25" x2="222.19" y1="106" y2="61" />
+              <line className="board-wheel__divider" x1="120" x2="120" y1="148" y2="238" />
+              <circle className="board-wheel__rim" cx="120" cy="120" r="118" />
+              <circle className="board-wheel__rim" cx="120" cy="120" r="28" />
+            </svg>
+            <button
+              aria-label={BOARD_MODE_WHEEL_CLOSE_LABEL}
+              className="board-wheel__hub"
+              onClick={closeModeWheel}
+              type="button"
+            >
+              <IconClose />
+            </button>
+            {MODE_OPTIONS.map((option) => {
+              const OptionIcon = option.Icon;
+              const isSelected = interactionMode === option.id;
+              return (
+                <button
+                  aria-checked={isSelected}
+                  className={`board-wheel__option ${option.posClass}${
+                    isSelected ? ' board-wheel__option--active' : ''
+                  }`}
+                  key={option.id}
+                  onBlur={() => setHoveredWheelMode(null)}
+                  onClick={() => selectInteractionMode(option.id)}
+                  onFocus={() => setHoveredWheelMode(option.id)}
+                  onPointerEnter={() => setHoveredWheelMode(option.id)}
+                  onPointerLeave={() => setHoveredWheelMode(null)}
+                  role="menuitemradio"
+                  type="button"
+                >
+                  <span className="board-wheel__option-content">
+                    <OptionIcon />
+                    <span>{option.label}</span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
+        {inspectedPlaced && inspectedGeometry ? (
+          <div
+            aria-label={BOARD_INSPECT_CALLOUT_LABEL}
+            aria-live="polite"
+            className={`board-inspect${inspectedGeometry.below ? ' board-inspect--below' : ''}`}
+            role="status"
+            style={{
+              left: inspectedGeometry.left,
+              top: inspectedGeometry.top,
+            }}
+          >
+            <div className="board-inspect__meta">
+              {inspectedSerialIndex >= 0 ? (
+                <span className="board-inspect__serial">{activityCardSerial(inspectedSerialIndex)}</span>
+              ) : null}
+              {inspectedPlaced.card.activity.location.district ? (
+                <span className="board-inspect__district">{inspectedPlaced.card.activity.location.district}</span>
+              ) : null}
+            </div>
+            <p className="board-inspect__title">
+              {inspectedPlaced.card.activity.title_en ?? inspectedPlaced.card.activity.title}
+            </p>
+            {inspectedPlaced.card.activity.title_en &&
+            inspectedPlaced.card.activity.title_en !== inspectedPlaced.card.activity.title ? (
+              <p className="board-inspect__subtitle">{inspectedPlaced.card.activity.title}</p>
+            ) : null}
+          </div>
+        ) : null}
         <BoardToolbar
           autoFitEnabled={autoFitEnabled}
           canAutoTile={canvasCards.length > 0}
@@ -1849,6 +2233,8 @@ export function App({
               {canvasCards.map(({ card: match, position, variant }, index) => {
                 const isDragging = cardDragState?.card.activity.id === match.activity.id;
                 const isDiscarding = discardingCardId === match.activity.id;
+                const isInspected =
+                  interactionMode === 'inspect' && isInspectZoomActive && inspectedCardId === match.activity.id;
                 // The serial is the card's index in the *full* list, not in `canvasCards`, so
                 // docking or discarding a card never renumbers the ones that stay.
                 const serialIndex = cards.findIndex((candidate) => candidate.activity.id === match.activity.id);
@@ -1858,7 +2244,7 @@ export function App({
                   <div
                     className={`board__card board__card--${variant}${isDragging ? ' board__card--ghost' : ''}${
                       placement ? ' board__card--dealing' : ''
-                    }`}
+                    }${isInspected ? ' board__card--inspected' : ''}`}
                     data-activity-card
                     data-activity-card-id={match.activity.id}
                     data-tour-anchor={index === 0 ? 'card' : undefined}
@@ -1868,6 +2254,16 @@ export function App({
                     onLostPointerCapture={handleCardLostPointerCapture}
                     onPointerCancel={handleCardPointerCancel}
                     onPointerDown={(event) => handleCardPointerDown(event, match)}
+                    onPointerEnter={() => {
+                      if (interactionMode === 'inspect') {
+                        setInspectedCardId(match.activity.id);
+                      }
+                    }}
+                    onPointerLeave={() => {
+                      if (interactionMode === 'inspect') {
+                        setInspectedCardId((current) => (current === match.activity.id ? null : current));
+                      }
+                    }}
                     onPointerMove={handleCardPointerMove}
                     onPointerUp={handleCardPointerUp}
                     style={

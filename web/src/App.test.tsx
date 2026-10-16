@@ -7,8 +7,15 @@ import {
   AUTO_FIT_LABEL,
   AUTO_FIT_DESCRIPTION,
   AUTO_TILE_LABEL,
+  BOARD_INSPECT_CALLOUT_LABEL,
   BOARD_LABEL,
   BOARD_KEYBOARD_HINT,
+  BOARD_MODE_DROPDOWN_LABEL,
+  BOARD_MODE_GRAB_LABEL,
+  BOARD_MODE_INSPECT_LABEL,
+  BOARD_MODE_PAN_LABEL,
+  BOARD_MODE_WHEEL_CLOSE_LABEL,
+  BOARD_MODE_WHEEL_LABEL,
   CLEAR_BOARD_CONFIRM_TITLE,
   DISCARD_GUIDE_TOAST,
   GATHERING_INFO_TITLE,
@@ -348,7 +355,7 @@ describe('App shell', () => {
     expect(markup).toContain('class="product-tour"');
     expect(markup).toContain(`aria-label="${PRODUCT_TOUR_LABEL}"`);
     expect(markup).toContain(TOUR_SEARCH_TITLE);
-    expect(markup).toContain('Step 1 of 4');
+    expect(markup).toContain('Step 1 of 5');
     expect(markup).toContain(TOUR_NEXT_LABEL);
     expect(markup).toContain(TOUR_SKIP_LABEL);
   });
@@ -366,6 +373,7 @@ describe('App shell', () => {
     expect(markup).toContain(`aria-label="${HELP_LABEL}"`);
     expect(markup).toContain('data-tour-anchor="search"');
     expect(markup).toContain('data-tour-anchor="timeline"');
+    expect(markup).toContain('data-tour-anchor="mode"');
     expect(markup).toContain('data-tour-anchor="toolbar"');
   });
 });
@@ -499,5 +507,63 @@ describe('card drag gesture stability (#103)', () => {
     const discardBinBlock = extractBlock(timelineCss, '.discard-bin');
     expect(discardBinBlock).toMatch(/user-select:\s*none/);
     expect(discardBinBlock).toMatch(/-webkit-user-select:\s*none/);
+  });
+
+  it('renders the screen-space mode trigger, radial mode wheel, and inspect callout box only when zoom <= 50%', () => {
+    const mockCard = {
+      activity: {
+        id: 'inspect-card-1',
+        title: '香港藝術館導賞',
+        title_en: 'HK Museum of Art Guided Tour',
+        lang: 'zh' as const,
+        url: 'https://example.com',
+        tags: ['culture'],
+        parts: [{ start: '2026-10-10T06:00:00Z', end: '2026-10-10T08:00:00Z' }],
+        source: { name: 'LCSD' },
+        location: { district: 'Tsim Sha Tsui', venue: 'HKMoA' },
+      },
+      match_rationale: 'Great cultural exhibition',
+    };
+
+    const markupAt50Percent = renderToStaticMarkup(
+      <App
+        cards={[mockCard]}
+        initialInspectedCardId="inspect-card-1"
+        initialInteractionMode="inspect"
+        initialModeDropdownOpen={true}
+        initialTourOpen={false}
+        initialViewportScale={0.5}
+        initialWheelPosition={{ x: 300, y: 260 }}
+      />,
+    );
+
+    expect(markupAt50Percent).toContain('board--mode-inspect');
+    expect(markupAt50Percent).toContain('class="board-mode-trigger board-mode-trigger--active"');
+    expect(markupAt50Percent).toContain(`aria-label="${BOARD_MODE_DROPDOWN_LABEL}"`);
+    expect(markupAt50Percent).toContain('class="board-mode-dropdown"');
+    expect(markupAt50Percent).toContain(`aria-label="${BOARD_MODE_WHEEL_LABEL}"`);
+    expect(markupAt50Percent).toContain('class="board-wheel__sectors"');
+    expect(markupAt50Percent).toContain('class="board-wheel__sector board-wheel__sector--active"');
+    expect(markupAt50Percent).toContain('class="board-wheel__divider"');
+    expect(markupAt50Percent).toContain(`aria-label="${BOARD_MODE_WHEEL_CLOSE_LABEL}"`);
+    expect(markupAt50Percent).toContain(BOARD_MODE_GRAB_LABEL);
+    expect(markupAt50Percent).toContain(BOARD_MODE_PAN_LABEL);
+    expect(markupAt50Percent).toContain(BOARD_MODE_INSPECT_LABEL);
+    expect(markupAt50Percent).toContain(`aria-label="${BOARD_INSPECT_CALLOUT_LABEL}"`);
+    expect(markupAt50Percent).toContain('class="board-inspect__title">HK Museum of Art Guided Tour<');
+    expect(markupAt50Percent).toContain('class="board-inspect__subtitle">香港藝術館導賞<');
+    expect(markupAt50Percent).toContain('class="board-inspect__district">Tsim Sha Tsui<');
+
+    const markupAbove50Percent = renderToStaticMarkup(
+      <App
+        cards={[mockCard]}
+        initialInspectedCardId="inspect-card-1"
+        initialInteractionMode="inspect"
+        initialTourOpen={false}
+        initialViewportScale={0.67}
+      />,
+    );
+    expect(markupAbove50Percent).not.toContain(`aria-label="${BOARD_INSPECT_CALLOUT_LABEL}"`);
+    expect(markupAbove50Percent).not.toContain('board__card--inspected');
   });
 });
