@@ -5,9 +5,16 @@ both the API and the built web app from the same origin
 ([ADR-0006](adr/0006-deployment-target.md), issue #87).
 
 **The deploy costs nothing**, inside Cloud Run's always-free tier — 2M requests,
-180k vCPU-seconds, 360k GiB-seconds per month in `us-central1`. A demo is far
-inside that. The region is not a default: the free tier does not travel, and
-deploying elsewhere bills silently.
+180k vCPU-seconds and 360k GiB-seconds per month for request-based billing. A demo
+is far inside that, by orders of magnitude.
+
+The region is not a default. Cloud Run's free tier only applies in **three US
+regions — `us-central1`, `us-east1` and `us-west1`** — and the allowance is
+*calculated* on `us-central1` pricing. Deploy anywhere else (Europe, Asia) and the
+service still works but every request bills. This repo pins `us-central1`: all
+three qualify, and the latency spread between them is far smaller than the
+cold-start risk that keep-warm already addresses, so there is nothing to gain by
+re-deciding it.
 
 **No secret is ever committed.** Deployment credentials live on the operator's
 machine (`gcloud auth login`). Runtime configuration is set as Cloud Run env vars
@@ -57,7 +64,6 @@ gcloud run deploy "$HONGXPLORE_SERVICE" \
   --set-env-vars "DEMO_MODE=true,AGENT_ACCESS_KEYS=" \
   --cpu 1 --memory 512Mi --concurrency 80 \
   --min-instances 0 --max-instances 2 \
-  --no-cpu-throttling \
   --timeout 60s
 ```
 
@@ -69,8 +75,37 @@ Notes on the flags, because they are the whole configuration:
   which is the point: a judge opens one link.
 - `--min-instances 0` — scales to zero to stay inside the free tier, and the
   [keep-warm job](#keeping-the-service-warm) covers the cold start.
-- `--no-cpu-throttling` — without it a request only gets CPU during request
-  handling, so the container cannot build a response when idle.
+
+### Do not add `--no-cpu-throttling`
+
+It is tempting — it removes the idle-CPU throttling described below. But
+`--no-cpu-throttling` does not just disable throttling, **it switches the
+service to instance-based billing**, which is billed for the entire lifetime of
+every instance whether or not it is serving a request. Combined with keep-warm
+holding an instance open, that stops being free:
+
+| | Request-based (this deploy) | Instance-based (`--no-cpu-throttling`) |
+| --- | --- | --- |
+| Billable time | Only while handling a request | Whole instance lifetime |
+| Idle instance | Costs nothing | Costs nothing only once scaled to zero |
+| Free tier | 180k vCPU-s · 360k GiB-s · 2M requests | 240k vCPU-s · 450k GiB-s |
+| One instance up all month | ~0 vCPU-s billable — inside free tier | 2,592,000 vCPU-s — ~2.35M over free tier |
+
+At roughly $0.000024/vCPU-second that overrun is on the order of **$55/month**,
+which is the opposite of this project's constraint. Request-based billing is the
+right choice here for exactly that reason, and ADR-0006 records it.
+
+### The trade-off you are accepting
+
+Request-based billing means **CPU is throttled to near-zero whenever the instance
+is not handling a request.** An idle-but-running instance is warm in memory but
+has almost no CPU to spare, so the first request after a quiet spell is slower
+than it would be on instance-based billing.
+
+That is an acceptable trade for a $0 deploy, and the
+[keep-warm job](#keeping-the-service-warm) blunts it by exercising the instance
+every 5 minutes. It is worth knowing about before someone "fixes" the latency by
+adding `--no-cpu-throttling` and quietly starts paying.
 - `--set-env-vars "DEMO_MODE=true,AGENT_ACCESS_KEYS="` is the **demo-only**
   deployment. It needs no keys of any kind and is the state the pitch should be
   able to fall back to at any moment.
@@ -198,6 +233,11 @@ judges is a real risk. [`.github/workflows/keep-warm.yml`](../.github/workflows/
 pings `/health` every 5 minutes, which is enough to hold one instance. It is
 scheduled on UTC.
 
+On request-based billing an instance that is merely *running* still has its CPU
+throttled between requests — the ping is what keeps it genuinely warm, which is
+the reason the cadence is 5 minutes and not 30. Nothing here is billed while idle,
+so the pinging itself is free.
+
 Set the URL once. It is a repository **variable**, not a secret — the deployed URL
 is public, so there is nothing to protect:
 
@@ -244,7 +284,7 @@ point.
 | JSON `404` where HTML was expected on `/api/*` | Correct behaviour | The SPA fallback deliberately never answers for `/api/*` — this is the bug the fallback guards against |
 | First request is slow | Scaled to zero | Check the keep-warm job ran; see above |
 | Live mode always refuses | No agent access key configured, or the instance is `DEMO_MODE=true` | A `DEMO_MODE=true` instance refuses live regardless of key — that is intentional |
-| Free tier not applying | Wrong region | Must be `us-central1`; the tier does not travel |
+| Free tier not applying | Wrong region | Must be `us-central1`, `us-east1` or `us-west1` — outside those three you pay |
 | Build fails on `uv.lock` | `uv` version drift | `ARG UV_VERSION` in the `Dockerfile` must match the uv that produced the lockfile |
 
 ## Related
