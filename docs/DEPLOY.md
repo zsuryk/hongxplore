@@ -8,13 +8,25 @@ both the API and the built web app from the same origin
 180k vCPU-seconds and 360k GiB-seconds per month for request-based billing. A demo
 is far inside that, by orders of magnitude.
 
-The region is not a default. Cloud Run's free tier only applies in **three US
-regions — `us-central1`, `us-east1` and `us-west1`** — and the allowance is
-*calculated* on `us-central1` pricing. Deploy anywhere else (Europe, Asia) and the
-service still works but every request bills. This repo pins `us-central1`: all
-three qualify, and the latency spread between them is far smaller than the
-cold-start risk that keep-warm already addresses, so there is nothing to gain by
-re-deciding it.
+**The free tier is not region-locked.** This is worth being precise about,
+because a lot of blog posts say otherwise. Google states the allowance as *a
+spending-based discount computed at `us-central1` (Tier 1) pricing*, aggregated
+per billing account, with *every* Cloud Run region selectable under it — you are
+billed only for usage past the allowance. What genuinely is restricted to
+`us-central1` / `us-east1` / `us-west1` is the **Compute Engine** always-free
+`e2-micro`, a different product; the two get conflated constantly.
+
+So the region is a **latency** decision, not a billing one:
+
+| Region | Price tier | Latency from Hong Kong |
+| --- | --- | --- |
+| `asia-east2` (Hong Kong) | Tier 2 | Lowest — judges are local |
+| `us-central1` (Iowa) | Tier 1 | Highest of the three US options |
+
+Tier 2 has higher per-unit prices, which only matters if you exceed the free
+allowance — a demo never will. `asia-east2` is therefore the better default for
+this project, and `us-central1` remains a fine choice if you would rather stay
+on Tier 1 pricing.
 
 **No secret is ever committed.** Deployment credentials live on the operator's
 machine (`gcloud auth login`). Runtime configuration is set as Cloud Run env vars
@@ -44,7 +56,7 @@ Human setup. An agent cannot do any of this, and no part of it belongs in the re
    ```bash
    export HONGXPLORE_PROJECT=<PROJECT_ID>
    export HONGXPLORE_SERVICE=hongxplore
-   export HONGXPLORE_REGION=us-central1   # the free tier applies here
+   export HONGXPLORE_REGION=asia-east2     # Hong Kong — lowest latency for local judges
    ```
 
 ---
@@ -89,11 +101,19 @@ holding an instance open, that stops being free:
 | Billable time | Only while handling a request | Whole instance lifetime |
 | Idle instance | Costs nothing | Costs nothing only once scaled to zero |
 | Free tier | 180k vCPU-s · 360k GiB-s · 2M requests | 240k vCPU-s · 450k GiB-s |
-| One instance up all month | ~0 vCPU-s billable — inside free tier | 2,592,000 vCPU-s — ~2.35M over free tier |
+| Rate | $0.000024/vCPU-s (active) | $0.000018/vCPU-s |
+| One instance up all month | ~0 vCPU-s billable — inside free tier | 2,592,000 vCPU-s → ~2.35M over free tier |
 
-At roughly $0.000024/vCPU-second that overrun is on the order of **$55/month**,
-which is the opposite of this project's constraint. Request-based billing is the
-right choice here for exactly that reason, and ADR-0006 records it.
+That overrun bills at roughly **$42/month** — the opposite of this project's
+constraint. Request-based billing is the right choice here for exactly that
+reason, and ADR-0006 records it.
+
+For contrast, `--min-instances 1` is not free either. Minimum instances are
+billed an idle rate of $0.0000025/vCPU-second for every second they are up, and
+the free allowance covers only ~7% of a month, so an instance held open all month
+runs roughly **$6/month**. That is the number the keep-warm ping is measured
+against: it costs effectively $0 because the instance is idle, and is billed only
+for the seconds spent answering a ping.
 
 ### The trade-off you are accepting
 
@@ -284,7 +304,7 @@ point.
 | JSON `404` where HTML was expected on `/api/*` | Correct behaviour | The SPA fallback deliberately never answers for `/api/*` — this is the bug the fallback guards against |
 | First request is slow | Scaled to zero | Check the keep-warm job ran; see above |
 | Live mode always refuses | No agent access key configured, or the instance is `DEMO_MODE=true` | A `DEMO_MODE=true` instance refuses live regardless of key — that is intentional |
-| Free tier not applying | Wrong region | Must be `us-central1`, `us-east1` or `us-west1` — outside those three you pay |
+| Bill appeared out of nowhere | Usage past the free allowance | 2M requests / 180k vCPU-s / 360k GiB-s per billing account, per month. Check the Cloud Run pricing page for current figures |
 | Build fails on `uv.lock` | `uv` version drift | `ARG UV_VERSION` in the `Dockerfile` must match the uv that produced the lockfile |
 
 ## Related
