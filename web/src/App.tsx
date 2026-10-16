@@ -1000,6 +1000,7 @@ export function App({
       return;
     }
 
+    event.preventDefault();
     event.currentTarget.setPointerCapture(event.pointerId);
     activePointersRef.current.set(event.pointerId, screenPoint);
     const activePointers = [...activePointersRef.current.values()];

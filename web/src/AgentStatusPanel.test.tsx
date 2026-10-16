@@ -1,5 +1,7 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import agentResponse from '../../docs/examples/agent-response.json';
 import { AgentStatusPanel } from './AgentStatusPanel';
 import type { components } from './api/schema';
@@ -9,9 +11,12 @@ import {
   AGENT_STATUS_ERROR,
   AGENT_STATUS_IDLE,
   AGENT_STATUS_SEARCHING,
+  DATA_SOURCE_LIVE,
+  DATA_SOURCE_MOCK,
   agentStatusResults,
   formatLogTimestamp,
 } from './copy';
+import { useBoardStore } from './state/boardStore';
 
 const response = agentResponse as components['schemas']['AgentResponse'];
 
@@ -48,6 +53,57 @@ describe('AgentStatusPanel', () => {
     const iso = '2026-10-04T06:00:00Z';
     const formatted = formatLogTimestamp(iso);
     expect(formatted).toBe('14:00:00');
+  });
+});
+
+describe('AgentStatusPanel — data source mode toggle (#126)', () => {
+  beforeEach(() => {
+    useBoardStore.setState({
+      agentError: null,
+      agentLog: [],
+      agentStatus: 'idle',
+      cards: [],
+      dataSourceMode: 'live',
+    });
+  });
+
+  it('does not invoke loadAgentResponse inside handleModeSwitch while keeping handleUseDemo intact', () => {
+    const panelSource = readFileSync(join(import.meta.dirname, 'AgentStatusPanel.tsx'), 'utf8');
+    const modeSwitchBody = panelSource.match(/function handleModeSwitch\([^)]*\)\s*\{([^}]*)\}/)?.[1] ?? '';
+    const useDemoBody = panelSource.match(/function handleUseDemo\([^)]*\)\s*\{([^}]*)\}/)?.[1] ?? '';
+
+    expect(modeSwitchBody).toContain('setDataSourceMode(mode)');
+    expect(modeSwitchBody).not.toContain('loadAgentResponse');
+    expect(useDemoBody).toContain("setDataSourceMode('mock')");
+    expect(useDemoBody).toContain('loadAgentResponse');
+  });
+
+  it('switches data source mode to mock without generating cards and reflects active button state', () => {
+    useBoardStore.getState().setDataSourceMode('mock');
+
+    expect(useBoardStore.getState().dataSourceMode).toBe('mock');
+    expect(useBoardStore.getState().cards).toHaveLength(0);
+
+    const markup = renderToStaticMarkup(<AgentStatusPanel dataSourceMode="mock" />);
+    expect(markup).toContain(
+      `aria-pressed="true" class="segmented__option segmented__option--active" type="button">${DATA_SOURCE_MOCK}`,
+    );
+    expect(markup).toContain(`aria-pressed="false" class="segmented__option" type="button">${DATA_SOURCE_LIVE}`);
+  });
+
+  it('preserves existing board cards unchanged when toggling between live and mock modes', () => {
+    useBoardStore.setState({
+      cards: [response.matches[0]],
+      dataSourceMode: 'live',
+    });
+
+    useBoardStore.getState().setDataSourceMode('mock');
+    expect(useBoardStore.getState().dataSourceMode).toBe('mock');
+    expect(useBoardStore.getState().cards).toEqual([response.matches[0]]);
+
+    useBoardStore.getState().setDataSourceMode('live');
+    expect(useBoardStore.getState().dataSourceMode).toBe('live');
+    expect(useBoardStore.getState().cards).toEqual([response.matches[0]]);
   });
 });
 

@@ -32,6 +32,7 @@ export type AgentStatusPanelProps = {
   error?: string | null;
   log?: AgentLogEntry[];
   cards?: ActivityCard[];
+  dataSourceMode?: DataSourceMode;
   initialExpanded?: boolean;
 };
 
@@ -50,6 +51,7 @@ export function AgentStatusPanel({
   error: propError,
   log: propLog,
   cards: propCards,
+  dataSourceMode: propDataSourceMode,
   initialExpanded = false,
 }: AgentStatusPanelProps = {}) {
   const [isLogExpanded, setIsLogExpanded] = useState(initialExpanded);
@@ -58,7 +60,7 @@ export function AgentStatusPanel({
   const storeError = useBoardStore((state) => state.agentError);
   const storeLog = useBoardStore((state) => state.agentLog);
   const storeCards = useBoardStore((state) => state.cards);
-  const dataSourceMode = useBoardStore((state) => state.dataSourceMode);
+  const storeDataSourceMode = useBoardStore((state) => state.dataSourceMode);
   const setDataSourceMode = useBoardStore((state) => state.setDataSourceMode);
   const loadAgentResponse = useBoardStore((state) => state.loadAgentResponse);
 
@@ -66,13 +68,11 @@ export function AgentStatusPanel({
   const agentError = propError ?? storeError;
   const agentLog = propLog ?? storeLog;
   const cards = propCards ?? storeCards;
+  const dataSourceMode = propDataSourceMode ?? storeDataSourceMode;
   const resultCount = propCards !== undefined ? propCards.length : cards.length;
 
   function handleModeSwitch(mode: DataSourceMode) {
     setDataSourceMode(mode);
-    if (mode === 'mock') {
-      void loadAgentResponse({ query: INITIAL_ACTIVITY_QUERY }, fixtureAgentClient);
-    }
   }
 
   function handleUseDemo() {
