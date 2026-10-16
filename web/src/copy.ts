@@ -70,9 +70,32 @@ export const TOUR_CARD_BODY =
 export const TOUR_TIMELINE_TITLE = 'Plan your weekend';
 export const TOUR_TIMELINE_BODY =
   'Drag activities into the timeline slots at the bottom to build and organize your weekend itinerary.';
+export const TOUR_MODE_TITLE = 'Drag and inspect modes';
+export const TOUR_MODE_BODY =
+  'Switch between Drag and grab, Just drag, or Drag and inspect. Use this top-left dropdown on any device, or right-click anywhere on the board on desktop for the radial wheel (mobile uses the dropdown only).';
 export const TOUR_TOOLBAR_TITLE = 'Board controls';
 export const TOUR_TOOLBAR_BODY =
-  'Pan and zoom the canvas, fit or tile cards, toggle auto-fit, or click Help (?) anytime to reopen this guide.';
+  'Zoom, fit all cards into view, auto-tile overlapping cards, or reopen this guide anytime with the Help (?) button.';
+
+export const BOARD_MODE_WHEEL_LABEL = 'Board interaction mode wheel';
+export const BOARD_MODE_WHEEL_CLOSE_LABEL = 'Close mode wheel';
+export const BOARD_MODE_DROPDOWN_LABEL = 'Board interaction mode menu';
+export const BOARD_MODE_TRIGGER_LABEL = 'Switch board interaction mode';
+export const BOARD_MODE_GRAB_LABEL = 'Drag and grab';
+export const BOARD_MODE_GRAB_HINT = 'Pan canvas · Move cards';
+export const BOARD_MODE_PAN_LABEL = 'Just drag';
+export const BOARD_MODE_PAN_HINT = 'Pan canvas freely over cards';
+export const BOARD_MODE_INSPECT_LABEL = 'Drag and inspect';
+export const BOARD_MODE_INSPECT_HINT = 'Pan · Hover cards to read titles';
+export const BOARD_INSPECT_CALLOUT_LABEL = 'Inspected activity title';
+
+export function boardModeActiveLabel(modeLabel: string): string {
+  return `Mode: ${modeLabel}`;
+}
+
+export function boardModeSelectedConfirmation(modeLabel: string): string {
+  return `Switched to ${modeLabel} mode`;
+}
 
 export const TOUR_NEXT_LABEL = 'Next';
 export const TOUR_PREV_LABEL = 'Back';

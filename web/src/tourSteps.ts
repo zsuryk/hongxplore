@@ -1,6 +1,8 @@
 import {
   TOUR_CARD_BODY,
   TOUR_CARD_TITLE,
+  TOUR_MODE_BODY,
+  TOUR_MODE_TITLE,
   TOUR_SEARCH_BODY,
   TOUR_SEARCH_TITLE,
   TOUR_TIMELINE_BODY,
@@ -42,6 +44,14 @@ export const TOUR_STEPS: ProductTourStep[] = [
     title: TOUR_TIMELINE_TITLE,
     body: TOUR_TIMELINE_BODY,
     placement: 'top',
+  },
+  {
+    id: 'mode',
+    anchorSelector: '[data-tour-anchor="mode"]',
+    fallbackSelector: '.board-mode-control',
+    title: TOUR_MODE_TITLE,
+    body: TOUR_MODE_BODY,
+    placement: 'bottom',
   },
   {
     id: 'toolbar',
