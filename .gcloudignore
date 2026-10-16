@@ -1,0 +1,57 @@
+# What `gcloud run deploy --source .` uploads to Cloud Build.
+#
+# `.dockerignore` governs what enters the *image*; this governs what leaves your
+# *machine*. Both matter, and they are not the same thing: without this file
+# gcloud falls back to `.gitignore`, which today happens to exclude the same
+# patterns — but nothing keeps the two lists in step, and the next person to add
+# a secret pattern to `.dockerignore` would silently upload it.
+#
+# Keep the secret patterns here identical to `.dockerignore`.
+#
+# Nothing listed below is needed by the build: the image builds the web app from
+# `web/` sources, resolves the API from `api/pyproject.toml` + `api/uv.lock`, and
+# copies only `docs/openapi.json`, `docs/examples/` and `data/activities.json`.
+
+# --- secrets: never uploaded, let alone built -------------------------------
+.env
+.env.*
+**/.env
+**/.env.*
+*.pem
+*.key
+*.p12
+service-account*.json
+gcloud-service-account*.json
+
+# --- git and CI --------------------------------------------------------------
+.git
+.github
+.gitignore
+.claude
+
+# --- dependency trees and build output (the image builds its own) ------------
+**/node_modules
+**/.pnpm-store
+**/.vite
+**/dist
+**/.venv
+**/__pycache__
+**/*.py[cod]
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/.cache
+api/htmlcov
+.coverage
+coverage
+
+# --- local environment and editor noise --------------------------------------
+**/.DS_Store
+**/*.swp
+.idea
+.vscode
+
+# --- test suites: CI runs these against the source, never inside the image ---
+api/tests
+web/src/**/*.test.ts
+web/src/**/*.test.tsx
