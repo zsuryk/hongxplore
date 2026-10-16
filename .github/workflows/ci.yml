@@ -87,3 +87,65 @@ jobs:
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: printf '%s\n' "$PR_TITLE" | pnpm exec commitlint
 
+  # Issue #87. Builds the deployable image with no secrets in the environment and
+  # then exercises the contract that matters: one process, one origin, API and web
+  # app both answering, a deep link surviving a refresh, and `/health` leaking
+  # nothing. Deliberately credential-free — if this job ever needs a secret to
+  # build, that is a bug in the build, not a missing secret.
+  image:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the image
+        # DOCKER_BUILDKIT=0 on purpose. `gcloud run deploy --source .` builds with
+        # gcr.io/cloud-builders/docker, which does not enable BuildKit — so a
+        # BuildKit-only instruction (e.g. --mount=type=cache) fails on the deploy
+        # path while passing here, because runners default BuildKit on. Pinning it
+        # off makes CI build the way the deploy actually builds.
+        env:
+          DOCKER_BUILDKIT: '0'
+        run: docker build -t hongxplore:ci .
+      - name: Start it with no keys configured
+        run: |
+          docker run -d --name hongxplore -p 8080:8080 \
+            -e DEMO_MODE=true \
+            -e AGENT_ACCESS_KEYS= \
+            hongxplore:ci
+      - name: Wait for /health
+        run: |
+          for _ in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8080/health >/dev/null 2>&1; then exit 0; fi
+            sleep 2
+          done
+          echo "::error::container never became healthy"
+          docker logs hongxplore
+          exit 1
+      - name: Smoke test the demo-only deployment
+        run: .github/scripts/smoke_container.sh demo
+      - name: The image carries no secrets and runs as non-root
+        run: .github/scripts/audit_image.sh hongxplore:ci
+      # The 401/403 key distinction is only observable on an instance that is
+      # allowed to be live at all, so the gate gets a second container.
+      - name: Restart as a live-capable instance
+        run: |
+          docker rm -f hongxplore
+          docker run -d --name hongxplore -p 8080:8080 \
+            -e DEMO_MODE=false \
+            -e AGENT_ACCESS_KEYS=ci-pitch-key \
+            hongxplore:ci
+          for _ in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8080/health >/dev/null 2>&1; then exit 0; fi
+            sleep 2
+          done
+          echo "::error::container never became healthy"
+          docker logs hongxplore
+          exit 1
+      - name: Smoke test the live-mode gate
+        run: .github/scripts/smoke_container.sh live
+      - name: Show logs and stop
+        if: always()
+        run: |
+          docker logs hongxplore 2>&1 | tail -40
+          docker rm -f hongxplore 2>/dev/null || true
+

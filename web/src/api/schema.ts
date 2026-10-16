@@ -14,6 +14,10 @@ export interface paths {
         /**
          * Health
          * @description Liveness probe: returns `{"status": "ok"}`.
+         *
+         *     Cloud Run calls this unauthenticated on every instance start, so it must
+         *     stay cheap and must describe nothing about the deployment — no version,
+         *     no config, no build id.
          */
         get: operations["health_health_get"];
         put?: never;

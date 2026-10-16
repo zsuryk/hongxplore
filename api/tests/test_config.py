@@ -306,6 +306,20 @@ def test_agent_access_keys_are_masked_in_repr(monkeypatch: pytest.MonkeyPatch) -
     assert "hx-super-secret" not in str(settings)
 
 
+def test_deploy_runbook_covers_every_runtime_variable(repo_root: Path) -> None:
+    """Issue #87 asks for every runtime variable documented "in one place".
+
+    `.env.example` is the source of truth for descriptions; `docs/DEPLOY.md` is
+    where an operator looks before deploying. A variable that appears in one and
+    not the other is invisible to whichever one they read, so the runbook must
+    name them all.
+    """
+    runbook = (repo_root / "docs" / "DEPLOY.md").read_text(encoding="utf-8")
+    documented = {name.upper() for name in Settings.model_fields} - DERIVED_KEYS
+    missing = sorted(name for name in documented if name not in runbook.upper())
+    assert not missing, f"absent from docs/DEPLOY.md: {missing}"
+
+
 def test_load_settings_fails_fast_with_actionable_message(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
