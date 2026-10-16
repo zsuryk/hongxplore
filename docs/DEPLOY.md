@@ -61,6 +61,48 @@ Human setup. An agent cannot do any of this, and no part of it belongs in the re
 
 ---
 
+## The pitch URL
+
+**https://hongxplore.cloud.run**
+
+The default URL Cloud Run assigns is `SERVICE-PROJECT_NUMBER.REGION.run.app` —
+here that is `hongxplore-183992832600.asia-east2.run.app`. The project number is
+mandatory in that format and cannot be shortened, so it is not a URL anyone wants
+to read aloud on stage.
+
+A **custom URL** gives the memorable form instead:
+
+```bash
+gcloud beta run domain-mappings create \
+    --service=hongxplore \
+    --domain=hongxplore.cloud.run \
+    --project=hongxplore --region=asia-east2
+```
+
+The `run.app` URL keeps working, so nothing breaks and there is no cutover to
+plan. No code change is involved: the API and the web app are already served from
+one origin, so a new hostname just points at the same process. The local-dev CORS
+allowlist is unaffected because no request is cross-origin.
+
+**Three warnings, from Google's own documentation:**
+
+- **Custom URLs are Preview** — pre-GA terms, "available as is", limited support,
+  and Google reserves the right to revoke or reassign a subdomain for abuse or
+  trademark reasons. Fine for a fixed demo date; not what to build a permanent
+  product on.
+- **Never delete the mapping.** Deleting it releases the subdomain *immediately*
+  to anyone else, which the docs call **domain sniping**. If you must move it to
+  another service, expect to re-claim it and possibly lose it in between.
+- **Subdomains are globally unique across all of Google Cloud.** If
+  `hongxplore` is taken you get an error and must pick another name — and you
+  cannot test availability without claiming. Claim early.
+
+For something permanent, a real custom domain (`go.hongxplore.hk`) is GA rather
+than Preview and entirely under your control. It needs a domain purchase and a DNS
+change; the TLS certificate is provisioned and renewed automatically.
+
+---
+
 ## Deploy
 
 Build and run in one step. Cloud Build builds the image in Google's infrastructure,
