@@ -2,10 +2,17 @@
 
 import re
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 
-from pydantic import BaseModel, Field, ValidationError, field_validator, model_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import (
+    BaseModel,
+    Field,
+    SecretStr,
+    ValidationError,
+    field_validator,
+    model_validator,
+)
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 API_ROOT = Path(__file__).resolve().parent.parent
 ENV_FILE = API_ROOT / ".env"
@@ -19,6 +26,15 @@ _LEGACY_OPENAI_BRIDGE = {
     "openai_model": "model",
 }
 """``OPENAI_*`` key -> ``LLMProvider`` field, for the temporary deprecation bridge."""
+
+AgentAccessKeys = Annotated[list[SecretStr], NoDecode]
+"""Valid agent access keys, as a comma-separated string rather than JSON.
+
+``SecretStr`` so the keys cannot leak through a ``repr(settings)`` in a log line
+or a validation error — the pitch key is a shared secret, not a config value.
+``NoDecode`` keeps pydantic-settings from demanding JSON, because rotating the
+pitch key must stay a one-line edit an operator can make mid-demo.
+"""
 
 
 class LLMProvider(BaseModel):
@@ -66,6 +82,23 @@ class Settings(BaseSettings):
     # Retrieval policy: how many cards one query may fill the board with (A8.4).
     agent_match_limit: int = Field(default=6, ge=3, le=10)
     demo_mode: bool = True
+    # --- Pitch access gate (issue #83) ---------------------------------------
+    # Valid agent access keys. Several, so the pitch key can be rotated without
+    # a code change or a web redeploy. Empty means live mode is refused outright
+    # — the gate fails closed.
+    agent_access_keys: AgentAccessKeys = Field(default_factory=list)
+
+    @field_validator("agent_access_keys", mode="before")
+    @classmethod
+    def _split_agent_access_keys(cls, value: object) -> object:
+        """Accept `a,b,c` from the environment; a blank value means no keys.
+
+        List-of-secrets via JSON would work, but the whole point of the key set
+        is that an operator can edit one line without quoting anything.
+        """
+        if isinstance(value, str):
+            return [part.strip() for part in value.split(",") if part.strip()]
+        return value
 
     @field_validator("openai_base_url", "search_cache_path", mode="before")
     @classmethod

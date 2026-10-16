@@ -34,8 +34,12 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Agent
-         * @description Parse intent → search (or seed in DEMO_MODE) → rank → match rationale → respond.
+         * Find activities, in demo or live mode (issue #83 gates live).
+         * @description Parse intent → search (or seed in demo mode) → rank → match rationale → respond.
+         *
+         *     `mode="demo"` is always served from the bundled seed data and needs no key.
+         *     `mode="live"` is refused unless it carries a valid agent access key, and is
+         *     refused unconditionally by an instance running with `DEMO_MODE=true`.
          */
         post: operations["agent_api_agent_post"];
         delete?: never;
@@ -131,6 +135,23 @@ export interface components {
             end: string;
         };
         /**
+         * AgentAccessError
+         * @description Why a live-mode request was refused.
+         *
+         *     Carries a reason code rather than only prose so the web app can show the
+         *     right guidance without parsing an English sentence. `message` is the
+         *     server's own safe fallback for any client that does not read `reason`.
+         */
+        AgentAccessError: {
+            /**
+             * Reason
+             * @enum {string}
+             */
+            reason: "missing_key" | "invalid_key" | "demo_only_instance";
+            /** Message */
+            message: string;
+        };
+        /**
          * AgentLogEntry
          * @description One line of the **agent log** shown in the status panel.
          */
@@ -165,6 +186,18 @@ export interface components {
              * @description Availability picked via the time-slot chips.
              */
             free_slots?: components["schemas"]["FreeSlot"][];
+            /**
+             * Mode
+             * @description `demo` for bundled seed data, `live` for the configured providers. Defaults to `demo` so a request that forgets to ask cannot escalate to live and spend provider quota.
+             * @default demo
+             * @enum {string}
+             */
+            mode: "demo" | "live";
+            /**
+             * Agent Access Key
+             * @description Shared pitch key, required for `live` and ignored for `demo`. Verified server-side and never echoed back in any response or log.
+             */
+            agent_access_key?: string | null;
         };
         /**
          * AgentResponse
@@ -347,6 +380,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AgentResponse"];
+                };
+            };
+            /** @description A live request arrived without an agent access key. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentAccessError"];
+                };
+            };
+            /** @description A live request arrived with an unrecognised key, or against an instance configured demo-only. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentAccessError"];
                 };
             };
             /** @description Validation Error */

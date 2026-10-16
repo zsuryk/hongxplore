@@ -325,7 +325,7 @@ async def test_agent_orchestrator_integration_with_provider_pool_failover() -> N
         settings=settings,
     )
 
-    request = AgentRequest(query="hiking in Sai Kung on Sunday")
+    request = AgentRequest(query="hiking in Sai Kung on Sunday", mode="live")
     response = await orchestrator.run(request)
 
     assert response.status == "ok"
@@ -354,7 +354,7 @@ async def test_agent_orchestrator_integration_with_exhausted_pool_fallback() -> 
         settings=settings,
     )
 
-    request = AgentRequest(query="hiking in Sai Kung")
+    request = AgentRequest(query="hiking in Sai Kung", mode="live")
     response = await orchestrator.run(request)
 
     assert response.status == "ok"

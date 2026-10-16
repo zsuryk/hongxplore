@@ -1,5 +1,11 @@
 import { create } from 'zustand';
-import { defaultAgentClient, fixtureAgentClient, type AgentClient, type AgentRequest } from '../api/client';
+import {
+  defaultAgentClient,
+  demoAgentClient,
+  fixtureAgentClient,
+  type AgentClient,
+  type AgentRequest,
+} from '../api/client';
 import type { components } from '../api/schema';
 import { computeBoardLayout } from '../boardLayout';
 import {
@@ -8,6 +14,7 @@ import {
   formatAgentErrorMessage,
   getUpcomingWeekendFreeSlots,
   INITIAL_ACTIVITY_QUERY,
+  isServerUnreachable,
   TIMELINE_SLOTS,
 } from '../copy';
 import type { Point } from '../viewport';
@@ -69,6 +76,7 @@ export function similarActivityRequest(card: ActivityCard): AgentRequest {
 
   return {
     query: `Find activities similar to ${title} in ${card.activity.location.district}: ${tags}`,
+    mode: 'demo',
   };
 }
 
@@ -177,7 +185,7 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
     }));
   },
   async findSimilar(card, client) {
-    const activeClient = client ?? (get().dataSourceMode === 'mock' ? fixtureAgentClient : defaultAgentClient);
+    const activeClient = client ?? (get().dataSourceMode === 'mock' ? demoAgentClient : defaultAgentClient);
     set({ agentStatus: 'searching', agentError: null });
     try {
       const response = await activeClient.requestAgent(similarActivityRequest(card));
@@ -286,18 +294,19 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
         end: slot.end,
       }));
 
-    const activeClient = client ?? (get().dataSourceMode === 'mock' ? fixtureAgentClient : defaultAgentClient);
+    const activeClient = client ?? (get().dataSourceMode === 'mock' ? demoAgentClient : defaultAgentClient);
 
     await get().loadAgentResponse(
       {
         query,
+        mode: 'demo',
         ...(freeSlots.length > 0 ? { free_slots: freeSlots } : {}),
       },
       activeClient,
     );
   },
   async loadAgentResponse(request, client) {
-    const activeClient = client ?? (get().dataSourceMode === 'mock' ? fixtureAgentClient : defaultAgentClient);
+    const activeClient = client ?? (get().dataSourceMode === 'mock' ? demoAgentClient : defaultAgentClient);
     set({ agentStatus: 'searching', agentError: null });
     try {
       const response = await activeClient.requestAgent(request);
@@ -347,7 +356,15 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
         recentCardIds: isInitial ? [] : newlyAddedMatches.map((match) => match.activity.id),
       });
     } catch (error) {
-      if (activeClient !== fixtureAgentClient && request.query === INITIAL_ACTIVITY_QUERY) {
+      // The bundled fixture stands in for exactly one situation: no API was
+      // reachable. A *refusal* is not that situation — serving seed results to a
+      // judge whose live request was rejected would show them demo data while
+      // they believe it is live, which is the one outcome the gate exists to
+      // prevent. So the question is "was there no server?", not "was this the
+      // first query?" — which means a mid-pitch query keeps its fallback too,
+      // and lands on the fixture's local matcher (issue #128) rather than the
+      // one canned response.
+      if (activeClient !== fixtureAgentClient && isServerUnreachable(error)) {
         try {
           const fallback = await fixtureAgentClient.requestAgent(request);
           const layout = computeBoardLayout({

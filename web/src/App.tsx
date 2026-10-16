@@ -417,7 +417,7 @@ export function App({
 
   useEffect(() => {
     setTimelineSlots(TIMELINE_SLOTS.map((slot) => ({ ...slot, activityId: null })));
-    void loadAgentResponse({ query: INITIAL_ACTIVITY_QUERY });
+    void loadAgentResponse({ query: INITIAL_ACTIVITY_QUERY, mode: 'demo' });
   }, [loadAgentResponse, setTimelineSlots]);
 
   // The confirmation is a transient status, not a permanent fixture on the board.

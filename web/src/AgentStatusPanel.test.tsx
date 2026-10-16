@@ -12,7 +12,7 @@ import {
   AGENT_STATUS_IDLE,
   AGENT_STATUS_SEARCHING,
   DATA_SOURCE_LIVE,
-  DATA_SOURCE_MOCK,
+  DATA_SOURCE_DEMO,
   agentStatusResults,
   formatLogTimestamp,
 } from './copy';
@@ -86,7 +86,7 @@ describe('AgentStatusPanel — data source mode toggle (#126)', () => {
 
     const markup = renderToStaticMarkup(<AgentStatusPanel dataSourceMode="mock" />);
     expect(markup).toContain(
-      `aria-pressed="true" class="segmented__option segmented__option--active" type="button">${DATA_SOURCE_MOCK}`,
+      `aria-pressed="true" class="segmented__option segmented__option--active" type="button">${DATA_SOURCE_DEMO}`,
     );
     expect(markup).toContain(`aria-pressed="false" class="segmented__option" type="button">${DATA_SOURCE_LIVE}`);
   });

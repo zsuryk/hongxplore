@@ -271,6 +271,41 @@ def test_invalid_demo_mode_raises_validation_error(monkeypatch: pytest.MonkeyPat
     assert "sometimes" in message
 
 
+def test_agent_access_keys_default_to_empty(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A fresh clone has no pitch key — the gate fails closed until one is set."""
+    _clear_env(monkeypatch)
+    assert Settings(_env_file=None).agent_access_keys == []
+
+
+def test_comma_separated_agent_access_keys_from_dotenv(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Rotation must stay a one-line edit an operator can make mid-demo."""
+    _clear_env(monkeypatch)
+    dotenv = _write_dotenv(tmp_path, AGENT_ACCESS_KEYS="first-key, second-key ,third-key")
+
+    keys = Settings(_env_file=dotenv).agent_access_keys
+
+    assert [k.get_secret_value() for k in keys] == ["first-key", "second-key", "third-key"]
+
+
+def test_blank_agent_access_keys_configures_none(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """`.env.example` ships `AGENT_ACCESS_KEYS=` — blank means no valid key."""
+    _clear_env(monkeypatch)
+    assert Settings(_env_file=_write_dotenv(tmp_path, AGENT_ACCESS_KEYS="")).agent_access_keys == []
+
+
+def test_agent_access_keys_are_masked_in_repr(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The pitch key is a shared secret: it must not reach a log via `repr(settings)`."""
+    _clear_env(monkeypatch)
+    settings = Settings(_env_file=None, agent_access_keys=["hx-super-secret"])
+
+    assert "hx-super-secret" not in repr(settings)
+    assert "hx-super-secret" not in str(settings)
+
+
 def test_load_settings_fails_fast_with_actionable_message(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

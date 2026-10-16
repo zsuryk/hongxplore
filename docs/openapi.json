@@ -34,8 +34,8 @@
         "tags": [
           "agent"
         ],
-        "summary": "Agent",
-        "description": "Parse intent → search (or seed in DEMO_MODE) → rank → match rationale → respond.",
+        "summary": "Find activities, in demo or live mode (issue #83 gates live).",
+        "description": "Parse intent → search (or seed in demo mode) → rank → match rationale → respond.\n\n`mode=\"demo\"` is always served from the bundled seed data and needs no key.\n`mode=\"live\"` is refused unless it carries a valid agent access key, and is\nrefused unconditionally by an instance running with `DEMO_MODE=true`.",
         "operationId": "agent_api_agent_post",
         "requestBody": {
           "content": {
@@ -54,6 +54,26 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AgentResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "A live request arrived without an agent access key.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentAccessError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "A live request arrived with an unrecognised key, or against an instance configured demo-only.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentAccessError"
                 }
               }
             }
@@ -239,6 +259,31 @@
         "title": "ActivityPart",
         "description": "One bookable or attendable time slot of an Activity — what ``Activity.parts`` holds."
       },
+      "AgentAccessError": {
+        "properties": {
+          "reason": {
+            "type": "string",
+            "enum": [
+              "missing_key",
+              "invalid_key",
+              "demo_only_instance"
+            ],
+            "title": "Reason"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "reason",
+          "message"
+        ],
+        "title": "AgentAccessError",
+        "description": "Why a live-mode request was refused.\n\nCarries a reason code rather than only prose so the web app can show the\nright guidance without parsing an English sentence. `message` is the\nserver's own safe fallback for any client that does not read `reason`."
+      },
       "AgentLogEntry": {
         "properties": {
           "ts": {
@@ -286,6 +331,28 @@
             "type": "array",
             "title": "Free Slots",
             "description": "Availability picked via the time-slot chips."
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "demo",
+              "live"
+            ],
+            "title": "Mode",
+            "description": "`demo` for bundled seed data, `live` for the configured providers. Defaults to `demo` so a request that forgets to ask cannot escalate to live and spend provider quota.",
+            "default": "demo"
+          },
+          "agent_access_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Access Key",
+            "description": "Shared pitch key, required for `live` and ignored for `demo`. Verified server-side and never echoed back in any response or log."
           }
         },
         "additionalProperties": false,

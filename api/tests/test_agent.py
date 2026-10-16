@@ -165,7 +165,7 @@ async def test_live_intent_llm_failure_falls_back_gracefully() -> None:
         settings=settings,
     )
 
-    request = AgentRequest(query="hiking in Sai Kung")
+    request = AgentRequest(query="hiking in Sai Kung", mode="live")
     response = await orchestrator.run(request)
 
     assert response.status == "ok"
@@ -224,7 +224,7 @@ async def test_mocked_live_path_with_llm_and_search() -> None:
         settings=settings,
     )
 
-    request = AgentRequest(query="badminton in Wan Chai on Saturday")
+    request = AgentRequest(query="badminton in Wan Chai on Saturday", mode="live")
     response = await orchestrator.run(request)
 
     assert response.status == "ok"
@@ -248,7 +248,7 @@ async def test_error_handling_returns_error_status() -> None:
         settings=settings,
     )
 
-    request = AgentRequest(query="fail test")
+    request = AgentRequest(query="fail test", mode="live")
     response = await orchestrator.run(request)
 
     assert response.status == "error"

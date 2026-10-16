@@ -119,7 +119,7 @@
  * its target to 20px to make the arithmetic come out would put a sub-24px hit target back (WCAG
  * 2.5.8) — the regression `2dcc616` deliberately undid. So the row takes the tray's tier and the
  * target stays. Written as a child selector rather than a class on each button so the error-state
- * "Load mock data" button, which only exists when the request fails, cannot drift off the tier by
+ * "Load demo data" button, which only exists when the request fails, cannot drift off the tier by
  * being forgotten.
  */
 .agent-status-panel__actions > .btn {

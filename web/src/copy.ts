@@ -216,26 +216,81 @@ export function agentStatusResults(count: number): string {
 export const AGENT_STATUS_ERROR =
   'Could not reach the activity agent. Please check your connection or try the demo seed data.';
 export const AGENT_CONNECTION_ERROR_502 =
-  'Backend service is unavailable (HTTP 502 Bad Gateway). Please verify the API server is running on port 8000 or switch to Mock Data.';
+  'Backend service is unavailable (HTTP 502 Bad Gateway). Please verify the API server is running on port 8000 or switch to Demo data.';
 export const AGENT_CONNECTION_ERROR_NETWORK =
-  'Unable to connect to the backend server. Please verify the API server is running or switch to Mock Data.';
+  'Unable to connect to the backend server. Please verify the API server is running or switch to Demo data.';
 export const AGENT_ERROR_LOG_PREFIX = 'Request failed';
 
-export function formatAgentErrorMessage(error: unknown): string {
-  if (error instanceof Error) {
-    if (error.message.includes('502')) {
-      return AGENT_CONNECTION_ERROR_502;
-    }
-    if (
-      error.message.includes('Failed to fetch') ||
-      error.message.includes('NetworkError') ||
-      error.message.includes('ECONNREFUSED')
-    ) {
-      return AGENT_CONNECTION_ERROR_NETWORK;
-    }
-    return error.message;
+/** Why the server refused a live request. Mirrors `AccessDeniedReason` in the API contract. */
+export type AgentAccessDeniedReason = 'missing_key' | 'invalid_key' | 'demo_only_instance';
+
+/**
+ * Copy per refusal reason.
+ *
+ * "Paste the key" is useless advice for a key that *was* pasted but not
+ * recognised, and useless again for an instance that cannot reach live providers
+ * however good the key is — so each reason gets its own sentence.
+ */
+export const AGENT_ACCESS_DENIED_COPY: Record<AgentAccessDeniedReason, string> = {
+  missing_key: 'Live mode needs the agent access key from the pitch deck. Paste it below and ask again.',
+  invalid_key: 'That agent access key is not recognised. Check the key printed in the pitch deck and try again.',
+  demo_only_instance:
+    'This instance runs in demo mode, so it cannot reach the live providers. The full demo still works.',
+};
+
+/** True for the errors the live-mode gate throws, without importing the client into copy. */
+export function isAgentAccessDenied(error: unknown): error is Error & {
+  reason: AgentAccessDeniedReason;
+} {
+  return (
+    error instanceof Error &&
+    'reason' in error &&
+    typeof (error as { reason?: unknown }).reason === 'string' &&
+    (error as { reason: string }).reason in AGENT_ACCESS_DENIED_COPY
+  );
+}
+
+/**
+ * How an agent request failed.
+ *
+ * The store has to tell "the server refused us" apart from "there was no server
+ * at all", because only the second may fall back to the bundled fixture.
+ * Downgrading a *refusal* to seed data is how a judge ends up looking at demo
+ * results believing they are live ones — the exact failure the gate prevents.
+ */
+export type AgentErrorKind = 'access_denied' | 'bad_gateway' | 'server_unreachable' | 'unknown';
+
+export function classifyAgentError(error: unknown): AgentErrorKind {
+  if (isAgentAccessDenied(error)) return 'access_denied';
+  if (!(error instanceof Error)) return 'unknown';
+  if (error.message.includes('502')) return 'bad_gateway';
+  if (
+    error.message.includes('Failed to fetch') ||
+    error.message.includes('NetworkError') ||
+    error.message.includes('ECONNREFUSED')
+  ) {
+    return 'server_unreachable';
   }
-  return AGENT_STATUS_ERROR;
+  return 'unknown';
+}
+
+/** Whether the fixture fallback is allowed to stand in for this failure. */
+export function isServerUnreachable(error: unknown): boolean {
+  return classifyAgentError(error) === 'server_unreachable';
+}
+
+export function formatAgentErrorMessage(error: unknown): string {
+  if (isAgentAccessDenied(error)) {
+    return AGENT_ACCESS_DENIED_COPY[error.reason];
+  }
+  switch (classifyAgentError(error)) {
+    case 'bad_gateway':
+      return AGENT_CONNECTION_ERROR_502;
+    case 'server_unreachable':
+      return AGENT_CONNECTION_ERROR_NETWORK;
+    default:
+      return error instanceof Error ? error.message : AGENT_STATUS_ERROR;
+  }
 }
 export const AGENT_LOG_LABEL = 'Agent log';
 export const AGENT_LOG_EMPTY = 'No agent steps recorded yet.';
@@ -245,10 +300,12 @@ export const AGENT_LOG_HIDE = 'Hide agent log';
     touch user has no Escape key, and a dismissable surface with no visible way out reads as
     stuck. */
 export const AGENT_LOG_CLOSE = 'Close agent log';
-export const AGENT_USE_DEMO = 'Load mock data';
+/** Demo mode now asks the *server* for the seed dataset (issue #83); the bundled
+    fixture is only the fallback for when no API is reachable at all. */
+export const AGENT_USE_DEMO = 'Load demo data';
 export const DATA_SOURCE_LABEL = 'Data source mode';
 export const DATA_SOURCE_LIVE = 'Live API';
-export const DATA_SOURCE_MOCK = 'Mock Data';
+export const DATA_SOURCE_DEMO = 'Demo data';
 
 export const ACTIVITY_CARD_LABEL = 'Activity card';
 export const ACTIVITY_CARD_ORIGINAL_TITLE_LABEL = 'Original title';
