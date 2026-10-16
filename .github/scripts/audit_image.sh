@@ -31,11 +31,28 @@ fi
 
 echo "== secrets must not be in any layer =="
 
-files="$(docker run --rm --entrypoint /bin/sh "$IMAGE" -c 'find / -xdev \( -name ".env" -o -name ".env.*" -o -name "*.pem" -o -name "*.key" \) 2>/dev/null' || true)"
-if [[ -z "$files" ]]; then
-  printf '  ok   no .env or key material on disk\n'
+# A `.env` is a leak anywhere in the filesystem, so this one is not scoped.
+env_files="$(docker run --rm --entrypoint /bin/sh "$IMAGE" \
+  -c 'find / -xdev \( -name ".env" -o -name ".env.*" \) 2>/dev/null' || true)"
+if [[ -z "$env_files" ]]; then
+  printf '  ok   no .env file anywhere in the image\n'
 else
-  printf '  FAIL credential-shaped files present:\n%s\n' "$files"
+  printf '  FAIL .env file(s) present:\n%s\n' "$env_files"
+  failures=$((failures + 1))
+fi
+
+# Key material is scoped to /app on purpose. `/etc/ssl/certs/*.pem` is the system
+# CA bundle installed by the `ca-certificates` package — it is public root
+# certificates, and the app needs it to reach the LLM and search providers.
+# Searching the whole filesystem for `*.pem` therefore fails on a correct image,
+# which is a false alarm worth avoiding rather than "fixing" in the Dockerfile.
+key_files="$(docker run --rm --entrypoint /bin/sh "$IMAGE" \
+  -c 'find /app -xdev \( -name "*.pem" -o -name "*.key" -o -name "*.p12" \
+        -o -name "service-account*.json" \) 2>/dev/null' || true)"
+if [[ -z "$key_files" ]]; then
+  printf '  ok   no key material under /app\n'
+else
+  printf '  FAIL key material present under /app:\n%s\n' "$key_files"
   failures=$((failures + 1))
 fi
 
