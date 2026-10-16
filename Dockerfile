@@ -6,6 +6,12 @@
 # carries only those two artefacts. No build toolchain, no `.env`, no `node_modules`,
 # no source maps with configuration baked into them. The runtime user is
 # non-root and owns nothing it did not create.
+#
+# Deliberately no BuildKit-only syntax. `gcloud run deploy --source .` builds with
+# `gcr.io/cloud-builders/docker`, which does *not* enable BuildKit, so
+# `--mount=type=cache` fails there while passing on GitHub runners — which do
+# enable it. CI pins `DOCKER_BUILDKIT=0` so the two builders cannot drift apart
+# unnoticed again. Losing the pnpm/uv caches costs ~30s per rebuild.
 
 # --- stage 1: build the web app ----------------------------------------------
 # Node 22 rather than the 20 CI uses: 20 is past end-of-life, and this is a new
@@ -20,8 +26,7 @@ WORKDIR /build/web
 RUN corepack enable
 
 COPY web/package.json web/pnpm-lock.yaml ./
-RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
-    pnpm config set store-dir /pnpm/store && pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 # `web/src/api/schema.ts` and the fixture are generated from the contract, and the
 # build imports both — so the contract snapshot has to exist before `tsc` runs.
@@ -51,12 +56,10 @@ WORKDIR /build/api
 COPY api/pyproject.toml api/uv.lock ./
 
 # Dependencies only, so an app-code change does not re-resolve the world.
-RUN --mount=type=cache,id=uv-cache,target=/root/.cache/uv \
-    uv sync --frozen --no-install-project --no-dev
+RUN uv sync --frozen --no-install-project --no-dev
 
 COPY api/app/ ./app/
-RUN --mount=type=cache,id=uv-cache,target=/root/.cache/uv \
-    uv sync --frozen --no-dev
+RUN uv sync --frozen --no-dev
 
 # --- stage 3: runtime ---------------------------------------------------------
 FROM python:3.12-slim AS runtime

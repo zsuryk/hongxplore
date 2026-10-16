@@ -98,6 +98,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build the image
+        # DOCKER_BUILDKIT=0 on purpose. `gcloud run deploy --source .` builds with
+        # gcr.io/cloud-builders/docker, which does not enable BuildKit — so a
+        # BuildKit-only instruction (e.g. --mount=type=cache) fails on the deploy
+        # path while passing here, because runners default BuildKit on. Pinning it
+        # off makes CI build the way the deploy actually builds.
+        env:
+          DOCKER_BUILDKIT: '0'
         run: docker build -t hongxplore:ci .
       - name: Start it with no keys configured
         run: |

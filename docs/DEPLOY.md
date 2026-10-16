@@ -306,6 +306,7 @@ point.
 | Live mode always refuses | No agent access key configured, or the instance is `DEMO_MODE=true` | A `DEMO_MODE=true` instance refuses live regardless of key — that is intentional |
 | Bill appeared out of nowhere | Usage past the free allowance | 2M requests / 180k vCPU-s / 360k GiB-s per billing account, per month. Check the Cloud Run pricing page for current figures |
 | Build fails on `uv.lock` | `uv` version drift | `ARG UV_VERSION` in the `Dockerfile` must match the uv that produced the lockfile |
+| Build fails with "the --mount option requires BuildKit" | A BuildKit-only instruction crept into the `Dockerfile` | `--source .` builds with `gcr.io/cloud-builders/docker`, which does not enable BuildKit. CI pins `DOCKER_BUILDKIT=0` to catch this — if CI is green and the deploy is not, this is why |
 
 ## Related
 
