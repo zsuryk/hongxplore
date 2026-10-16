@@ -566,4 +566,50 @@ describe('card drag gesture stability (#103)', () => {
     expect(markupAbove50Percent).not.toContain(`aria-label="${BOARD_INSPECT_CALLOUT_LABEL}"`);
     expect(markupAbove50Percent).not.toContain('board__card--inspected');
   });
+
+  it('promotes grabbed and dropped cards to the top of the canvas layer hierarchy (#133)', () => {
+    const cardA = {
+      activity: {
+        id: 'card-a',
+        title: 'Card Alpha',
+        title_en: 'Card Alpha',
+        lang: 'en' as const,
+        url: 'https://example.com/a',
+        tags: ['culture'],
+        parts: [{ start: '2026-10-10T06:00:00Z', end: '2026-10-10T08:00:00Z' }],
+        source: { name: 'Source' },
+        location: { district: 'Central', venue: 'Venue A' },
+      },
+      match_rationale: 'First card in DOM order',
+    };
+    const cardB = {
+      activity: {
+        id: 'card-b',
+        title: 'Card Beta',
+        title_en: 'Card Beta',
+        lang: 'en' as const,
+        url: 'https://example.com/b',
+        tags: ['music'],
+        parts: [{ start: '2026-10-10T09:00:00Z', end: '2026-10-10T11:00:00Z' }],
+        source: { name: 'Source' },
+        location: { district: 'Wan Chai', venue: 'Venue B' },
+      },
+      match_rationale: 'Second card in DOM order',
+    };
+
+    // When cardA has been grabbed and dropped onto cardB, cardA is promoted above cardB
+    const markup = renderToStaticMarkup(
+      <App cards={[cardA, cardB]} initialCardZIndexById={{ 'card-a': 2 }} initialTourOpen={false} />,
+    );
+
+    // Card Alpha has z-index: 2, while untouched Card Beta has z-index: 1
+    expect(markup).toContain('data-activity-card-id="card-a" data-card-z="2"');
+    expect(markup).toContain('data-activity-card-id="card-b" data-card-z="1"');
+    expect(markup).toContain('z-index:2');
+
+    // Canvas pan layer remains at z-index: 1, cleanly separating world cards from screen chrome
+    const boardCss = readFileSync(join(import.meta.dirname, 'styles/board.css'), 'utf8');
+    expect(boardCss).toMatch(/\.board__pan\s*\{[^}]*z-index:\s*1/);
+    expect(boardCss).toMatch(/\.board__card\s*\{[^}]*z-index:\s*var\(--card-z,\s*1\)/);
+  });
 });

@@ -101,6 +101,7 @@
   transform: translate3d(var(--board-pan-x), var(--board-pan-y), 0);
   transform-origin: 0 0;
   will-change: transform;
+  z-index: 1;
 }
 
 .board__world {
@@ -125,6 +126,7 @@
   -webkit-user-select: none;
   -webkit-user-drag: none;
   width: var(--card-width);
+  z-index: var(--card-z, 1);
 }
 
 /**
@@ -193,7 +195,6 @@
 .board__card:hover,
 .board__card:focus-within {
   translate: 0 calc(-1 * var(--card-hover-lift));
-  z-index: 5;
 }
 
 .board__card--ghost {
