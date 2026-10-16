@@ -114,13 +114,31 @@ jobs:
           echo "::error::container never became healthy"
           docker logs hongxplore
           exit 1
-      - name: Smoke test the single-origin contract
-        run: .github/scripts/smoke_container.sh
+      - name: Smoke test the demo-only deployment
+        run: .github/scripts/smoke_container.sh demo
+      - name: The image carries no secrets and runs as non-root
+        run: .github/scripts/audit_image.sh hongxplore:ci
+      # The 401/403 key distinction is only observable on an instance that is
+      # allowed to be live at all, so the gate gets a second container.
+      - name: Restart as a live-capable instance
+        run: |
+          docker rm -f hongxplore
+          docker run -d --name hongxplore -p 8080:8080 \
+            -e DEMO_MODE=false \
+            -e AGENT_ACCESS_KEYS=ci-pitch-key \
+            hongxplore:ci
+          for _ in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8080/health >/dev/null 2>&1; then exit 0; fi
+            sleep 2
+          done
+          echo "::error::container never became healthy"
+          docker logs hongxplore
+          exit 1
+      - name: Smoke test the live-mode gate
+        run: .github/scripts/smoke_container.sh live
       - name: Show logs and stop
         if: always()
         run: |
           docker logs hongxplore 2>&1 | tail -40
           docker rm -f hongxplore 2>/dev/null || true
-      - name: The image carries no secrets and runs as non-root
-        run: .github/scripts/audit_image.sh hongxplore:ci
 

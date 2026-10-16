@@ -75,6 +75,13 @@ COPY --from=api --chown=hongxplore:hongxplore /build/api/.venv /app/.venv
 COPY --from=api --chown=hongxplore:hongxplore /build/api/app /app/app
 COPY --from=web --chown=hongxplore:hongxplore /build/web/dist /app/web/dist
 
+# The API's seed data is resolved relative to the package, and `app/` sits two
+# levels deeper in the image than it does in the repo — which lands the default
+# path on `/data/activities.json`. The loader already falls back to
+# `cwd/data/activities.json`, and WORKDIR is /app, so placing it here is what
+# makes demo mode work without touching that loader.
+COPY --chown=hongxplore:hongxplore data/activities.json /app/data/activities.json
+
 # `/tmp` is left exactly as the base image ships it (world-writable, sticky): it
 # is the default SQLite cache location, and ADR-0006 records that cache as
 # per-instance and ephemeral — never shared state, never persisted. Nothing here

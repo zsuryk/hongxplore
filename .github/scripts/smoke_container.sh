@@ -1,15 +1,27 @@
 #!/usr/bin/env bash
-# Smoke test the single-origin contract on the built image (issue #87).
+# Smoke test a running container (issue #87).
 #
-# Asserts the behaviours ADR-0006 depends on and that a unit test cannot see,
-# because they only exist once the web build, the API and one process are
-# together. Run against a container already listening on $BASE_URL.
+# Asserts what ADR-0006 depends on and a unit test cannot see, because it only
+# exists once the web build, the API, the seed data and one process are together.
+# Run against a container already listening on $BASE_URL.
 #
-# Deliberately credential-free: DEMO_MODE=true with no keys of any kind.
+# Two profiles, because the gate has two branches and a demo-only instance can
+# only ever show one of them:
+#
+#   demo  DEMO_MODE=true, no keys. The state the AC requires a deploy to be
+#         reachable in. Every live request is refused as `demo_only_instance`.
+#   live  DEMO_MODE=false with a known agent access key. The only configuration
+#         in which the 401/403 key distinction is observable at all — an instance
+#         running demo mode refuses on capability before it ever looks at a key.
+#
+# Usage: smoke_container.sh <demo|live>
 
 set -euo pipefail
 
+PROFILE="${1:-demo}"
 BASE_URL="${BASE_URL:-http://127.0.0.1:8080}"
+PITCH_KEY="${PITCH_KEY:-ci-pitch-key}"
+
 failures=0
 
 check() {
@@ -32,70 +44,95 @@ refute() {
   fi
 }
 
-echo "== the API half =="
+status_of() {
+  curl -s -o /dev/null -w '%{http_code}' -X POST "${BASE_URL}/api/agent" \
+    -H 'content-type: application/json' -d "$1"
+}
 
+body_of() {
+  curl -s -X POST "${BASE_URL}/api/agent" \
+    -H 'content-type: application/json' -d "$1"
+}
+
+post_demo='{"query":"free cultural activities in Central","mode":"demo"}'
+post_live_no_key='{"query":"hiking","mode":"live"}'
+post_live_wrong_key="{\"query\":\"hiking\",\"mode\":\"live\",\"agent_access_key\":\"wrong\"}"
+post_live_good_key="{\"query\":\"hiking\",\"mode\":\"live\",\"agent_access_key\":\"${PITCH_KEY}\"}"
+
+echo "== profile: ${PROFILE} =="
+
+echo "-- the API half --"
+
+check "/health answers ok" '"status":"ok"' "$(curl -fsS "${BASE_URL}/health")"
+# Cloud Run probes this unauthenticated on every start, so it must say nothing
+# about the deployment.
 health="$(curl -fsS "${BASE_URL}/health")"
-check "/health answers ok" '"status":"ok"' "$health"
-# Cloud Run probes this unauthenticated, so it must describe nothing.
-refute "/health hides demo mode"    "demo_mode"        "$health"
-refute "/health hides agent keys"   "agent_access_key" "$health"
-refute "/health hides search keys"  "tavily"           "$health"
-refute "/health hides llm keys"     "openai"           "$health"
+refute "/health hides demo mode"   "demo_mode"        "$health"
+refute "/health hides agent keys"  "agent_access_key" "$health"
+refute "/health hides search keys" "tavily"           "$health"
+refute "/health hides llm keys"    "openai"           "$health"
 
-agent="$(curl -fsS -X POST "${BASE_URL}/api/agent" \
-  -H 'content-type: application/json' \
-  -d '{"query":"free cultural activities in Central","mode":"demo"}')"
-check "/api/agent answers ok"   '"status":"ok"'  "$agent"
-check "/api/agent returns seed matches" '"matches"' "$agent"
+demo_body="$(body_of "$post_demo")"
+check "/api/agent answers ok"        '"status":"ok"' "$demo_body"
+# Proves the seed data actually shipped in the image. This is the check that
+# catches a missing data/activities.json, which fails as a pipeline error rather
+# than an empty result.
+check "/api/agent serves seed matches" '"activity"'  "$demo_body"
+refute "/api/agent is not an error"   '"status":"error"' "$demo_body"
 
-echo "== the gate refuses live without a key =="
+echo "-- the gate --"
 
-status="$(curl -s -o /dev/null -w '%{http_code}' -X POST "${BASE_URL}/api/agent" \
-  -H 'content-type: application/json' \
-  -d '{"query":"hiking","mode":"live"}')"
-check "live without a key is 401" "401" "$status"
+if [[ "$PROFILE" == "live" ]]; then
+  check "live without a key is 401"        "401" "$(status_of "$post_live_no_key")"
+  check "live with a wrong key is 403"     "403" "$(status_of "$post_live_wrong_key")"
+  check "live with the right key is 200"   "200" "$(status_of "$post_live_good_key")"
+  check "  and the reason is typed" '"reason":"missing_key"' "$(body_of "$post_live_no_key")"
+  check "  and invalid keys say so" '"reason":"invalid_key"' "$(body_of "$post_live_wrong_key")"
+  # The refusal must never echo the key that was tried.
+  refuse_body="$(body_of "$post_live_wrong_key")"
+  refute "a refusal never echoes the key" "wrong" "$refuse_body"
+else
+  # A demo-only instance refuses live on capability, before it looks at a key —
+  # so the reason is demo_only_instance whether or not a key was supplied, and
+  # the status is 403 rather than 401. Getting 401 here would mean the gate
+  # checked the key before the instance's own configuration.
+  check "live is refused on a demo-only instance" "403" "$(status_of "$post_live_no_key")"
+  check "  and the reason is demo_only_instance" '"reason":"demo_only_instance"' \
+    "$(body_of "$post_live_no_key")"
+  check "  and a supplied key changes nothing"    "403" "$(status_of "$post_live_good_key")"
+fi
 
-status="$(curl -s -o /dev/null -w '%{http_code}' -X POST "${BASE_URL}/api/agent" \
-  -H 'content-type: application/json' \
-  -d '{"query":"hiking","mode":"live","agent_access_key":"wrong"}')"
-check "live with a wrong key is 403" "403" "$status"
+check "demo needs no key at all" "200" "$(status_of "$post_demo")"
 
-status="$(curl -s -o /dev/null -w '%{http_code}' -X POST "${BASE_URL}/api/agent" \
-  -H 'content-type: application/json' \
-  -d '{"query":"hiking","mode":"demo"}')"
-check "demo needs no key" "200" "$status"
-
-echo "== the web half, from the same origin =="
+echo "-- the web half, from the same origin --"
 
 root="$(curl -fsS -H 'accept: text/html' "${BASE_URL}/")"
-refute "/ serves the built app"    "404"  "$root"
-check  "/ serves an html document"  "<"    "$root"
+refute "/ is not a 404"    "404"  "$root"
+check  "/ is an html document" "<" "$root"
 
 # A deep link must survive a hard refresh — the SPA history fallback.
-deep="$(curl -fsS -H 'accept: text/html' "${BASE_URL}/weekend/plan/deep-link")"
-check "a deep link resolves to the app" "<" "$deep"
+check "a deep link resolves to the app" "<" \
+  "$(curl -fsS -H 'accept: text/html' "${BASE_URL}/weekend/plan/deep-link")"
 
 # A real hashed asset must be served as itself, not as the document.
 asset="$(curl -fsS "${BASE_URL}/" | grep -oE '/assets/[^"]+\.js' | head -1 || true)"
 if [[ -n "$asset" ]]; then
-  body="$(curl -fsS "${BASE_URL}${asset}")"
-  refute "the hashed asset is real js" "<html" "$body"
+  refute "the hashed asset is real js" "<html" "$(curl -fsS "${BASE_URL}${asset}")"
 else
   printf '  FAIL could not find a hashed asset reference in /\n'
   failures=$((failures + 1))
 fi
 
 # The fallback must not swallow the API: an unknown API path is a 404, not HTML.
-api_miss="$(curl -s -H 'accept: text/html' "${BASE_URL}/api/nope")"
-refute "an unknown api path is not html" "<html" "$api_miss"
+refute "an unknown api path is not html" "<html" \
+  "$(curl -s -H 'accept: text/html' "${BASE_URL}/api/nope")"
 
 # A missing asset stays a 404; answering HTML to a script request breaks the page.
-status="$(curl -s -o /dev/null -w '%{http_code}' "${BASE_URL}/assets/nope-000.js")"
-check "a missing asset is 404" "404" "$status"
+check "a missing asset is 404" "404" "$(curl -s -o /dev/null -w '%{http_code}' "${BASE_URL}/assets/nope-000.js")"
 
 echo
 if [[ "$failures" -ne 0 ]]; then
   printf '%d smoke check(s) failed\n' "$failures"
   exit 1
 fi
-echo "all smoke checks passed"
+echo "all smoke checks passed (${PROFILE})"
