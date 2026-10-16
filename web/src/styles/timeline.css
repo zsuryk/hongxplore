@@ -16,6 +16,8 @@
   left: var(--space-5);
   padding: var(--space-3) var(--space-3) var(--space-3);
   position: absolute;
+  user-select: none;
+  -webkit-user-select: none;
   width: min(42rem, calc(100% - 10rem));
   z-index: 3;
 }
@@ -326,6 +328,8 @@
     background-color var(--motion-fast) var(--motion-ease),
     border-color var(--motion-fast) var(--motion-ease),
     color var(--motion-fast) var(--motion-ease);
+  user-select: none;
+  -webkit-user-select: none;
   width: 11rem;
   z-index: 2;
 }

@@ -486,4 +486,18 @@ describe('card drag gesture stability (#103)', () => {
     expect(activityCardBlock).toMatch(/user-select:\s*none/);
     expect(activityCardBlock).toMatch(/-webkit-user-select:\s*none/);
   });
+
+  it('prevents text selection on board, timeline, and discard bin during canvas pan (#125)', () => {
+    const boardBlock = extractBlock(boardCss, '.board');
+    expect(boardBlock).toMatch(/user-select:\s*none/);
+    expect(boardBlock).toMatch(/-webkit-user-select:\s*none/);
+
+    const timelineBlock = extractBlock(timelineCss, '.timeline');
+    expect(timelineBlock).toMatch(/user-select:\s*none/);
+    expect(timelineBlock).toMatch(/-webkit-user-select:\s*none/);
+
+    const discardBinBlock = extractBlock(timelineCss, '.discard-bin');
+    expect(discardBinBlock).toMatch(/user-select:\s*none/);
+    expect(discardBinBlock).toMatch(/-webkit-user-select:\s*none/);
+  });
 });

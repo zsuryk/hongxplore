@@ -40,6 +40,8 @@
   transition:
     background-position var(--motion-base) var(--motion-ease),
     background-size var(--motion-base) var(--motion-ease);
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /**
