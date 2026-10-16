@@ -72,6 +72,62 @@
  * One step below the card face, running edge to edge: the row of board coordinates is the
  * machine part of the object, and the title below it is the display.
  */
+/**
+ * Cover image — ported from #118 (kORNkin), re-placed for the Blue Hour card.
+ *
+ * **Where it sits and why.** #118 authored `.activity-card__cover-wrap` against a flat card with no
+ * header plate, dropping the image in above the card face with a margin. Blue Hour's card is a
+ * milled object whose top 40px is a recessed plate carrying the serial, district, language chip and
+ * departure time. An image competing for that same 40px would have to either cover the metadata or
+ * shove it down an unknown distance — and the metadata is the part that tells you *which row of the
+ * board you are looking at*.
+ *
+ * So the image **becomes the card's top surface** and the header plate keeps its place immediately
+ * beneath it. Nothing is displaced: the plate still reads as a recessed band catching light, the
+ * image reads as the face above it, and the `--rule` divider still separates that band from the
+ * title. Two stacked bands is the milled-object reading extended, not a sticker on a card.
+ *
+ * The card already sets `overflow: hidden` with `--radius-card`, so a full-bleed image needs no
+ * radius of its own — inheriting the card's is what makes it read as part of the object rather
+ * than a rectangle laid on top of it.
+ *
+ * A fixed 16/9 ratio keeps card height predictable; `boardLayout.ts` reserves height against an
+ * estimate (see DESIGN.md gap 10), so a variable-ratio image would compound an existing error.
+ */
+.activity-card__cover-wrap {
+  aspect-ratio: 16 / 9;
+  background: var(--card-header);
+  flex-shrink: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: relative;
+  user-select: none;
+  width: 100%;
+}
+
+.activity-card__cover {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  width: 100%;
+}
+
+/**
+ * The header plate sits directly below the cover rather than over it.
+ *
+ * An overlay was the other option: serial and district laid across the image, as a caption burns
+ * into a photograph. It was rejected because legibility then depends on the image — a bright
+ * frame would push a 10.5px tracked label under 4.5:1, and there is no token that fixes an
+ * arbitrary photograph. Stacking keeps every header string on a known surface at a contrast this
+ * codebase already verifies.
+ */
+.activity-card:has(.activity-card__cover-wrap) .activity-card__head {
+  border-top: 1px solid var(--divider);
+}
+
 .activity-card__head {
   align-items: baseline;
   background: var(--card-header);

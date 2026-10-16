@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { useState, type CSSProperties } from 'react';
 import type { CardVariant } from './boardLayout';
 import {
   ACTIVITY_CARD_DISTRICT_LABEL,
@@ -85,6 +85,17 @@ export function ActivityCard({
   const district = activity.location.district;
   const serial = index === undefined ? null : activityCardSerial(index);
 
+  /**
+   * Cover image, ported from #118 (kORNkin).
+   *
+   * Collapses silently on load failure: a broken-image glyph and a collapsed-but-still-reserved
+   * box are both worse than no image. `key` resets the element when `src` changes so a card recycled
+   * for a different activity re-attempts rather than staying stuck in its failed state. Docked cards
+   * return early above, so they never reach this — the cover cannot blow out the timeline slot.
+   */
+  const [failedImageUrl, setFailedImageUrl] = useState<string | null>(null);
+  const showCoverImage = size !== 'docked' && Boolean(activity.image) && failedImageUrl !== activity.image;
+
   // Minimal view for docked timeline cards to prevent vertical blowout
   if (size === 'docked') {
     return (
@@ -114,6 +125,28 @@ export function ActivityCard({
       className={`activity-card activity-card--${size}${variantClass}${stateClass}${recentClass}`}
       style={style}
     >
+      {/* Cover image, ported from #118 (kORNkin) and re-placed. It becomes the card's top surface
+          and the header plate keeps its own band directly beneath it, rather than overlaying the
+          image — see `.activity-card__cover-wrap` in card.css for why an overlay was rejected.
+
+          `alt=""` + `aria-hidden`: the image is atmosphere, not information. The activity's title
+          is already the card's accessible name, so #118's `activityCardImageAlt(title)` would have
+          announced the title twice — once as the article label and once as the image. */}
+      {showCoverImage ? (
+        <div aria-hidden="true" className="activity-card__cover-wrap">
+          <img
+            alt=""
+            className="activity-card__cover"
+            decoding="async"
+            draggable={false}
+            key={activity.image ?? undefined}
+            loading="lazy"
+            onError={() => setFailedImageUrl(activity.image ?? '')}
+            src={activity.image ?? undefined}
+          />
+        </div>
+      ) : null}
+
       {/* Header row: the board's own coordinates — row number, where, when. The 1px --rule
           under it is the same rule that draws the card's bezel; nothing else separates them. */}
       <header className="activity-card__head">

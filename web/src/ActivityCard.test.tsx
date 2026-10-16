@@ -248,4 +248,73 @@ describe('district and source CTA', () => {
     const compact = renderToStaticMarkup(<ActivityCard match={response.matches[0]} variant="compact" />);
     expect(compact).not.toContain('activity-card__original-title');
   });
+
+  /**
+   * Cover image — ported from #118 (kORNkin).
+   *
+   * One assertion is deliberately *changed* rather than ported: #118 asserted
+   * `alt="Cover image for <title>"`. On the Blue Hour card that makes a screen reader announce the
+   * activity title twice — once as the `<article>`'s accessible name, once as the image — so the
+   * cover is `alt=""` + `aria-hidden` instead. What #118 cared about (the image must not become a
+   * second, redundant announcement) is still asserted; only its expression changed, and the reason
+   * is recorded here rather than left as a silent divergence.
+   */
+  describe('cover image', () => {
+    const withImage = (image: string | null) => ({
+      ...response.matches[0],
+      activity: { ...response.matches[0].activity, image },
+    });
+
+    it('renders a full-bleed cover when the activity has an image', () => {
+      const markup = renderToStaticMarkup(<ActivityCard match={withImage('https://example.test/a.jpg')} />);
+
+      expect(markup).toContain('activity-card__cover-wrap');
+      expect(markup).toContain('src="https://example.test/a.jpg"');
+      expect(markup).toContain('loading="lazy"');
+      expect(markup).toContain('decoding="async"');
+      expect(markup).toContain('draggable="false"');
+      // Decorative: the activity title is already the card's accessible name.
+      expect(markup).toContain('alt=""');
+      expect(markup).toContain('aria-hidden="true"');
+    });
+
+    it('places the cover before the header plate so the plate keeps its own band', () => {
+      // `index` is required for the serial plate to render at all, which is the point: the plate is
+      // optional metadata, so asserting "the plate survived" needs a card that actually has one.
+      const markup = renderToStaticMarkup(<ActivityCard index={2} match={withImage('https://example.test/a.jpg')} />);
+
+      expect(markup.indexOf('activity-card__cover-wrap')).toBeLessThan(markup.indexOf('activity-card__head'));
+      // The plate must survive the image — it carries the serial, district and departure time.
+      expect(markup).toContain('activity-card__plate');
+      expect(markup).toContain('activity-card__district');
+    });
+
+    it('omits the cover when the activity has no image', () => {
+      // The common case with current seed data, so the card must render exactly as it did before
+      // this feature existed.
+      const markup = renderToStaticMarkup(<ActivityCard match={withImage(null)} />);
+
+      expect(markup).not.toContain('activity-card__cover-wrap');
+      expect(markup).toContain('activity-card__head');
+    });
+
+    it('omits the cover in docked mode so the timeline slot cannot blow out vertically', () => {
+      const markup = renderToStaticMarkup(
+        <ActivityCard match={withImage('https://example.test/a.jpg')} size="docked" />,
+      );
+
+      expect(markup).toContain('activity-card--docked');
+      expect(markup).not.toContain('activity-card__cover-wrap');
+    });
+
+    it('renders the cover across every canvas variant', () => {
+      for (const variant of ['compact', 'wide', 'tall'] as const) {
+        const markup = renderToStaticMarkup(
+          <ActivityCard match={withImage('https://example.test/a.jpg')} variant={variant} />,
+        );
+        expect(markup).toContain(`activity-card--${variant}`);
+        expect(markup).toContain('activity-card__cover-wrap');
+      }
+    });
+  });
 });
