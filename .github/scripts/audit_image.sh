@@ -41,18 +41,27 @@ else
   failures=$((failures + 1))
 fi
 
-# Key material is scoped to /app on purpose. `/etc/ssl/certs/*.pem` is the system
-# CA bundle installed by the `ca-certificates` package — it is public root
-# certificates, and the app needs it to reach the LLM and search providers.
-# Searching the whole filesystem for `*.pem` therefore fails on a correct image,
-# which is a false alarm worth avoiding rather than "fixing" in the Dockerfile.
-key_files="$(docker run --rm --entrypoint /bin/sh "$IMAGE" \
-  -c 'find /app -xdev \( -name "*.pem" -o -name "*.key" -o -name "*.p12" \
-        -o -name "service-account*.json" \) 2>/dev/null' || true)"
-if [[ -z "$key_files" ]]; then
-  printf '  ok   no key material under /app\n'
+# Private keys are identified by content, not filename. `*.pem` is not a useful
+# signal: both /etc/ssl/certs and the `certifi` bundle inside the venv are PEM
+# files full of public root certificates, and the app needs them to reach the LLM
+# and search providers. A private key is unambiguous — it says so in its header.
+private_keys="$(docker run --rm --entrypoint /bin/sh "$IMAGE" \
+  -c 'grep -rlE --include="*.pem" --include="*.key" "BEGIN [A-Z ]*PRIVATE KEY" /app 2>/dev/null' || true)"
+if [[ -z "$private_keys" ]]; then
+  printf '  ok   no private keys under /app\n'
 else
-  printf '  FAIL key material present under /app:\n%s\n' "$key_files"
+  printf '  FAIL private key material present:\n%s\n' "$private_keys"
+  failures=$((failures + 1))
+fi
+
+# Filenames that only ever mean a local secret.
+key_files="$(docker run --rm --entrypoint /bin/sh "$IMAGE" \
+  -c 'find /app -xdev \( -name "*.p12" -o -name "*.jks" \
+        -o -name "service-account*.json" -o -name "gcloud*.json" \) 2>/dev/null' || true)"
+if [[ -z "$key_files" ]]; then
+  printf '  ok   no credential stores under /app\n'
+else
+  printf '  FAIL credential store(s) present under /app:\n%s\n' "$key_files"
   failures=$((failures + 1))
 fi
 
