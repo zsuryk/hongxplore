@@ -107,9 +107,11 @@ describe('board store discard and similar flows', () => {
     expect(result).toBe(true);
     expect(requestAgent).toHaveBeenCalledWith({
       query: expect.stringContaining('Hong Kong Heritage Discovery Centre guided tour'),
+      mode: 'demo',
     });
     expect(requestAgent).toHaveBeenCalledWith({
       query: expect.stringContaining('Yau Tsim Mong'),
+      mode: 'demo',
     });
     expect(useBoardStore.getState().cards).toHaveLength(initialCount + 1);
     expect(useBoardStore.getState().lastMatchCount).toBe(1);

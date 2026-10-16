@@ -477,11 +477,17 @@ class AgentOrchestrator:
     async def run(self, request: AgentRequest) -> AgentResponse:
         """Execute the end-to-end agent pipeline."""
         log: list[AgentLogEntry] = []
+        # A `mode="demo"` request is served from seed data with zero network
+        # calls even on a live-capable instance — that is what makes it the
+        # reliable fallback when the live path is broken. The route has already
+        # refused `live` on a demo-mode instance, but re-deriving it here keeps
+        # the orchestrator correct when called directly.
+        use_seed = request.mode == "demo" or self.settings.demo_mode
 
         try:
             # 1. Parse intent
             parsed_intent: ParsedIntent
-            if self.llm_client is not None and not self.settings.demo_mode:
+            if self.llm_client is not None and not use_seed:
                 try:
                     system_prompt, user_prompt = render_intent_prompt(request)
                     raw_llm_intent = await self.llm_client.complete(
@@ -516,7 +522,7 @@ class AgentOrchestrator:
 
             # 2. Retrieve candidates
             candidates: list[Activity]
-            if self.settings.demo_mode or self.search_provider is None:
+            if use_seed or self.search_provider is None:
                 all_seed = load_seed_activities(
                     str(self.seed_data_path) if self.seed_data_path else None
                 )
@@ -549,7 +555,7 @@ class AgentOrchestrator:
             semaphore = asyncio.Semaphore(3)
 
             async def _generate_single_matched_activity(activity: Activity) -> MatchedActivity:
-                if self.llm_client is not None and not self.settings.demo_mode:
+                if self.llm_client is not None and not use_seed:
                     try:
                         sys_prompt, usr_prompt = render_rationale_prompt(
                             query=request.query,

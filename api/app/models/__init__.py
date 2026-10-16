@@ -17,7 +17,10 @@ from app.models.activity import (
     TimeRange,
 )
 from app.models.agent import (
+    AccessDeniedReason,
+    AgentAccessError,
     AgentLogEntry,
+    AgentMode,
     AgentRequest,
     AgentResponse,
     AgentStatus,
@@ -27,9 +30,12 @@ from app.models.agent import (
 from app.models.base import ContractModel, UtcDateTime
 
 __all__ = [
+    "AccessDeniedReason",
     "Activity",
     "ActivityPart",
+    "AgentAccessError",
     "AgentLogEntry",
+    "AgentMode",
     "AgentRequest",
     "AgentResponse",
     "AgentStatus",

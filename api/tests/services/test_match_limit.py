@@ -141,7 +141,7 @@ async def test_live_path_respects_match_limit_and_bounds_concurrent_llm_calls() 
         settings=settings,
     )
 
-    request = AgentRequest(query="badminton in Wan Chai on Saturday")
+    request = AgentRequest(query="badminton in Wan Chai on Saturday", mode="live")
     response = await orchestrator.run(request)
 
     assert response.status == "ok"
@@ -193,7 +193,7 @@ async def test_relevance_ordering_is_strictly_preserved() -> None:
         settings=settings,
     )
 
-    request = AgentRequest(query="sports in Wan Chai")
+    request = AgentRequest(query="sports in Wan Chai", mode="live")
     response = await orchestrator.run(request)
 
     assert response.status == "ok"

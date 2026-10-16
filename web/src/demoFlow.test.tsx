@@ -26,8 +26,8 @@ describe('End-to-end DEMO_MODE pitch path flow', () => {
     useBoardStore.getState().toggleFreeSlot('saturday-afternoon');
     expect(useBoardStore.getState().selectedFreeSlotIds).toContain('saturday-afternoon');
 
-    // 3. Submit search using zero-network fixture client (DEMO_MODE)
-    const client = createAgentClient('fixture');
+    // 3. Submit search using zero-network fixture client (the no-server fallback)
+    const client = createAgentClient({ transport: 'fixture' });
     await useBoardStore
       .getState()
       .submitSearch('free saturday afternoon, something cultural in Kowloon, English friendly', client);

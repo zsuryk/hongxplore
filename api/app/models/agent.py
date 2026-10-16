@@ -9,6 +9,15 @@ from app.models.base import ContractModel, UtcDateTime
 
 AgentStatus = Literal["ok", "error"]
 LogLevel = Literal["info", "warn", "error"]
+AgentMode = Literal["demo", "live"]
+"""Which world the caller is asking about.
+
+`demo` is answered from the bundled seed data; `live` reaches the configured
+providers and is gated by an agent access key.
+"""
+
+AccessDeniedReason = Literal["missing_key", "invalid_key", "demo_only_instance"]
+"""Why a live request was refused — never which key was tried."""
 
 
 class MatchedActivity(ContractModel):
@@ -35,6 +44,33 @@ class AgentRequest(ContractModel):
     free_slots: list[FreeSlot] = Field(
         default_factory=list, description="Availability picked via the time-slot chips."
     )
+    mode: AgentMode = Field(
+        default="demo",
+        description=(
+            "`demo` for bundled seed data, `live` for the configured providers. "
+            "Defaults to `demo` so a request that forgets to ask cannot "
+            "escalate to live and spend provider quota."
+        ),
+    )
+    agent_access_key: str | None = Field(
+        default=None,
+        description=(
+            "Shared pitch key, required for `live` and ignored for `demo`. "
+            "Verified server-side and never echoed back in any response or log."
+        ),
+    )
+
+
+class AgentAccessError(ContractModel):
+    """Why a live-mode request was refused.
+
+    Carries a reason code rather than only prose so the web app can show the
+    right guidance without parsing an English sentence. `message` is the
+    server's own safe fallback for any client that does not read `reason`.
+    """
+
+    reason: AccessDeniedReason
+    message: str
 
 
 class AgentResponse(ContractModel):

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { fixtureAgentClient } from './api/client';
+import { demoAgentClient } from './api/client';
 import { IconClose } from './icons';
 import {
   AGENT_LOG_CLOSE,
@@ -14,7 +14,7 @@ import {
   AGENT_USE_DEMO,
   DATA_SOURCE_LABEL,
   DATA_SOURCE_LIVE,
-  DATA_SOURCE_MOCK,
+  DATA_SOURCE_DEMO,
   agentStatusResults,
   formatLogTimestamp,
   INITIAL_ACTIVITY_QUERY,
@@ -77,7 +77,10 @@ export function AgentStatusPanel({
 
   function handleUseDemo() {
     setDataSourceMode('mock');
-    void loadAgentResponse({ query: INITIAL_ACTIVITY_QUERY }, fixtureAgentClient);
+    // Asks the server for seed data rather than serving the bundle directly. If
+    // no API is reachable the store's own fallback catches it, so a judge
+    // clicking this after a failed request still gets a board either way.
+    void loadAgentResponse({ query: INITIAL_ACTIVITY_QUERY, mode: 'demo' }, demoAgentClient);
   }
 
   /**
@@ -156,7 +159,7 @@ export function AgentStatusPanel({
               onClick={() => handleModeSwitch('mock')}
               type="button"
             >
-              {DATA_SOURCE_MOCK}
+              {DATA_SOURCE_DEMO}
             </button>
           </div>
           {agentStatus === 'error' ? (
