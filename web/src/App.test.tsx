@@ -27,6 +27,8 @@ import {
   timelineActivityDockedConfirmation,
   timelineActivityReplacedConfirmation,
   timelineSlotMismatchMessage,
+  findSimilarConfirmation,
+  findSimilarExhaustedConfirmation,
 } from './copy';
 import { CARD_WIDTH } from './boardLayout';
 import { useBoardStore } from './state/boardStore';
@@ -201,6 +203,24 @@ describe('App shell', () => {
     expect(replaceMarkup).toContain('aria-live="polite"');
     expect(replaceMarkup).toContain('Art Workshop');
     expect(replaceMarkup).toContain('Replaced');
+  });
+
+  it('renders find similar success and exhaustion confirmations on the accessible toast surface', () => {
+    const successMessage = findSimilarConfirmation('Badminton Court Booking');
+    const successMarkup = renderToStaticMarkup(<App initialConfirmation={successMessage} />);
+
+    expect(successMarkup).toContain('class="board__toast"');
+    expect(successMarkup).toContain('role="status"');
+    expect(successMarkup).toContain('aria-live="polite"');
+    expect(successMarkup).toContain(successMessage);
+
+    const exhaustedMessage = findSimilarExhaustedConfirmation('Badminton Court Booking');
+    const exhaustedMarkup = renderToStaticMarkup(<App initialConfirmation={exhaustedMessage} />);
+
+    expect(exhaustedMarkup).toContain('class="board__toast"');
+    expect(exhaustedMarkup).toContain('role="status"');
+    expect(exhaustedMarkup).toContain('aria-live="polite"');
+    expect(exhaustedMarkup).toContain(exhaustedMessage);
   });
 
   it('renders expanded timeline slots with aria-live="polite" and handles docked slot states', () => {

@@ -86,9 +86,22 @@ describe('board store discard and similar flows', () => {
 
   it('requests similar activities using the selected card as the seed', async () => {
     const card = response.matches[0];
-    const requestAgent = vi.fn().mockResolvedValue(response);
+    const newSimilarMatch = {
+      ...response.matches[1],
+      activity: {
+        ...response.matches[1].activity,
+        id: 'new-similar-activity-id',
+        title: 'New Similar Activity',
+      },
+    };
+    const newResponse = {
+      ...response,
+      matches: [newSimilarMatch],
+    };
+    const requestAgent = vi.fn().mockResolvedValue(newResponse);
     const client: AgentClient = { requestAgent };
 
+    const initialCount = useBoardStore.getState().cards.length;
     const result = await useBoardStore.getState().findSimilar(card, client);
 
     expect(result).toBe(true);
@@ -98,8 +111,9 @@ describe('board store discard and similar flows', () => {
     expect(requestAgent).toHaveBeenCalledWith({
       query: expect.stringContaining('Yau Tsim Mong'),
     });
-    expect(useBoardStore.getState().cards).toHaveLength(response.matches.length);
-    expect(useBoardStore.getState().lastMatchCount).toBe(response.matches.length);
+    expect(useBoardStore.getState().cards).toHaveLength(initialCount + 1);
+    expect(useBoardStore.getState().lastMatchCount).toBe(1);
+    expect(useBoardStore.getState().recentCardIds).toEqual(['new-similar-activity-id']);
   });
 
   it('records an error log entry and updates status when findSimilar fails', async () => {
@@ -117,6 +131,34 @@ describe('board store discard and similar flows', () => {
     expect(state.lastMatchCount).toBeNull();
     expect(state.agentLog.length).toBeGreaterThan(0);
     expect(state.agentLog.some((entry) => entry.level === 'error' && entry.message.includes('502'))).toBe(true);
+  });
+
+  it('returns false and sets lastMatchCount to 0 when findSimilar yields no new cards', async () => {
+    // Set the board to already contain all matches from the response
+    useBoardStore.setState({
+      cards: response.matches,
+      discardedCards: [],
+      recentCardIds: [],
+    });
+
+    const card = response.matches[0];
+    const client: AgentClient = {
+      requestAgent: vi.fn().mockResolvedValue(response),
+    };
+
+    const result = await useBoardStore.getState().findSimilar(card, client);
+
+    expect(result).toBe(false);
+    const state = useBoardStore.getState();
+    expect(state.cards).toHaveLength(response.matches.length);
+    expect(state.lastMatchCount).toBe(0);
+    expect(state.recentCardIds).toHaveLength(0);
+    expect(state.agentStatus).toBe('results');
+    expect(
+      state.agentLog.some(
+        (e) => e.message.toLowerCase().includes('no new') || e.message.toLowerCase().includes('no unplaced'),
+      ),
+    ).toBe(true);
   });
 });
 
