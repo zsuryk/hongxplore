@@ -297,6 +297,7 @@ const INSPECT_MAX_ZOOM_PERCENT = 50;
 export type AppProps = {
   agentStatus?: AgentStatus;
   cards?: BoardActivityCard[];
+  initialCardZIndexById?: Record<string, number>;
   initialClearConfirmOpen?: boolean;
   initialConfirmation?: string;
   initialHoverExpanded?: boolean;
@@ -313,6 +314,7 @@ export type AppProps = {
 export function App({
   agentStatus: propAgentStatus,
   cards: propCards,
+  initialCardZIndexById,
   initialClearConfirmOpen,
   initialConfirmation,
   initialHoverExpanded,
@@ -370,6 +372,9 @@ export function App({
   const cardPositionsById = storeCardPositions ?? EMPTY_CARD_POSITIONS;
   const setCardPosition = useBoardStore((state) => state.setCardPosition);
   const setCardPositions = useBoardStore((state) => state.setCardPositions);
+  const storeCardZIndex = useBoardStore((state) => state.cardZIndexById);
+  const cardZIndexById = initialCardZIndexById ?? storeCardZIndex;
+  const bringCardToFront = useBoardStore((state) => state.bringCardToFront);
   const storeIsClearConfirmOpen = useBoardStore((state) => state.isClearConfirmOpen);
   const isClearConfirmOpen = initialClearConfirmOpen ?? storeIsClearConfirmOpen;
 
@@ -1231,6 +1236,7 @@ export function App({
     markGesture();
     markAdjusted();
     const cardId = card.activity.id;
+    bringCardToFront(cardId);
     if (!from) {
       const currentPos = cardPositionsById[cardId] ?? boardLayout.positionsById[cardId];
       if (currentPos && !cardPositionsById[cardId]) {
@@ -2235,6 +2241,7 @@ export function App({
                 const isDiscarding = discardingCardId === match.activity.id;
                 const isInspected =
                   interactionMode === 'inspect' && isInspectZoomActive && inspectedCardId === match.activity.id;
+                const cardZ = cardZIndexById[match.activity.id] ?? 1;
                 // The serial is the card's index in the *full* list, not in `canvasCards`, so
                 // docking or discarding a card never renumbers the ones that stay.
                 const serialIndex = cards.findIndex((candidate) => candidate.activity.id === match.activity.id);
@@ -2247,6 +2254,7 @@ export function App({
                     }${isInspected ? ' board__card--inspected' : ''}`}
                     data-activity-card
                     data-activity-card-id={match.activity.id}
+                    data-card-z={cardZ}
                     data-tour-anchor={index === 0 ? 'card' : undefined}
                     draggable={false}
                     key={match.activity.id}
@@ -2270,6 +2278,8 @@ export function App({
                       {
                         left: position.x,
                         top: position.y,
+                        zIndex: placement ? placement.stack : cardZ,
+                        '--card-z': cardZ,
                         // `left`/`top` are the card's *final* slot for the whole deal. Only
                         // these offsets and the two durations are per-card, and all of them come
                         // from `dealTiming()`, so the stylesheet contains no timing of its own.

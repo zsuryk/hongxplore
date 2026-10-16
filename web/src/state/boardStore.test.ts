@@ -287,6 +287,56 @@ describe('board store search retrieval and error handling', () => {
       expect(state.cards).toHaveLength(0);
       expect(state.timelineSlots.every((slot) => slot.activityId === null)).toBe(true);
       expect(state.agentStatus).toBe('idle');
+      expect(state.cardZIndexById).toEqual({});
+    });
+  });
+
+  describe('card stacking hierarchy (#133)', () => {
+    beforeEach(() => {
+      useBoardStore.setState({
+        cardPositions: {},
+        cardZIndexById: {},
+        cards: response.matches,
+      });
+    });
+
+    it('promotes grabbed card above untouched cards (z-index > 1)', () => {
+      const cardA = response.matches[0].activity.id;
+      useBoardStore.getState().bringCardToFront(cardA);
+
+      expect(useBoardStore.getState().cardZIndexById[cardA]).toBe(2);
+    });
+
+    it('promotes consecutively grabbed and dropped cards with increasing precedence', () => {
+      const cardA = response.matches[0].activity.id;
+      const cardB = response.matches[1].activity.id;
+      const cardC = response.matches[2].activity.id;
+
+      useBoardStore.getState().bringCardToFront(cardA);
+      expect(useBoardStore.getState().cardZIndexById[cardA]).toBe(2);
+
+      useBoardStore.getState().setCardPosition(cardB, { x: 100, y: 100 });
+      expect(useBoardStore.getState().cardZIndexById[cardB]).toBe(3);
+
+      useBoardStore.getState().bringCardToFront(cardA);
+      expect(useBoardStore.getState().cardZIndexById[cardA]).toBe(4);
+
+      useBoardStore.getState().bringCardToFront(cardC);
+      expect(useBoardStore.getState().cardZIndexById[cardC]).toBe(5);
+
+      // Card C is highest, then Card A, then Card B
+      const z = useBoardStore.getState().cardZIndexById;
+      expect(z[cardC]).toBeGreaterThan(z[cardA]);
+      expect(z[cardA]).toBeGreaterThan(z[cardB]);
+    });
+
+    it('cleans up cardZIndexById entry when card is discarded', () => {
+      const cardA = response.matches[0].activity.id;
+      useBoardStore.getState().bringCardToFront(cardA);
+      expect(useBoardStore.getState().cardZIndexById[cardA]).toBe(2);
+
+      useBoardStore.getState().discardCard(cardA);
+      expect(useBoardStore.getState().cardZIndexById[cardA]).toBeUndefined();
     });
   });
 });

@@ -32,6 +32,7 @@ export type DataSourceMode = 'live' | 'mock';
 export type BoardStore = {
   cards: ActivityCard[];
   cardPositions: Record<string, Point>;
+  cardZIndexById: Record<string, number>;
   discardedCards: ActivityCard[];
   viewport: BoardViewport;
   timelineSlots: TimelineSlot[];
@@ -43,6 +44,7 @@ export type BoardStore = {
   selectedFreeSlotIds: string[];
   recentCardIds: string[];
   isClearConfirmOpen: boolean;
+  bringCardToFront: (activityId: string) => void;
   discardCard: (activityId: string) => void;
   dockCard: (activityId: string, timelineSlotId: string, options?: { replace?: boolean }) => boolean;
   undockCard: (timelineSlotId: string) => void;
@@ -63,6 +65,26 @@ export type BoardStore = {
 
 const initialViewport: BoardViewport = { x: 0, y: 0, scale: 1 };
 
+function promoteCardZIndex(cardZIndexById: Record<string, number>, activityId: string): Record<string, number> {
+  let maxZ = 1;
+  let maxCount = 0;
+  for (const z of Object.values(cardZIndexById)) {
+    if (z > maxZ) {
+      maxZ = z;
+      maxCount = 1;
+    } else if (z === maxZ) {
+      maxCount += 1;
+    }
+  }
+  if (maxZ > 1 && cardZIndexById[activityId] === maxZ && maxCount === 1) {
+    return cardZIndexById;
+  }
+  return {
+    ...cardZIndexById,
+    [activityId]: maxZ + 1,
+  };
+}
+
 export function similarActivityRequest(card: ActivityCard): AgentRequest {
   const title = card.activity.title_en ?? card.activity.title;
   const tags = card.activity.tags.join(', ');
@@ -75,6 +97,7 @@ export function similarActivityRequest(card: ActivityCard): AgentRequest {
 export const useBoardStore = create<BoardStore>((set, get) => ({
   cards: [],
   cardPositions: {},
+  cardZIndexById: {},
   discardedCards: [],
   viewport: initialViewport,
   timelineSlots: TIMELINE_SLOTS.map((slot) => ({ id: slot.id, activityId: null })),
@@ -86,6 +109,11 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
   selectedFreeSlotIds: [],
   recentCardIds: [],
   isClearConfirmOpen: false,
+  bringCardToFront(activityId) {
+    set((state) => ({
+      cardZIndexById: promoteCardZIndex(state.cardZIndexById, activityId),
+    }));
+  },
   discardCard(activityId) {
     set((state) => {
       const card = state.cards.find((candidate) => candidate.activity.id === activityId);
@@ -96,10 +124,13 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
 
       const remainingPositions = { ...state.cardPositions };
       delete remainingPositions[activityId];
+      const remainingZIndex = { ...state.cardZIndexById };
+      delete remainingZIndex[activityId];
 
       return {
         cards: state.cards.filter((candidate) => candidate.activity.id !== activityId),
         cardPositions: remainingPositions,
+        cardZIndexById: remainingZIndex,
         discardedCards: [...state.discardedCards, card],
         timelineSlots: state.timelineSlots.map((slot) =>
           slot.activityId === activityId ? { ...slot, activityId: null } : slot,
@@ -151,6 +182,7 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
     set({
       cards: [],
       cardPositions: {},
+      cardZIndexById: {},
       discardedCards: [],
       timelineSlots: TIMELINE_SLOTS.map((slot) => ({ id: slot.id, activityId: null })),
       recentCardIds: [],
@@ -166,6 +198,7 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
         ...state.cardPositions,
         [activityId]: position,
       },
+      cardZIndexById: promoteCardZIndex(state.cardZIndexById, activityId),
     }));
   },
   setCardPositions(positions) {
