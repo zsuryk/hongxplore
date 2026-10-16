@@ -1,7 +1,7 @@
 # ADR-0006: Deployment target
 
 - **Status:** accepted
-- **Date:** 2026-09-27
+- **Date:** 2026-09-27 (drafted) · 2026-10-16 (accepted)
 
 ## Context
 
