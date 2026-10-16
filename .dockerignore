@@ -1,0 +1,49 @@
+# The build context is the whole repository, so everything that must never enter
+# an image layer has to be named here. Secrets first: `.env` files are the one
+# thing that must not be trusted to stay out.
+
+# --- secrets: never in the build context, let alone a layer --------------------
+.env
+.env.*
+**/.env
+**/.env.*
+*.pem
+*.key
+*.p12
+service-account*.json
+gcloud-service-account*.json
+
+# --- git and CI ---------------------------------------------------------------
+.git
+.gitignore
+.github
+.claude
+
+# --- dependency trees and build caches (the image installs its own) -----------
+**/node_modules
+**/.pnpm-store
+**/.vite
+web/dist
+api/.venv
+**/__pycache__
+**/*.py[cod]
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/.cache
+api/htmlcov
+.coverage
+coverage
+
+# --- local environment and editor noise --------------------------------------
+api/.env
+api/.env.*
+**/.DS_Store
+**/*.swp
+.idea
+.vscode
+
+# --- test suites: CI runs these against the source, never inside the image -----
+api/tests
+web/src/**/*.test.ts
+web/src/**/*.test.tsx

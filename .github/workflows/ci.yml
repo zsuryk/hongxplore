@@ -87,3 +87,40 @@ jobs:
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: printf '%s\n' "$PR_TITLE" | pnpm exec commitlint
 
+  # Issue #87. Builds the deployable image with no secrets in the environment and
+  # then exercises the contract that matters: one process, one origin, API and web
+  # app both answering, a deep link surviving a refresh, and `/health` leaking
+  # nothing. Deliberately credential-free — if this job ever needs a secret to
+  # build, that is a bug in the build, not a missing secret.
+  image:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the image
+        run: docker build -t hongxplore:ci .
+      - name: Start it with no keys configured
+        run: |
+          docker run -d --name hongxplore -p 8080:8080 \
+            -e DEMO_MODE=true \
+            -e AGENT_ACCESS_KEYS= \
+            hongxplore:ci
+      - name: Wait for /health
+        run: |
+          for _ in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8080/health >/dev/null 2>&1; then exit 0; fi
+            sleep 2
+          done
+          echo "::error::container never became healthy"
+          docker logs hongxplore
+          exit 1
+      - name: Smoke test the single-origin contract
+        run: .github/scripts/smoke_container.sh
+      - name: Show logs and stop
+        if: always()
+        run: |
+          docker logs hongxplore 2>&1 | tail -40
+          docker rm -f hongxplore 2>/dev/null || true
+      - name: The image carries no secrets and runs as non-root
+        run: .github/scripts/audit_image.sh hongxplore:ci
+

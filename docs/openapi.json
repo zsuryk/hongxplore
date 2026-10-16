@@ -9,7 +9,7 @@
     "/health": {
       "get": {
         "summary": "Health",
-        "description": "Liveness probe: returns `{\"status\": \"ok\"}`.",
+        "description": "Liveness probe: returns `{\"status\": \"ok\"}`.\n\nCloud Run calls this unauthenticated on every instance start, so it must\nstay cheap and must describe nothing about the deployment — no version,\nno config, no build id.",
         "operationId": "health_health_get",
         "responses": {
           "200": {
