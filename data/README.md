@@ -24,6 +24,8 @@ Each entry in `activities.json` conforms strictly to the canonical `Activity` do
 | `image` | `string \| null` | Verified official venue / event cover image URL (populated across all 120 seed items) |
 | `price` | `object \| null` | Three-state pricing object: `{ amount, currency, is_free }`, or absent (`null`) |
 | `listed_at` | `string \| null` | UTC ISO-8601 timestamp when confirmed/crawled, or absent (`null`) |
+| `description` | `string \| null` | Longer prose in activity language (Traditional Chinese), or absent (`null`) |
+| `description_en` | `string \| null` | English translation of `description`, or absent (`null`) |
 
 
 ## Category Distribution
@@ -50,6 +52,7 @@ Hong Kong public venues and facilities do not offer permanent, static per-sessio
 - **Official Tariffs & Fees**: Costs for public facilities represent official statutory LCSD gazetted hire charges (e.g., Badminton Peak HKD 59–118/hr, Squash HKD 27–54/30 mins, Table Tennis HKD 14–28/hr, Swimming HKD 17–19 per session, Fitness Room HKD 14/hr) or official museum general admission prices. Modeled as a strict three-state contract per ADR-0010: explicit priced amount (positive decimal string), explicit free of charge (`is_free=true`), or absent (`null`) when unpriced or donation-based (never defaulted to free without proof).
 - **Crawl Freshness (`listed_at`)**: Carries verified crawl/confirmation timestamps in UTC (e.g. `2026-09-15T00:00:00Z` for LCSD CLPSS directory audits, `2026-09-20T00:00:00Z` for major museum catalogs, `2026-09-18T00:00:00Z` for AFCD park trails), while unconfirmed community events remain absent (`null`).
 - **Cover Images (`image`)**: Every seed activity carries a verified, high-quality public venue or landmark cover image URL showcasing the facility, park, trail, or cultural institution, enabling high-fidelity card rendering without external API dependencies in `DEMO_MODE`.
+- **Bilingual Descriptions (`description`, `description_en`)**: Sourced descriptions in Traditional Chinese (`description`, matching `lang="zh"`) and English (`description_en`) detailing court amenities, booking instructions, exhibitions, scenic highlights, or workshop activities across all 120 seed items.
 
 ### 2. Operational Scheduling Conventions in `DEMO_MODE`
 - **Dynamic Upcoming Weekend Scheduling (`parts`)**: Rather than hardcoding fixed dates, simulated weekend slots are dynamically derived from the current or upcoming weekend in HKT (`Asia/Hong_Kong`) via `compute_upcoming_weekend_dates()` in `data/build_seed.py`. Time slots are normalized to UTC ISO-8601 within standard operating hours (typically 07:00–23:00 HKT) and automatically roll forward each week with zero manual edits, maintaining seamless alignment between frontend free-slot chips and whiteboard timeline slots. All instants store UTC and display HKT per repository rules.

@@ -16,6 +16,7 @@ SEED_PATH = REPO_ROOT / "data" / "activities.json"
 DATA_DIR = REPO_ROOT / "data"
 if str(DATA_DIR) not in sys.path:
     sys.path.insert(0, str(DATA_DIR))
+import build_seed  # noqa: E402
 from build_seed import compute_upcoming_weekend_dates  # noqa: E402
 
 
@@ -180,3 +181,35 @@ def test_seed_dataset_all_entries_carry_valid_cover_images() -> None:
         assert str(a.image).startswith(("http://", "https://")), (
             f"Activity {a.id} invalid image URL: {a.image}"
         )
+
+
+def test_seed_dataset_all_entries_carry_bilingual_descriptions() -> None:
+    """Every entry in data/activities.json carries non-empty description and description_en."""
+    activities = load_seed_activities()
+    assert len(activities) == 120
+    for a in activities:
+        assert a.description is not None, f"Activity {a.id} missing description"
+        assert a.description.strip(), f"Activity {a.id} has empty description"
+        assert a.description_en is not None, f"Activity {a.id} missing description_en"
+        assert a.description_en.strip(), f"Activity {a.id} has empty description_en"
+        # Traditional Chinese description contains CJK characters when lang is zh
+        if a.lang == "zh":
+            assert any("\u4e00" <= char <= "\u9fff" for char in a.description), (
+                f"Activity {a.id} description expected Chinese characters: {a.description}"
+            )
+
+
+def test_seed_generator_idempotence() -> None:
+    """Running transform_to_canonical on all raw activities generates activities.json."""
+    expected_raw = json.loads(SEED_PATH.read_text(encoding="utf-8"))
+    weekend_dates = build_seed.compute_upcoming_weekend_dates()
+    generated = [
+        build_seed.transform_to_canonical(raw, weekend_dates) for raw in build_seed.all_activities
+    ]
+    assert len(generated) == len(expected_raw)
+    for gen, exp in zip(generated, expected_raw, strict=True):
+        assert gen["id"] == exp["id"]
+        assert gen["description"] == exp["description"]
+        assert gen["description_en"] == exp["description_en"]
+        assert gen["title"] == exp["title"]
+        assert gen["title_en"] == exp["title_en"]

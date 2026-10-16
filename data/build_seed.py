@@ -2181,6 +2181,22 @@ def transform_to_canonical(raw: dict, day_to_date: dict[str, str] | None = None)
     listed_at = parse_listed_at(raw)
     if listed_at:
         item["listed_at"] = listed_at
+
+    # 6. Description & description_en
+    if lang == "zh":
+        desc = raw.get("description_alt") or raw.get("description")
+        desc_en = raw.get("description_en") or (
+            raw.get("description") if raw.get("description_alt") else None
+        )
+    else:
+        desc = raw.get("description")
+        desc_en = raw.get("description_en")
+
+    if desc and desc.strip():
+        item["description"] = desc.strip()
+    if desc_en and desc_en.strip():
+        item["description_en"] = desc_en.strip()
+
     return item
 
 
@@ -2290,6 +2306,12 @@ def verify_dataset(items: list[dict], parsed_facilities: dict) -> None:
         assert a.get("image") is not None, f"Activity {a['id']} missing image URL"
         assert str(a["image"]).startswith(("http://", "https://")), (
             f"Activity {a['id']} invalid image {a['image']}"
+        )
+        assert a.get("description") and str(a["description"]).strip(), (
+            f"Activity {a['id']} missing non-empty description"
+        )
+        assert a.get("description_en") and str(a["description_en"]).strip(), (
+            f"Activity {a['id']} missing non-empty description_en"
         )
         Activity.model_validate(a)
     print("Pydantic Activity model validation passed for all 120 items!")
