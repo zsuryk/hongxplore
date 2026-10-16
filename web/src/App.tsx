@@ -42,6 +42,7 @@ import {
   UNDOCK_CARD_LABEL,
   activityCardSerial,
   findSimilarConfirmation,
+  findSimilarExhaustedConfirmation,
   timelineActivityReplacedConfirmation,
   timelineActivityDockedConfirmation,
   timelinePlannedCount,
@@ -1358,6 +1359,11 @@ export function App({
     const success = await findSimilar(card);
     if (success) {
       setConfirmation(findSimilarConfirmation(title));
+    } else {
+      const state = useBoardStore.getState();
+      if (state.agentStatus !== 'error') {
+        setConfirmation(findSimilarExhaustedConfirmation(title));
+      }
     }
   }
 

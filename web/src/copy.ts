@@ -417,6 +417,10 @@ export function findSimilarConfirmation(title: string): string {
   return `Looking for activities similar to ${title}.`;
 }
 
+export function findSimilarExhaustedConfirmation(title: string): string {
+  return `No new activities found similar to ${title}.`;
+}
+
 export function zoomPercentage(value: number): string {
   return `Zoom: ${Math.round(value * 100)}%`;
 }

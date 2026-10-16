@@ -73,8 +73,11 @@ describe('End-to-end DEMO_MODE pitch path flow', () => {
     expect(useBoardStore.getState().cards.some((c) => c.activity.id === card3.activity.id)).toBe(false);
     expect(useBoardStore.getState().discardedCards.some((c) => c.activity.id === card3.activity.id)).toBe(true);
 
-    // 9. Find similar for card1
-    await useBoardStore.getState().findSimilar(card1, client);
-    expect(useBoardStore.getState().cards.length).toBeGreaterThan(0);
+    // 9. Find similar for card1 in mock mode (adds new cards to the board)
+    const cardCountBefore = useBoardStore.getState().cards.length;
+    const findSimilarResult = await useBoardStore.getState().findSimilar(card1, client);
+    expect(findSimilarResult).toBe(true);
+    expect(useBoardStore.getState().cards.length).toBeGreaterThan(cardCountBefore);
+    expect(useBoardStore.getState().lastMatchCount).toBeGreaterThan(0);
   });
 });

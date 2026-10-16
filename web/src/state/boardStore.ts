@@ -205,6 +205,26 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
         (match) => !existingIds.has(match.activity.id) && !discardedIds.has(match.activity.id),
       );
 
+      if (newlyAddedMatches.length === 0) {
+        const title = card.activity.title_en ?? card.activity.title;
+        set((state) => ({
+          agentError: null,
+          agentLog: [
+            ...state.agentLog,
+            ...response.log,
+            {
+              level: 'info',
+              message: `No new unplaced activities found similar to ${title}.`,
+              ts: new Date().toISOString(),
+            },
+          ],
+          agentStatus: 'results',
+          lastMatchCount: 0,
+          recentCardIds: [],
+        }));
+        return false;
+      }
+
       const nextCards = mergeCards(get().cards, response.matches, discardedIds);
       const layout = computeBoardLayout({
         cards: nextCards,
@@ -221,7 +241,7 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
         agentLog: response.log,
         agentStatus: 'results',
         agentError: null,
-        lastMatchCount: response.matches.length,
+        lastMatchCount: newlyAddedMatches.length,
         recentCardIds: newlyAddedMatches.map((match) => match.activity.id),
       });
       return true;
