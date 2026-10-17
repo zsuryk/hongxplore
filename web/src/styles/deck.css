@@ -1,0 +1,554 @@
+/**
+ * Deck View styling (issue #140).
+ *
+ * Implements the card-stack (Tinder-style) triage view mode for Hongxplore.
+ * Adheres strictly to the Blue Hour token system in `tokens.css`.
+ * Zero hand-written colour, radius, or spacing literals.
+ */
+
+/* ---- View Switcher in Header ---- */
+
+.view-switcher {
+  align-items: center;
+  background: var(--input);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  padding: var(--space-1);
+  position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.view-switcher__btn {
+  align-items: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  display: inline-flex;
+  font-family: inherit;
+  font-size: var(--text-label);
+  font-weight: var(--weight-semi);
+  gap: var(--space-1);
+  letter-spacing: var(--tracking-label);
+  line-height: var(--leading-none);
+  min-height: var(--target-small);
+  padding: var(--space-1) var(--space-3);
+  text-transform: uppercase;
+  transition:
+    background-color var(--motion-fast) var(--motion-ease),
+    border-color var(--motion-fast) var(--motion-ease),
+    color var(--motion-fast) var(--motion-ease);
+}
+
+.view-switcher__btn:hover {
+  color: var(--foreground);
+}
+
+.view-switcher__btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}
+
+.view-switcher__btn--active {
+  background: var(--accent);
+  border-color: var(--accent-border);
+  color: var(--accent-foreground);
+  font-weight: var(--weight-bold);
+}
+
+.view-switcher__btn--active:hover {
+  background: var(--accent-strong);
+  color: var(--accent-foreground);
+}
+
+/* ---- Deck View Container ---- */
+
+.deck-view {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: var(--space-4) var(--space-4) var(--space-8);
+  position: relative;
+  width: 100%;
+}
+
+.deck-view__inner {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+  max-width: 27.5rem;
+  width: 100%;
+}
+
+.deck-view__status-bar {
+  align-items: center;
+  color: var(--card-muted-foreground);
+  display: flex;
+  font-family: var(--font-mono);
+  font-size: var(--text-mono);
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+  user-select: none;
+  -webkit-user-select: none;
+  width: 100%;
+}
+
+/* ---- Card Stack Container ---- */
+
+.deck-stack {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  perspective: 1000px;
+  position: relative;
+  width: 100%;
+}
+
+/* Active card sits on top in grid cell */
+.deck-stack__item {
+  grid-column: 1;
+  grid-row: 1;
+  width: 100%;
+}
+
+.deck-stack__item--active {
+  cursor: grab;
+  touch-action: none;
+  z-index: 3;
+}
+
+.deck-stack__item--active:active {
+  cursor: grabbing;
+}
+
+/* Ghost cards beneath active card */
+.deck-stack__item--ghost-1 {
+  pointer-events: none;
+  transform: scale(0.96) translateY(var(--space-2));
+  transform-origin: center bottom;
+  z-index: 2;
+}
+
+.deck-stack__item--ghost-1 .deck-card {
+  opacity: 0.75;
+}
+
+.deck-stack__item--ghost-2 {
+  pointer-events: none;
+  transform: scale(0.92) translateY(var(--space-4));
+  transform-origin: center bottom;
+  z-index: 1;
+}
+
+.deck-stack__item--ghost-2 .deck-card {
+  opacity: 0.45;
+}
+
+/* ---- Deck Card Component ---- */
+
+.deck-card {
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-card);
+  box-shadow:
+    var(--shadow-card),
+    inset 0 1px 0 var(--edge-light);
+  color: var(--foreground);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition:
+    border-color var(--motion-fast) var(--motion-ease),
+    box-shadow var(--motion-fast) var(--motion-ease),
+    transform var(--motion-fast) var(--motion-ease);
+  user-select: none;
+  -webkit-user-select: none;
+  width: 100%;
+}
+
+.deck-card--swiping-left {
+  border-color: var(--destructive);
+  box-shadow:
+    0 0 0 1px var(--destructive),
+    var(--shadow-floating);
+}
+
+.deck-card--swiping-right {
+  border-color: var(--accent);
+  box-shadow:
+    0 0 0 1px var(--accent),
+    var(--shadow-floating);
+}
+
+.deck-card__header {
+  align-items: center;
+  background: var(--card-header);
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+}
+
+.deck-card__meta {
+  align-items: center;
+  display: flex;
+  gap: var(--space-2);
+}
+
+.deck-card__serial {
+  color: var(--card-plate);
+  font-family: var(--font-mono);
+  font-size: var(--text-mono);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-mono);
+}
+
+.deck-card__badge {
+  background: var(--muted);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  color: var(--card-muted-foreground);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-semi);
+  letter-spacing: var(--tracking-label);
+  padding: var(--space-1) var(--space-2);
+  text-transform: uppercase;
+}
+
+.deck-card__badge--guide {
+  background: var(--surface-pending);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.deck-card__district {
+  color: var(--card-muted-foreground);
+  font-size: var(--text-label);
+  font-weight: var(--weight-semi);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.deck-card__cover-wrap {
+  background: var(--input);
+  border-bottom: 1px solid var(--rule);
+  max-height: 12rem;
+  overflow: hidden;
+  width: 100%;
+}
+
+.deck-card__cover {
+  display: block;
+  height: 100%;
+  max-height: 12rem;
+  object-fit: cover;
+  width: 100%;
+}
+
+.deck-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.deck-card__titles {
+  display: flex;
+  flex-direction: column;
+}
+
+.deck-card__title {
+  color: var(--foreground);
+  font-size: var(--text-card-title);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-title);
+  line-height: var(--leading-tight);
+  margin: 0;
+}
+
+.deck-card__original-title {
+  color: var(--card-muted-foreground);
+  font-size: var(--text-meta);
+  margin: var(--space-1) 0 0;
+}
+
+.deck-card__rationale {
+  background: var(--accent-soft);
+  border-left: 2px solid var(--accent);
+  border-radius: var(--radius-sm);
+  margin: 0;
+  padding: var(--space-3);
+}
+
+.deck-card__rationale-label {
+  color: var(--accent-strong);
+  display: block;
+  font-size: var(--text-micro);
+  font-weight: var(--weight-semi);
+  letter-spacing: var(--tracking-label);
+  margin-bottom: var(--space-1);
+  text-transform: uppercase;
+}
+
+.deck-card__rationale-text {
+  color: var(--foreground);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  margin: 0;
+}
+
+.deck-card__description {
+  color: var(--card-foreground);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  margin: 0;
+}
+
+.deck-card__details {
+  background: var(--input);
+  border: 1px solid var(--row-rule);
+  border-radius: var(--radius-sm);
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-3);
+}
+
+.deck-card__detail-row {
+  align-items: baseline;
+  display: flex;
+  gap: var(--space-2);
+  justify-content: space-between;
+}
+
+.deck-card__detail-label {
+  color: var(--card-muted-foreground);
+  font-size: var(--text-label);
+  font-weight: var(--weight-semi);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.deck-card__detail-value {
+  color: var(--foreground);
+  font-size: var(--text-body);
+  margin: 0;
+  text-align: right;
+}
+
+.deck-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.deck-card__tag {
+  background: var(--muted);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-pill);
+  color: var(--card-muted-foreground);
+  font-size: var(--text-micro);
+  padding: var(--space-1) var(--space-2);
+}
+
+.deck-card__footer {
+  align-items: center;
+  background: var(--card-header);
+  border-top: 1px solid var(--rule);
+  display: flex;
+  gap: var(--space-2);
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+}
+
+.deck-card__cta {
+  flex: 1;
+  text-align: center;
+}
+
+/* ---- Deck Action Controls Bar ---- */
+
+.deck-controls {
+  align-items: center;
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+  margin-top: var(--space-4);
+  user-select: none;
+  -webkit-user-select: none;
+  width: 100%;
+}
+
+.deck-controls__btn {
+  align-items: center;
+  background: var(--chrome-raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-pill);
+  box-shadow:
+    var(--shadow-raised),
+    inset 0 1px 0 var(--edge-light);
+  color: var(--foreground);
+  cursor: pointer;
+  display: inline-flex;
+  height: 2.75rem;
+  justify-content: center;
+  transition:
+    background-color var(--motion-fast) var(--motion-ease),
+    border-color var(--motion-fast) var(--motion-ease),
+    color var(--motion-fast) var(--motion-ease),
+    transform var(--motion-fast) var(--motion-ease);
+  width: 2.75rem;
+}
+
+.deck-controls__btn:hover:not(:disabled) {
+  border-color: var(--rule-bright);
+  transform: translateY(-1px);
+}
+
+.deck-controls__btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.deck-controls__btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.deck-controls__btn--discard:hover:not(:disabled) {
+  background: var(--destructive-soft);
+  border-color: var(--destructive);
+  color: var(--destructive);
+}
+
+.deck-controls__btn--dock:hover:not(:disabled) {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent-strong);
+}
+
+.deck-controls__hint {
+  color: var(--muted-foreground);
+  font-size: var(--text-meta);
+  margin-top: var(--space-2);
+  text-align: center;
+}
+
+/* ---- Inline Slot Picker Chips ---- */
+
+.deck-slot-picker {
+  background: var(--chrome-surface);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-floating);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  width: 100%;
+}
+
+.deck-slot-picker__title {
+  color: var(--accent-strong);
+  font-size: var(--text-label);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-label);
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.deck-slot-picker__chips {
+  display: grid;
+  gap: var(--space-2);
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.deck-slot-picker__chip {
+  align-items: center;
+  background: var(--chip-face);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  color: var(--foreground);
+  cursor: pointer;
+  display: flex;
+  font-family: inherit;
+  font-size: var(--text-micro);
+  font-weight: var(--weight-semi);
+  justify-content: center;
+  min-height: var(--target-small);
+  padding: var(--space-1) var(--space-2);
+  text-align: center;
+  transition:
+    background-color var(--motion-fast) var(--motion-ease),
+    border-color var(--motion-fast) var(--motion-ease);
+}
+
+.deck-slot-picker__chip:hover {
+  border-color: var(--accent);
+  color: var(--accent-strong);
+}
+
+/* ---- Empty State ---- */
+
+.deck-empty {
+  align-items: center;
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-card);
+  box-shadow:
+    var(--shadow-card),
+    inset 0 1px 0 var(--edge-light);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: var(--space-6) 0;
+  padding: var(--space-8) var(--space-6);
+  text-align: center;
+  width: 100%;
+}
+
+.deck-empty__title {
+  color: var(--foreground);
+  font-size: var(--text-card-title);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-title);
+  margin: 0;
+}
+
+.deck-empty__body {
+  color: var(--card-muted-foreground);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  margin: 0;
+  max-width: 22rem;
+}
+
+.deck-empty__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  width: 100%;
+}
+
+@media (max-width: 390px) {
+  .deck-view {
+    padding: var(--space-3) var(--space-2) var(--space-6);
+  }
+
+  .deck-slot-picker__chips {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

@@ -599,3 +599,45 @@ export const GATHERING_INFO_SUBTITLE = 'Researching and ranking weekend activiti
 export const GATHERING_INFO_LABEL = 'AI research in progress: gathering activities';
 /** Tracked caps on the pending card's header row. Amber means pending, and this is pending. */
 export const GATHERING_INFO_PLATE_LABEL = 'Gathering';
+
+/* ---- Deck View strings (issue #140) ---- */
+export const VIEW_SWITCHER_LABEL = 'Switch view mode';
+export const VIEW_MODE_BOARD_LABEL = 'Board';
+export const VIEW_MODE_BOARD_TOOLTIP = 'Infinite whiteboard view';
+export const VIEW_MODE_DECK_LABEL = 'Deck';
+export const VIEW_MODE_DECK_TOOLTIP = 'Card-by-card deck navigation';
+
+export const DECK_DISCARD_LABEL = 'Discard activity';
+export const DECK_DISCARD_TOOLTIP = 'Discard (← or Backspace)';
+export const DECK_UNDO_LABEL = 'Undo last action';
+export const DECK_UNDO_TOOLTIP = 'Undo (Z or Cmd+Z)';
+export const DECK_SKIP_LABEL = 'Skip to back';
+export const DECK_SKIP_TOOLTIP = 'Skip to back of stack (Space)';
+export const DECK_DOCK_LABEL = 'Quick dock';
+export const DECK_DOCK_TOOLTIP = 'Schedule to weekend (→ or Enter)';
+export const DECK_SLOT_PICKER_TITLE = 'Choose a weekend slot';
+export const DECK_SLOT_PICKER_HINT = 'Select which time slot to schedule this activity';
+export const DECK_KEYBOARD_HINT = 'Left arrow discards, right arrow docks, space skips, Z undoes.';
+export const DECK_SWIPE_DISCARD_HINT = 'Swipe left to discard';
+export const DECK_SWIPE_DOCK_HINT = 'Swipe right to schedule';
+
+export function deckStackCount(current: number, total: number): string {
+  return `${current} of ${total}`;
+}
+
+export function deckCardsRemaining(count: number): string {
+  return `${count} remaining`;
+}
+
+export const DECK_EMPTY_TITLE = 'All activities reviewed';
+export const DECK_EMPTY_BODY = 'You have gone through all returned activities for this query.';
+export const DECK_EMPTY_VIEW_PLAN_CTA = 'View weekend plan';
+export const DECK_EMPTY_RESTORE_CTA = 'Restore discarded activities';
+export const DECK_EMPTY_SEARCH_CTA = 'Search for more';
+
+export const DECK_BOOKING_GUIDE_BADGE = 'Facility booking guide';
+export const DECK_MATCH_RATIONALE_LABEL = 'Why this matches';
+export const DECK_LOCATION_LABEL = 'Location';
+export const DECK_SCHEDULE_LABEL = 'Schedule';
+export const DECK_PRICE_LABEL = 'Price';
+export const DECK_EXTERNAL_LINK_LABEL = 'Open details & booking';

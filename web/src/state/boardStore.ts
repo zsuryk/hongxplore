@@ -35,6 +35,32 @@ export type TimelineSlot = {
 };
 
 export type DataSourceMode = 'live' | 'mock';
+export type ViewMode = 'board' | 'deck';
+
+export const VIEW_MODE_STORAGE_KEY = 'hongxplore:view-mode';
+
+export function getInitialViewMode(): ViewMode {
+  try {
+    const stored = typeof localStorage !== 'undefined' ? localStorage.getItem(VIEW_MODE_STORAGE_KEY) : null;
+    return stored === 'deck' ? 'deck' : 'board';
+  } catch {
+    return 'board';
+  }
+}
+
+export function persistViewMode(mode: ViewMode): void {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(VIEW_MODE_STORAGE_KEY, mode);
+    }
+  } catch {
+    // Ignore storage restrictions
+  }
+}
+
+export type UndoAction =
+  | { type: 'discard'; card: ActivityCard }
+  | { type: 'dock'; activityId: string; slotId: string; previousActivityId: string | null };
 
 export type BoardStore = {
   cards: ActivityCard[];
@@ -53,6 +79,11 @@ export type BoardStore = {
   selectedFreeSlotIds: string[];
   recentCardIds: string[];
   isClearConfirmOpen: boolean;
+  viewMode: ViewMode;
+  undoStack: UndoAction[];
+  setViewMode: (mode: ViewMode) => void;
+  undoLastAction: () => boolean;
+  restoreDiscardedCards: () => void;
   bringCardToFront: (activityId: string) => void;
   discardCard: (activityId: string) => void;
   dockCard: (activityId: string, timelineSlotId: string, options?: { replace?: boolean }) => boolean;
@@ -174,6 +205,51 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
     setStoredAccessKey(null);
     set({ agentAccessKey: null, dataSourceMode: 'mock' });
   },
+  viewMode: getInitialViewMode(),
+  undoStack: [],
+  setViewMode(mode) {
+    persistViewMode(mode);
+    set({ viewMode: mode });
+  },
+  undoLastAction() {
+    const stack = get().undoStack;
+    if (stack.length === 0) return false;
+    const action = stack[stack.length - 1];
+    const newStack = stack.slice(0, -1);
+
+    if (action.type === 'discard') {
+      set((state) => ({
+        cards: state.cards.some((c) => c.activity.id === action.card.activity.id)
+          ? state.cards
+          : [action.card, ...state.cards],
+        discardedCards: state.discardedCards.filter((c) => c.activity.id !== action.card.activity.id),
+        undoStack: newStack,
+      }));
+      return true;
+    }
+
+    if (action.type === 'dock') {
+      set((state) => ({
+        timelineSlots: state.timelineSlots.map((slot) => {
+          if (slot.id === action.slotId) {
+            return { ...slot, activityId: action.previousActivityId };
+          }
+          return slot;
+        }),
+        undoStack: newStack,
+      }));
+      return true;
+    }
+
+    return false;
+  },
+  restoreDiscardedCards() {
+    set((state) => ({
+      cards: [...state.cards, ...state.discardedCards],
+      discardedCards: [],
+      undoStack: state.undoStack.filter((action) => action.type !== 'discard'),
+    }));
+  },
   bringCardToFront(activityId) {
     set((state) => ({
       cardZIndexById: promoteCardZIndex(state.cardZIndexById, activityId),
@@ -197,6 +273,7 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
         cardPositions: remainingPositions,
         cardZIndexById: remainingZIndex,
         discardedCards: [...state.discardedCards, card],
+        undoStack: [...state.undoStack, { type: 'discard', card }],
         timelineSlots: state.timelineSlots.map((slot) =>
           slot.activityId === activityId ? { ...slot, activityId: null } : slot,
         ),
@@ -214,6 +291,8 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
       }
 
       docked = true;
+      const prevActivityId =
+        destination.activityId && destination.activityId !== activityId ? destination.activityId : null;
       return {
         timelineSlots: state.timelineSlots.map((slot) => {
           if (slot.id === timelineSlotId) {
@@ -222,6 +301,10 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
 
           return slot.activityId === activityId ? { ...slot, activityId: null } : slot;
         }),
+        undoStack: [
+          ...state.undoStack,
+          { type: 'dock', activityId, slotId: timelineSlotId, previousActivityId: prevActivityId },
+        ],
       };
     });
 
@@ -249,6 +332,7 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
       cardPositions: {},
       cardZIndexById: {},
       discardedCards: [],
+      undoStack: [],
       timelineSlots: TIMELINE_SLOTS.map((slot) => ({ id: slot.id, activityId: null })),
       recentCardIds: [],
       isClearConfirmOpen: false,

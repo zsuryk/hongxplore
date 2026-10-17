@@ -31,6 +31,9 @@ import {
   TOUR_NEXT_LABEL,
   TOUR_SEARCH_TITLE,
   TOUR_SKIP_LABEL,
+  VIEW_MODE_BOARD_LABEL,
+  VIEW_MODE_DECK_LABEL,
+  VIEW_SWITCHER_LABEL,
   timelineActivityDockedConfirmation,
   timelineActivityReplacedConfirmation,
   timelineSlotMismatchMessage,
@@ -668,5 +671,38 @@ describe('card drag gesture stability (#103)', () => {
       const distance = Math.hypot(pillCenterScreenX - screenPoint.x, pillCenterScreenY - screenPoint.y);
       expect(distance).toBe(0);
     }
+  });
+
+  it('renders the view switcher control in the app header', () => {
+    const markup = renderToStaticMarkup(<App initialTourOpen={false} />);
+
+    expect(markup).toContain('class="app__header-actions"');
+    expect(markup).toContain(`aria-label="${VIEW_SWITCHER_LABEL}"`);
+    expect(markup).toContain(VIEW_MODE_BOARD_LABEL);
+    expect(markup).toContain(VIEW_MODE_DECK_LABEL);
+    expect(markup).toContain('view-switcher__btn--active');
+  });
+
+  it('renders DeckView when initialViewMode is deck', () => {
+    const mockCard = {
+      activity: {
+        id: 'deck-card-1',
+        title: 'Central Heritage Walk',
+        title_en: 'Central Heritage Walk',
+        lang: 'en' as const,
+        url: 'https://example.com/walk',
+        tags: ['culture'],
+        parts: [{ start: '2026-10-10T09:00:00Z', end: '2026-10-10T11:00:00Z' }],
+        source: { name: 'Source' },
+        location: { district: 'Central & Western', venue: 'Statue Square' },
+      },
+      match_rationale: 'Matches heritage walk interest',
+    };
+
+    const markup = renderToStaticMarkup(<App cards={[mockCard]} initialTourOpen={false} initialViewMode="deck" />);
+
+    expect(markup).toContain('class="deck-view"');
+    expect(markup).toContain('Central Heritage Walk');
+    expect(markup).not.toContain('class="board board--mode-grab');
   });
 });
