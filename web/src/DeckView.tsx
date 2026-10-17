@@ -55,7 +55,7 @@ export type DeckViewProps = {
 };
 
 const SWIPE_THRESHOLD_PX = 70;
-const EXIT_DURATION_MS = 240;
+const EXIT_DURATION_MS = 220;
 
 export function DeckView({
   cards: propCards,
@@ -301,19 +301,19 @@ export function DeckView({
     activeCardStyle = {
       transform: 'translate3d(-120vw, 0, 0) rotate(-24deg) scale(0.95)',
       opacity: 0,
-      transition: 'transform var(--motion-base) var(--motion-ease), opacity var(--motion-base) var(--motion-ease)',
+      transition: 'transform var(--motion-slow) var(--motion-ease), opacity var(--motion-slow) var(--motion-ease)',
     };
   } else if (isExiting === 'right') {
     activeCardStyle = {
       transform: 'translate3d(120vw, 0, 0) rotate(24deg) scale(0.95)',
       opacity: 0,
-      transition: 'transform var(--motion-base) var(--motion-ease), opacity var(--motion-base) var(--motion-ease)',
+      transition: 'transform var(--motion-slow) var(--motion-ease), opacity var(--motion-slow) var(--motion-ease)',
     };
   } else if (isExiting === 'skip') {
     activeCardStyle = {
-      transform: 'translate3d(0, 50px, 0) scale(0.9)',
+      transform: 'translate3d(0, var(--space-8), 0) scale(0.9)',
       opacity: 0,
-      transition: 'transform var(--motion-base) var(--motion-ease), opacity var(--motion-base) var(--motion-ease)',
+      transition: 'transform var(--motion-slow) var(--motion-ease), opacity var(--motion-slow) var(--motion-ease)',
     };
   } else if (isDragging) {
     activeCardStyle = {
@@ -333,7 +333,7 @@ export function DeckView({
   if (isExiting) {
     nextCardStyle = {
       transform: 'scale(1) translateY(0)',
-      transition: 'transform var(--motion-base) var(--motion-ease)',
+      transition: 'transform var(--motion-slow) var(--motion-ease)',
     };
   } else if (isDragging) {
     nextCardStyle = {

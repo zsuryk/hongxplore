@@ -475,9 +475,9 @@
 }
 
 .deck-card__badge--guide {
-  background: var(--surface-pending);
-  border-color: var(--primary);
-  color: var(--primary);
+  background: var(--muted);
+  border-color: var(--divider);
+  color: var(--card-muted-foreground);
 }
 
 .deck-card__district {
@@ -539,15 +539,19 @@
 }
 
 .deck-card__rationale {
-  background: var(--accent-soft);
-  border-left: var(--control-inset) solid var(--accent);
-  border-radius: var(--radius-sm);
+  background: var(--muted);
+  border-radius: var(--radius-md);
   margin: 0;
   padding: var(--space-3);
+  transition: background-color var(--motion-fast) var(--motion-ease);
+}
+
+.deck-card__rationale:hover {
+  background: var(--muted-hover);
 }
 
 .deck-card__rationale-label {
-  color: var(--accent-strong);
+  color: var(--card-muted-foreground);
   display: block;
   font-size: var(--text-label);
   font-weight: var(--weight-semi);
