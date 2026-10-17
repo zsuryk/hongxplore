@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it } from 'vitest';
 import agentResponse from '../../docs/examples/agent-response.json';
 import { DeckView } from './DeckView';
+import { findRestoredCardIndex, isHorizontalSwipeGesture, resolveSwipeOutcome } from './deckPhysics';
 import type { components } from './api/schema';
 import { useBoardStore } from './state/boardStore';
 import {
@@ -127,5 +128,61 @@ describe('DeckView', () => {
     expect(markup).toContain('deck-discard-item');
     expect(markup).toContain(discardedCard.activity.title_en ?? discardedCard.activity.title);
     expect(markup).toContain(DECK_DISCARD_RESTORE_TOOLTIP);
+  });
+
+  describe('gesture physics and threshold logic', () => {
+    it('resolves flick past negative threshold as discard', () => {
+      expect(resolveSwipeOutcome(-75, null)).toEqual({ type: 'discard' });
+      expect(resolveSwipeOutcome(-120, null)).toEqual({ type: 'discard' });
+    });
+
+    it('resolves discard drop target as discard regardless of horizontal distance', () => {
+      expect(resolveSwipeOutcome(10, 'discard')).toEqual({ type: 'discard' });
+      expect(resolveSwipeOutcome(-20, 'discard')).toEqual({ type: 'discard' });
+    });
+
+    it('resolves flick past positive threshold as quick-dock', () => {
+      expect(resolveSwipeOutcome(75, null)).toEqual({ type: 'quick-dock' });
+      expect(resolveSwipeOutcome(160, null)).toEqual({ type: 'quick-dock' });
+    });
+
+    it('resolves hovered timeslot target as dock to specific slot', () => {
+      expect(resolveSwipeOutcome(15, 'saturday-afternoon')).toEqual({
+        type: 'dock',
+        slotId: 'saturday-afternoon',
+      });
+      expect(resolveSwipeOutcome(-10, 'sunday-morning')).toEqual({
+        type: 'dock',
+        slotId: 'sunday-morning',
+      });
+    });
+
+    it('cancels drag when displacement is sub-threshold and no target hovered', () => {
+      expect(resolveSwipeOutcome(40, null)).toEqual({ type: 'cancel' });
+      expect(resolveSwipeOutcome(-50, null)).toEqual({ type: 'cancel' });
+      expect(resolveSwipeOutcome(0, null)).toEqual({ type: 'cancel' });
+    });
+
+    it('distinguishes horizontal swipe gestures from vertical scroll intent', () => {
+      // Clear horizontal swipe
+      expect(isHorizontalSwipeGesture(45, 5)).toBe(true);
+      expect(isHorizontalSwipeGesture(-60, 10)).toBe(true);
+
+      // Dominant vertical scroll
+      expect(isHorizontalSwipeGesture(5, 45)).toBe(false);
+      expect(isHorizontalSwipeGesture(-10, 60)).toBe(false);
+
+      // Jitter / deadzone
+      expect(isHorizontalSwipeGesture(4, 2)).toBe(false);
+      expect(isHorizontalSwipeGesture(0, 0)).toBe(false);
+    });
+
+    it('identifies the exact index of restored card in unassigned stack', () => {
+      const cards = response.matches.slice(0, 4);
+      const targetId = cards[2].activity.id;
+
+      expect(findRestoredCardIndex(cards, targetId)).toBe(2);
+      expect(findRestoredCardIndex(cards, 'non-existent-id')).toBe(0);
+    });
   });
 });

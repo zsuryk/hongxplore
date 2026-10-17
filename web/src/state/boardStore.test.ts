@@ -398,6 +398,10 @@ describe('board store search retrieval and error handling', () => {
       const undone = useBoardStore.getState().undoLastAction();
       expect(undone).toBe(true);
       expect(useBoardStore.getState().timelineSlots[0].activityId).toBeNull();
+      // Card is still preserved in cards list and ready to be displayed as unassigned
+      expect(useBoardStore.getState().cards.some((c) => c.activity.id === card.activity.id)).toBe(true);
+      const isStillDocked = useBoardStore.getState().timelineSlots.some((s) => s.activityId === card.activity.id);
+      expect(isStillDocked).toBe(false);
     });
 
     it('restores replaced card when undoing a replacing dock action', () => {

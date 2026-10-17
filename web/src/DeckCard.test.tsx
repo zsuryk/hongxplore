@@ -69,4 +69,9 @@ describe('DeckCard', () => {
     expect(markup).toContain('opacity:0.8');
     expect(markup).toContain('Discard');
   });
+
+  it('renders ghost class when isGhost prop is true', () => {
+    const markup = renderToStaticMarkup(<DeckCard isGhost match={response.matches[0]} />);
+    expect(markup).toContain('deck-card--ghost');
+  });
 });

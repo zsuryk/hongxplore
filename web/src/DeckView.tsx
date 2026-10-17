@@ -59,9 +59,14 @@ export type DeckViewProps = {
   onSwitchToBoard?: () => void;
 };
 
-const SWIPE_THRESHOLD_PX = 70;
-const EXIT_DURATION_MS = 220; // Aligns with --motion-slow (220ms)
-const SETTLE_DURATION_MS = 220; // Aligns with --motion-slow (220ms)
+import {
+  EXIT_DURATION_MS,
+  SETTLE_DURATION_MS,
+  SWIPE_THRESHOLD_PX,
+  findRestoredCardIndex,
+  isHorizontalSwipeGesture,
+  resolveSwipeOutcome,
+} from './deckPhysics';
 
 export function DeckView({
   cards: propCards,
@@ -97,7 +102,13 @@ export function DeckView({
   } | null>(null);
 
   const animationTimersRef = useRef<{ initialTick?: number; settleComplete?: number }>({});
-  const dragStartRef = useRef<{ x: number; y: number; pointerId: number } | null>(null);
+  const dragStartRef = useRef<{
+    x: number;
+    y: number;
+    pointerId: number;
+    hasCaptured: boolean;
+    isBodyTouch: boolean;
+  } | null>(null);
   const discardSidebarRef = useRef<HTMLElement | null>(null);
   const discardQueueRef = useRef<HTMLDivElement | null>(null);
   const timelineSidebarRef = useRef<HTMLElement | null>(null);
@@ -200,7 +211,13 @@ export function DeckView({
       if (isExiting || enteringCard) return;
       const restored = restoreSingleDiscardedCard(activityId);
       if (restored) {
-        setCardIndex(0);
+        const store = useBoardStore.getState();
+        const dockedIds = new Set(
+          store.timelineSlots.map((s) => s.activityId).filter((id): id is string => Boolean(id)),
+        );
+        const updatedUnassigned = store.cards.filter((c) => !dockedIds.has(c.activity.id));
+        const targetIndex = findRestoredCardIndex(updatedUnassigned, activityId);
+        setCardIndex(targetIndex);
         scheduleEnteringCard(activityId, 'left');
       }
     },
@@ -252,17 +269,21 @@ export function DeckView({
       typeof window.matchMedia === 'function' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    if (prefersReducedMotion) {
-      undoLastAction();
-      setCardIndex(0);
-      return;
-    }
-
     const restoredId = lastAction.type === 'discard' ? lastAction.card.activity.id : lastAction.activityId;
     const direction: 'left' | 'right' = lastAction.type === 'discard' ? 'left' : 'right';
 
     undoLastAction();
-    setCardIndex(0);
+
+    const store = useBoardStore.getState();
+    const dockedIds = new Set(store.timelineSlots.map((s) => s.activityId).filter((id): id is string => Boolean(id)));
+    const updatedUnassigned = store.cards.filter((c) => !dockedIds.has(c.activity.id));
+    const targetIndex = findRestoredCardIndex(updatedUnassigned, restoredId);
+    setCardIndex(targetIndex);
+
+    if (prefersReducedMotion) {
+      return;
+    }
+
     scheduleEnteringCard(restoredId, direction);
   }, [enteringCard, isExiting, scheduleEnteringCard, undoLastAction, undoStack]);
 
@@ -272,29 +293,55 @@ export function DeckView({
     const target = event.target as HTMLElement;
     if (target.closest('button') || target.closest('a') || target.closest('input')) return;
 
-    event.preventDefault();
-    event.stopPropagation();
+    const isBodyTouch = Boolean(target.closest('.deck-card__body'));
 
     dragStartRef.current = {
       x: event.clientX,
       y: event.clientY,
       pointerId: event.pointerId,
+      hasCaptured: false,
+      isBodyTouch,
     };
 
-    try {
-      event.currentTarget.setPointerCapture(event.pointerId);
-    } catch {
-      // Ignored in test runners or unsupported environments
+    // Outside the scrollable body (e.g. card header, cover wrap, footer padding), capture immediately.
+    // Inside the body, defer capture until horizontal swipe threshold is passed so vertical scroll is preserved!
+    if (!isBodyTouch) {
+      try {
+        event.currentTarget.setPointerCapture(event.pointerId);
+        dragStartRef.current.hasCaptured = true;
+      } catch {
+        // Ignored in test runners or unsupported environments
+      }
+      setDragOffset({ x: 0, y: 0 });
+      setHoveredDropTarget(null);
     }
-
-    setDragOffset({ x: 0, y: 0 });
-    setHoveredDropTarget(null);
   };
 
   const handlePointerMove = (event: PointerEvent<HTMLElement>) => {
-    if (!dragStartRef.current || dragStartRef.current.pointerId !== event.pointerId || isExiting) return;
-    const deltaX = event.clientX - dragStartRef.current.x;
-    const deltaY = event.clientY - dragStartRef.current.y;
+    const drag = dragStartRef.current;
+    if (!drag || drag.pointerId !== event.pointerId || isExiting) return;
+    const deltaX = event.clientX - drag.x;
+    const deltaY = event.clientY - drag.y;
+
+    if (!drag.hasCaptured) {
+      if (isHorizontalSwipeGesture(deltaX, deltaY, 10)) {
+        try {
+          event.currentTarget.setPointerCapture(event.pointerId);
+          drag.hasCaptured = true;
+        } catch {
+          // Ignored in test runners
+        }
+      } else if (Math.abs(deltaY) > 12) {
+        // Vertical scroll intent detected inside card body: cancel swipe tracking so native scroll occurs
+        dragStartRef.current = null;
+        setDragOffset(null);
+        setHoveredDropTarget(null);
+        return;
+      } else {
+        return;
+      }
+    }
+
     setDragOffset({ x: deltaX, y: deltaY });
 
     // Robust bounding rect hit testing for sidebars & timeslots
@@ -328,16 +375,24 @@ export function DeckView({
   };
 
   const handlePointerUp = (event: PointerEvent<HTMLElement>) => {
-    if (!dragStartRef.current || dragStartRef.current.pointerId !== event.pointerId || isExiting) return;
-    const deltaX = event.clientX - dragStartRef.current.x;
+    const drag = dragStartRef.current;
+    if (!drag || drag.pointerId !== event.pointerId || isExiting) return;
+    const deltaX = event.clientX - drag.x;
     const target = hoveredDropTarget;
     dragStartRef.current = null;
 
-    if (target === 'discard' || deltaX < -SWIPE_THRESHOLD_PX) {
+    if (!drag.hasCaptured && Math.abs(deltaX) < SWIPE_THRESHOLD_PX && !target) {
+      setDragOffset(null);
+      setHoveredDropTarget(null);
+      return;
+    }
+
+    const outcome = resolveSwipeOutcome(deltaX, target, SWIPE_THRESHOLD_PX);
+    if (outcome.type === 'discard') {
       handleDiscard();
-    } else if (target && target !== 'discard') {
-      handleDockSlot(target);
-    } else if (deltaX > SWIPE_THRESHOLD_PX) {
+    } else if (outcome.type === 'dock') {
+      handleDockSlot(outcome.slotId);
+    } else if (outcome.type === 'quick-dock') {
       handleQuickDock();
     } else {
       setDragOffset(null);
@@ -416,8 +471,8 @@ export function DeckView({
           enteringCard.direction === 'skip'
             ? 'translate3d(0, var(--space-4), 0) scale(0.95)'
             : enteringCard.direction === 'left'
-              ? 'translate3d(-32rem, 0, 0) scale(0.35) rotate(-10deg)'
-              : 'translate3d(32rem, 0, 0) scale(0.35) rotate(10deg)',
+              ? 'translate3d(-80%, 0, 0) scale(0.92) rotate(-8deg)'
+              : 'translate3d(80%, 0, 0) scale(0.92) rotate(8deg)',
         opacity: 0,
         transition: 'none',
       };
@@ -430,19 +485,19 @@ export function DeckView({
     }
   } else if (isExiting === 'left') {
     activeCardStyle = {
-      transform: 'translate3d(-32rem, 0, 0) scale(0.35) rotate(-10deg)',
+      transform: 'translate3d(-120%, 0, 0) rotate(-14deg)',
       opacity: 0,
       transition: 'transform var(--motion-slow) var(--motion-ease), opacity var(--motion-slow) var(--motion-ease)',
     };
   } else if (isExiting === 'right') {
     activeCardStyle = {
-      transform: 'translate3d(32rem, 0, 0) scale(0.35) rotate(10deg)',
+      transform: 'translate3d(120%, 0, 0) rotate(14deg)',
       opacity: 0,
       transition: 'transform var(--motion-slow) var(--motion-ease), opacity var(--motion-slow) var(--motion-ease)',
     };
   } else if (isExiting === 'skip') {
     activeCardStyle = {
-      transform: 'translate3d(0, var(--space-8), 0) scale(0.9)',
+      transform: 'translate3d(0, var(--space-8), 0) scale(0.92)',
       opacity: 0,
       transition: 'transform var(--motion-slow) var(--motion-ease), opacity var(--motion-slow) var(--motion-ease)',
     };
@@ -465,27 +520,32 @@ export function DeckView({
   if (enteringCard && enteringCard.stage === 'initial') {
     nextCardStyle = {
       transform: 'scale(1) translateY(0)',
+      opacity: 1,
       transition: 'none',
     };
   } else if (enteringCard && enteringCard.stage === 'settling') {
     nextCardStyle = {
       transform: 'scale(0.96) translateY(var(--space-2))',
-      transition: 'transform var(--motion-slow) var(--motion-ease)',
+      opacity: 0.72,
+      transition: 'transform var(--motion-slow) var(--motion-ease), opacity var(--motion-slow) var(--motion-ease)',
     };
   } else if (isExiting) {
     nextCardStyle = {
       transform: 'scale(1) translateY(0)',
-      transition: 'transform var(--motion-slow) var(--motion-ease)',
+      opacity: 1,
+      transition: 'transform var(--motion-slow) var(--motion-ease), opacity var(--motion-slow) var(--motion-ease)',
     };
   } else if (isDragging) {
     nextCardStyle = {
       transform: `scale(${0.96 + dragProgress * 0.04}) translateY(calc(var(--space-2) * ${1 - dragProgress}))`,
+      opacity: 0.72 + dragProgress * 0.28,
       transition: 'none',
     };
   } else {
     nextCardStyle = {
       transform: 'scale(0.96) translateY(var(--space-2))',
-      transition: 'transform var(--motion-slow) var(--motion-ease)',
+      opacity: 0.72,
+      transition: 'transform var(--motion-slow) var(--motion-ease), opacity var(--motion-slow) var(--motion-ease)',
     };
   }
 
@@ -504,9 +564,6 @@ export function DeckView({
           hoveredDropTarget === 'discard' || swipeDirection === 'left' ? ' deck-sidebar--active' : ''
         }`}
         data-drop-zone="discard"
-        onClick={() => {
-          if (activeCard) handleDiscard();
-        }}
         ref={discardSidebarRef}
       >
         <div className="deck-sidebar__header">
@@ -521,7 +578,20 @@ export function DeckView({
 
         {discardedCards.length > 0 ? (
           <>
-            <div className="deck-drop-target deck-drop-target--discard deck-drop-target--compact">
+            <div
+              className="deck-drop-target deck-drop-target--discard deck-drop-target--compact"
+              onClick={() => {
+                if (activeCard) handleDiscard();
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  if (activeCard) handleDiscard();
+                }
+              }}
+              role="button"
+              tabIndex={0}
+            >
               <IconClear className="deck-drop-target__icon" />
               <p className="deck-drop-target__label">{DECK_DISCARD_DROP_HINT}</p>
             </div>
@@ -575,7 +645,20 @@ export function DeckView({
             </div>
           </>
         ) : (
-          <div className="deck-drop-target deck-drop-target--discard">
+          <div
+            className="deck-drop-target deck-drop-target--discard"
+            onClick={() => {
+              if (activeCard) handleDiscard();
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                if (activeCard) handleDiscard();
+              }
+            }}
+            role="button"
+            tabIndex={0}
+          >
             <IconClear className="deck-drop-target__icon" />
             <p className="deck-drop-target__label">{DECK_DISCARD_DROP_HINT}</p>
           </div>
@@ -592,7 +675,7 @@ export function DeckView({
             </div>
 
             <div className="deck-stack">
-              {nextCard && isExiting !== 'skip' && enteringCard?.direction !== 'skip' ? (
+              {nextCard ? (
                 <div className="deck-stack__item deck-stack__item--next">
                   <DeckCard isGhost match={nextCard} style={nextCardStyle} />
                 </div>

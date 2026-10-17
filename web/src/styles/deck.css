@@ -101,7 +101,6 @@
 }
 
 .deck-sidebar--discard {
-  cursor: pointer;
 }
 
 .deck-sidebar--active {
@@ -173,6 +172,7 @@
   background: var(--muted);
   border: 1px dashed var(--rule);
   border-radius: var(--radius-md);
+  cursor: pointer;
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -534,7 +534,7 @@
   cursor: grabbing;
 }
 
-/* Next card waiting beneath active card (two-card depth, full crispness) */
+/* Next card waiting beneath active card (two-card depth) */
 .deck-stack__item--next {
   pointer-events: none;
   transform-origin: 50% 90%;
@@ -542,8 +542,11 @@
   z-index: 2;
 }
 
-.deck-stack__item--next .deck-card {
-  opacity: 1;
+.deck-card--ghost {
+  box-shadow: var(--shadow-contact);
+  filter: brightness(0.96);
+  opacity: 0.72;
+  pointer-events: none;
 }
 
 /* ---- Deck Card Component ---- */
@@ -562,7 +565,6 @@
   max-height: calc(100vh - 13.5rem);
   min-height: 0;
   overflow: hidden;
-  touch-action: none;
   transition:
     border-color var(--motion-fast) var(--motion-ease),
     box-shadow var(--motion-fast) var(--motion-ease),
@@ -573,10 +575,18 @@
   width: 100%;
 }
 
-.deck-card * {
+.deck-card__header,
+.deck-card__cover-wrap,
+.deck-card__footer {
   user-select: none;
   -webkit-user-drag: none;
   -webkit-user-select: none;
+}
+
+.deck-card__body {
+  touch-action: pan-y;
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 .deck-card--swiping-left {
@@ -620,7 +630,7 @@
   color: var(--destructive);
   right: var(--space-6);
   top: var(--space-6);
-  transform: rotate(14deg);
+  transform: rotate(-10deg);
 }
 
 .deck-card__stamp--dock {
@@ -629,7 +639,7 @@
   color: var(--accent);
   left: var(--space-6);
   top: var(--space-6);
-  transform: rotate(-14deg);
+  transform: rotate(10deg);
 }
 
 .deck-card__stamp--skip {
@@ -1063,15 +1073,26 @@
     padding: var(--space-3) var(--space-2) var(--space-8);
   }
 
-  .deck-sidebar {
+  .deck-center {
+    order: 1;
     height: auto;
     max-height: none;
     width: 100%;
   }
 
-  .deck-center {
+  .deck-sidebar--timeline {
+    order: 2;
     height: auto;
     max-height: none;
+    margin-top: var(--space-4);
+    width: 100%;
+  }
+
+  .deck-sidebar--discard {
+    order: 3;
+    height: auto;
+    max-height: none;
+    margin-top: var(--space-4);
     width: 100%;
   }
 
