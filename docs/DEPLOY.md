@@ -225,6 +225,7 @@ missing from it. This is the full runtime surface, grouped by what it governs:
 | Group | Variables |
 | --- | --- |
 | **Demo / deploy** | `DEMO_MODE`, `AGENT_ACCESS_KEYS`, `WEB_DIST_DIR` |
+| **Public surface** | `RATE_LIMIT_ENABLED`, `RATE_LIMIT_REQUESTS`, `RATE_LIMIT_WINDOW_SECONDS`, `RATE_LIMIT_TRUST_FORWARDED_FOR`, `MAX_REQUEST_BYTES`, `AGENT_MAX_QUERY_CHARS`, `AGENT_MAX_FREE_SLOTS`, `CORS_ALLOWED_ORIGINS`, `CORS_PREFLIGHT_MAX_AGE_SECONDS` |
 | **LLM provider pool** | `LLM_POOL_SIZE`, `LLM_POOL_FAILOVER_ENABLED`, `LLM_POOL_TIMEOUT_SECONDS`, `LLM_POOL_MAX_RETRIES`, `LLM_PROVIDER_<n>_BASE_URL` / `_MODEL` / `_API_KEY` |
 | **LLM endpoint** | `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `OPENAI_MODEL`, `OPENAI_TIMEOUT_SECONDS`, `OPENAI_MAX_RETRIES` |
 | **Search** | `TAVILY_API_KEY`, `TAVILY_CACHE_TTL_SECONDS`, `TAVILY_TIMEOUT_SECONDS`, `TAVILY_MAX_RESULTS`, `TAVILY_MIN_CURATED_RESULTS`, `TAVILY_EXTRACT_WITH_LLM`, `SEARCH_CACHE_PATH` |
@@ -248,6 +249,43 @@ secret rather than a credential worth that ceremony, so an env var is fine.
 To go back to the safe demo-only state, redeploy the original flag set. That is
 the point of keeping it: it is one command, and it works even if every provider
 is down.
+
+---
+
+## The public surface
+
+`POST /api/agent` is unauthenticated by design — a judge opens one link and the
+demo must work — so the endpoint spends money on request. Four guards stand in
+front of the providers, and they are configuration (issue #88):
+
+| Guard | Setting | Default | What it stops |
+| --- | --- | --- | --- |
+| Rate limit, per client | `RATE_LIMIT_REQUESTS` / `RATE_LIMIT_WINDOW_SECONDS` | 60 / 60s | A script burning the quota. Served and refused responses both carry `X-RateLimit-Limit`, `X-RateLimit-Remaining` and `X-RateLimit-Reset`; a 429 adds `Retry-After`. |
+| Request body cap | `MAX_REQUEST_BYTES` | 16 KiB | A large body. Checked against `Content-Length` before the body is read, so the rejection is a header parse and a 413. |
+| Query and slot caps | `AGENT_MAX_QUERY_CHARS` / `AGENT_MAX_FREE_SLOTS` | 500 / 12 | Prompt tokens and per-slot filtering cost, in a body small enough to pass the cap above. A 422. |
+| CORS allowlist | `CORS_ALLOWED_ORIGINS` | the Vite dev origin | Any other page in a browser driving this deployment. Explicit origins only; a wildcard is a startup error. |
+
+Three of those are worth stating precisely, because a guard that oversells itself
+is worse than one that admits its edges:
+
+- **The rate limit is per process, per client address.** It is in memory, so the
+  real ceiling is the limit times `--max-instances`. The client address comes from
+  the leftmost `X-Forwarded-For` entry, which a caller can forge — treat this as a
+  cost cap and a courtesy, not as authentication.
+- **Blank `CORS_ALLOWED_ORIGINS` allows nothing.** That is the correct setting for
+  the single-URL deployment above: no cross-origin request exists to allow. Local
+  development wants `http://localhost:5173`, which is the shipped default.
+- **`/health` is outside all of it.** The keep-warm ping every five minutes would
+  otherwise spend the same budget the judges' queries need.
+
+Keys are redacted from every log line, from every error body and from the agent
+log the web app renders — the agent access key and every provider key. Upstream
+failures answer with friendly copy; the real error stays server-side, because an
+operator mid-pitch needs it. A wrong access key gets exactly the same answer as
+no key, so the refusal cannot be used to guess the key.
+
+Issue #89 is where this becomes the operator-facing version: the pitch-day
+checklist, the troubleshooting table and the full security note.
 
 ---
 
@@ -346,6 +384,9 @@ point.
 | JSON `404` where HTML was expected on `/api/*` | Correct behaviour | The SPA fallback deliberately never answers for `/api/*` — this is the bug the fallback guards against |
 | First request is slow | Scaled to zero | Check the keep-warm job ran; see above |
 | Live mode always refuses | No agent access key configured, or the instance is `DEMO_MODE=true` | A `DEMO_MODE=true` instance refuses live regardless of key — that is intentional |
+| Search answers "give it a few seconds" | `RATE_LIMIT_REQUESTS` reached for that client address | Wait for `Retry-After`, or raise `RATE_LIMIT_REQUESTS`. Every visitor behind one NAT shares a bucket when `RATE_LIMIT_TRUST_FORWARDED_FOR=true` sees the same address |
+| "That request is bigger than this demo can take" | Body over `MAX_REQUEST_BYTES` | Nothing to fix in normal use; a client bug or a bulk paste. Raise the cap if it is genuinely too low |
+| Browser console shows a CORS error | Origin is not in `CORS_ALLOWED_ORIGINS` | Same-origin (the deployed URL) needs no allowance. For a client on another origin, add exactly that origin and restart the service |
 | Bill appeared out of nowhere | Usage past the free allowance | 2M requests / 180k vCPU-s / 360k GiB-s per billing account, per month. Check the Cloud Run pricing page for current figures |
 | Build fails on `uv.lock` | `uv` version drift | `ARG UV_VERSION` in the `Dockerfile` must match the uv that produced the lockfile |
 | Build fails with "the --mount option requires BuildKit" | A BuildKit-only instruction crept into the `Dockerfile` | `--source .` builds with `gcr.io/cloud-builders/docker`, which does not enable BuildKit. CI pins `DOCKER_BUILDKIT=0` to catch this — if CI is green and the deploy is not, this is why |

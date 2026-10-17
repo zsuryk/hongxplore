@@ -7,12 +7,14 @@ Chinese bilingual support, and error resilience.
 from __future__ import annotations
 
 import json
+import logging
 from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
 
 from app.config import Settings
+from app.hardening import UPSTREAM_FAILURE_MESSAGE
 from app.models import Activity, AgentRequest, FreeSlot
 from app.services.agent import AgentOrchestrator
 from app.services.agent.orchestrator import _parse_intent_offline
@@ -236,7 +238,12 @@ async def test_mocked_live_path_with_llm_and_search() -> None:
 
 @pytest.mark.anyio
 async def test_error_handling_returns_error_status() -> None:
-    """Assert unexpected failure sets status='error' with error message and log."""
+    """An unexpected failure answers with friendly copy and keeps the detail server-side.
+
+    Issue #88 moved the upstream message out of the response: it used to carry a
+    base URL, a model name and whatever else the provider library felt like
+    echoing back, into a browser and into Cloud Run's request log.
+    """
 
     class FailingSearch(SearchProvider):
         async def search(self, query: str, *, limit: int = 10) -> list[Activity]:
@@ -252,7 +259,29 @@ async def test_error_handling_returns_error_status() -> None:
     response = await orchestrator.run(request)
 
     assert response.status == "error"
-    assert response.error is not None
-    assert "Upstream search provider down" in response.error
+    assert response.error == UPSTREAM_FAILURE_MESSAGE
+    assert "Upstream search provider down" not in response.error
     assert len(response.matches) == 0
-    assert any("failed" in entry.message.lower() for entry in response.log)
+    assert any(entry.message == UPSTREAM_FAILURE_MESSAGE for entry in response.log)
+
+
+@pytest.mark.anyio
+async def test_the_failure_detail_is_logged_for_the_operator(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Swallowing the detail helps nobody three hours before a pitch."""
+
+    class FailingSearch(SearchProvider):
+        async def search(self, query: str, *, limit: int = 10) -> list[Activity]:
+            raise RuntimeError("Upstream search provider down")
+
+    orchestrator = AgentOrchestrator(
+        search_provider=FailingSearch(),
+        settings=Settings(demo_mode=False, openai_api_key="mock-key"),
+    )
+
+    with caplog.at_level(logging.WARNING):
+        await orchestrator.run(AgentRequest(query="fail test", mode="live"))
+
+    assert "Agent pipeline failed" in caplog.text
+    assert "Upstream search provider down" in caplog.text

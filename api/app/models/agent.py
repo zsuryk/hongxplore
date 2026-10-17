@@ -17,7 +17,26 @@ providers and is gated by an agent access key.
 """
 
 AccessDeniedReason = Literal["missing_key", "invalid_key", "demo_only_instance"]
-"""Why a live request was refused — never which key was tried."""
+"""Why a live request was refused — never which key was tried.
+
+`invalid_key` is also the answer for a request that arrived with no key at all.
+Telling those two apart would be an oracle for guessing the key one character at
+a time, and nothing on the server side needs the distinction: the browser knows
+whether *it* sent a key, so the UI can give the better guidance of the two
+without the server disclosing anything (issue #88).
+"""
+
+RequestRejectedReason = Literal[
+    "rate_limited",
+    "request_too_large",
+    "query_too_long",
+    "too_many_free_slots",
+]
+"""Why a request was refused before it could cost anything.
+
+Every one of these is a policy decision on the request itself, which is why they
+are distinct from `AccessDeniedReason`: no key was involved in any of them.
+"""
 
 
 class MatchedActivity(ContractModel):
@@ -70,6 +89,19 @@ class AgentAccessError(ContractModel):
     """
 
     reason: AccessDeniedReason
+    message: str
+
+
+class AgentRequestRejected(ContractModel):
+    """Why a request was refused before it reached the providers (issue #88).
+
+    Same shape as `AgentAccessError` on purpose: the web app reads one envelope
+    for every refusal, so a rate limit or an oversized body reads as a sentence a
+    person can act on rather than a raw status code. `reason` is the machine
+    signal; `message` is the server's own fallback copy.
+    """
+
+    reason: RequestRejectedReason
     message: str
 
 

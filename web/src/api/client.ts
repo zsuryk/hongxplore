@@ -1,6 +1,6 @@
 import seedActivitiesData from '../../../data/activities.json';
 import fixtureResponse from '../../../docs/examples/agent-response.json';
-import { INITIAL_ACTIVITY_QUERY } from '../copy';
+import { AGENT_REQUEST_REJECTED_COPY, INITIAL_ACTIVITY_QUERY } from '../copy';
 import type { components } from './schema';
 
 type Schema = components['schemas'];
@@ -12,6 +12,7 @@ export type MatchedActivity = Schema['MatchedActivity'];
 /** Which world the caller is asking about. `live` is gated by an agent access key. */
 export type AgentMode = Schema['AgentRequest']['mode'];
 export type AccessDeniedReason = Schema['AgentAccessError']['reason'];
+export type RequestRejectedReason = Schema['AgentRequestRejected']['reason'];
 
 export type AgentClient = {
   requestAgent(request: AgentRequest): Promise<AgentResponse>;
@@ -58,6 +59,31 @@ export class AgentAccessDeniedError extends Error {
     super(message ?? `Live mode refused: ${reason}`);
     this.name = 'AgentAccessDeniedError';
     this.reason = reason;
+  }
+}
+
+/**
+ * The server refused the request itself rather than the mode it asked for —
+ * too many requests, a body over the cap, a query too long.
+ *
+ * A distinct error from `AgentAccessDeniedError` because the way out is the
+ * opposite: an access refusal is fixed by pasting the right key, whereas a
+ * rejected request is fixed by waiting or by asking for less. Folding the two
+ * together would show "paste the key from the pitch deck" to someone who pasted
+ * it correctly thirty seconds ago.
+ *
+ * `retryAfterSeconds` is the server's own `Retry-After`, carried so the UI can
+ * say when rather than only that it has to wait.
+ */
+export class AgentRequestRejectedError extends Error {
+  readonly reason: RequestRejectedReason;
+  readonly retryAfterSeconds: number | undefined;
+
+  constructor(reason: RequestRejectedReason, message?: string, retryAfterSeconds?: number) {
+    super(message ?? `Request refused: ${reason}`);
+    this.name = 'AgentRequestRejectedError';
+    this.reason = reason;
+    this.retryAfterSeconds = retryAfterSeconds;
   }
 }
 
@@ -199,12 +225,49 @@ export function createAgentClient(options: AgentClientOptions = {}, fetchImpleme
       }
 
       if (!response.ok) {
-        throw new Error(`Agent request failed with status ${response.status}`);
+        // Every refusal from issue #88 — rate limited, oversized, caps — arrives in
+        // the same envelope the gate uses, so one reader covers them all.
+        throw await rejectedFrom(response);
       }
 
       return (await response.json()) as AgentResponse;
     },
   };
+}
+
+/** Read the server's `AgentRequestRejected` detail, tolerating a body that lacks it. */
+async function rejectedFrom(response: Response): Promise<Error> {
+  const fallback = `Agent request refused with status ${response.status}`;
+  const { reason, message } = await readDetail(response);
+  const sentence = typeof message === 'string' && message.trim() ? message : fallback;
+
+  // The copy table is the registry of reasons this client knows, so adding one is
+  // a single edit rather than a change in two files that must agree.
+  if (typeof reason !== 'string' || !(reason in AGENT_REQUEST_REJECTED_COPY)) {
+    // An unknown reason keeps the server's own sentence rather than being dropped:
+    // this client may be older than the server it is talking to. The status goes in
+    // too, because an unrecognised reason is by definition unexplained.
+    return new Error(`${fallback}: ${sentence}`);
+  }
+
+  const retryAfter = Number(response.headers?.get?.('retry-after'));
+  return new AgentRequestRejectedError(
+    reason as RequestRejectedReason,
+    sentence,
+    Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter : undefined,
+  );
+}
+
+/** The `{detail: {...}}` both refusals arrive in, or empty parts if the body is not that. */
+async function readDetail(response: Response): Promise<{ reason?: unknown; message?: unknown }> {
+  let body: unknown;
+  try {
+    body = await response.json();
+  } catch {
+    return {};
+  }
+  const detail = (body as { detail?: { reason?: unknown; message?: unknown } }).detail;
+  return detail ?? {};
 }
 
 /** Read the server's `AgentAccessError` detail, tolerating a body that lacks it. */
@@ -216,16 +279,7 @@ async function accessDeniedFrom(response: Response): Promise<AgentAccessDeniedEr
   const fallbackReason: AccessDeniedReason = response.status === 401 ? 'missing_key' : 'invalid_key';
   const fallback = `Agent request refused with status ${response.status}`;
 
-  let body: unknown;
-  try {
-    body = await response.json();
-  } catch {
-    return new AgentAccessDeniedError(fallbackReason, fallback);
-  }
-
-  const detail = (body as { detail?: { reason?: unknown; message?: unknown } }).detail;
-  const reason = detail?.reason;
-  const message = detail?.message;
+  const { reason, message } = await readDetail(response);
 
   if (typeof reason !== 'string' || !isAccessDeniedReason(reason)) {
     return new AgentAccessDeniedError(fallbackReason, typeof message === 'string' ? message : fallback);

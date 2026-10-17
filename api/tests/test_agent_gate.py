@@ -11,6 +11,7 @@ from collections.abc import Iterator
 
 import pytest
 from fastapi.testclient import TestClient
+from httpx import Response
 
 from app.config import Settings
 from app.main import app
@@ -47,13 +48,13 @@ def reason_of(response: object) -> str:
 # --- a live request must prove it is allowed to have one ------------------------
 
 
-def test_live_request_without_a_key_is_rejected_as_missing(client: TestClient) -> None:
+def test_live_request_without_a_key_is_refused(client: TestClient) -> None:
     serve(live_instance(PITCH_KEY))
 
     response = client.post("/api/agent", json={**QUERY, "mode": "live"})
 
-    assert response.status_code == 401
-    assert reason_of(response) == "missing_key"
+    assert response.status_code == 403
+    assert reason_of(response) == "invalid_key"
 
 
 def test_live_request_with_a_wrong_key_is_rejected_as_invalid(client: TestClient) -> None:
@@ -125,6 +126,38 @@ def test_a_request_that_asks_for_no_mode_defaults_to_demo(client: TestClient) ->
 
 
 # --- the key must never leak ---------------------------------------------------
+
+
+def refuse(client: TestClient, key: str | None) -> Response:
+    """A live attempt carrying `key`, or carrying nothing when it is `None`."""
+    return client.post(
+        "/api/agent",
+        json={**QUERY, "mode": "live", **({} if key is None else {"agent_access_key": key})},
+    )
+
+
+def test_a_refusal_is_identical_however_close_the_key_was(client: TestClient) -> None:
+    """The refusal must not be a key oracle.
+
+    Absent, wrong, and one-character-off used to differ in status code and in
+    prose, which is enough for someone to climb towards the key one character at
+    a time. Every wrong key now gets the same answer as no key at all.
+    """
+    serve(live_instance(PITCH_KEY))
+
+    attempts = [None, "", "not-the-key", PITCH_KEY[:-1], PITCH_KEY + "x"]
+    answers = {
+        (response.status_code, response.text)
+        for response in map(lambda k: refuse(client, k), attempts)
+    }
+
+    assert len(answers) == 1, "the refusal must not vary with the guess"
+
+
+def test_a_wrong_key_is_never_told_how_close_it_was(client: TestClient) -> None:
+    serve(live_instance(PITCH_KEY))
+
+    assert refuse(client, PITCH_KEY[:-1]).json() == refuse(client, "zzzzzzzz").json()
 
 
 def test_a_refused_live_request_never_echoes_the_key(client: TestClient) -> None:

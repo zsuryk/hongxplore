@@ -41,7 +41,8 @@ All three come from env via `api/app/config.py` (pydantic-settings). **Never har
 | --- | --- | --- |
 | `routes/` | FastAPI routers (`/health`, plus the `POST /api/agent` stub that #9 implements) | zsuryk |
 | `models/` | Pydantic models — `Activity` is the future single source of truth for the API contract | zsuryk |
-| `config.py` | pydantic-settings: `OPENAI_*`, `TAVILY_*`, `DEMO_MODE`, cross-cutting policy (retries, timeouts, logging) | zsuryk |
+| `config.py` | pydantic-settings: `OPENAI_*`, `TAVILY_*`, `DEMO_MODE`, cross-cutting policy (retries, timeouts, logging, public-surface limits) | zsuryk |
+| `hardening/` | The public-surface guards on the deployed URL — rate limiting, request caps, secret redaction, CORS policy, refusal copy (ADR-0011, issue #88). Every limit is a `config.py` key, never a constant in a route | zsuryk |
 | `services/` | Search, LLM, ranking, normalisation — behind `ports.py` Protocol interfaces | kORNkin |
 | `prompts/` | Prompt templates (intent parsing, match rationale) | kORNkin |
 | `tests/` | Backend tests (pytest) — zsuryk's, **except** `tests/prompts/` and `tests/services/`, which follow the module they cover and are kORNkin's | zsuryk (`prompts/`, `services/` subdirs: kORNkin) |

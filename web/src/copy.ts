@@ -273,6 +273,40 @@ export function isAgentAccessDenied(error: unknown): error is Error & {
   );
 }
 
+/** Why the server refused the request itself. Mirrors `RequestRejectedReason` in the API contract. */
+export type AgentRequestRejectedReason =
+  'rate_limited' | 'request_too_large' | 'query_too_long' | 'too_many_free_slots';
+
+/**
+ * Copy per rejection reason.
+ *
+ * The way out differs per reason and that is the whole point of keeping them
+ * apart: a rate limit clears on its own, an oversized request needs a shorter
+ * one. A single "request failed" sentence would send someone to the wrong fix.
+ *
+ * No numbers, and no status codes — a status code reads as a bug report to
+ * someone who simply asked too fast.
+ */
+export const AGENT_REQUEST_REJECTED_COPY: Record<AgentRequestRejectedReason, string> = {
+  rate_limited: 'Easy there — that is a lot of questions at once. Give it a few seconds and ask again.',
+  request_too_large: 'That request is bigger than this demo can take. Try a shorter question with fewer time slots.',
+  query_too_long: 'That question is too long for this demo. Try something shorter and more specific.',
+  too_many_free_slots: 'That is more free time than this demo can plan. Try selecting fewer slots.',
+};
+
+/** True for a request refused on its own terms — never for a refused live mode. */
+export function isAgentRequestRejected(error: unknown): error is Error & {
+  reason: AgentRequestRejectedReason;
+  retryAfterSeconds?: number;
+} {
+  return (
+    error instanceof Error &&
+    'reason' in error &&
+    typeof (error as { reason?: unknown }).reason === 'string' &&
+    (error as { reason: string }).reason in AGENT_REQUEST_REJECTED_COPY
+  );
+}
+
 /**
  * How an agent request failed.
  *
@@ -281,10 +315,11 @@ export function isAgentAccessDenied(error: unknown): error is Error & {
  * Downgrading a *refusal* to seed data is how a judge ends up looking at demo
  * results believing they are live ones — the exact failure the gate prevents.
  */
-export type AgentErrorKind = 'access_denied' | 'bad_gateway' | 'server_unreachable' | 'unknown';
+export type AgentErrorKind = 'access_denied' | 'request_rejected' | 'bad_gateway' | 'server_unreachable' | 'unknown';
 
 export function classifyAgentError(error: unknown): AgentErrorKind {
   if (isAgentAccessDenied(error)) return 'access_denied';
+  if (isAgentRequestRejected(error)) return 'request_rejected';
   if (!(error instanceof Error)) return 'unknown';
   if (error.message.includes('502')) return 'bad_gateway';
   if (
@@ -305,6 +340,11 @@ export function isServerUnreachable(error: unknown): boolean {
 export function formatAgentErrorMessage(error: unknown): string {
   if (isAgentAccessDenied(error)) {
     return AGENT_ACCESS_DENIED_COPY[error.reason];
+  }
+  // The client's own copy wins over the server's message, for the same reason as
+  // above: these sentences are the ones written for someone reading a screen.
+  if (isAgentRequestRejected(error)) {
+    return AGENT_REQUEST_REJECTED_COPY[error.reason];
   }
   switch (classifyAgentError(error)) {
     case 'bad_gateway':

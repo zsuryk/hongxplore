@@ -17,7 +17,9 @@ export interface paths {
          *
          *     Cloud Run calls this unauthenticated on every instance start, so it must
          *     stay cheap and must describe nothing about the deployment — no version,
-         *     no config, no build id.
+         *     no config, no build id. It is also the keep-warm ping's target, which is
+         *     why it must not spend the agent endpoint's rate limit: the ping every five
+         *     minutes would otherwise evict the judge's own queries.
          */
         get: operations["health_health_get"];
         put?: never;
@@ -38,12 +40,18 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Find activities, in demo or live mode (issue #83 gates live).
+         * Find activities, in demo or live mode (issue #83 gates live, #88 guards it).
          * @description Parse intent → search (or seed in demo mode) → rank → match rationale → respond.
          *
          *     `mode="demo"` is always served from the bundled seed data and needs no key.
          *     `mode="live"` is refused unless it carries a valid agent access key, and is
          *     refused unconditionally by an instance running with `DEMO_MODE=true`.
+         *
+         *     Two failures reach a client from here, and each has its own copy. A search
+         *     failure is one the route can explain (#85), so it keeps its mapped sentence.
+         *     Anything else carries whatever an exception library raised, so it is replaced
+         *     here — the detail stays in the server log, redacted but present, because an
+         *     operator mid-pitch needs it and a judge mid-pitch does not.
          */
         post: operations["agent_api_agent_post"];
         delete?: never;
@@ -202,6 +210,24 @@ export interface components {
              * @description Shared pitch key, required for `live` and ignored for `demo`. Verified server-side and never echoed back in any response or log.
              */
             agent_access_key?: string | null;
+        };
+        /**
+         * AgentRequestRejected
+         * @description Why a request was refused before it reached the providers (issue #88).
+         *
+         *     Same shape as `AgentAccessError` on purpose: the web app reads one envelope
+         *     for every refusal, so a rate limit or an oversized body reads as a sentence a
+         *     person can act on rather than a raw status code. `reason` is the machine
+         *     signal; `message` is the server's own fallback copy.
+         */
+        AgentRequestRejected: {
+            /**
+             * Reason
+             * @enum {string}
+             */
+            reason: "rate_limited" | "request_too_large" | "query_too_long" | "too_many_free_slots";
+            /** Message */
+            message: string;
         };
         /**
          * AgentResponse
@@ -386,8 +412,8 @@ export interface operations {
                     "application/json": components["schemas"]["AgentResponse"];
                 };
             };
-            /** @description A live request arrived without an agent access key. */
-            401: {
+            /** @description A live request arrived with no key, with an unrecognised one, or against an instance configured demo-only. The refusal is identical in all three cases, so it cannot be used to guess the key. */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -395,13 +421,13 @@ export interface operations {
                     "application/json": components["schemas"]["AgentAccessError"];
                 };
             };
-            /** @description A live request arrived with an unrecognised key, or against an instance configured demo-only. */
-            403: {
+            /** @description The request is bigger than this demo takes: a body over `MAX_REQUEST_BYTES`, a query over `AGENT_MAX_QUERY_CHARS`, or more free slots than `AGENT_MAX_FREE_SLOTS` allows. */
+            413: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["AgentAccessError"];
+                    "application/json": components["schemas"]["AgentRequestRejected"];
                 };
             };
             /** @description Validation Error */
@@ -411,6 +437,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description This client has spent its request budget for the current window. `Retry-After` says when it resets. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentRequestRejected"];
                 };
             };
         };

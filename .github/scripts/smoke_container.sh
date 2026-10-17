@@ -11,8 +11,8 @@
 #   demo  DEMO_MODE=true, no keys. The state the AC requires a deploy to be
 #         reachable in. Every live request is refused as `demo_only_instance`.
 #   live  DEMO_MODE=false with a known agent access key. The only configuration
-#         in which the 401/403 key distinction is observable at all — an instance
-#         running demo mode refuses on capability before it ever looks at a key.
+#         in which the key itself is checked at all — an instance running demo
+#         mode refuses on capability before it ever looks at a key.
 #
 # Usage: smoke_container.sh <demo|live>
 
@@ -44,6 +44,16 @@ refute() {
   fi
 }
 
+same() {
+  local name="$1" left="$2" right="$3"
+  if [[ "$left" == "$right" ]]; then
+    printf '  ok   %s\n' "$name"
+  else
+    printf '  FAIL %s\n    left:  %s\n    right: %s\n' "$name" "$left" "$right"
+    failures=$((failures + 1))
+  fi
+}
+
 status_of() {
   curl -s -o /dev/null -w '%{http_code}' -X POST "${BASE_URL}/api/agent" \
     -H 'content-type: application/json' -d "$1"
@@ -54,10 +64,18 @@ body_of() {
     -H 'content-type: application/json' -d "$1"
 }
 
+header_of() {
+  curl -s -D - -o /dev/null -X POST "${BASE_URL}/api/agent" \
+    -H 'content-type: application/json' -d "$1" | tr '[:upper:]' '[:lower:]'
+}
+
 post_demo='{"query":"free cultural activities in Central","mode":"demo"}'
 post_live_no_key='{"query":"hiking","mode":"live"}'
 post_live_wrong_key="{\"query\":\"hiking\",\"mode\":\"live\",\"agent_access_key\":\"wrong\"}"
 post_live_good_key="{\"query\":\"hiking\",\"mode\":\"live\",\"agent_access_key\":\"${PITCH_KEY}\"}"
+# One character short of the real key: the case that must be indistinguishable
+# from "no key at all" and from "wrong", or the refusal is a key oracle (ADR-0011).
+post_live_nearly_key="{\"query\":\"hiking\",\"mode\":\"live\",\"agent_access_key\":\"${PITCH_KEY%?}\"}"
 
 echo "== profile: ${PROFILE} =="
 
@@ -83,14 +101,21 @@ refute "/api/agent is not an error"   '"status":"error"' "$demo_body"
 echo "-- the gate --"
 
 if [[ "$PROFILE" == "live" ]]; then
-  check "live without a key is 401"        "401" "$(status_of "$post_live_no_key")"
-  check "live with a wrong key is 403"     "403" "$(status_of "$post_live_wrong_key")"
-  check "live with the right key is 200"   "200" "$(status_of "$post_live_good_key")"
-  check "  and the reason is typed" '"reason":"missing_key"' "$(body_of "$post_live_no_key")"
-  check "  and invalid keys say so" '"reason":"invalid_key"' "$(body_of "$post_live_wrong_key")"
+  no_key_body="$(body_of "$post_live_no_key")"
+  wrong_body="$(body_of "$post_live_wrong_key")"
+  nearly_body="$(body_of "$post_live_nearly_key")"
+
+  check "live without a key is refused"             "403" "$(status_of "$post_live_no_key")"
+  check "live with a wrong key is refused"          "403" "$(status_of "$post_live_wrong_key")"
+  check "live with a nearly-right key is refused"   "403" "$(status_of "$post_live_nearly_key")"
+  check "live with the right key is 200"           "200" "$(status_of "$post_live_good_key")"
+  check "  and the reason is typed" '"reason":"invalid_key"' "$no_key_body"
+  # The whole point of issue #88's key rule: no key, a wrong key and a key one
+  # character out must be the same answer, byte for byte.
+  same "a missing key and a wrong key are refused identically" "$no_key_body" "$wrong_body"
+  same "a wrong key and a nearly-right one are refused identically" "$wrong_body" "$nearly_body"
   # The refusal must never echo the key that was tried.
-  refuse_body="$(body_of "$post_live_wrong_key")"
-  refute "a refusal never echoes the key" "wrong" "$refuse_body"
+  refute "a refusal never echoes the key" "wrong" "$wrong_body"
 else
   # A demo-only instance refuses live on capability, before it looks at a key —
   # so the reason is demo_only_instance whether or not a key was supplied, and
@@ -103,6 +128,11 @@ else
 fi
 
 check "demo needs no key at all" "200" "$(status_of "$post_demo")"
+
+# Issue #88's other promise: a client can pace itself, because it is told its
+# budget. Only observable against the deployed shape, which is what this script is.
+check "a response publishes the rate-limit budget" "x-ratelimit-limit" \
+  "$(header_of "$post_demo")"
 
 echo "-- the web half, from the same origin --"
 

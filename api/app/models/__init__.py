@@ -22,10 +22,12 @@ from app.models.agent import (
     AgentLogEntry,
     AgentMode,
     AgentRequest,
+    AgentRequestRejected,
     AgentResponse,
     AgentStatus,
     LogLevel,
     MatchedActivity,
+    RequestRejectedReason,
 )
 from app.models.base import ContractModel, UtcDateTime
 
@@ -37,6 +39,7 @@ __all__ = [
     "AgentLogEntry",
     "AgentMode",
     "AgentRequest",
+    "AgentRequestRejected",
     "AgentResponse",
     "AgentStatus",
     "ContractModel",
@@ -46,6 +49,7 @@ __all__ = [
     "Location",
     "MatchedActivity",
     "Price",
+    "RequestRejectedReason",
     "Source",
     "TimeRange",
     "UtcDateTime",

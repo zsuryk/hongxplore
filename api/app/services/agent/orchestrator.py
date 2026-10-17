@@ -16,6 +16,7 @@ from zoneinfo import ZoneInfo
 
 from app.config import Settings
 from app.config import settings as app_settings
+from app.hardening import UPSTREAM_FAILURE_MESSAGE
 from app.models import (
     Activity,
     AgentLogEntry,
@@ -505,7 +506,11 @@ class AgentOrchestrator:
                         AgentLogEntry(
                             ts=datetime.now(UTC),
                             level="warn",
-                            message=f"Live intent parsing unavailable: {exc}",
+                            # The exception text stays in the log line above, never
+                            # here: this entry is rendered in the status panel, and an
+                            # upstream client library puts a base URL, a model name and
+                            # occasionally a key in its message (issue #88).
+                            message="Live intent parsing unavailable — using the offline parser.",
                         )
                     )
                     parsed_intent = _parse_intent_offline(request.query, request.free_slots)
@@ -609,11 +614,14 @@ class AgentOrchestrator:
             exc.partial_log = log  # type: ignore[attr-defined]
             raise
         except Exception as exc:
+            # Server-side detail for the operator, redacted by the log filter; the
+            # response gets the one sentence a person can act on (issue #88).
+            logger.warning("Agent pipeline failed: %s", exc)
             log.append(
                 AgentLogEntry(
                     ts=datetime.now(UTC),
                     level="error",
-                    message=f"Agent pipeline failed: {exc}",
+                    message=UPSTREAM_FAILURE_MESSAGE,
                 )
             )
             return AgentResponse(
@@ -621,5 +629,5 @@ class AgentOrchestrator:
                 query=request.query,
                 matches=[],
                 log=log,
-                error=str(exc),
+                error=UPSTREAM_FAILURE_MESSAGE,
             )
