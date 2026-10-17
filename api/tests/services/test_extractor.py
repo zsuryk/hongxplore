@@ -267,6 +267,58 @@ def test_deterministic_extract_missing_image_defaults_to_none() -> None:
     assert activities[0].image is None
 
 
+def test_deterministic_extract_with_root_images() -> None:
+    """Snippet lacking individual image falls back to preserved root_images."""
+    raw_snippets = [
+        {
+            "title": "Kowloon Park Indoor Pool",
+            "url": "https://www.lcsd.gov.hk/facility/kowloon-park",
+            "content": "Public pool in TST",
+            "root_images": [
+                "https://upload.wikimedia.org/wikipedia/commons/1/11/kowloon_park.jpg",
+                "https://upload.wikimedia.org/wikipedia/commons/2/22/tst_park.jpg",
+            ],
+        },
+        {
+            "title": "Sun Yat Sen Memorial Pool",
+            "url": "https://www.lcsd.gov.hk/facility/sun-yat-sen",
+            "content": "Public pool in Sai Ying Pun",
+            "root_images": [
+                "https://upload.wikimedia.org/wikipedia/commons/1/11/kowloon_park.jpg",
+                "https://upload.wikimedia.org/wikipedia/commons/2/22/tst_park.jpg",
+            ],
+        },
+    ]
+
+    activities = deterministic_extract(raw_snippets)
+    assert len(activities) == 2
+    assert (
+        str(activities[0].image)
+        == "https://upload.wikimedia.org/wikipedia/commons/1/11/kowloon_park.jpg"
+    )
+    assert (
+        str(activities[1].image)
+        == "https://upload.wikimedia.org/wikipedia/commons/2/22/tst_park.jpg"
+    )
+
+
+def test_deterministic_extract_prefers_snippet_image_over_root_images() -> None:
+    """Snippet with its own image retains it instead of overwriting from root_images."""
+    raw_snippets = [
+        {
+            "title": "Tai Kwun Prison Cell Tour",
+            "url": "https://www.taikwun.hk/prison-cell-tour",
+            "content": "Heritage walk in Central",
+            "image": "https://www.taikwun.hk/media/cell.jpg",
+            "root_images": ["https://upload.wikimedia.org/wikipedia/commons/d/dc/other_root.jpg"],
+        }
+    ]
+
+    activities = deterministic_extract(raw_snippets)
+    assert len(activities) == 1
+    assert str(activities[0].image) == "https://www.taikwun.hk/media/cell.jpg"
+
+
 @pytest.mark.anyio
 async def test_llm_extraction_populates_image_from_snippet_or_llm() -> None:
     raw_snippets = [

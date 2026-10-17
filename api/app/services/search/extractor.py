@@ -211,8 +211,15 @@ def _resolve_source_name(domain: str) -> str:
     return clean.replace("-", " ").replace(".", " ").title()
 
 
-def _extract_valid_image_url(item: dict[str, Any]) -> HttpUrl | None:
+def _extract_valid_image_url(
+    item: dict[str, Any] | None,
+    fallback_images: list[Any] | None = None,
+    item_index: int = 0,
+) -> HttpUrl | None:
     """Extract and validate the first valid HTTP/HTTPS image URL from a search snippet or item."""
+    if not item:
+        item = {}
+
     candidates: list[Any] = []
     raw_images = item.get("images")
     if isinstance(raw_images, list):
@@ -220,6 +227,17 @@ def _extract_valid_image_url(item: dict[str, Any]) -> HttpUrl | None:
     raw_image = item.get("image")
     if raw_image is not None:
         candidates.append(raw_image)
+
+    # Check snippet-level root_images preserved from Tavily payload
+    root_images = item.get("root_images")
+    if isinstance(root_images, list) and root_images:
+        candidates.append(root_images[item_index % len(root_images)])
+        candidates.extend(root_images)
+
+    # Check caller-level fallback_images
+    if fallback_images:
+        candidates.append(fallback_images[item_index % len(fallback_images)])
+        candidates.extend(fallback_images)
 
     for candidate in candidates:
         if not candidate:
@@ -250,6 +268,7 @@ def deterministic_extract(
     raw_results: list[dict[str, Any]],
     *,
     default_district: str | None = None,
+    root_images: list[Any] | None = None,
 ) -> list[Activity]:
     """Deterministic, rule-based extraction from search snippets without LLM calls."""
     activities: list[Activity] = []
@@ -281,7 +300,11 @@ def deterministic_extract(
 
             norm_url = normalize_url(url_str)
             stable_id = f"tavily-{hashlib.sha256(norm_url.encode()).hexdigest()[:12]}"
-            extracted_image = _extract_valid_image_url(item)
+            extracted_image = _extract_valid_image_url(
+                item,
+                fallback_images=root_images,
+                item_index=idx,
+            )
 
             act = Activity(
                 id=stable_id,
@@ -339,6 +362,7 @@ async def extract_activities_from_snippets(
     llm_client: LLMClient | None = None,
     default_district: str | None = None,
     max_items: int = 10,
+    root_images: list[Any] | None = None,
 ) -> list[Activity]:
     """Extract Activity models from raw Tavily search snippets.
 
@@ -378,7 +402,7 @@ async def extract_activities_from_snippets(
             extracted_activities: list[Activity] = []
             seen_llm_urls: set[str] = set()
 
-            for item in parsed_items:
+            for idx, item in enumerate(parsed_items):
                 raw_item_url = str(item.get("url") or "").strip()
                 norm_item_url = normalize_url(raw_item_url)
                 # B10: Validate that the URL comes from real search results
@@ -414,8 +438,24 @@ async def extract_activities_from_snippets(
 
                 # Enforce valid image: prioritize verified snippet image from Tavily search
                 raw_snippet = valid_url_map.get(norm_item_url)
-                snippet_img = _extract_valid_image_url(raw_snippet) if raw_snippet else None
-                llm_img = _extract_valid_image_url(item) if item.get("image") else None
+                snippet_img = (
+                    _extract_valid_image_url(
+                        raw_snippet,
+                        fallback_images=root_images,
+                        item_index=idx,
+                    )
+                    if raw_snippet
+                    else None
+                )
+                llm_img = (
+                    _extract_valid_image_url(
+                        item,
+                        fallback_images=root_images,
+                        item_index=idx,
+                    )
+                    if item.get("image")
+                    else None
+                )
                 resolved_img = snippet_img or llm_img
                 item["image"] = str(resolved_img) if resolved_img else None
 
@@ -434,7 +474,9 @@ async def extract_activities_from_snippets(
             ]
             if dropped_results:
                 fallback_acts = deterministic_extract(
-                    dropped_results, default_district=default_district
+                    dropped_results,
+                    default_district=default_district,
+                    root_images=root_images,
                 )
                 extracted_activities.extend(fallback_acts)
 
@@ -446,4 +488,8 @@ async def extract_activities_from_snippets(
             )
 
     # Fallback to deterministic extraction
-    return deterministic_extract(raw_results, default_district=default_district)
+    return deterministic_extract(
+        raw_results,
+        default_district=default_district,
+        root_images=root_images,
+    )
