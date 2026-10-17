@@ -34,6 +34,14 @@ export function ProductTour({ isOpen, onClose, initialStep = 0, onStepChange, st
   });
   const titleId = useId();
 
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
+    if (isOpen) {
+      setCurrentStepIndex(initialStep);
+    }
+  }
+
   useEffect(() => {
     if (!isOpen) return;
 

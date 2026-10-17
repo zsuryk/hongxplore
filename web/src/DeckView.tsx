@@ -508,7 +508,11 @@ export function DeckView({
         return;
       }
 
-      if (event.key === '?' && !isTourOpen) {
+      if (isTourOpen) {
+        return;
+      }
+
+      if (event.key === '?') {
         event.preventDefault();
         setIsTourOpen(true);
         return;
@@ -921,6 +925,17 @@ export function DeckView({
                   {DECK_EMPTY_SEARCH_CTA}
                 </button>
               ) : null}
+
+              <button
+                aria-label={DECK_HELP_LABEL}
+                className="btn btn--subtle deck-view__help-btn"
+                onClick={() => setIsTourOpen(true)}
+                title={DECK_TOUR_REOPEN_TOOLTIP}
+                type="button"
+              >
+                <IconHelp className="deck-view__help-icon" />
+                <span>{DECK_HELP_LABEL}</span>
+              </button>
             </div>
           </section>
         )}

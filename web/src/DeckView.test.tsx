@@ -115,6 +115,7 @@ describe('DeckView', () => {
     expect(markup).toContain(DECK_EMPTY_TITLE);
     expect(markup).toContain(DECK_EMPTY_VIEW_PLAN_CTA);
     expect(markup).toContain(DECK_EMPTY_RESTORE_CTA);
+    expect(markup).toContain(DECK_HELP_LABEL);
     expect(markup).toContain(DECK_DISCARD_PANEL_TITLE);
     expect(markup).toContain(DECK_TIMELINE_PANEL_TITLE);
   });

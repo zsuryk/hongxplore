@@ -664,8 +664,43 @@
 }
 
 .deck-tour-cue__arrow {
+  display: inline-block;
   font-size: var(--text-label);
   font-weight: var(--weight-bold);
+  will-change: transform;
+}
+
+.deck-tour-cue--discard .deck-tour-cue__arrow {
+  animation: deck-cue-nudge-left 1.2s var(--motion-ease) infinite alternate;
+}
+
+.deck-tour-cue--schedule .deck-tour-cue__arrow {
+  animation: deck-cue-nudge-right 1.2s var(--motion-ease) infinite alternate;
+}
+
+@keyframes deck-cue-nudge-left {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(calc(-1 * var(--space-1)));
+  }
+}
+
+@keyframes deck-cue-nudge-right {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(var(--space-1));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deck-tour-cue--discard .deck-tour-cue__arrow,
+  .deck-tour-cue--schedule .deck-tour-cue__arrow {
+    animation: none;
+  }
 }
 
 /* ---- Card Stack Container ---- */
