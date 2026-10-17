@@ -21,6 +21,7 @@ import {
   DECK_EMPTY_SEARCH_CTA,
   DECK_EMPTY_TITLE,
   DECK_EMPTY_VIEW_PLAN_CTA,
+  DECK_HELP_LABEL,
   DECK_KEY_LEFT,
   DECK_KEY_RIGHT,
   DECK_KEY_SPACE,
@@ -36,6 +37,8 @@ import {
   DECK_SLOT_PICKER_HINT,
   DECK_SLOT_PICKER_TITLE,
   DECK_TIMELINE_PANEL_TITLE,
+  DECK_TOUR_REOPEN_TOOLTIP,
+  DECK_TOUR_STORAGE_KEY,
   DECK_UNDO_LABEL,
   DECK_UNDO_TOOLTIP,
   TIMELINE_SLOTS,
@@ -46,8 +49,10 @@ import {
   deckSlotPickerChipLabel,
   deckStackCount,
 } from './copy';
-import { IconCheck, IconClear, IconClose, IconDeckView, IconSkip, IconUndo } from './icons';
+import { IconCheck, IconClear, IconClose, IconDeckView, IconHelp, IconSkip, IconUndo } from './icons';
 import { useBoardStore } from './state/boardStore';
+import { ProductTour } from './ProductTour';
+import { DECK_TOUR_STEPS } from './tourSteps';
 
 type MatchedActivity = components['schemas']['MatchedActivity'];
 
@@ -60,6 +65,7 @@ export type DeckViewProps = {
   onFindSimilar?: (match: MatchedActivity) => void;
   onSearchFocus?: () => void;
   onSwitchToBoard?: () => void;
+  initialTourOpen?: boolean;
 };
 
 import {
@@ -80,6 +86,7 @@ export function DeckView({
   onFindSimilar,
   onSearchFocus,
   onSwitchToBoard,
+  initialTourOpen,
 }: DeckViewProps) {
   const storeCards = useBoardStore((state) => state.cards);
   const cards = propCards ?? storeCards;
@@ -100,6 +107,25 @@ export function DeckView({
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
   const [hoveredDropTarget, setHoveredDropTarget] = useState<string | null>(null);
   const [isSlotPickerOpen, setIsSlotPickerOpen] = useState(false);
+  const [isTourOpen, setIsTourOpen] = useState(() => {
+    if (initialTourOpen !== undefined) {
+      return initialTourOpen;
+    }
+    try {
+      return localStorage.getItem(DECK_TOUR_STORAGE_KEY) !== 'true' && cards.length > 0;
+    } catch {
+      return cards.length > 0;
+    }
+  });
+
+  const handleCloseTour = useCallback(() => {
+    setIsTourOpen(false);
+    try {
+      localStorage.setItem(DECK_TOUR_STORAGE_KEY, 'true');
+    } catch {
+      // Ignored in test runners or restricted storage environments
+    }
+  }, []);
   const [isExiting, setIsExiting] = useState<'left' | 'right' | 'skip' | null>(null);
   const [justDockedSlotId, setJustDockedSlotId] = useState<string | null>(null);
   const [justDiscarded, setJustDiscarded] = useState(false);
@@ -482,6 +508,12 @@ export function DeckView({
         return;
       }
 
+      if (event.key === '?' && !isTourOpen) {
+        event.preventDefault();
+        setIsTourOpen(true);
+        return;
+      }
+
       if (event.key === 'ArrowLeft' || event.key === 'Backspace') {
         event.preventDefault();
         handleDiscard();
@@ -499,7 +531,7 @@ export function DeckView({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleDiscard, handleQuickDock, handleSkip, handleUndo, isSlotPickerOpen]);
+  }, [handleDiscard, handleQuickDock, handleSkip, handleUndo, isSlotPickerOpen, isTourOpen]);
 
   // Dynamic animations & styles
   const isDragging = dragOffset !== null;
@@ -635,6 +667,7 @@ export function DeckView({
           hoveredDropTarget === 'discard' || swipeDirection === 'left' ? ' deck-sidebar--active' : ''
         }${justDiscarded ? ' deck-sidebar--discard-landing' : ''}`}
         data-drop-zone="discard"
+        data-tour-anchor="deck-discard"
         ref={discardSidebarRef}
       >
         <div className="deck-sidebar__header">
@@ -741,8 +774,20 @@ export function DeckView({
         {activeCard ? (
           <>
             <div className="deck-view__status-bar">
-              <span>{deckStackCount(activeCardIndex + 1, unassignedCards.length)}</span>
-              <span>{deckCardsRemaining(unassignedCards.length)}</span>
+              <div className="deck-view__status-counts">
+                <span>{deckStackCount(activeCardIndex + 1, unassignedCards.length)}</span>
+                <span>{deckCardsRemaining(unassignedCards.length)}</span>
+              </div>
+              <button
+                aria-label={DECK_HELP_LABEL}
+                className="btn btn--subtle btn--sm deck-view__help-btn"
+                onClick={() => setIsTourOpen(true)}
+                title={DECK_TOUR_REOPEN_TOOLTIP}
+                type="button"
+              >
+                <IconHelp className="deck-view__help-icon" />
+                <span>{DECK_HELP_LABEL}</span>
+              </button>
             </div>
 
             <div className="deck-stack">
@@ -754,6 +799,7 @@ export function DeckView({
 
               <div
                 className="deck-stack__item deck-stack__item--active"
+                data-tour-anchor="deck-card"
                 key={activeCard.activity.id}
                 onPointerCancel={handlePointerCancel}
                 onPointerDown={handlePointerDown}
@@ -795,7 +841,7 @@ export function DeckView({
             ) : null}
 
             {/* Redesigned Action Controls Bar */}
-            <div className="deck-controls" role="toolbar">
+            <div className="deck-controls" data-tour-anchor="deck-controls" role="toolbar">
               <button
                 aria-label={DECK_DISCARD_LABEL}
                 className="deck-action-btn deck-action-btn--discard"
@@ -884,6 +930,7 @@ export function DeckView({
       <aside
         aria-label={DECK_TIMELINE_PANEL_TITLE}
         className="deck-sidebar deck-sidebar--timeline"
+        data-tour-anchor="deck-timeline"
         ref={timelineSidebarRef}
       >
         <div className="deck-sidebar__header">
@@ -982,6 +1029,8 @@ export function DeckView({
           })}
         </div>
       </aside>
+
+      <ProductTour isOpen={isTourOpen} onClose={handleCloseTour} steps={DECK_TOUR_STEPS} />
     </main>
   );
 }

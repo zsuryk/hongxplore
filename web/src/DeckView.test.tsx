@@ -27,6 +27,7 @@ import {
   DECK_EMPTY_SEARCH_CTA,
   DECK_EMPTY_TITLE,
   DECK_EMPTY_VIEW_PLAN_CTA,
+  DECK_HELP_LABEL,
   DECK_KEY_LEFT,
   DECK_KEY_RIGHT,
   DECK_KEY_SPACE,
@@ -64,15 +65,25 @@ describe('DeckView', () => {
     expect(markup).toContain(DECK_DISCARD_PANEL_TITLE);
     expect(markup).toContain(DECK_DISCARD_DROP_HINT);
     expect(markup).toContain('data-drop-zone="discard"');
+    expect(markup).toContain('data-tour-anchor="deck-discard"');
 
     // Right sidebar (Weekend schedule)
     expect(markup).toContain(DECK_TIMELINE_PANEL_TITLE);
     expect(markup).toContain('data-drop-zone="timeslot"');
+    expect(markup).toContain('data-tour-anchor="deck-timeline"');
+
+    // Active Card Anchor
+    expect(markup).toContain('data-tour-anchor="deck-card"');
+
+    // Status bar help button
+    expect(markup).toContain(DECK_HELP_LABEL);
+    expect(markup).toContain('deck-view__help-btn');
 
     // Redesigned Action Controls
     expect(markup).toContain(DECK_DISCARD_LABEL);
     expect(markup).toContain(DECK_ACTION_DISCARD);
     expect(markup).toContain(DECK_KEY_LEFT);
+    expect(markup).toContain('data-tour-anchor="deck-controls"');
 
     expect(markup).toContain(DECK_UNDO_LABEL);
     expect(markup).toContain(DECK_ACTION_UNDO);
@@ -87,6 +98,15 @@ describe('DeckView', () => {
     expect(markup).toContain(DECK_KEY_RIGHT);
 
     expect(markup).toContain(DECK_DROP_HINT_BAR);
+  });
+
+  it('renders Deck mode spotlight walkthrough when initialTourOpen={true} is provided', () => {
+    const markup = renderToStaticMarkup(<DeckView cards={response.matches} initialTourOpen={true} />);
+
+    expect(markup).toContain('class="product-tour"');
+    expect(markup).toContain('Step 1 of 4');
+    expect(markup).toContain('Swipe or scroll the card');
+    expect(markup).toContain('deck-tour-cue');
   });
 
   it('renders empty completion state when all cards are triaged while retaining sidebar context', () => {

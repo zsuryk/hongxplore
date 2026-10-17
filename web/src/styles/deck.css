@@ -609,6 +609,65 @@
   width: 100%;
 }
 
+.deck-view__status-counts {
+  align-items: center;
+  display: flex;
+  gap: var(--space-3);
+}
+
+.deck-view__help-btn {
+  align-items: center;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  font-family: var(--font-sans);
+  font-size: var(--text-caption);
+  gap: var(--space-1);
+  height: var(--control-height-sm);
+  padding: 0 var(--space-2);
+}
+
+.deck-view__help-icon {
+  height: var(--icon-size);
+  width: var(--icon-size);
+}
+
+.deck-tour-cues {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  width: 100%;
+}
+
+.deck-tour-cue {
+  align-items: center;
+  background: var(--input);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  color: var(--foreground);
+  display: flex;
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  gap: var(--space-1);
+  justify-content: center;
+  padding: var(--space-2);
+}
+
+.deck-tour-cue--discard {
+  border-color: var(--destructive-border);
+  color: var(--destructive);
+}
+
+.deck-tour-cue--schedule {
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
+.deck-tour-cue__arrow {
+  font-size: var(--text-label);
+  font-weight: var(--weight-bold);
+}
+
 /* ---- Card Stack Container ---- */
 
 .deck-stack {

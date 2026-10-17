@@ -18,7 +18,7 @@ import {
   TOUR_TOOLBAR_TITLE,
 } from './copy';
 import { ProductTour } from './ProductTour';
-import { TOUR_STEPS } from './tourSteps';
+import { DECK_TOUR_STEPS, TOUR_STEPS } from './tourSteps';
 
 describe('ProductTour', () => {
   it('renders nothing when isOpen is false', () => {
@@ -87,6 +87,23 @@ describe('ProductTour', () => {
   it('contains five defined steps covering search, card, timeline, mode, and toolbar', () => {
     expect(TOUR_STEPS).toHaveLength(5);
     expect(TOUR_STEPS.map((s) => s.id)).toEqual(['search', 'card', 'timeline', 'mode', 'toolbar']);
+  });
+
+  it('contains four defined steps for deck mode covering card, discard, timeline, and controls', () => {
+    expect(DECK_TOUR_STEPS).toHaveLength(4);
+    expect(DECK_TOUR_STEPS.map((s) => s.id)).toEqual(['deck-card', 'deck-discard', 'deck-timeline', 'deck-controls']);
+  });
+
+  it('renders Deck mode tour when steps={DECK_TOUR_STEPS} is provided', () => {
+    const markup = renderToStaticMarkup(
+      <ProductTour isOpen={true} onClose={() => undefined} steps={DECK_TOUR_STEPS} />,
+    );
+
+    expect(markup).toContain('Step 1 of 4');
+    expect(markup).toContain('Swipe or scroll the card');
+    expect(markup).toContain('deck-tour-cue');
+    expect(markup).toContain('Swipe left to discard');
+    expect(markup).toContain('Swipe right to schedule');
   });
 
   it('positions correctly with fallback when running without DOM elements', () => {

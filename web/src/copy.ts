@@ -694,3 +694,21 @@ export function deckDiscardedCount(count: number): string {
 export function deckScheduledCount(count: number, total: number): string {
   return `${count} of ${total} slots scheduled`;
 }
+
+export const DECK_TOUR_STORAGE_KEY = 'hongxplore_deck_tour_completed';
+export const DECK_HELP_LABEL = 'Help and tour';
+export const DECK_TOUR_REOPEN_TOOLTIP = 'Learn how to use Deck mode (?)';
+export const DECK_TOUR_CARD_TITLE = 'Swipe or scroll the card';
+export const DECK_TOUR_CARD_BODY =
+  'Swipe left to discard, or swipe right to schedule into the weekend. Scroll down the card to see full details, venue location, schedule, and cover photo.';
+export const DECK_TOUR_DISCARD_TITLE = 'Discard queue & restore';
+export const DECK_TOUR_DISCARD_BODY =
+  'Activities you skip or discard appear here. You can restore any single activity or restore all of them at once with undo.';
+export const DECK_TOUR_TIMELINE_TITLE = 'Weekend timeslots';
+export const DECK_TOUR_TIMELINE_BODY =
+  'Timeslots highlight automatically when a card matches. Drag onto a slot or click to schedule. Occupied slots can be replaced, or discarded with the red timeslot button.';
+export const DECK_TOUR_CONTROLS_TITLE = 'Quick action bar & keys';
+export const DECK_TOUR_CONTROLS_BODY =
+  'Use the bottom toolbar buttons or rapid keyboard shortcuts: Left Arrow to discard, Right Arrow to schedule, Space to skip, and Z to undo.';
+export const DECK_TOUR_CUE_DISCARD = 'Swipe left to discard';
+export const DECK_TOUR_CUE_SCHEDULE = 'Swipe right to schedule';
