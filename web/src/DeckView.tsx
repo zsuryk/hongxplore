@@ -60,8 +60,8 @@ export type DeckViewProps = {
 };
 
 const SWIPE_THRESHOLD_PX = 70;
-const EXIT_DURATION_MS = 220;
-const SETTLE_DURATION_MS = 280;
+const EXIT_DURATION_MS = 220; // Aligns with --motion-slow (220ms)
+const SETTLE_DURATION_MS = 220; // Aligns with --motion-slow (220ms)
 
 export function DeckView({
   cards: propCards,
@@ -96,18 +96,40 @@ export function DeckView({
     stage: 'initial' | 'settling';
   } | null>(null);
 
-  const undoTimersRef = useRef<{ t1?: number; t2?: number }>({});
+  const animationTimersRef = useRef<{ initialTick?: number; settleComplete?: number }>({});
   const dragStartRef = useRef<{ x: number; y: number; pointerId: number } | null>(null);
   const discardSidebarRef = useRef<HTMLElement | null>(null);
   const discardQueueRef = useRef<HTMLDivElement | null>(null);
   const timelineSidebarRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    const timers = undoTimersRef.current;
+    const timers = animationTimersRef.current;
     return () => {
-      if (timers.t1) window.clearTimeout(timers.t1);
-      if (timers.t2) window.clearTimeout(timers.t2);
+      if (timers.initialTick) window.clearTimeout(timers.initialTick);
+      if (timers.settleComplete) window.clearTimeout(timers.settleComplete);
     };
+  }, []);
+
+  const scheduleEnteringCard = useCallback((id: string, direction: 'left' | 'right' | 'skip') => {
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (prefersReducedMotion) return;
+
+    if (animationTimersRef.current.initialTick) window.clearTimeout(animationTimersRef.current.initialTick);
+    if (animationTimersRef.current.settleComplete) window.clearTimeout(animationTimersRef.current.settleComplete);
+
+    setEnteringCard({ id, direction, stage: 'initial' });
+
+    animationTimersRef.current.initialTick = window.setTimeout(() => {
+      setEnteringCard({ id, direction, stage: 'settling' });
+    }, 20);
+
+    animationTimersRef.current.settleComplete = window.setTimeout(() => {
+      setEnteringCard(null);
+    }, SETTLE_DURATION_MS);
   }, []);
 
   useEffect(() => {
@@ -169,27 +191,9 @@ export function DeckView({
     const incomingCardId = nextCard.activity.id;
     triggerExit('skip', () => {
       setCardIndex((prev) => prev + 1);
-      const prefersReducedMotion =
-        typeof window !== 'undefined' &&
-        typeof window.matchMedia === 'function' &&
-        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-      if (prefersReducedMotion) return;
-
-      if (undoTimersRef.current.t1) window.clearTimeout(undoTimersRef.current.t1);
-      if (undoTimersRef.current.t2) window.clearTimeout(undoTimersRef.current.t2);
-
-      setEnteringCard({ id: incomingCardId, direction: 'skip', stage: 'initial' });
-
-      undoTimersRef.current.t1 = window.setTimeout(() => {
-        setEnteringCard({ id: incomingCardId, direction: 'skip', stage: 'settling' });
-      }, 20);
-
-      undoTimersRef.current.t2 = window.setTimeout(() => {
-        setEnteringCard(null);
-      }, SETTLE_DURATION_MS);
+      scheduleEnteringCard(incomingCardId, 'skip');
     });
-  }, [isExiting, nextCard, triggerExit, unassignedCards.length]);
+  }, [isExiting, nextCard, scheduleEnteringCard, triggerExit, unassignedCards.length]);
 
   const handleRestoreSingle = useCallback(
     (activityId: string) => {
@@ -197,28 +201,10 @@ export function DeckView({
       const restored = restoreSingleDiscardedCard(activityId);
       if (restored) {
         setCardIndex(0);
-        const prefersReducedMotion =
-          typeof window !== 'undefined' &&
-          typeof window.matchMedia === 'function' &&
-          window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-        if (prefersReducedMotion) return;
-
-        if (undoTimersRef.current.t1) window.clearTimeout(undoTimersRef.current.t1);
-        if (undoTimersRef.current.t2) window.clearTimeout(undoTimersRef.current.t2);
-
-        setEnteringCard({ id: activityId, direction: 'left', stage: 'initial' });
-
-        undoTimersRef.current.t1 = window.setTimeout(() => {
-          setEnteringCard({ id: activityId, direction: 'left', stage: 'settling' });
-        }, 20);
-
-        undoTimersRef.current.t2 = window.setTimeout(() => {
-          setEnteringCard(null);
-        }, SETTLE_DURATION_MS);
+        scheduleEnteringCard(activityId, 'left');
       }
     },
-    [enteringCard, isExiting, restoreSingleDiscardedCard],
+    [enteringCard, isExiting, restoreSingleDiscardedCard, scheduleEnteringCard],
   );
 
   const handleDockSlot = useCallback(
@@ -275,21 +261,10 @@ export function DeckView({
     const restoredId = lastAction.type === 'discard' ? lastAction.card.activity.id : lastAction.activityId;
     const direction: 'left' | 'right' = lastAction.type === 'discard' ? 'left' : 'right';
 
-    if (undoTimersRef.current.t1) window.clearTimeout(undoTimersRef.current.t1);
-    if (undoTimersRef.current.t2) window.clearTimeout(undoTimersRef.current.t2);
-
-    setEnteringCard({ id: restoredId, direction, stage: 'initial' });
     undoLastAction();
     setCardIndex(0);
-
-    undoTimersRef.current.t1 = window.setTimeout(() => {
-      setEnteringCard({ id: restoredId, direction, stage: 'settling' });
-    }, 20);
-
-    undoTimersRef.current.t2 = window.setTimeout(() => {
-      setEnteringCard(null);
-    }, SETTLE_DURATION_MS);
-  }, [enteringCard, isExiting, undoLastAction, undoStack]);
+    scheduleEnteringCard(restoredId, direction);
+  }, [enteringCard, isExiting, scheduleEnteringCard, undoLastAction, undoStack]);
 
   // Pointer swipe & drag gestures
   const handlePointerDown = (event: PointerEvent<HTMLElement>) => {
@@ -439,7 +414,7 @@ export function DeckView({
       activeCardStyle = {
         transform:
           enteringCard.direction === 'skip'
-            ? 'translate3d(0, 16px, 0) scale(0.95)'
+            ? 'translate3d(0, var(--space-4), 0) scale(0.95)'
             : enteringCard.direction === 'left'
               ? 'translate3d(-32rem, 0, 0) scale(0.35) rotate(-10deg)'
               : 'translate3d(32rem, 0, 0) scale(0.35) rotate(10deg)',
@@ -450,26 +425,26 @@ export function DeckView({
       activeCardStyle = {
         transform: 'translate3d(0, 0, 0) rotate(0deg) scale(1)',
         opacity: 1,
-        transition: 'transform 260ms cubic-bezier(0.16, 1, 0.3, 1), opacity 240ms var(--motion-ease)',
+        transition: 'transform var(--motion-slow) var(--motion-ease), opacity var(--motion-slow) var(--motion-ease)',
       };
     }
   } else if (isExiting === 'left') {
     activeCardStyle = {
       transform: 'translate3d(-32rem, 0, 0) scale(0.35) rotate(-10deg)',
       opacity: 0,
-      transition: 'transform 260ms cubic-bezier(0.32, 0, 0.67, 0), opacity 260ms cubic-bezier(0.32, 0, 0.67, 0)',
+      transition: 'transform var(--motion-slow) var(--motion-ease), opacity var(--motion-slow) var(--motion-ease)',
     };
   } else if (isExiting === 'right') {
     activeCardStyle = {
       transform: 'translate3d(32rem, 0, 0) scale(0.35) rotate(10deg)',
       opacity: 0,
-      transition: 'transform 260ms cubic-bezier(0.32, 0, 0.67, 0), opacity 260ms cubic-bezier(0.32, 0, 0.67, 0)',
+      transition: 'transform var(--motion-slow) var(--motion-ease), opacity var(--motion-slow) var(--motion-ease)',
     };
   } else if (isExiting === 'skip') {
     activeCardStyle = {
       transform: 'translate3d(0, var(--space-8), 0) scale(0.9)',
       opacity: 0,
-      transition: 'transform 200ms cubic-bezier(0.32, 0, 0.67, 0), opacity 200ms cubic-bezier(0.32, 0, 0.67, 0)',
+      transition: 'transform var(--motion-slow) var(--motion-ease), opacity var(--motion-slow) var(--motion-ease)',
     };
   } else if (isDragging) {
     activeCardStyle = {
@@ -481,7 +456,7 @@ export function DeckView({
   } else {
     activeCardStyle = {
       transform: 'translate3d(0, 0, 0) rotate(0deg) scale(1)',
-      transition: 'transform 280ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 280ms cubic-bezier(0.16, 1, 0.3, 1)',
+      transition: 'transform var(--motion-slow) var(--motion-ease), box-shadow var(--motion-slow) var(--motion-ease)',
     };
   }
 
@@ -495,22 +470,22 @@ export function DeckView({
   } else if (enteringCard && enteringCard.stage === 'settling') {
     nextCardStyle = {
       transform: 'scale(0.96) translateY(var(--space-2))',
-      transition: 'transform 280ms cubic-bezier(0.16, 1, 0.3, 1)',
+      transition: 'transform var(--motion-slow) var(--motion-ease)',
     };
   } else if (isExiting) {
     nextCardStyle = {
       transform: 'scale(1) translateY(0)',
-      transition: 'transform 220ms cubic-bezier(0.16, 1, 0.3, 1)',
+      transition: 'transform var(--motion-slow) var(--motion-ease)',
     };
   } else if (isDragging) {
     nextCardStyle = {
-      transform: `scale(${0.96 + dragProgress * 0.04}) translateY(${(1 - dragProgress) * 8}px)`,
+      transform: `scale(${0.96 + dragProgress * 0.04}) translateY(calc(var(--space-2) * ${1 - dragProgress}))`,
       transition: 'none',
     };
   } else {
     nextCardStyle = {
       transform: 'scale(0.96) translateY(var(--space-2))',
-      transition: 'transform 280ms cubic-bezier(0.16, 1, 0.3, 1)',
+      transition: 'transform var(--motion-slow) var(--motion-ease)',
     };
   }
 
@@ -617,7 +592,7 @@ export function DeckView({
             </div>
 
             <div className="deck-stack">
-              {nextCard && isExiting !== 'skip' ? (
+              {nextCard && isExiting !== 'skip' && enteringCard?.direction !== 'skip' ? (
                 <div className="deck-stack__item deck-stack__item--next">
                   <DeckCard isGhost match={nextCard} style={nextCardStyle} />
                 </div>

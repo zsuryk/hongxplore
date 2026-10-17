@@ -483,6 +483,15 @@ export function activityCardPriceLabel(
   return price.amount ? `${price.amount} ${price.currency}` : ACTIVITY_CARD_PRICE_UNKNOWN;
 }
 
+export const hktActivityDateTimeFormatter = new Intl.DateTimeFormat('en-HK', {
+  day: 'numeric',
+  hour: 'numeric',
+  minute: '2-digit',
+  month: 'short',
+  timeZone: 'Asia/Hong_Kong',
+  weekday: 'short',
+});
+
 const listedOnFormatter = new Intl.DateTimeFormat('en-HK', {
   day: '2-digit',
   month: 'short',

@@ -19,6 +19,7 @@ import {
   activityCardSerial,
   deckExternalLinkLabel,
   getActivityLanguageBadge,
+  hktActivityDateTimeFormatter,
 } from './copy';
 
 type MatchedActivity = components['schemas']['MatchedActivity'];
@@ -38,15 +39,6 @@ export type DeckCardProps = {
   stamp?: DeckCardStamp | null;
   isGhost?: boolean;
 };
-
-const hktDateFormatter = new Intl.DateTimeFormat('en-HK', {
-  day: 'numeric',
-  hour: 'numeric',
-  minute: '2-digit',
-  month: 'short',
-  timeZone: 'Asia/Hong_Kong',
-  weekday: 'short',
-});
 
 function isBookingGuide(tags: readonly string[]): boolean {
   return tags.some((t) => t === 'guide' || t === 'facility-booking' || t === 'booking');
@@ -156,7 +148,7 @@ export function DeckCard({
                 ? activity.parts
                     .map((p) => {
                       try {
-                        return hktDateFormatter.format(new Date(p.start));
+                        return hktActivityDateTimeFormatter.format(new Date(p.start));
                       } catch {
                         return p.start;
                       }

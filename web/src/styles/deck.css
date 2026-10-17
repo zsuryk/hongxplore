@@ -1083,21 +1083,3 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
-
-/* ---- Accessibility (prefers-reduced-motion) ---- */
-
-@media (prefers-reduced-motion: reduce) {
-  .deck-card,
-  .deck-card *,
-  .deck-stack__item,
-  .deck-stack__item--active,
-  .deck-stack__item--next,
-  .deck-sidebar,
-  .deck-action-btn,
-  .deck-slot-item,
-  .deck-card__stamp {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
