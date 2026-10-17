@@ -308,7 +308,7 @@ export function DeckView({
     const target = event.target as HTMLElement;
     if (target.closest('button') || target.closest('a') || target.closest('input')) return;
 
-    const isBodyTouch = Boolean(target.closest('.deck-card__body'));
+    const isBodyTouch = Boolean(target.closest('.deck-card__scrollable, .deck-card__body'));
 
     dragStartRef.current = {
       x: event.clientX,
@@ -318,8 +318,8 @@ export function DeckView({
       isBodyTouch,
     };
 
-    // Outside the scrollable body (e.g. card header, cover wrap, footer padding), capture immediately.
-    // Inside the body, defer capture until horizontal swipe threshold is passed so vertical scroll is preserved!
+    // Outside the scrollable container (e.g. card header, footer), capture immediately.
+    // Inside the scrollable container, defer capture until horizontal swipe threshold is passed so vertical scroll is preserved!
     if (!isBodyTouch) {
       try {
         event.currentTarget.setPointerCapture(event.pointerId);

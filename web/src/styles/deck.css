@@ -659,8 +659,16 @@
   -webkit-user-select: none;
 }
 
-.deck-card__body {
+.deck-card__scrollable {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
   touch-action: pan-y;
+}
+
+.deck-card__body {
   user-select: text;
   -webkit-user-select: text;
 }
@@ -782,16 +790,17 @@
   background: var(--input);
   border-bottom: 1px solid var(--rule);
   flex-shrink: 0;
-  max-height: 13rem;
+  max-height: 14rem;
   overflow: hidden;
   position: relative;
+  touch-action: pan-y;
   width: 100%;
 }
 
 .deck-card__cover {
   display: block;
   height: 100%;
-  max-height: 13rem;
+  max-height: 14rem;
   object-fit: cover;
   pointer-events: none;
   -webkit-user-drag: none;
@@ -800,11 +809,8 @@
 
 .deck-card__body {
   display: flex;
-  flex: 1;
   flex-direction: column;
   gap: var(--space-3);
-  min-height: 0;
-  overflow-y: auto;
   padding: var(--space-4);
 }
 

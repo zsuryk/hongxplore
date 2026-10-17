@@ -108,77 +108,80 @@ export function DeckCard({
         </span>
       </header>
 
-      {/* Cover Image (optional) */}
-      {showCover && activity.image ? (
-        <div className="deck-card__cover-wrap">
-          <img
-            alt=""
-            className="deck-card__cover"
-            draggable={false}
-            onError={() => setFailedImageUrl(activity.image ?? null)}
-            src={activity.image}
-          />
-        </div>
-      ) : null}
-
-      {/* Card Content Body */}
-      <div className="deck-card__body">
-        <div className="deck-card__titles">
-          <h2 className="deck-card__title">{title}</h2>
-          {hasTranslatedTitle ? <p className="deck-card__original-title">{activity.title}</p> : null}
-        </div>
-
-        {/* Match Rationale */}
-        <aside aria-label={DECK_MATCH_RATIONALE_LABEL} className="deck-card__rationale">
-          <span className="deck-card__rationale-label">{DECK_MATCH_RATIONALE_LABEL}</span>
-          <p className="deck-card__rationale-text">{matchRationale}</p>
-        </aside>
-
-        {/* Description */}
-        {activity.description_en || activity.description ? (
-          <p className="deck-card__description">{activity.description_en ?? activity.description}</p>
+      {/* Scrollable Container (Image + Body) */}
+      <div className="deck-card__scrollable">
+        {/* Cover Image (optional) */}
+        {showCover && activity.image ? (
+          <div className="deck-card__cover-wrap">
+            <img
+              alt=""
+              className="deck-card__cover"
+              draggable={false}
+              onError={() => setFailedImageUrl(activity.image ?? null)}
+              src={activity.image}
+            />
+          </div>
         ) : null}
 
-        {/* Detailed Info Grid */}
-        <dl className="deck-card__details">
-          <div className="deck-card__detail-row">
-            <dt className="deck-card__detail-label">{DECK_SCHEDULE_LABEL}</dt>
-            <dd className="deck-card__detail-value">
-              {activity.parts.length > 0
-                ? activity.parts
-                    .map((p) => {
-                      try {
-                        return hktActivityDateTimeFormatter.format(new Date(p.start));
-                      } catch {
-                        return p.start;
-                      }
-                    })
-                    .join(' · ')
-                : ACTIVITY_CARD_TIME_UNAVAILABLE}
-            </dd>
+        {/* Card Content Body */}
+        <div className="deck-card__body">
+          <div className="deck-card__titles">
+            <h2 className="deck-card__title">{title}</h2>
+            {hasTranslatedTitle ? <p className="deck-card__original-title">{activity.title}</p> : null}
           </div>
 
-          <div className="deck-card__detail-row">
-            <dt className="deck-card__detail-label">{DECK_LOCATION_LABEL}</dt>
-            <dd className="deck-card__detail-value">{locationText}</dd>
-          </div>
+          {/* Match Rationale */}
+          <aside aria-label={DECK_MATCH_RATIONALE_LABEL} className="deck-card__rationale">
+            <span className="deck-card__rationale-label">{DECK_MATCH_RATIONALE_LABEL}</span>
+            <p className="deck-card__rationale-text">{matchRationale}</p>
+          </aside>
 
-          <div className="deck-card__detail-row">
-            <dt className="deck-card__detail-label">{DECK_PRICE_LABEL}</dt>
-            <dd className="deck-card__detail-value">{priceText}</dd>
-          </div>
-        </dl>
+          {/* Description */}
+          {activity.description_en || activity.description ? (
+            <p className="deck-card__description">{activity.description_en ?? activity.description}</p>
+          ) : null}
 
-        {/* Tags */}
-        {activity.tags.length > 0 ? (
-          <ul aria-label={TAGS_LABEL} className="deck-card__tags">
-            {activity.tags.map((tag) => (
-              <li className="deck-card__tag" key={tag}>
-                #{tag}
-              </li>
-            ))}
-          </ul>
-        ) : null}
+          {/* Detailed Info Grid */}
+          <dl className="deck-card__details">
+            <div className="deck-card__detail-row">
+              <dt className="deck-card__detail-label">{DECK_SCHEDULE_LABEL}</dt>
+              <dd className="deck-card__detail-value">
+                {activity.parts.length > 0
+                  ? activity.parts
+                      .map((p) => {
+                        try {
+                          return hktActivityDateTimeFormatter.format(new Date(p.start));
+                        } catch {
+                          return p.start;
+                        }
+                      })
+                      .join(' · ')
+                  : ACTIVITY_CARD_TIME_UNAVAILABLE}
+              </dd>
+            </div>
+
+            <div className="deck-card__detail-row">
+              <dt className="deck-card__detail-label">{DECK_LOCATION_LABEL}</dt>
+              <dd className="deck-card__detail-value">{locationText}</dd>
+            </div>
+
+            <div className="deck-card__detail-row">
+              <dt className="deck-card__detail-label">{DECK_PRICE_LABEL}</dt>
+              <dd className="deck-card__detail-value">{priceText}</dd>
+            </div>
+          </dl>
+
+          {/* Tags */}
+          {activity.tags.length > 0 ? (
+            <ul aria-label={TAGS_LABEL} className="deck-card__tags">
+              {activity.tags.map((tag) => (
+                <li className="deck-card__tag" key={tag}>
+                  #{tag}
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
       </div>
 
       {/* Card Actions Footer */}

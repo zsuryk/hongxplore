@@ -74,4 +74,11 @@ describe('DeckCard', () => {
     const markup = renderToStaticMarkup(<DeckCard isGhost match={response.matches[0]} />);
     expect(markup).toContain('deck-card--ghost');
   });
+
+  it('renders photo and card body inside a shared scrollable container', () => {
+    const markup = renderToStaticMarkup(<DeckCard index={0} match={response.matches[0]} />);
+    expect(markup).toContain('deck-card__scrollable');
+    expect(markup).toContain('deck-card__cover-wrap');
+    expect(markup).toContain('deck-card__body');
+  });
 });
