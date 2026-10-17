@@ -462,6 +462,14 @@ export function App({
     [initialViewMode, setViewMode],
   );
 
+  const handleFocusSearch = useCallback(() => {
+    const input = document.getElementById('search-input');
+    if (input instanceof HTMLInputElement) {
+      input.focus();
+      input.select();
+    }
+  }, []);
+
   const lastPointerTypeRef = useRef<string>('mouse');
   const wheelMouseEnteredRef = useRef(false);
 
@@ -1837,6 +1845,7 @@ export function App({
         <DeckView
           cards={cards}
           onFindSimilar={findSimilar}
+          onSearchFocus={handleFocusSearch}
           onSwitchToBoard={() => handleSwitchView('board')}
           timelineSlots={timelineSlots}
         />

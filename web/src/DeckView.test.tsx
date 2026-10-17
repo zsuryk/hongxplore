@@ -8,6 +8,7 @@ import {
   DECK_DISCARD_LABEL,
   DECK_DOCK_LABEL,
   DECK_EMPTY_RESTORE_CTA,
+  DECK_EMPTY_SEARCH_CTA,
   DECK_EMPTY_TITLE,
   DECK_EMPTY_VIEW_PLAN_CTA,
   DECK_KEYBOARD_HINT,
@@ -51,6 +52,11 @@ describe('DeckView', () => {
     expect(markup).toContain(DECK_EMPTY_TITLE);
     expect(markup).toContain(DECK_EMPTY_VIEW_PLAN_CTA);
     expect(markup).toContain(DECK_EMPTY_RESTORE_CTA);
+  });
+
+  it('renders search CTA in empty completion state when onSearchFocus is provided', () => {
+    const markup = renderToStaticMarkup(<DeckView cards={[]} onSearchFocus={() => {}} />);
+    expect(markup).toContain(DECK_EMPTY_SEARCH_CTA);
   });
 
   it('excludes docked cards from unassigned cards in deck stack', () => {

@@ -33,8 +33,8 @@
   font-weight: var(--weight-semi);
   gap: var(--space-1);
   letter-spacing: var(--tracking-label);
-  line-height: var(--leading-none);
-  min-height: var(--target-small);
+  line-height: var(--leading-label);
+  min-height: var(--control-height-sm);
   padding: var(--space-1) var(--space-3);
   text-transform: uppercase;
   transition:
@@ -45,11 +45,6 @@
 
 .view-switcher__btn:hover {
   color: var(--foreground);
-}
-
-.view-switcher__btn:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 1px;
 }
 
 .view-switcher__btn--active {
@@ -94,7 +89,8 @@
   color: var(--card-muted-foreground);
   display: flex;
   font-family: var(--font-mono);
-  font-size: var(--text-mono);
+  font-size: var(--text-label);
+  font-variant-numeric: tabular-nums;
   justify-content: space-between;
   margin-bottom: var(--space-2);
   user-select: none;
@@ -160,7 +156,7 @@
   border: 1px solid var(--rule);
   border-radius: var(--radius-card);
   box-shadow:
-    var(--shadow-card),
+    var(--shadow-contact),
     inset 0 1px 0 var(--edge-light);
   color: var(--foreground);
   display: flex;
@@ -179,14 +175,14 @@
   border-color: var(--destructive);
   box-shadow:
     0 0 0 1px var(--destructive),
-    var(--shadow-floating);
+    var(--shadow-drag);
 }
 
 .deck-card--swiping-right {
   border-color: var(--accent);
   box-shadow:
     0 0 0 1px var(--accent),
-    var(--shadow-floating);
+    var(--shadow-drag);
 }
 
 .deck-card__header {
@@ -207,9 +203,9 @@
 .deck-card__serial {
   color: var(--card-plate);
   font-family: var(--font-mono);
-  font-size: var(--text-mono);
+  font-size: var(--text-plate);
   font-weight: var(--weight-bold);
-  letter-spacing: var(--tracking-mono);
+  letter-spacing: var(--tracking-plate);
 }
 
 .deck-card__badge {
@@ -217,7 +213,7 @@
   border: 1px solid var(--rule);
   border-radius: var(--radius-sm);
   color: var(--card-muted-foreground);
-  font-size: var(--text-micro);
+  font-size: var(--text-label);
   font-weight: var(--weight-semi);
   letter-spacing: var(--tracking-label);
   padding: var(--space-1) var(--space-2);
@@ -268,7 +264,7 @@
 
 .deck-card__title {
   color: var(--foreground);
-  font-size: var(--text-card-title);
+  font-size: var(--text-title);
   font-weight: var(--weight-bold);
   letter-spacing: var(--tracking-title);
   line-height: var(--leading-tight);
@@ -283,7 +279,7 @@
 
 .deck-card__rationale {
   background: var(--accent-soft);
-  border-left: 2px solid var(--accent);
+  border-left: var(--control-inset) solid var(--accent);
   border-radius: var(--radius-sm);
   margin: 0;
   padding: var(--space-3);
@@ -292,7 +288,7 @@
 .deck-card__rationale-label {
   color: var(--accent-strong);
   display: block;
-  font-size: var(--text-micro);
+  font-size: var(--text-label);
   font-weight: var(--weight-semi);
   letter-spacing: var(--tracking-label);
   margin-bottom: var(--space-1);
@@ -359,7 +355,7 @@
   border: 1px solid var(--rule);
   border-radius: var(--radius-pill);
   color: var(--card-muted-foreground);
-  font-size: var(--text-micro);
+  font-size: var(--text-label);
   padding: var(--space-1) var(--space-2);
 }
 
@@ -402,18 +398,18 @@
   color: var(--foreground);
   cursor: pointer;
   display: inline-flex;
-  height: 2.75rem;
+  height: var(--control-height-lg);
   justify-content: center;
   transition:
     background-color var(--motion-fast) var(--motion-ease),
     border-color var(--motion-fast) var(--motion-ease),
     color var(--motion-fast) var(--motion-ease),
     transform var(--motion-fast) var(--motion-ease);
-  width: 2.75rem;
+  width: var(--control-height-lg);
 }
 
 .deck-controls__btn:hover:not(:disabled) {
-  border-color: var(--rule-bright);
+  border-color: var(--accent-border);
   transform: translateY(-1px);
 }
 
@@ -451,7 +447,7 @@
   background: var(--chrome-surface);
   border: 1px solid var(--accent);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-floating);
+  box-shadow: var(--shadow-raised);
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
@@ -484,10 +480,10 @@
   cursor: pointer;
   display: flex;
   font-family: inherit;
-  font-size: var(--text-micro);
+  font-size: var(--text-label);
   font-weight: var(--weight-semi);
   justify-content: center;
-  min-height: var(--target-small);
+  min-height: var(--control-height-sm);
   padding: var(--space-1) var(--space-2);
   text-align: center;
   transition:
@@ -508,7 +504,7 @@
   border: 1px solid var(--rule);
   border-radius: var(--radius-card);
   box-shadow:
-    var(--shadow-card),
+    var(--shadow-contact),
     inset 0 1px 0 var(--edge-light);
   display: flex;
   flex-direction: column;
@@ -521,7 +517,7 @@
 
 .deck-empty__title {
   color: var(--foreground);
-  font-size: var(--text-card-title);
+  font-size: var(--text-title);
   font-weight: var(--weight-bold);
   letter-spacing: var(--tracking-title);
   margin: 0;

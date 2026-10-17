@@ -21,6 +21,7 @@ import {
   DECK_UNDO_TOOLTIP,
   TIMELINE_SLOTS,
   deckCardsRemaining,
+  deckSlotPickerChipLabel,
   deckStackCount,
 } from './copy';
 import { IconCheck, IconClose, IconSkip, IconUndo } from './icons';
@@ -112,6 +113,7 @@ export function DeckView({
 
   const handleQuickDock = useCallback(() => {
     if (!activeCard) return;
+    setDragOffset(null);
     const startIso = activeCard.activity.parts[0]?.start;
     const matchedSlotId = getActivityMatchingSlotId(startIso);
 
@@ -160,13 +162,12 @@ export function DeckView({
     if (!dragStartRef.current || dragStartRef.current.pointerId !== event.pointerId) return;
     const deltaX = event.clientX - dragStartRef.current.x;
     dragStartRef.current = null;
+    setDragOffset(null);
 
     if (deltaX < -SWIPE_THRESHOLD_PX) {
       handleDiscard();
     } else if (deltaX > SWIPE_THRESHOLD_PX) {
       handleQuickDock();
-    } else {
-      setDragOffset(null);
     }
   };
 
@@ -180,6 +181,12 @@ export function DeckView({
     const handleKeyDown = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
       if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target?.isContentEditable) {
+        return;
+      }
+
+      if (isSlotPickerOpen && event.key === 'Escape') {
+        event.preventDefault();
+        setIsSlotPickerOpen(false);
         return;
       }
 
@@ -200,7 +207,7 @@ export function DeckView({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleDiscard, handleQuickDock, handleSkip, handleUndo]);
+  }, [handleDiscard, handleQuickDock, handleSkip, handleUndo, isSlotPickerOpen]);
 
   const swipeDirection = dragOffset ? (dragOffset.x < -30 ? 'left' : dragOffset.x > 30 ? 'right' : null) : null;
 
@@ -306,7 +313,7 @@ export function DeckView({
                     onClick={() => handleDockSlot(slot.id)}
                     type="button"
                   >
-                    {slot.label} {isOccupied ? '(*)' : ''}
+                    {deckSlotPickerChipLabel(slot.label, isOccupied)}
                   </button>
                 );
               })}

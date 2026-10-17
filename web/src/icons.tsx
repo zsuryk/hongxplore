@@ -23,12 +23,17 @@ export type IconName =
   | 'reset'
   | 'fit'
   | 'auto-fit'
+  | 'board-view'
+  | 'deck-view'
   | 'tile'
   | 'clear'
   | 'close'
   | 'search'
   | 'pending'
   | 'help'
+  | 'undo'
+  | 'skip'
+  | 'check'
   | 'mode-grab'
   | 'mode-pan'
   | 'mode-inspect';
@@ -297,4 +302,4 @@ export const ICONS = {
   undo: IconUndo,
   'zoom-in': IconZoomIn,
   'zoom-out': IconZoomOut,
-} satisfies Record<string, (props: IconProps) => React.ReactElement>;
+} satisfies Record<IconName, (props: IconProps) => React.ReactElement>;

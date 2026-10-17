@@ -641,3 +641,12 @@ export const DECK_LOCATION_LABEL = 'Location';
 export const DECK_SCHEDULE_LABEL = 'Schedule';
 export const DECK_PRICE_LABEL = 'Price';
 export const DECK_EXTERNAL_LINK_LABEL = 'Open details & booking';
+export const TAGS_LABEL = 'Tags';
+
+export function deckExternalLinkLabel(sourceName: string): string {
+  return `${DECK_EXTERNAL_LINK_LABEL} (${sourceName})`;
+}
+
+export function deckSlotPickerChipLabel(slotLabel: string, isOccupied: boolean): string {
+  return isOccupied ? `${slotLabel} (*)` : slotLabel;
+}

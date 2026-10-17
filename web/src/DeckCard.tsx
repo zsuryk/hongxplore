@@ -4,16 +4,17 @@ import {
   ACTIVITY_CARD_DISTRICT_LABEL,
   ACTIVITY_CARD_TIME_UNAVAILABLE,
   DECK_BOOKING_GUIDE_BADGE,
-  DECK_EXTERNAL_LINK_LABEL,
   DECK_LOCATION_LABEL,
   DECK_MATCH_RATIONALE_LABEL,
   DECK_PRICE_LABEL,
   DECK_SCHEDULE_LABEL,
   FIND_SIMILAR_LABEL,
+  TAGS_LABEL,
   activityCardAccessibleLabel,
   activityCardCtaLabel,
   activityCardPriceLabel,
   activityCardSerial,
+  deckExternalLinkLabel,
   getActivityLanguageBadge,
 } from './copy';
 
@@ -150,7 +151,7 @@ export function DeckCard({
 
         {/* Tags */}
         {activity.tags.length > 0 ? (
-          <ul aria-label="Tags" className="deck-card__tags">
+          <ul aria-label={TAGS_LABEL} className="deck-card__tags">
             {activity.tags.map((tag) => (
               <li className="deck-card__tag" key={tag}>
                 #{tag}
@@ -170,7 +171,7 @@ export function DeckCard({
           rel="noreferrer"
           target="_blank"
         >
-          {DECK_EXTERNAL_LINK_LABEL} ({activity.source.name})
+          {deckExternalLinkLabel(activity.source.name)}
         </a>
 
         {onFindSimilar ? (
