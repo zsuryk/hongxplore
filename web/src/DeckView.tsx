@@ -29,6 +29,7 @@ import {
   DECK_SKIP_LABEL,
   DECK_SKIP_TOOLTIP,
   DECK_SLOT_AVAILABLE_LABEL,
+  DECK_SLOT_DISCARD_TOOLTIP,
   DECK_SLOT_DROP_HERE_HINT,
   DECK_SLOT_INCOMPATIBLE_HINT,
   DECK_SLOT_INCOMPATIBLE_LABEL,
@@ -88,6 +89,7 @@ export function DeckView({
   const undoStack = useBoardStore((state) => state.undoStack);
   const discardCard = useBoardStore((state) => state.discardCard);
   const dockCard = useBoardStore((state) => state.dockCard);
+  const undockCard = useBoardStore((state) => state.undockCard);
   const undoLastAction = useBoardStore((state) => state.undoLastAction);
   const restoreDiscardedCards = useBoardStore((state) => state.restoreDiscardedCards);
   const restoreSingleDiscardedCard = useBoardStore((state) => state.restoreSingleDiscardedCard);
@@ -248,6 +250,33 @@ export function DeckView({
       });
     },
     [activeCard, dockCard, isExiting, triggerExit],
+  );
+
+  const handleSlotClick = useCallback(
+    (slotId: string) => {
+      if (isExiting) return;
+      const slotState = timelineSlots.find((s) => s.id === slotId);
+      const bookedActivityId = slotState?.activityId;
+      const matchingSlotId = activeCard ? getActivityMatchingSlotId(activeCard.activity.parts[0]?.start) : null;
+      const isMatching = activeCard ? !matchingSlotId || matchingSlotId === slotId : false;
+
+      if (isMatching && activeCard) {
+        handleDockSlot(slotId);
+      } else if (bookedActivityId) {
+        undockCard(slotId);
+      }
+    },
+    [activeCard, handleDockSlot, isExiting, timelineSlots, undockCard],
+  );
+
+  const handleDiscardSlotCard = useCallback(
+    (activityId: string) => {
+      discardCard(activityId);
+      setJustDiscarded(true);
+      if (transitionTimersRef.current.discardTimer) window.clearTimeout(transitionTimersRef.current.discardTimer);
+      transitionTimersRef.current.discardTimer = window.setTimeout(() => setJustDiscarded(false), 500);
+    },
+    [discardCard],
   );
 
   const handleQuickDock = useCallback(() => {
@@ -863,8 +892,8 @@ export function DeckView({
             const slotState = timelineSlots.find((s) => s.id === slot.id);
             const bookedCard = slotState?.activityId ? cards.find((c) => c.activity.id === slotState.activityId) : null;
             const matchingSlotId = activeCard ? getActivityMatchingSlotId(activeCard.activity.parts[0]?.start) : null;
-            const isIncompatible = Boolean(matchingSlotId && matchingSlotId !== slot.id);
-            const isSuggested = Boolean(matchingSlotId && matchingSlotId === slot.id);
+            const isIncompatible = Boolean(isDragging && matchingSlotId && matchingSlotId !== slot.id);
+            const isSuggested = Boolean(isDragging && matchingSlotId && matchingSlotId === slot.id);
             const isHoveredTarget = hoveredDropTarget === slot.id;
             const isJustDocked = justDockedSlotId === slot.id;
 
@@ -894,19 +923,29 @@ export function DeckView({
                 data-incompatible={isIncompatible ? 'true' : undefined}
                 data-slot-id={slot.id}
                 key={slot.id}
-                onClick={() => {
-                  if (activeCard && !isIncompatible) {
-                    handleDockSlot(slot.id);
-                  }
-                }}
+                onClick={() => handleSlotClick(slot.id)}
                 role="button"
-                tabIndex={isIncompatible ? -1 : 0}
+                tabIndex={0}
                 title={slot.label}
               >
                 <div className="deck-slot-item__header">
                   <span className="deck-slot-item__label">{slot.label}</span>
                   {bookedCard ? (
-                    <span className="deck-slot-item__badge">{bookedCard.activity.location.district}</span>
+                    <div className="deck-slot-item__header-actions">
+                      <span className="deck-slot-item__badge">{bookedCard.activity.location.district}</span>
+                      <button
+                        aria-label={DECK_SLOT_DISCARD_TOOLTIP}
+                        className="deck-slot-item__discard-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDiscardSlotCard(bookedCard.activity.id);
+                        }}
+                        title={DECK_SLOT_DISCARD_TOOLTIP}
+                        type="button"
+                      >
+                        <IconClose className="deck-slot-item__discard-icon" />
+                      </button>
+                    </div>
                   ) : isIncompatible ? (
                     <span className="deck-slot-item__status deck-slot-item__status--incompatible">
                       {DECK_SLOT_INCOMPATIBLE_LABEL}

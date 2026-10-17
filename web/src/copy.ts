@@ -668,6 +668,7 @@ export const DECK_TIMELINE_DROP_HINT = 'Drag card here to schedule';
 export const DECK_SLOT_AVAILABLE_LABEL = 'Available slot';
 export const DECK_SLOT_INCOMPATIBLE_LABEL = 'Time mismatch';
 export const DECK_SLOT_INCOMPATIBLE_HINT = 'Cannot schedule at this time';
+export const DECK_SLOT_DISCARD_TOOLTIP = 'Discard activity from timeslot';
 export const DECK_ACTION_DISCARD = 'Discard';
 export const DECK_ACTION_UNDO = 'Undo';
 export const DECK_ACTION_SKIP = 'Skip';

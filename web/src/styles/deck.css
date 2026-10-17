@@ -508,6 +508,42 @@
   justify-content: space-between;
 }
 
+.deck-slot-item__header-actions {
+  align-items: center;
+  display: flex;
+  gap: var(--space-1);
+}
+
+.deck-slot-item__discard-btn {
+  align-items: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--card-muted-foreground);
+  cursor: pointer;
+  display: flex;
+  height: var(--control-height-sm);
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+  transition:
+    background-color var(--motion-fast) var(--motion-ease),
+    border-color var(--motion-fast) var(--motion-ease),
+    color var(--motion-fast) var(--motion-ease);
+  width: var(--control-height-sm);
+}
+
+.deck-slot-item__discard-btn:hover {
+  background: var(--destructive-soft);
+  border-color: var(--destructive-border);
+  color: var(--destructive);
+}
+
+.deck-slot-item__discard-icon {
+  height: var(--icon-size);
+  width: var(--icon-size);
+}
+
 .deck-slot-item__label {
   color: var(--foreground);
   font-family: var(--font-mono);

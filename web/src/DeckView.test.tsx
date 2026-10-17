@@ -31,6 +31,7 @@ import {
   DECK_KEY_SPACE,
   DECK_KEY_Z,
   DECK_SKIP_LABEL,
+  DECK_SLOT_DISCARD_TOOLTIP,
   DECK_SLOT_INCOMPATIBLE_LABEL,
   DECK_TIMELINE_PANEL_TITLE,
   DECK_UNDO_LABEL,
@@ -207,17 +208,25 @@ describe('DeckView', () => {
       expect(computeDynamicDragScale(100)).toBe(0.827);
     });
 
-    it('flags timeslots as incompatible (red) when card start time cannot be scheduled in that slot', () => {
-      // response.matches[0] starts at 2026-10-03T06:00:00Z -> Saturday afternoon (saturday-afternoon)
+    it('leaves timeslots neutral at rest and flags incompatible (red) only when dragging', () => {
       const markup = renderToStaticMarkup(<DeckView cards={response.matches} />);
 
-      // Incompatible slots should receive deck-slot-item--incompatible and the mismatch label
-      expect(markup).toContain('deck-slot-item--incompatible');
-      expect(markup).toContain(DECK_SLOT_INCOMPATIBLE_LABEL);
-      expect(markup).toContain('data-incompatible="true"');
+      // At rest, timeslots are neutral and clean (not flagged red)
+      expect(markup).not.toContain('deck-slot-item--incompatible');
+      expect(markup).not.toContain(DECK_SLOT_INCOMPATIBLE_LABEL);
+      expect(markup).not.toContain('data-incompatible="true"');
+    });
 
-      // The matching slot (saturday-afternoon) should receive deck-slot-item--suggested
-      expect(markup).toContain('deck-slot-item--suggested');
+    it('renders a discard button on booked timeslots to discard activity from slot', () => {
+      const bookedCard = response.matches[0];
+      const testSlots = TIMELINE_SLOTS.map((s, idx) =>
+        idx === 0 ? { id: s.id, activityId: bookedCard.activity.id } : { id: s.id, activityId: null },
+      );
+
+      const markup = renderToStaticMarkup(<DeckView cards={response.matches} timelineSlots={testSlots} />);
+
+      expect(markup).toContain('deck-slot-item__discard-btn');
+      expect(markup).toContain(DECK_SLOT_DISCARD_TOOLTIP);
     });
   });
 });
