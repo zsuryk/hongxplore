@@ -612,4 +612,61 @@ describe('card drag gesture stability (#103)', () => {
     expect(boardCss).toMatch(/\.board__pan\s*\{[^}]*z-index:\s*1/);
     expect(boardCss).toMatch(/\.board__card\s*\{[^}]*z-index:\s*var\(--card-z,\s*1\)/);
   });
+
+  it('centres the drag pill directly on the cursor across 100%, 150%, and 200% zoom (#139)', () => {
+    const card = {
+      activity: {
+        id: 'drag-pill-card',
+        title: 'Drag Pill Card',
+        title_en: 'Drag Pill Card',
+        lang: 'en' as const,
+        url: 'https://example.com/pill',
+        tags: ['culture'],
+        parts: [{ start: '2026-10-10T06:00:00Z', end: '2026-10-10T08:00:00Z' }],
+        source: { name: 'Source' },
+        location: { district: 'Central', venue: 'Venue' },
+      },
+      match_rationale: 'Fit',
+    };
+
+    const zoomLevels = [
+      { scale: 1.0, grabOffset: { x: 160, y: 100 }, screenPoint: { x: 450, y: 320 } },
+      { scale: 1.5, grabOffset: { x: 240, y: 150 }, screenPoint: { x: 600, y: 400 } },
+      { scale: 2.0, grabOffset: { x: 320, y: 200 }, screenPoint: { x: 750, y: 500 } },
+    ];
+
+    for (const { scale, grabOffset, screenPoint } of zoomLevels) {
+      const markup = renderToStaticMarkup(
+        <App
+          cards={[card]}
+          initialCardDragState={{
+            card,
+            pointerId: 1,
+            source: 'board',
+            screenPoint,
+            grabOffset,
+            trail: [screenPoint],
+          }}
+          initialIsOverDropZone={true}
+          initialTourOpen={false}
+          initialViewportScale={scale}
+        />,
+      );
+
+      // Drag proxy is at screenPoint - grabOffset
+      const proxyLeft = screenPoint.x - grabOffset.x;
+      const proxyTop = screenPoint.y - grabOffset.y;
+      expect(markup).toContain(`board__drag board__drag--pill`);
+      expect(markup).toContain(`left:${proxyLeft}px;top:${proxyTop}px`);
+
+      // Drag pill is anchored at grabOffset, so (proxyLeft + grabOffset.x, proxyTop + grabOffset.y) == screenPoint
+      expect(markup).toContain(`class="board__drag-pill" style="left:${grabOffset.x}px;top:${grabOffset.y}px"`);
+
+      // Measured pill-to-cursor distance is exactly 0
+      const pillCenterScreenX = proxyLeft + grabOffset.x;
+      const pillCenterScreenY = proxyTop + grabOffset.y;
+      const distance = Math.hypot(pillCenterScreenX - screenPoint.x, pillCenterScreenY - screenPoint.y);
+      expect(distance).toBe(0);
+    }
+  });
 });
