@@ -63,6 +63,7 @@ import {
   EXIT_DURATION_MS,
   SETTLE_DURATION_MS,
   SWIPE_THRESHOLD_PX,
+  computeDynamicDragScale,
   findRestoredCardIndex,
   isHorizontalSwipeGesture,
   resolveSwipeOutcome,
@@ -95,6 +96,8 @@ export function DeckView({
   const [hoveredDropTarget, setHoveredDropTarget] = useState<string | null>(null);
   const [isSlotPickerOpen, setIsSlotPickerOpen] = useState(false);
   const [isExiting, setIsExiting] = useState<'left' | 'right' | 'skip' | null>(null);
+  const [justDockedSlotId, setJustDockedSlotId] = useState<string | null>(null);
+  const [justDiscarded, setJustDiscarded] = useState(false);
   const [enteringCard, setEnteringCard] = useState<{
     id: string;
     direction: 'left' | 'right' | 'skip';
@@ -102,6 +105,7 @@ export function DeckView({
   } | null>(null);
 
   const animationTimersRef = useRef<{ initialTick?: number; settleComplete?: number }>({});
+  const transitionTimersRef = useRef<{ dockTimer?: number; discardTimer?: number }>({});
   const dragStartRef = useRef<{
     x: number;
     y: number;
@@ -115,9 +119,12 @@ export function DeckView({
 
   useEffect(() => {
     const timers = animationTimersRef.current;
+    const transitions = transitionTimersRef.current;
     return () => {
       if (timers.initialTick) window.clearTimeout(timers.initialTick);
       if (timers.settleComplete) window.clearTimeout(timers.settleComplete);
+      if (transitions.dockTimer) window.clearTimeout(transitions.dockTimer);
+      if (transitions.discardTimer) window.clearTimeout(transitions.discardTimer);
     };
   }, []);
 
@@ -193,6 +200,9 @@ export function DeckView({
     setIsSlotPickerOpen(false);
     triggerExit('left', () => {
       discardCard(activeCard.activity.id);
+      setJustDiscarded(true);
+      if (transitionTimersRef.current.discardTimer) window.clearTimeout(transitionTimersRef.current.discardTimer);
+      transitionTimersRef.current.discardTimer = window.setTimeout(() => setJustDiscarded(false), 500);
     });
   }, [activeCard, discardCard, isExiting, triggerExit]);
 
@@ -230,6 +240,9 @@ export function DeckView({
       setIsSlotPickerOpen(false);
       triggerExit('right', () => {
         dockCard(activeCard.activity.id, slotId, { replace: true });
+        setJustDockedSlotId(slotId);
+        if (transitionTimersRef.current.dockTimer) window.clearTimeout(transitionTimersRef.current.dockTimer);
+        transitionTimersRef.current.dockTimer = window.setTimeout(() => setJustDockedSlotId(null), 600);
       });
     },
     [activeCard, dockCard, isExiting, triggerExit],
@@ -471,27 +484,32 @@ export function DeckView({
           enteringCard.direction === 'skip'
             ? 'translate3d(0, var(--space-4), 0) scale(0.95)'
             : enteringCard.direction === 'left'
-              ? 'translate3d(-80%, 0, 0) scale(0.92) rotate(-8deg)'
-              : 'translate3d(80%, 0, 0) scale(0.92) rotate(8deg)',
+              ? 'translate3d(-24rem, 0, 0) scale(0.4) rotate(-6deg)'
+              : 'translate3d(24rem, 0, 0) scale(0.4) rotate(6deg)',
+        transformOrigin:
+          enteringCard.direction === 'left' ? '20% 50%' : enteringCard.direction === 'right' ? '80% 50%' : '50% 90%',
         opacity: 0,
         transition: 'none',
       };
     } else {
       activeCardStyle = {
         transform: 'translate3d(0, 0, 0) rotate(0deg) scale(1)',
+        transformOrigin: '50% 90%',
         opacity: 1,
         transition: 'transform var(--motion-slow) var(--motion-ease), opacity var(--motion-slow) var(--motion-ease)',
       };
     }
   } else if (isExiting === 'left') {
     activeCardStyle = {
-      transform: 'translate3d(-120%, 0, 0) rotate(-14deg)',
+      transform: 'translate3d(-24rem, 0, 0) scale(0.38) rotate(-6deg)',
+      transformOrigin: '20% 50%',
       opacity: 0,
       transition: 'transform var(--motion-slow) var(--motion-ease), opacity var(--motion-slow) var(--motion-ease)',
     };
   } else if (isExiting === 'right') {
     activeCardStyle = {
-      transform: 'translate3d(120%, 0, 0) rotate(14deg)',
+      transform: 'translate3d(24rem, 0, 0) scale(0.38) rotate(6deg)',
+      transformOrigin: '80% 50%',
       opacity: 0,
       transition: 'transform var(--motion-slow) var(--motion-ease), opacity var(--motion-slow) var(--motion-ease)',
     };
@@ -502,8 +520,11 @@ export function DeckView({
       transition: 'transform var(--motion-slow) var(--motion-ease), opacity var(--motion-slow) var(--motion-ease)',
     };
   } else if (isDragging) {
+    const dynamicScale = computeDynamicDragScale(dragOffset.x, Boolean(hoveredDropTarget));
+    const dragOrigin = dragOffset.x < 0 ? '20% 50%' : '80% 50%';
     activeCardStyle = {
-      transform: `translate3d(${dragOffset.x}px, ${dragOffset.y * 0.3}px, 0) rotate(${dragOffset.x * 0.05}deg) scale(1.02)`,
+      transform: `translate3d(${dragOffset.x}px, ${dragOffset.y * 0.3}px, 0) rotate(${dragOffset.x * 0.03}deg) scale(${dynamicScale})`,
+      transformOrigin: dragOrigin,
       boxShadow: 'var(--shadow-drag)',
       transition: 'none',
       willChange: 'transform',
@@ -511,6 +532,7 @@ export function DeckView({
   } else {
     activeCardStyle = {
       transform: 'translate3d(0, 0, 0) rotate(0deg) scale(1)',
+      transformOrigin: '50% 90%',
       transition: 'transform var(--motion-slow) var(--motion-ease), box-shadow var(--motion-slow) var(--motion-ease)',
     };
   }
@@ -562,7 +584,7 @@ export function DeckView({
         aria-label={DECK_DISCARD_PANEL_TITLE}
         className={`deck-sidebar deck-sidebar--discard${
           hoveredDropTarget === 'discard' || swipeDirection === 'left' ? ' deck-sidebar--active' : ''
-        }`}
+        }${justDiscarded ? ' deck-sidebar--discard-landing' : ''}`}
         data-drop-zone="discard"
         ref={discardSidebarRef}
       >
@@ -832,12 +854,13 @@ export function DeckView({
             const slotState = timelineSlots.find((s) => s.id === slot.id);
             const bookedCard = slotState?.activityId ? cards.find((c) => c.activity.id === slotState.activityId) : null;
             const isHoveredTarget = hoveredDropTarget === slot.id;
+            const isJustDocked = justDockedSlotId === slot.id;
 
             return (
               <div
                 className={`deck-slot-item${bookedCard ? ' deck-slot-item--booked' : ' deck-slot-item--empty'}${
                   isHoveredTarget ? ' deck-slot-item--drop-target' : ''
-                }`}
+                }${isJustDocked ? ' deck-slot-item--just-docked' : ''}`}
                 data-drop-zone="timeslot"
                 data-slot-id={slot.id}
                 key={slot.id}

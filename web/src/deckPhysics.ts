@@ -49,3 +49,17 @@ export function findRestoredCardIndex(
   const index = unassignedCards.findIndex((c) => c.activity.id === restoredId);
   return index >= 0 ? index : 0;
 }
+
+/**
+ * Dynamically scales down the active card as it approaches the sidebars.
+ * Returns a scale between 1.0 (at rest in center) and ~0.50 (at sidebar margins).
+ */
+export function computeDynamicDragScale(deltaX: number, isHoveredTarget: boolean = false): number {
+  const absX = Math.abs(deltaX);
+  const dragRatio = Math.min(absX / 260, 1);
+  const scale = 1 - dragRatio * 0.45;
+  if (isHoveredTarget) {
+    return Math.min(scale, 0.52);
+  }
+  return Number(scale.toFixed(3));
+}

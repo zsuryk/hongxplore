@@ -2,7 +2,12 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it } from 'vitest';
 import agentResponse from '../../docs/examples/agent-response.json';
 import { DeckView } from './DeckView';
-import { findRestoredCardIndex, isHorizontalSwipeGesture, resolveSwipeOutcome } from './deckPhysics';
+import {
+  computeDynamicDragScale,
+  findRestoredCardIndex,
+  isHorizontalSwipeGesture,
+  resolveSwipeOutcome,
+} from './deckPhysics';
 import type { components } from './api/schema';
 import { useBoardStore } from './state/boardStore';
 import {
@@ -183,6 +188,22 @@ describe('DeckView', () => {
 
       expect(findRestoredCardIndex(cards, targetId)).toBe(2);
       expect(findRestoredCardIndex(cards, 'non-existent-id')).toBe(0);
+    });
+
+    it('computes dynamic scale proportionally as card drags towards sidebars', () => {
+      // At rest (deltaX = 0), scale is 1.0
+      expect(computeDynamicDragScale(0)).toBe(1);
+
+      // Halfway drag (130px), scale shrinks proportionally
+      expect(computeDynamicDragScale(130)).toBe(0.775);
+      expect(computeDynamicDragScale(-130)).toBe(0.775);
+
+      // Max drag threshold (260px or more)
+      expect(computeDynamicDragScale(260)).toBe(0.55);
+      expect(computeDynamicDragScale(400)).toBe(0.55);
+
+      // Hovering a drop target snaps/caps down to thumbnail scale
+      expect(computeDynamicDragScale(100, true)).toBe(0.52);
     });
   });
 });

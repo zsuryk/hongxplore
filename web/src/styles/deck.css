@@ -111,6 +111,25 @@
     var(--shadow-lift);
 }
 
+.deck-sidebar--discard-landing {
+  animation: deck-discard-landing-pulse var(--motion-slow) var(--motion-ease);
+}
+
+@keyframes deck-discard-landing-pulse {
+  0% {
+    border-color: var(--destructive);
+    box-shadow:
+      0 0 0 2px var(--destructive),
+      var(--shadow-lift);
+  }
+  100% {
+    border-color: var(--rule);
+    box-shadow:
+      var(--shadow-contact),
+      inset 0 1px 0 var(--edge-light);
+  }
+}
+
 .deck-sidebar__header {
   align-items: center;
   border-bottom: 1px solid var(--divider);
@@ -401,6 +420,30 @@
 .deck-slot-item--booked {
   background: var(--card);
   border-left: var(--control-inset) solid var(--accent);
+}
+
+.deck-slot-item--just-docked {
+  animation: deck-slot-dock-enter var(--motion-slow) var(--motion-ease);
+}
+
+@keyframes deck-slot-dock-enter {
+  0% {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    box-shadow:
+      0 0 0 2px var(--accent-border),
+      var(--shadow-lift);
+    transform: scale(0.95);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    background: var(--card);
+    border-color: var(--rule);
+    box-shadow: none;
+    transform: scale(1);
+  }
 }
 
 .deck-slot-item--drop-target {
