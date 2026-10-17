@@ -429,5 +429,19 @@ describe('board store search retrieval and error handling', () => {
       expect(useBoardStore.getState().cards.some((c) => c.activity.id === card1.activity.id)).toBe(true);
       expect(useBoardStore.getState().cards.some((c) => c.activity.id === card2.activity.id)).toBe(true);
     });
+
+    it('restores a specific single discarded card back to cards array', () => {
+      const card1 = response.matches[0];
+      const card2 = response.matches[1];
+      useBoardStore.getState().discardCard(card1.activity.id);
+      useBoardStore.getState().discardCard(card2.activity.id);
+      expect(useBoardStore.getState().discardedCards.length).toBe(2);
+
+      const restored = useBoardStore.getState().restoreSingleDiscardedCard(card1.activity.id);
+      expect(restored).toBe(true);
+      expect(useBoardStore.getState().discardedCards.some((c) => c.activity.id === card1.activity.id)).toBe(false);
+      expect(useBoardStore.getState().discardedCards.some((c) => c.activity.id === card2.activity.id)).toBe(true);
+      expect(useBoardStore.getState().cards.some((c) => c.activity.id === card1.activity.id)).toBe(true);
+    });
   });
 });

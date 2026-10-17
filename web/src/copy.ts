@@ -670,6 +670,10 @@ export const DECK_DROP_HINT_BAR = 'Drag card to any timeslot or discard bin · O
 export const DECK_STAMP_DISCARD = 'Discard';
 export const DECK_STAMP_SCHEDULE = 'Schedule';
 export const DECK_STAMP_SKIP = 'Skip';
+export const DECK_DISCARD_RESTORE_LABEL = 'Restore';
+export const DECK_DISCARD_RESTORE_TOOLTIP = 'Restore this activity to deck';
+export const DECK_DISCARD_QUEUE_TITLE = 'Discarded queue';
+export const DECK_SLOT_DROP_HERE_HINT = 'Drop card to schedule';
 
 export function deckDiscardedCount(count: number): string {
   return `${count} discarded`;

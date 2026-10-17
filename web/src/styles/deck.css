@@ -210,6 +210,142 @@
   text-transform: uppercase;
 }
 
+.deck-drop-target--compact {
+  flex: 0 0 auto;
+  margin: var(--space-2) 0;
+  min-height: 4.5rem;
+  padding: var(--space-2);
+}
+
+/* Discard Queue */
+
+.deck-discard-queue {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: var(--space-1);
+}
+
+.deck-discard-item {
+  align-items: center;
+  background: var(--chrome-raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  transition:
+    background-color var(--motion-fast) var(--motion-ease),
+    border-color var(--motion-fast) var(--motion-ease),
+    opacity var(--motion-base) var(--motion-ease),
+    transform var(--motion-fast) var(--motion-ease);
+  animation: deck-discard-enter var(--motion-slow) var(--motion-ease);
+}
+
+@keyframes deck-discard-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.deck-discard-item:hover {
+  border-color: var(--destructive);
+}
+
+.deck-discard-item__thumb {
+  border-radius: var(--radius-xs);
+  flex-shrink: 0;
+  height: 2.75rem;
+  object-fit: cover;
+  width: 2.75rem;
+}
+
+.deck-discard-item__thumb-placeholder {
+  align-items: center;
+  background: var(--muted);
+  border: 1px solid var(--divider);
+  border-radius: var(--radius-xs);
+  color: var(--card-muted-foreground);
+  display: flex;
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  height: 2.75rem;
+  justify-content: center;
+  width: 2.75rem;
+}
+
+.deck-discard-item__content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.deck-discard-item__title {
+  color: var(--foreground);
+  font-size: var(--text-label);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-tight);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.deck-discard-item__district {
+  color: var(--card-muted-foreground);
+  font-size: var(--text-label);
+  letter-spacing: var(--tracking-label);
+  margin-top: var(--space-1);
+  text-transform: uppercase;
+}
+
+.deck-discard-item__restore-btn {
+  align-items: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-xs);
+  color: var(--card-muted-foreground);
+  cursor: pointer;
+  display: flex;
+  flex-shrink: 0;
+  height: var(--control-height-sm);
+  justify-content: center;
+  padding: 0;
+  width: var(--control-height-sm);
+  transition:
+    background-color var(--motion-fast) var(--motion-ease),
+    border-color var(--motion-fast) var(--motion-ease),
+    color var(--motion-fast) var(--motion-ease),
+    transform var(--motion-fast) var(--motion-ease);
+}
+
+.deck-discard-item__restore-btn:hover {
+  background: var(--destructive-soft);
+  border-color: var(--destructive);
+  color: var(--destructive);
+  transform: scale(1.08);
+}
+
+.deck-discard-item__restore-btn:active {
+  transform: scale(0.92);
+}
+
+.deck-discard-item__restore-icon {
+  height: var(--icon-size);
+  width: var(--icon-size);
+}
+
 .deck-sidebar__footer {
   border-top: 1px solid var(--divider);
   display: flex;
@@ -241,11 +377,14 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
+  min-height: 3.5rem;
   padding: var(--space-2) var(--space-3);
   transition:
     background-color var(--motion-fast) var(--motion-ease),
     border-color var(--motion-fast) var(--motion-ease),
     box-shadow var(--motion-fast) var(--motion-ease),
+    min-height var(--motion-base) var(--motion-ease),
+    padding var(--motion-base) var(--motion-ease),
     transform var(--motion-fast) var(--motion-ease);
 }
 
@@ -270,7 +409,21 @@
   box-shadow:
     0 0 0 1px var(--accent),
     var(--shadow-lift);
+  min-height: 5.5rem;
+  padding: var(--space-3);
   transform: scale(1.02);
+}
+
+.deck-slot-item__drop-hint {
+  align-items: center;
+  color: var(--accent);
+  display: flex;
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  font-weight: var(--weight-semi);
+  letter-spacing: var(--tracking-label);
+  margin-top: var(--space-1);
+  text-transform: uppercase;
 }
 
 .deck-slot-item__header {

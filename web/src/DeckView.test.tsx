@@ -12,6 +12,8 @@ import {
   DECK_DISCARD_DROP_HINT,
   DECK_DISCARD_LABEL,
   DECK_DISCARD_PANEL_TITLE,
+  DECK_DISCARD_QUEUE_TITLE,
+  DECK_DISCARD_RESTORE_TOOLTIP,
   DECK_DOCK_LABEL,
   DECK_DROP_HINT_BAR,
   DECK_EMPTY_RESTORE_CTA,
@@ -108,5 +110,22 @@ describe('DeckView', () => {
 
     // Docked card title should appear in right timeline sidebar
     expect(markup).toContain(dockedCard.activity.title_en ?? dockedCard.activity.title);
+  });
+
+  it('renders discard queue with mini cards and individual restore buttons when discarded cards exist', () => {
+    const discardedCard = response.matches[0];
+    useBoardStore.setState({
+      cards: response.matches.slice(1),
+      discardedCards: [discardedCard],
+    });
+
+    const markup = renderToStaticMarkup(
+      <DeckView cards={response.matches.slice(1)} discardedCards={[discardedCard]} />,
+    );
+
+    expect(markup).toContain(DECK_DISCARD_QUEUE_TITLE);
+    expect(markup).toContain('deck-discard-item');
+    expect(markup).toContain(discardedCard.activity.title_en ?? discardedCard.activity.title);
+    expect(markup).toContain(DECK_DISCARD_RESTORE_TOOLTIP);
   });
 });

@@ -84,6 +84,7 @@ export type BoardStore = {
   setViewMode: (mode: ViewMode) => void;
   undoLastAction: () => boolean;
   restoreDiscardedCards: () => void;
+  restoreSingleDiscardedCard: (activityId: string) => boolean;
   bringCardToFront: (activityId: string) => void;
   discardCard: (activityId: string) => void;
   dockCard: (activityId: string, timelineSlotId: string, options?: { replace?: boolean }) => boolean;
@@ -249,6 +250,22 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
       discardedCards: [],
       undoStack: state.undoStack.filter((action) => action.type !== 'discard'),
     }));
+  },
+  restoreSingleDiscardedCard(activityId) {
+    let restored = false;
+    set((state) => {
+      const card = state.discardedCards.find((c) => c.activity.id === activityId);
+      if (!card) return state;
+      restored = true;
+      return {
+        cards: [card, ...state.cards],
+        discardedCards: state.discardedCards.filter((c) => c.activity.id !== activityId),
+        undoStack: state.undoStack.filter(
+          (action) => !(action.type === 'discard' && action.card.activity.id === activityId),
+        ),
+      };
+    });
+    return restored;
   },
   bringCardToFront(activityId) {
     set((state) => ({

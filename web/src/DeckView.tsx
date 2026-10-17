@@ -10,6 +10,8 @@ import {
   DECK_DISCARD_DROP_HINT,
   DECK_DISCARD_LABEL,
   DECK_DISCARD_PANEL_TITLE,
+  DECK_DISCARD_QUEUE_TITLE,
+  DECK_DISCARD_RESTORE_TOOLTIP,
   DECK_DISCARD_TOOLTIP,
   DECK_DOCK_LABEL,
   DECK_DOCK_TOOLTIP,
@@ -27,12 +29,14 @@ import {
   DECK_SKIP_LABEL,
   DECK_SKIP_TOOLTIP,
   DECK_SLOT_AVAILABLE_LABEL,
+  DECK_SLOT_DROP_HERE_HINT,
   DECK_SLOT_PICKER_HINT,
   DECK_SLOT_PICKER_TITLE,
   DECK_TIMELINE_PANEL_TITLE,
   DECK_UNDO_LABEL,
   DECK_UNDO_TOOLTIP,
   TIMELINE_SLOTS,
+  activityCardSerial,
   deckCardsRemaining,
   deckDiscardedCount,
   deckScheduledCount,
@@ -49,6 +53,7 @@ export type DeckViewProps = {
   timelineSlots?: components['schemas']['MatchedActivity'] extends never
     ? never
     : { id: string; activityId: string | null }[];
+  discardedCards?: MatchedActivity[];
   onFindSimilar?: (match: MatchedActivity) => void;
   onSearchFocus?: () => void;
   onSwitchToBoard?: () => void;
@@ -61,6 +66,7 @@ const SETTLE_DURATION_MS = 280;
 export function DeckView({
   cards: propCards,
   timelineSlots: propTimelineSlots,
+  discardedCards: propDiscardedCards,
   onFindSimilar,
   onSearchFocus,
   onSwitchToBoard,
@@ -70,12 +76,13 @@ export function DeckView({
   const storeTimelineSlots = useBoardStore((state) => state.timelineSlots);
   const timelineSlots = propTimelineSlots ?? storeTimelineSlots;
   const storeDiscardedCards = useBoardStore((state) => state.discardedCards);
-  const discardedCards = storeDiscardedCards;
+  const discardedCards = propDiscardedCards ?? storeDiscardedCards;
   const undoStack = useBoardStore((state) => state.undoStack);
   const discardCard = useBoardStore((state) => state.discardCard);
   const dockCard = useBoardStore((state) => state.dockCard);
   const undoLastAction = useBoardStore((state) => state.undoLastAction);
   const restoreDiscardedCards = useBoardStore((state) => state.restoreDiscardedCards);
+  const restoreSingleDiscardedCard = useBoardStore((state) => state.restoreSingleDiscardedCard);
   const setViewMode = useBoardStore((state) => state.setViewMode);
 
   const [cardIndex, setCardIndex] = useState(0);
@@ -85,13 +92,14 @@ export function DeckView({
   const [isExiting, setIsExiting] = useState<'left' | 'right' | 'skip' | null>(null);
   const [enteringCard, setEnteringCard] = useState<{
     id: string;
-    direction: 'left' | 'right';
+    direction: 'left' | 'right' | 'skip';
     stage: 'initial' | 'settling';
   } | null>(null);
 
   const undoTimersRef = useRef<{ t1?: number; t2?: number }>({});
   const dragStartRef = useRef<{ x: number; y: number; pointerId: number } | null>(null);
   const discardSidebarRef = useRef<HTMLElement | null>(null);
+  const discardQueueRef = useRef<HTMLDivElement | null>(null);
   const timelineSidebarRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -101,6 +109,12 @@ export function DeckView({
       if (timers.t2) window.clearTimeout(timers.t2);
     };
   }, []);
+
+  useEffect(() => {
+    if (discardQueueRef.current && discardedCards.length > 0) {
+      discardQueueRef.current.scrollTop = discardQueueRef.current.scrollHeight;
+    }
+  }, [discardedCards.length]);
 
   // Compute unassigned cards (neither docked nor discarded)
   const dockedActivityIds = useMemo(
@@ -150,12 +164,62 @@ export function DeckView({
   }, [activeCard, discardCard, isExiting, triggerExit]);
 
   const handleSkip = useCallback(() => {
-    if (unassignedCards.length <= 1 || isExiting) return;
+    if (unassignedCards.length <= 1 || isExiting || !nextCard) return;
     setIsSlotPickerOpen(false);
+    const incomingCardId = nextCard.activity.id;
     triggerExit('skip', () => {
       setCardIndex((prev) => prev + 1);
+      const prefersReducedMotion =
+        typeof window !== 'undefined' &&
+        typeof window.matchMedia === 'function' &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      if (prefersReducedMotion) return;
+
+      if (undoTimersRef.current.t1) window.clearTimeout(undoTimersRef.current.t1);
+      if (undoTimersRef.current.t2) window.clearTimeout(undoTimersRef.current.t2);
+
+      setEnteringCard({ id: incomingCardId, direction: 'skip', stage: 'initial' });
+
+      undoTimersRef.current.t1 = window.setTimeout(() => {
+        setEnteringCard({ id: incomingCardId, direction: 'skip', stage: 'settling' });
+      }, 20);
+
+      undoTimersRef.current.t2 = window.setTimeout(() => {
+        setEnteringCard(null);
+      }, SETTLE_DURATION_MS);
     });
-  }, [isExiting, triggerExit, unassignedCards.length]);
+  }, [isExiting, nextCard, triggerExit, unassignedCards.length]);
+
+  const handleRestoreSingle = useCallback(
+    (activityId: string) => {
+      if (isExiting || enteringCard) return;
+      const restored = restoreSingleDiscardedCard(activityId);
+      if (restored) {
+        setCardIndex(0);
+        const prefersReducedMotion =
+          typeof window !== 'undefined' &&
+          typeof window.matchMedia === 'function' &&
+          window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        if (prefersReducedMotion) return;
+
+        if (undoTimersRef.current.t1) window.clearTimeout(undoTimersRef.current.t1);
+        if (undoTimersRef.current.t2) window.clearTimeout(undoTimersRef.current.t2);
+
+        setEnteringCard({ id: activityId, direction: 'left', stage: 'initial' });
+
+        undoTimersRef.current.t1 = window.setTimeout(() => {
+          setEnteringCard({ id: activityId, direction: 'left', stage: 'settling' });
+        }, 20);
+
+        undoTimersRef.current.t2 = window.setTimeout(() => {
+          setEnteringCard(null);
+        }, SETTLE_DURATION_MS);
+      }
+    },
+    [enteringCard, isExiting, restoreSingleDiscardedCard],
+  );
 
   const handleDockSlot = useCallback(
     (slotId: string) => {
@@ -374,9 +438,11 @@ export function DeckView({
     if (enteringCard.stage === 'initial') {
       activeCardStyle = {
         transform:
-          enteringCard.direction === 'left'
-            ? 'translate3d(-100vw, 0, 0) rotate(-24deg) scale(0.92)'
-            : 'translate3d(100vw, 0, 0) rotate(24deg) scale(0.92)',
+          enteringCard.direction === 'skip'
+            ? 'translate3d(0, 16px, 0) scale(0.95)'
+            : enteringCard.direction === 'left'
+              ? 'translate3d(-32rem, 0, 0) scale(0.35) rotate(-10deg)'
+              : 'translate3d(32rem, 0, 0) scale(0.35) rotate(10deg)',
         opacity: 0,
         transition: 'none',
       };
@@ -384,20 +450,20 @@ export function DeckView({
       activeCardStyle = {
         transform: 'translate3d(0, 0, 0) rotate(0deg) scale(1)',
         opacity: 1,
-        transition: 'transform 280ms cubic-bezier(0.16, 1, 0.3, 1), opacity 240ms var(--motion-ease)',
+        transition: 'transform 260ms cubic-bezier(0.16, 1, 0.3, 1), opacity 240ms var(--motion-ease)',
       };
     }
   } else if (isExiting === 'left') {
     activeCardStyle = {
-      transform: 'translate3d(-120vw, 0, 0) rotate(-26deg) scale(0.92)',
+      transform: 'translate3d(-32rem, 0, 0) scale(0.35) rotate(-10deg)',
       opacity: 0,
-      transition: 'transform 220ms cubic-bezier(0.32, 0, 0.67, 0), opacity 220ms cubic-bezier(0.32, 0, 0.67, 0)',
+      transition: 'transform 260ms cubic-bezier(0.32, 0, 0.67, 0), opacity 260ms cubic-bezier(0.32, 0, 0.67, 0)',
     };
   } else if (isExiting === 'right') {
     activeCardStyle = {
-      transform: 'translate3d(120vw, 0, 0) rotate(26deg) scale(0.92)',
+      transform: 'translate3d(32rem, 0, 0) scale(0.35) rotate(10deg)',
       opacity: 0,
-      transition: 'transform 220ms cubic-bezier(0.32, 0, 0.67, 0), opacity 220ms cubic-bezier(0.32, 0, 0.67, 0)',
+      transition: 'transform 260ms cubic-bezier(0.32, 0, 0.67, 0), opacity 260ms cubic-bezier(0.32, 0, 0.67, 0)',
     };
   } else if (isExiting === 'skip') {
     activeCardStyle = {
@@ -478,26 +544,67 @@ export function DeckView({
           </div>
         </div>
 
-        <div className="deck-drop-target deck-drop-target--discard">
-          <IconClear className="deck-drop-target__icon" />
-          <p className="deck-drop-target__label">{DECK_DISCARD_DROP_HINT}</p>
-        </div>
-
         {discardedCards.length > 0 ? (
-          <div className="deck-sidebar__footer">
-            <button
-              className="btn btn--sm btn--subtle deck-sidebar__restore-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                restoreDiscardedCards();
-              }}
-              type="button"
-            >
-              <IconUndo />
-              <span>{DECK_RESTORE_ALL_LABEL}</span>
-            </button>
+          <>
+            <div className="deck-drop-target deck-drop-target--discard deck-drop-target--compact">
+              <IconClear className="deck-drop-target__icon" />
+              <p className="deck-drop-target__label">{DECK_DISCARD_DROP_HINT}</p>
+            </div>
+
+            <div aria-label={DECK_DISCARD_QUEUE_TITLE} className="deck-discard-queue" ref={discardQueueRef}>
+              {discardedCards.map((card, idx) => {
+                const thumb = card.activity.image;
+                const title = card.activity.title_en ?? card.activity.title;
+                return (
+                  <div className="deck-discard-item" key={card.activity.id}>
+                    {thumb ? (
+                      <img alt="" className="deck-discard-item__thumb" src={thumb} />
+                    ) : (
+                      <div className="deck-discard-item__thumb-placeholder">{activityCardSerial(idx)}</div>
+                    )}
+                    <div className="deck-discard-item__content">
+                      <span className="deck-discard-item__title" title={title}>
+                        {title}
+                      </span>
+                      <span className="deck-discard-item__district">{card.activity.location.district}</span>
+                    </div>
+                    <button
+                      aria-label={DECK_DISCARD_RESTORE_TOOLTIP}
+                      className="deck-discard-item__restore-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRestoreSingle(card.activity.id);
+                      }}
+                      title={DECK_DISCARD_RESTORE_TOOLTIP}
+                      type="button"
+                    >
+                      <IconUndo className="deck-discard-item__restore-icon" />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="deck-sidebar__footer">
+              <button
+                className="btn btn--sm btn--subtle deck-sidebar__restore-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  restoreDiscardedCards();
+                }}
+                type="button"
+              >
+                <IconUndo />
+                <span>{DECK_RESTORE_ALL_LABEL}</span>
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="deck-drop-target deck-drop-target--discard">
+            <IconClear className="deck-drop-target__icon" />
+            <p className="deck-drop-target__label">{DECK_DISCARD_DROP_HINT}</p>
           </div>
-        ) : null}
+        )}
       </aside>
 
       {/* Center Column: Card Stack & Controls */}
@@ -510,7 +617,7 @@ export function DeckView({
             </div>
 
             <div className="deck-stack">
-              {nextCard ? (
+              {nextCard && isExiting !== 'skip' ? (
                 <div className="deck-stack__item deck-stack__item--next">
                   <DeckCard isGhost match={nextCard} style={nextCardStyle} />
                 </div>
@@ -695,6 +802,8 @@ export function DeckView({
                 </div>
                 {bookedCard ? (
                   <p className="deck-slot-item__title">{bookedCard.activity.title_en ?? bookedCard.activity.title}</p>
+                ) : isHoveredTarget ? (
+                  <div className="deck-slot-item__drop-hint">{DECK_SLOT_DROP_HERE_HINT}</div>
                 ) : null}
               </div>
             );
