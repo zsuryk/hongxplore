@@ -12,7 +12,7 @@ from collections.abc import Iterator
 import pytest
 from fastapi.testclient import TestClient
 
-from app.config import LLMProvider, Settings
+from app.config import Settings
 from app.main import app
 from app.models import Activity
 from app.routes.agent import (
@@ -95,15 +95,10 @@ def test_get_agent_orchestrator_demo_mode(monkeypatch: pytest.MonkeyPatch) -> No
     from app.routes import agent as agent_route
 
     demo_settings = Settings(
+        _env_file=None,
         demo_mode=True,
         tavily_api_key="secret-tavily-key",
-        llm_providers=[
-            LLMProvider(
-                base_url="https://api.openai.com/v1",
-                model="gpt-4o",
-                api_key="secret-llm-key",
-            )
-        ],
+        openai_api_key="secret-llm-key",
     )
     monkeypatch.setattr(agent_route, "settings", demo_settings)
 
@@ -121,15 +116,10 @@ def test_get_agent_orchestrator_live_mode_injects_collaborators(
     from app.routes import agent as agent_route
 
     live_settings = Settings(
+        _env_file=None,
         demo_mode=False,
         tavily_api_key="secret-tavily-key",
-        llm_providers=[
-            LLMProvider(
-                base_url="https://api.openai.com/v1",
-                model="gpt-4o",
-                api_key="secret-llm-key",
-            )
-        ],
+        openai_api_key="secret-llm-key",
     )
     monkeypatch.setattr(agent_route, "settings", live_settings)
 
