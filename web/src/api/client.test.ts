@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import agentResponse from '../../../docs/examples/agent-response.json';
-import { formatAgentErrorMessage, INITIAL_ACTIVITY_QUERY } from '../copy';
-import { AgentAccessDeniedError, createAgentClient } from './client';
+import { formatAgentErrorMessage, INITIAL_ACTIVITY_QUERY, isServerUnreachable } from '../copy';
+import { AgentAccessDeniedError, AgentRequestRejectedError, createAgentClient } from './client';
 import type { components } from './schema';
 
 const response = agentResponse as components['schemas']['AgentResponse'];
@@ -69,6 +69,15 @@ function deniedFetch(status: number, reason: string) {
   return vi.fn().mockResolvedValue({
     ok: false,
     status,
+    json: async () => ({ detail: { reason, message: `server says ${reason}` } }),
+  });
+}
+
+function rejectedFetch(status: number, reason: string, headers: Record<string, string> = {}) {
+  return vi.fn().mockResolvedValue({
+    ok: false,
+    status,
+    headers: new Headers(headers),
     json: async () => ({ detail: { reason, message: `server says ${reason}` } }),
   });
 }
@@ -186,5 +195,71 @@ describe('the gate is surfaced, not swallowed (issue #83)', () => {
     const client = createAgentClient({ mode: 'demo' }, deniedFetch(500, 'whatever') as unknown as typeof fetch);
 
     await expect(client.requestAgent({ query: 'weekend markets', mode: 'demo' })).rejects.toThrow('500');
+  });
+});
+
+describe('a refusal with a reason reads as copy, not a raw status (issue #88)', () => {
+  it.each([
+    [429, 'rate_limited'],
+    [413, 'request_too_large'],
+    [413, 'query_too_long'],
+    [413, 'too_many_free_slots'],
+  ])('reason %s/%s reaches the error', async (status, reason) => {
+    const client = createAgentClient({ mode: 'demo' }, rejectedFetch(status, reason) as unknown as typeof fetch);
+
+    await expect(client.requestAgent({ query: 'weekend markets', mode: 'demo' })).rejects.toBeInstanceOf(
+      AgentRequestRejectedError,
+    );
+    await expect(client.requestAgent({ query: 'weekend markets', mode: 'demo' })).rejects.toMatchObject({ reason });
+  });
+
+  it('a rate limit hands back when to come back', async () => {
+    // The server sends Retry-After so a well-behaved client can wait instead of
+    // hammering a limit it cannot see.
+    const client = createAgentClient(
+      { mode: 'demo' },
+      rejectedFetch(429, 'rate_limited', { 'retry-after': '42' }) as unknown as typeof fetch,
+    );
+
+    await expect(client.requestAgent({ query: 'weekend markets', mode: 'demo' })).rejects.toMatchObject({
+      retryAfterSeconds: 42,
+    });
+  });
+
+  it('a refused request never falls back to the bundled fixture', async () => {
+    // Serving seed cards to someone whose query was refused is how a judge ends
+    // up looking at demo data believing it is live.
+    const error = new AgentRequestRejectedError('rate_limited');
+
+    expect(isServerUnreachable(error)).toBe(false);
+    expect(formatAgentErrorMessage(error)).not.toMatch(/connection|unreachable/i);
+  });
+
+  it('friendly copy explains what to do about a rate limit', () => {
+    const message = formatAgentErrorMessage(new AgentRequestRejectedError('rate_limited'));
+
+    expect(message).toMatch(/few seconds|wait|again/i);
+    expect(message).not.toMatch(/429/);
+  });
+
+  it('friendly copy tells an oversized request apart from a rate limit', () => {
+    const tooLarge = formatAgentErrorMessage(new AgentRequestRejectedError('request_too_large'));
+    const rateLimited = formatAgentErrorMessage(new AgentRequestRejectedError('rate_limited'));
+
+    expect(tooLarge).not.toBe(rateLimited);
+    expect(tooLarge).toMatch(/shorter|smaller|bigger/i);
+  });
+
+  it('an unrecognised reason still carries the server message through', async () => {
+    // A server newer than this client may add a reason the copy table has never
+    // heard of. Dropping the sentence would leave the user with nothing.
+    const client = createAgentClient(
+      { mode: 'demo' },
+      rejectedFetch(429, 'quota_astronomically_exceeded') as unknown as typeof fetch,
+    );
+
+    await expect(client.requestAgent({ query: 'weekend markets', mode: 'demo' })).rejects.toThrow(
+      'server says quota_astronomically_exceeded',
+    );
   });
 });

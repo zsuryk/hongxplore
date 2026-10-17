@@ -9,7 +9,7 @@
     "/health": {
       "get": {
         "summary": "Health",
-        "description": "Liveness probe: returns `{\"status\": \"ok\"}`.\n\nCloud Run calls this unauthenticated on every instance start, so it must\nstay cheap and must describe nothing about the deployment — no version,\nno config, no build id.",
+        "description": "Liveness probe: returns `{\"status\": \"ok\"}`.\n\nCloud Run calls this unauthenticated on every instance start, so it must\nstay cheap and must describe nothing about the deployment — no version,\nno config, no build id. It is also the keep-warm ping's target, which is\nwhy it must not spend the agent endpoint's rate limit: the ping every five\nminutes would otherwise evict the judge's own queries.",
         "operationId": "health_health_get",
         "responses": {
           "200": {
@@ -34,8 +34,8 @@
         "tags": [
           "agent"
         ],
-        "summary": "Find activities, in demo or live mode (issue #83 gates live).",
-        "description": "Parse intent → search (or seed in demo mode) → rank → match rationale → respond.\n\n`mode=\"demo\"` is always served from the bundled seed data and needs no key.\n`mode=\"live\"` is refused unless it carries a valid agent access key, and is\nrefused unconditionally by an instance running with `DEMO_MODE=true`.",
+        "summary": "Find activities, in demo or live mode (issue #83 gates live, #88 guards it).",
+        "description": "Parse intent → search (or seed in demo mode) → rank → match rationale → respond.\n\n`mode=\"demo\"` is always served from the bundled seed data and needs no key.\n`mode=\"live\"` is refused unless it carries a valid agent access key, and is\nrefused unconditionally by an instance running with `DEMO_MODE=true`.\n\nWhatever the pipeline returns is scrubbed before it leaves: an upstream\nfailure answers with friendly copy, and no configured secret, provider base\nURL or model name appears anywhere in the body — including in the agent log,\nwhich the web app renders.",
         "operationId": "agent_api_agent_post",
         "requestBody": {
           "content": {
@@ -58,8 +58,8 @@
               }
             }
           },
-          "401": {
-            "description": "A live request arrived without an agent access key.",
+          "403": {
+            "description": "A live request arrived with no key, with an unrecognised one, or against an instance configured demo-only. The refusal is identical in all three cases, so it cannot be used to guess the key.",
             "content": {
               "application/json": {
                 "schema": {
@@ -68,12 +68,22 @@
               }
             }
           },
-          "403": {
-            "description": "A live request arrived with an unrecognised key, or against an instance configured demo-only.",
+          "413": {
+            "description": "The request is bigger than this demo takes: a body over `MAX_REQUEST_BYTES`, a query over `AGENT_MAX_QUERY_CHARS`, or more free slots than `AGENT_MAX_FREE_SLOTS` allows.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AgentAccessError"
+                  "$ref": "#/components/schemas/AgentRequestRejected"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "This client has spent its request budget for the current window. `Retry-After` says when it resets.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentRequestRejected"
                 }
               }
             }
@@ -362,6 +372,32 @@
         ],
         "title": "AgentRequest",
         "description": "What the search bar and time-slot chips submit."
+      },
+      "AgentRequestRejected": {
+        "properties": {
+          "reason": {
+            "type": "string",
+            "enum": [
+              "rate_limited",
+              "request_too_large",
+              "query_too_long",
+              "too_many_free_slots"
+            ],
+            "title": "Reason"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "reason",
+          "message"
+        ],
+        "title": "AgentRequestRejected",
+        "description": "Why a request was refused before it reached the providers (issue #88).\n\nSame shape as `AgentAccessError` on purpose: the web app reads one envelope\nfor every refusal, so a rate limit or an oversized body reads as a sentence a\nperson can act on rather than a raw status code. `reason` is the machine\nsignal; `message` is the server's own fallback copy."
       },
       "AgentResponse": {
         "properties": {

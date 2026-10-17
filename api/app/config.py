@@ -36,6 +36,14 @@ or a validation error — the pitch key is a shared secret, not a config value.
 pitch key must stay a one-line edit an operator can make mid-demo.
 """
 
+CORSOrigins = Annotated[list[str], NoDecode]
+"""Cross-origin allowlist, comma-separated. Explicit origins only — never a wildcard.
+
+A wildcard would let any page on the internet drive a deployment that spends the
+team's provider quota, so a wildcard is a startup error rather than a value
+(issue #88).
+"""
+
 
 class LLMProvider(BaseModel):
     """One configured OpenAI-compatible endpoint.
@@ -87,6 +95,32 @@ class Settings(BaseSettings):
     # a code change or a web redeploy. Empty means live mode is refused outright
     # — the gate fails closed.
     agent_access_keys: AgentAccessKeys = Field(default_factory=list)
+    # --- Public-surface guards (issue #88) -------------------------------------
+    # The deployed URL is unauthenticated and spends provider quota, so the
+    # limits that protect it are configuration, not constants: an operator has to
+    # be able to tighten one for pitch day without a code change and a redeploy.
+    #
+    # Defaults are sized for a demo — a judge's session is a few dozen queries
+    # and never reaches them; a bored stranger runs into them within a minute.
+    rate_limit_enabled: bool = True
+    rate_limit_requests: int = Field(default=60, ge=1)
+    rate_limit_window_seconds: float = Field(default=60.0, gt=0)
+    # Cloud Run puts the caller's address in `X-Forwarded-For` and the socket
+    # belongs to the proxy, so without this every client on the internet would
+    # share one bucket and one judge's session could lock out the room.
+    # The header is caller-controlled, so it is a courtesy and a cost cap, not a
+    # perimeter — the issue's own threat model says so.
+    rate_limit_trust_forwarded_for: bool = True
+    # The lower bound is the smallest body that can carry a real request, so a
+    # limit below it is a misconfiguration rather than a strict policy.
+    max_request_bytes: int = Field(default=16_384, ge=1024)
+    agent_max_query_chars: int = Field(default=500, ge=1)
+    agent_max_free_slots: int = Field(default=12, ge=0)
+    # Cross-origin allowlist. Empty is a valid, deliberate state: ADR-0006 serves
+    # the web app and the API from one URL, so production needs no allowance at
+    # all, and local development adds the Vite origin.
+    cors_allowed_origins: CORSOrigins = Field(default_factory=lambda: ["http://localhost:5173"])
+    cors_preflight_max_age_seconds: int = Field(default=600, ge=0)
 
     @field_validator("agent_access_keys", mode="before")
     @classmethod
@@ -107,6 +141,26 @@ class Settings(BaseSettings):
         if isinstance(value, str) and not value.strip():
             return None
         return value
+
+    @field_validator("cors_allowed_origins", mode="before")
+    @classmethod
+    def _split_cors_origins(cls, value: object) -> object:
+        """Accept `a,b` from the environment, and refuse to accept a wildcard.
+
+        Blank is meaningful here — it means "allow no cross-origin request", which
+        is the correct posture for the single-URL deployment in ADR-0006. It must
+        not quietly become "allow everything", which is what an empty
+        ``allow_origins`` read as a wildcard would do to a reader.
+        """
+        if not isinstance(value, str):
+            return value
+        origins = list(dict.fromkeys(part.strip() for part in value.split(",") if part.strip()))
+        if any("*" in origin for origin in origins):
+            raise ValueError(
+                "cors_allowed_origins must list explicit origins; a wildcard would let "
+                "any page on the internet drive this deployment (see issue #88)"
+            )
+        return origins
 
     @model_validator(mode="before")
     @classmethod

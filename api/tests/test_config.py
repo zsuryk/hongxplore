@@ -320,6 +320,87 @@ def test_deploy_runbook_covers_every_runtime_variable(repo_root: Path) -> None:
     assert not missing, f"absent from docs/DEPLOY.md: {missing}"
 
 
+def test_public_surface_defaults_are_sized_for_a_demo(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A judge's session is a few dozen queries; a stranger is hundreds. (Issue #88)"""
+    _clear_env(monkeypatch)
+    settings = Settings(_env_file=None)
+    assert settings.rate_limit_enabled is True
+    assert settings.rate_limit_requests == 60
+    assert settings.rate_limit_window_seconds == 60.0
+    assert settings.rate_limit_trust_forwarded_for is True
+    assert settings.max_request_bytes == 16_384
+    assert settings.agent_max_query_chars == 500
+    assert settings.agent_max_free_slots == 12
+    assert settings.cors_preflight_max_age_seconds == 600
+
+
+def test_public_surface_policy_overrides_from_dotenv(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _clear_env(monkeypatch)
+    dotenv = _write_dotenv(
+        tmp_path,
+        RATE_LIMIT_ENABLED="false",
+        RATE_LIMIT_REQUESTS="5",
+        RATE_LIMIT_WINDOW_SECONDS="30",
+        RATE_LIMIT_TRUST_FORWARDED_FOR="false",
+        MAX_REQUEST_BYTES="4096",
+        AGENT_MAX_QUERY_CHARS="200",
+        AGENT_MAX_FREE_SLOTS="6",
+        CORS_ALLOWED_ORIGINS="https://one.example, https://two.example",
+        CORS_PREFLIGHT_MAX_AGE_SECONDS="60",
+    )
+
+    settings = Settings(_env_file=dotenv)
+
+    assert settings.rate_limit_enabled is False
+    assert settings.rate_limit_requests == 5
+    assert settings.rate_limit_window_seconds == 30
+    assert settings.rate_limit_trust_forwarded_for is False
+    assert settings.max_request_bytes == 4096
+    assert settings.agent_max_query_chars == 200
+    assert settings.agent_max_free_slots == 6
+    assert settings.cors_allowed_origins == ["https://one.example", "https://two.example"]
+    assert settings.cors_preflight_max_age_seconds == 60
+
+
+def test_duplicate_origins_collapse_to_one_allowance(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A preflight cache is per origin, so listing one twice must not double it."""
+    _clear_env(monkeypatch)
+    dotenv = _write_dotenv(
+        tmp_path, CORS_ALLOWED_ORIGINS="https://demo.example,https://demo.example"
+    )
+
+    assert Settings(_env_file=dotenv).cors_allowed_origins == ["https://demo.example"]
+
+
+@pytest.mark.parametrize(
+    ("key", "value"),
+    [
+        ("RATE_LIMIT_REQUESTS", "0"),
+        ("RATE_LIMIT_WINDOW_SECONDS", "0"),
+        ("RATE_LIMIT_WINDOW_SECONDS", "-1"),
+        ("MAX_REQUEST_BYTES", "10"),
+        ("AGENT_MAX_QUERY_CHARS", "0"),
+        ("AGENT_MAX_FREE_SLOTS", "-1"),
+        ("CORS_PREFLIGHT_MAX_AGE_SECONDS", "-1"),
+    ],
+)
+def test_invalid_public_surface_value_raises_validation_error(
+    key: str, value: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A limit of zero is a broken deployment, not a permissive one — fail at startup."""
+    _clear_env(monkeypatch)
+    monkeypatch.setenv(key, value)
+    with pytest.raises(ValidationError) as exc_info:
+        Settings(_env_file=None)
+    assert key.lower() in str(exc_info.value)
+
+
 def test_load_settings_fails_fast_with_actionable_message(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

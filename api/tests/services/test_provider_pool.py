@@ -3,6 +3,8 @@
 All tests use mocked transports/clients — zero network calls, zero external API keys.
 """
 
+import logging
+
 import httpx
 import openai
 import pytest
@@ -335,8 +337,16 @@ async def test_agent_orchestrator_integration_with_provider_pool_failover() -> N
 
 
 @pytest.mark.anyio
-async def test_agent_orchestrator_integration_with_exhausted_pool_fallback() -> None:
-    """When pool exhausts all providers, AgentOrchestrator falls back to offline parsing."""
+async def test_agent_orchestrator_integration_with_exhausted_pool_fallback(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """When pool exhausts all providers, AgentOrchestrator falls back to offline parsing.
+
+    The pool's own error text stays out of the client-visible agent log since
+    issue #88 — those entries are rendered in the status panel, so provider
+    detail in them is provider detail in a browser. It goes to the server log,
+    where an operator can read it.
+    """
     from app.models.agent import AgentRequest
     from app.services.agent import AgentOrchestrator
 
@@ -355,10 +365,12 @@ async def test_agent_orchestrator_integration_with_exhausted_pool_fallback() -> 
     )
 
     request = AgentRequest(query="hiking in Sai Kung", mode="live")
-    response = await orchestrator.run(request)
+    with caplog.at_level(logging.WARNING):
+        response = await orchestrator.run(request)
 
     assert response.status == "ok"
     assert len(response.matches) > 0
     log_messages = [entry.message for entry in response.log]
     assert any("Live intent parsing unavailable" in msg for msg in log_messages)
-    assert any("All 2 LLM provider(s) in the pool failed." in msg for msg in log_messages)
+    assert not any("All 2 LLM provider(s) in the pool failed." in msg for msg in log_messages)
+    assert "All 2 LLM provider(s) in the pool failed." in caplog.text
