@@ -52,14 +52,12 @@ export function findRestoredCardIndex(
 
 /**
  * Dynamically scales down the active card as it approaches the sidebars.
- * Returns a scale between 1.0 (at rest in center) and ~0.50 (at sidebar margins).
+ * Returns a scale between 1.0 (at rest in center) and ~0.55 (at sidebar margins).
+ * Hovering drop targets never alters or jumps the card scale.
  */
-export function computeDynamicDragScale(deltaX: number, isHoveredTarget: boolean = false): number {
+export function computeDynamicDragScale(deltaX: number): number {
   const absX = Math.abs(deltaX);
   const dragRatio = Math.min(absX / 260, 1);
   const scale = 1 - dragRatio * 0.45;
-  if (isHoveredTarget) {
-    return Math.min(scale, 0.52);
-  }
   return Number(scale.toFixed(3));
 }

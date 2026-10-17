@@ -30,6 +30,8 @@ import {
   DECK_SKIP_TOOLTIP,
   DECK_SLOT_AVAILABLE_LABEL,
   DECK_SLOT_DROP_HERE_HINT,
+  DECK_SLOT_INCOMPATIBLE_HINT,
+  DECK_SLOT_INCOMPATIBLE_LABEL,
   DECK_SLOT_PICKER_HINT,
   DECK_SLOT_PICKER_TITLE,
   DECK_TIMELINE_PANEL_TITLE,
@@ -100,7 +102,7 @@ export function DeckView({
   const [justDiscarded, setJustDiscarded] = useState(false);
   const [enteringCard, setEnteringCard] = useState<{
     id: string;
-    direction: 'left' | 'right' | 'skip';
+    direction: 'left' | 'right';
     stage: 'initial' | 'settling';
   } | null>(null);
 
@@ -128,7 +130,7 @@ export function DeckView({
     };
   }, []);
 
-  const scheduleEnteringCard = useCallback((id: string, direction: 'left' | 'right' | 'skip') => {
+  const scheduleEnteringCard = useCallback((id: string, direction: 'left' | 'right') => {
     const prefersReducedMotion =
       typeof window !== 'undefined' &&
       typeof window.matchMedia === 'function' &&
@@ -209,12 +211,10 @@ export function DeckView({
   const handleSkip = useCallback(() => {
     if (unassignedCards.length <= 1 || isExiting || !nextCard) return;
     setIsSlotPickerOpen(false);
-    const incomingCardId = nextCard.activity.id;
     triggerExit('skip', () => {
       setCardIndex((prev) => prev + 1);
-      scheduleEnteringCard(incomingCardId, 'skip');
     });
-  }, [isExiting, nextCard, scheduleEnteringCard, triggerExit, unassignedCards.length]);
+  }, [isExiting, nextCard, triggerExit, unassignedCards.length]);
 
   const handleRestoreSingle = useCallback(
     (activityId: string) => {
@@ -237,6 +237,8 @@ export function DeckView({
   const handleDockSlot = useCallback(
     (slotId: string) => {
       if (!activeCard || isExiting) return;
+      const matchingSlotId = getActivityMatchingSlotId(activeCard.activity.parts[0]?.start);
+      if (matchingSlotId && matchingSlotId !== slotId) return;
       setIsSlotPickerOpen(false);
       triggerExit('right', () => {
         dockCard(activeCard.activity.id, slotId, { replace: true });
@@ -404,7 +406,13 @@ export function DeckView({
     if (outcome.type === 'discard') {
       handleDiscard();
     } else if (outcome.type === 'dock') {
-      handleDockSlot(outcome.slotId);
+      const matchingSlotId = activeCard ? getActivityMatchingSlotId(activeCard.activity.parts[0]?.start) : null;
+      if (matchingSlotId && matchingSlotId !== outcome.slotId) {
+        setDragOffset(null);
+        setHoveredDropTarget(null);
+      } else {
+        handleDockSlot(outcome.slotId);
+      }
     } else if (outcome.type === 'quick-dock') {
       handleQuickDock();
     } else {
@@ -467,7 +475,10 @@ export function DeckView({
   } else if (hoveredDropTarget === 'discard') {
     stamp = { type: 'discard', opacity: 1 };
   } else if (hoveredDropTarget && hoveredDropTarget !== 'discard') {
-    stamp = { type: 'dock', opacity: 1 };
+    const matchingSlotId = activeCard ? getActivityMatchingSlotId(activeCard.activity.parts[0]?.start) : null;
+    if (!matchingSlotId || matchingSlotId === hoveredDropTarget) {
+      stamp = { type: 'dock', opacity: 1 };
+    }
   } else if (isDragging) {
     if (dragOffset.x < -24) {
       stamp = { type: 'discard', opacity: Math.min((Math.abs(dragOffset.x) - 24) / 60, 1) };
@@ -481,13 +492,10 @@ export function DeckView({
     if (enteringCard.stage === 'initial') {
       activeCardStyle = {
         transform:
-          enteringCard.direction === 'skip'
-            ? 'translate3d(0, var(--space-4), 0) scale(0.95)'
-            : enteringCard.direction === 'left'
-              ? 'translate3d(-24rem, 0, 0) scale(0.4) rotate(-6deg)'
-              : 'translate3d(24rem, 0, 0) scale(0.4) rotate(6deg)',
-        transformOrigin:
-          enteringCard.direction === 'left' ? '20% 50%' : enteringCard.direction === 'right' ? '80% 50%' : '50% 90%',
+          enteringCard.direction === 'left'
+            ? 'translate3d(-24rem, 0, 0) scale(0.4) rotate(-6deg)'
+            : 'translate3d(24rem, 0, 0) scale(0.4) rotate(6deg)',
+        transformOrigin: enteringCard.direction === 'left' ? '20% 50%' : '80% 50%',
         opacity: 0,
         transition: 'none',
       };
@@ -520,7 +528,7 @@ export function DeckView({
       transition: 'transform var(--motion-slow) var(--motion-ease), opacity var(--motion-slow) var(--motion-ease)',
     };
   } else if (isDragging) {
-    const dynamicScale = computeDynamicDragScale(dragOffset.x, Boolean(hoveredDropTarget));
+    const dynamicScale = computeDynamicDragScale(dragOffset.x);
     const dragOrigin = dragOffset.x < 0 ? '20% 50%' : '80% 50%';
     activeCardStyle = {
       transform: `translate3d(${dragOffset.x}px, ${dragOffset.y * 0.3}px, 0) rotate(${dragOffset.x * 0.03}deg) scale(${dynamicScale})`,
@@ -698,13 +706,14 @@ export function DeckView({
 
             <div className="deck-stack">
               {nextCard ? (
-                <div className="deck-stack__item deck-stack__item--next">
+                <div className="deck-stack__item deck-stack__item--next" key={nextCard.activity.id}>
                   <DeckCard isGhost match={nextCard} style={nextCardStyle} />
                 </div>
               ) : null}
 
               <div
                 className="deck-stack__item deck-stack__item--active"
+                key={activeCard.activity.id}
                 onLostPointerCapture={handlePointerCancel}
                 onPointerCancel={handlePointerCancel}
                 onPointerDown={handlePointerDown}
@@ -853,38 +862,70 @@ export function DeckView({
           {TIMELINE_SLOTS.map((slot) => {
             const slotState = timelineSlots.find((s) => s.id === slot.id);
             const bookedCard = slotState?.activityId ? cards.find((c) => c.activity.id === slotState.activityId) : null;
+            const matchingSlotId = activeCard ? getActivityMatchingSlotId(activeCard.activity.parts[0]?.start) : null;
+            const isIncompatible = Boolean(matchingSlotId && matchingSlotId !== slot.id);
+            const isSuggested = Boolean(matchingSlotId && matchingSlotId === slot.id);
             const isHoveredTarget = hoveredDropTarget === slot.id;
             const isJustDocked = justDockedSlotId === slot.id;
 
+            let slotItemClass = 'deck-slot-item';
+            if (bookedCard) {
+              slotItemClass += ' deck-slot-item--booked';
+            } else {
+              slotItemClass += ' deck-slot-item--empty';
+            }
+            if (isIncompatible) {
+              slotItemClass += ' deck-slot-item--incompatible';
+            } else if (isSuggested) {
+              slotItemClass += ' deck-slot-item--suggested';
+            }
+            if (isHoveredTarget) {
+              slotItemClass += ' deck-slot-item--drop-target';
+            }
+            if (isJustDocked) {
+              slotItemClass += ' deck-slot-item--just-docked';
+            }
+
             return (
               <div
-                className={`deck-slot-item${bookedCard ? ' deck-slot-item--booked' : ' deck-slot-item--empty'}${
-                  isHoveredTarget ? ' deck-slot-item--drop-target' : ''
-                }${isJustDocked ? ' deck-slot-item--just-docked' : ''}`}
+                aria-disabled={isIncompatible}
+                className={slotItemClass}
                 data-drop-zone="timeslot"
+                data-incompatible={isIncompatible ? 'true' : undefined}
                 data-slot-id={slot.id}
                 key={slot.id}
                 onClick={() => {
-                  if (activeCard) {
+                  if (activeCard && !isIncompatible) {
                     handleDockSlot(slot.id);
                   }
                 }}
                 role="button"
-                tabIndex={0}
+                tabIndex={isIncompatible ? -1 : 0}
                 title={slot.label}
               >
                 <div className="deck-slot-item__header">
                   <span className="deck-slot-item__label">{slot.label}</span>
                   {bookedCard ? (
                     <span className="deck-slot-item__badge">{bookedCard.activity.location.district}</span>
+                  ) : isIncompatible ? (
+                    <span className="deck-slot-item__status deck-slot-item__status--incompatible">
+                      {DECK_SLOT_INCOMPATIBLE_LABEL}
+                    </span>
                   ) : (
                     <span className="deck-slot-item__status">{DECK_SLOT_AVAILABLE_LABEL}</span>
                   )}
                 </div>
                 {bookedCard ? (
                   <p className="deck-slot-item__title">{bookedCard.activity.title_en ?? bookedCard.activity.title}</p>
-                ) : isHoveredTarget ? (
-                  <div className="deck-slot-item__drop-hint">{DECK_SLOT_DROP_HERE_HINT}</div>
+                ) : null}
+                {isHoveredTarget ? (
+                  <div
+                    className={`deck-slot-item__drop-hint${
+                      isIncompatible ? ' deck-slot-item__drop-hint--incompatible' : ''
+                    }`}
+                  >
+                    {isIncompatible ? DECK_SLOT_INCOMPATIBLE_HINT : DECK_SLOT_DROP_HERE_HINT}
+                  </div>
                 ) : null}
               </div>
             );

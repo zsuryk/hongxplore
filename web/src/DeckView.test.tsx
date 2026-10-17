@@ -31,6 +31,7 @@ import {
   DECK_KEY_SPACE,
   DECK_KEY_Z,
   DECK_SKIP_LABEL,
+  DECK_SLOT_INCOMPATIBLE_LABEL,
   DECK_TIMELINE_PANEL_TITLE,
   DECK_UNDO_LABEL,
   TIMELINE_SLOTS,
@@ -190,7 +191,7 @@ describe('DeckView', () => {
       expect(findRestoredCardIndex(cards, 'non-existent-id')).toBe(0);
     });
 
-    it('computes dynamic scale proportionally as card drags towards sidebars', () => {
+    it('computes dynamic scale proportionally as card drags towards sidebars without jumping on hover', () => {
       // At rest (deltaX = 0), scale is 1.0
       expect(computeDynamicDragScale(0)).toBe(1);
 
@@ -202,8 +203,21 @@ describe('DeckView', () => {
       expect(computeDynamicDragScale(260)).toBe(0.55);
       expect(computeDynamicDragScale(400)).toBe(0.55);
 
-      // Hovering a drop target snaps/caps down to thumbnail scale
-      expect(computeDynamicDragScale(100, true)).toBe(0.52);
+      // Scale is continuous and derived purely from deltaX (never jumping on hover)
+      expect(computeDynamicDragScale(100)).toBe(0.827);
+    });
+
+    it('flags timeslots as incompatible (red) when card start time cannot be scheduled in that slot', () => {
+      // response.matches[0] starts at 2026-10-03T06:00:00Z -> Saturday afternoon (saturday-afternoon)
+      const markup = renderToStaticMarkup(<DeckView cards={response.matches} />);
+
+      // Incompatible slots should receive deck-slot-item--incompatible and the mismatch label
+      expect(markup).toContain('deck-slot-item--incompatible');
+      expect(markup).toContain(DECK_SLOT_INCOMPATIBLE_LABEL);
+      expect(markup).toContain('data-incompatible="true"');
+
+      // The matching slot (saturday-afternoon) should receive deck-slot-item--suggested
+      expect(markup).toContain('deck-slot-item--suggested');
     });
   });
 });
