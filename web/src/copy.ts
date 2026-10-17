@@ -650,3 +650,28 @@ export function deckExternalLinkLabel(sourceName: string): string {
 export function deckSlotPickerChipLabel(slotLabel: string, isOccupied: boolean): string {
   return isOccupied ? `${slotLabel} (*)` : slotLabel;
 }
+
+export const DECK_DISCARD_PANEL_TITLE = 'Discard bin';
+export const DECK_DISCARD_DROP_HINT = 'Drop card here to discard';
+export const DECK_DISCARD_EMPTY_HINT = 'No discarded activities yet';
+export const DECK_TIMELINE_PANEL_TITLE = 'Weekend schedule';
+export const DECK_TIMELINE_DROP_HINT = 'Drag card here to schedule';
+export const DECK_SLOT_AVAILABLE_LABEL = 'Available slot';
+export const DECK_ACTION_DISCARD = 'Discard';
+export const DECK_ACTION_UNDO = 'Undo';
+export const DECK_ACTION_SKIP = 'Skip';
+export const DECK_ACTION_DOCK = 'Schedule';
+export const DECK_KEY_LEFT = '←';
+export const DECK_KEY_RIGHT = '→';
+export const DECK_KEY_SPACE = 'Space';
+export const DECK_KEY_Z = 'Z';
+export const DECK_RESTORE_ALL_LABEL = 'Restore all';
+export const DECK_DROP_HINT_BAR = 'Drag card to any timeslot or discard bin · Or swipe left / right';
+
+export function deckDiscardedCount(count: number): string {
+  return `${count} discarded`;
+}
+
+export function deckScheduledCount(count: number, total: number): string {
+  return `${count} of ${total} slots scheduled`;
+}

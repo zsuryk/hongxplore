@@ -72,6 +72,7 @@ export function DeckCard({
       aria-label={accessibleLabel}
       className={`deck-card${swipeClass}${ghostClass}`}
       data-activity-id={activity.id}
+      onDragStart={(event) => event.preventDefault()}
       onPointerDown={onPointerDown}
       style={style}
     >
@@ -95,6 +96,7 @@ export function DeckCard({
           <img
             alt=""
             className="deck-card__cover"
+            draggable={false}
             onError={() => setFailedImageUrl(activity.image ?? null)}
             src={activity.image}
           />

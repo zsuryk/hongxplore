@@ -3,28 +3,43 @@ import { DeckCard } from './DeckCard';
 import type { components } from './api/schema';
 import { getActivityMatchingSlotId } from './boardLayout';
 import {
+  DECK_ACTION_DISCARD,
+  DECK_ACTION_DOCK,
+  DECK_ACTION_SKIP,
+  DECK_ACTION_UNDO,
+  DECK_DISCARD_DROP_HINT,
   DECK_DISCARD_LABEL,
+  DECK_DISCARD_PANEL_TITLE,
   DECK_DISCARD_TOOLTIP,
   DECK_DOCK_LABEL,
   DECK_DOCK_TOOLTIP,
+  DECK_DROP_HINT_BAR,
   DECK_EMPTY_BODY,
   DECK_EMPTY_RESTORE_CTA,
   DECK_EMPTY_SEARCH_CTA,
   DECK_EMPTY_TITLE,
   DECK_EMPTY_VIEW_PLAN_CTA,
-  DECK_KEYBOARD_HINT,
+  DECK_KEY_LEFT,
+  DECK_KEY_RIGHT,
+  DECK_KEY_SPACE,
+  DECK_KEY_Z,
+  DECK_RESTORE_ALL_LABEL,
   DECK_SKIP_LABEL,
   DECK_SKIP_TOOLTIP,
+  DECK_SLOT_AVAILABLE_LABEL,
   DECK_SLOT_PICKER_HINT,
   DECK_SLOT_PICKER_TITLE,
+  DECK_TIMELINE_PANEL_TITLE,
   DECK_UNDO_LABEL,
   DECK_UNDO_TOOLTIP,
   TIMELINE_SLOTS,
   deckCardsRemaining,
+  deckDiscardedCount,
+  deckScheduledCount,
   deckSlotPickerChipLabel,
   deckStackCount,
 } from './copy';
-import { IconCheck, IconClose, IconSkip, IconUndo } from './icons';
+import { IconCheck, IconClear, IconClose, IconDeckView, IconSkip, IconUndo } from './icons';
 import { useBoardStore } from './state/boardStore';
 
 type MatchedActivity = components['schemas']['MatchedActivity'];
@@ -39,7 +54,7 @@ export type DeckViewProps = {
   onSwitchToBoard?: () => void;
 };
 
-const SWIPE_THRESHOLD_PX = 80;
+const SWIPE_THRESHOLD_PX = 70;
 
 export function DeckView({
   cards: propCards,
@@ -52,6 +67,8 @@ export function DeckView({
   const cards = propCards ?? storeCards;
   const storeTimelineSlots = useBoardStore((state) => state.timelineSlots);
   const timelineSlots = propTimelineSlots ?? storeTimelineSlots;
+  const storeDiscardedCards = useBoardStore((state) => state.discardedCards);
+  const discardedCards = storeDiscardedCards;
   const undoStack = useBoardStore((state) => state.undoStack);
   const discardCard = useBoardStore((state) => state.discardCard);
   const dockCard = useBoardStore((state) => state.dockCard);
@@ -61,6 +78,7 @@ export function DeckView({
 
   const [cardIndex, setCardIndex] = useState(0);
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
+  const [hoveredDropTarget, setHoveredDropTarget] = useState<string | null>(null);
   const [isSlotPickerOpen, setIsSlotPickerOpen] = useState(false);
 
   const dragStartRef = useRef<{ x: number; y: number; pointerId: number } | null>(null);
@@ -90,6 +108,7 @@ export function DeckView({
   const handleDiscard = useCallback(() => {
     if (!activeCard) return;
     setDragOffset(null);
+    setHoveredDropTarget(null);
     setIsSlotPickerOpen(false);
     discardCard(activeCard.activity.id);
   }, [activeCard, discardCard]);
@@ -97,6 +116,7 @@ export function DeckView({
   const handleSkip = useCallback(() => {
     if (unassignedCards.length <= 1) return;
     setDragOffset(null);
+    setHoveredDropTarget(null);
     setIsSlotPickerOpen(false);
     setCardIndex((prev) => prev + 1);
   }, [unassignedCards.length]);
@@ -105,6 +125,7 @@ export function DeckView({
     (slotId: string) => {
       if (!activeCard) return;
       setDragOffset(null);
+      setHoveredDropTarget(null);
       setIsSlotPickerOpen(false);
       dockCard(activeCard.activity.id, slotId, { replace: true });
     },
@@ -114,6 +135,7 @@ export function DeckView({
   const handleQuickDock = useCallback(() => {
     if (!activeCard) return;
     setDragOffset(null);
+    setHoveredDropTarget(null);
     const startIso = activeCard.activity.parts[0]?.start;
     const matchedSlotId = getActivityMatchingSlotId(startIso);
 
@@ -132,23 +154,32 @@ export function DeckView({
 
   const handleUndo = useCallback(() => {
     setDragOffset(null);
+    setHoveredDropTarget(null);
     setIsSlotPickerOpen(false);
     undoLastAction();
   }, [undoLastAction]);
 
-  // Pointer swipe gestures
+  // Pointer swipe & drag gestures
   const handlePointerDown = (event: PointerEvent<HTMLElement>) => {
     if (event.button !== 0) return;
     const target = event.target as HTMLElement;
     if (target.closest('button') || target.closest('a')) return;
+
+    event.preventDefault();
+    event.stopPropagation();
 
     dragStartRef.current = {
       x: event.clientX,
       y: event.clientY,
       pointerId: event.pointerId,
     };
-    event.currentTarget.setPointerCapture(event.pointerId);
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId);
+    } catch {
+      // Ignored in test runners or unsupported environments
+    }
     setDragOffset({ x: 0, y: 0 });
+    setHoveredDropTarget(null);
   };
 
   const handlePointerMove = (event: PointerEvent<HTMLElement>) => {
@@ -156,15 +187,38 @@ export function DeckView({
     const deltaX = event.clientX - dragStartRef.current.x;
     const deltaY = event.clientY - dragStartRef.current.y;
     setDragOffset({ x: deltaX, y: deltaY });
+
+    if (typeof document !== 'undefined' && typeof document.elementFromPoint === 'function') {
+      const elem = document.elementFromPoint(event.clientX, event.clientY);
+      const targetZone = elem?.closest<HTMLElement>('[data-drop-zone]');
+      if (targetZone) {
+        const zone = targetZone.dataset.dropZone;
+        if (zone === 'discard') {
+          setHoveredDropTarget('discard');
+        } else if (zone === 'timeslot') {
+          setHoveredDropTarget(targetZone.dataset.slotId ?? null);
+        } else {
+          setHoveredDropTarget(null);
+        }
+      } else {
+        setHoveredDropTarget(null);
+      }
+    }
   };
 
   const handlePointerUp = (event: PointerEvent<HTMLElement>) => {
     if (!dragStartRef.current || dragStartRef.current.pointerId !== event.pointerId) return;
     const deltaX = event.clientX - dragStartRef.current.x;
+    const target = hoveredDropTarget;
     dragStartRef.current = null;
     setDragOffset(null);
+    setHoveredDropTarget(null);
 
-    if (deltaX < -SWIPE_THRESHOLD_PX) {
+    if (target === 'discard') {
+      handleDiscard();
+    } else if (target && target !== 'discard') {
+      handleDockSlot(target);
+    } else if (deltaX < -SWIPE_THRESHOLD_PX) {
       handleDiscard();
     } else if (deltaX > SWIPE_THRESHOLD_PX) {
       handleQuickDock();
@@ -174,6 +228,7 @@ export function DeckView({
   const handlePointerCancel = () => {
     dragStartRef.current = null;
     setDragOffset(null);
+    setHoveredDropTarget(null);
   };
 
   // Keyboard navigation
@@ -213,16 +268,182 @@ export function DeckView({
 
   const cardStyle: CSSProperties | undefined = dragOffset
     ? {
-        transform: `translate(${dragOffset.x}px, ${dragOffset.y * 0.4}px) rotate(${dragOffset.x * 0.05}deg)`,
+        transform: `translate3d(${dragOffset.x}px, ${dragOffset.y * 0.4}px, 0) rotate(${dragOffset.x * 0.04}deg)`,
         transition: 'none',
+        pointerEvents: 'none',
       }
     : undefined;
 
-  // Render Empty State if no unassigned cards remain
-  if (!activeCard) {
-    return (
-      <main className="deck-view">
-        <div className="deck-view__inner">
+  const serialIndex = activeCard
+    ? cards.findIndex((candidate) => candidate.activity.id === activeCard.activity.id)
+    : -1;
+
+  const scheduledSlotsCount = timelineSlots.filter((s) => Boolean(s.activityId)).length;
+
+  return (
+    <main className="deck-view">
+      {/* Left Column: Discard Bin Drop Target */}
+      <aside
+        aria-label={DECK_DISCARD_PANEL_TITLE}
+        className={`deck-sidebar deck-sidebar--discard${
+          hoveredDropTarget === 'discard' || swipeDirection === 'left' ? ' deck-sidebar--active' : ''
+        }`}
+        data-drop-zone="discard"
+        onClick={() => {
+          if (activeCard) handleDiscard();
+        }}
+      >
+        <div className="deck-sidebar__header">
+          <span className="deck-sidebar__icon-wrap deck-sidebar__icon-wrap--discard">
+            <IconClear className="deck-sidebar__icon" />
+          </span>
+          <div className="deck-sidebar__titles">
+            <h2 className="deck-sidebar__title">{DECK_DISCARD_PANEL_TITLE}</h2>
+            <span className="deck-sidebar__count">{deckDiscardedCount(discardedCards.length)}</span>
+          </div>
+        </div>
+
+        <div className="deck-drop-target deck-drop-target--discard">
+          <IconClear className="deck-drop-target__icon" />
+          <p className="deck-drop-target__label">{DECK_DISCARD_DROP_HINT}</p>
+        </div>
+
+        {discardedCards.length > 0 ? (
+          <div className="deck-sidebar__footer">
+            <button
+              className="btn btn--sm btn--subtle deck-sidebar__restore-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                restoreDiscardedCards();
+              }}
+              type="button"
+            >
+              <IconUndo />
+              <span>{DECK_RESTORE_ALL_LABEL}</span>
+            </button>
+          </div>
+        ) : null}
+      </aside>
+
+      {/* Center Column: Card Stack & Controls */}
+      <section className="deck-center">
+        {activeCard ? (
+          <>
+            <div className="deck-view__status-bar">
+              <span>{deckStackCount(activeCardIndex + 1, unassignedCards.length)}</span>
+              <span>{deckCardsRemaining(unassignedCards.length)}</span>
+            </div>
+
+            <div className="deck-stack">
+              {ghostCard2 ? (
+                <div className="deck-stack__item deck-stack__item--ghost-2">
+                  <DeckCard isGhost match={ghostCard2} />
+                </div>
+              ) : null}
+
+              {ghostCard1 ? (
+                <div className="deck-stack__item deck-stack__item--ghost-1">
+                  <DeckCard isGhost match={ghostCard1} />
+                </div>
+              ) : null}
+
+              <div
+                className="deck-stack__item deck-stack__item--active"
+                onLostPointerCapture={handlePointerCancel}
+                onPointerCancel={handlePointerCancel}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+              >
+                <DeckCard
+                  index={serialIndex >= 0 ? serialIndex : activeCardIndex}
+                  match={activeCard}
+                  onFindSimilar={onFindSimilar}
+                  style={cardStyle}
+                  swipeDirection={swipeDirection}
+                />
+              </div>
+            </div>
+
+            {/* Inline Slot Picker when triggered */}
+            {isSlotPickerOpen ? (
+              <aside aria-label={DECK_SLOT_PICKER_TITLE} className="deck-slot-picker">
+                <h3 className="deck-slot-picker__title">{DECK_SLOT_PICKER_TITLE}</h3>
+                <p className="deck-controls__hint">{DECK_SLOT_PICKER_HINT}</p>
+                <div className="deck-slot-picker__chips">
+                  {TIMELINE_SLOTS.map((slot) => {
+                    const isOccupied = timelineSlots.some((s) => s.id === slot.id && s.activityId !== null);
+                    return (
+                      <button
+                        className="deck-slot-picker__chip"
+                        key={slot.id}
+                        onClick={() => handleDockSlot(slot.id)}
+                        type="button"
+                      >
+                        {deckSlotPickerChipLabel(slot.label, isOccupied)}
+                      </button>
+                    );
+                  })}
+                </div>
+              </aside>
+            ) : null}
+
+            {/* Redesigned Action Controls Bar */}
+            <div className="deck-controls" role="toolbar">
+              <button
+                aria-label={DECK_DISCARD_LABEL}
+                className="deck-action-btn deck-action-btn--discard"
+                onClick={handleDiscard}
+                title={DECK_DISCARD_TOOLTIP}
+                type="button"
+              >
+                <IconClose className="deck-action-btn__icon" />
+                <span className="deck-action-btn__text">{DECK_ACTION_DISCARD}</span>
+                <kbd className="deck-action-btn__kbd">{DECK_KEY_LEFT}</kbd>
+              </button>
+
+              <button
+                aria-label={DECK_UNDO_LABEL}
+                className="deck-action-btn deck-action-btn--undo"
+                disabled={!canUndo}
+                onClick={handleUndo}
+                title={DECK_UNDO_TOOLTIP}
+                type="button"
+              >
+                <IconUndo className="deck-action-btn__icon" />
+                <span className="deck-action-btn__text">{DECK_ACTION_UNDO}</span>
+                <kbd className="deck-action-btn__kbd">{DECK_KEY_Z}</kbd>
+              </button>
+
+              <button
+                aria-label={DECK_SKIP_LABEL}
+                className="deck-action-btn deck-action-btn--skip"
+                disabled={unassignedCards.length <= 1}
+                onClick={handleSkip}
+                title={DECK_SKIP_TOOLTIP}
+                type="button"
+              >
+                <IconSkip className="deck-action-btn__icon" />
+                <span className="deck-action-btn__text">{DECK_ACTION_SKIP}</span>
+                <kbd className="deck-action-btn__kbd">{DECK_KEY_SPACE}</kbd>
+              </button>
+
+              <button
+                aria-label={DECK_DOCK_LABEL}
+                className="deck-action-btn deck-action-btn--dock"
+                onClick={handleQuickDock}
+                title={DECK_DOCK_TOOLTIP}
+                type="button"
+              >
+                <IconCheck className="deck-action-btn__icon" />
+                <span className="deck-action-btn__text">{DECK_ACTION_DOCK}</span>
+                <kbd className="deck-action-btn__kbd">{DECK_KEY_RIGHT}</kbd>
+              </button>
+            </div>
+
+            <p className="deck-controls__hint">{DECK_DROP_HINT_BAR}</p>
+          </>
+        ) : (
           <section className="deck-empty">
             <h2 className="deck-empty__title">{DECK_EMPTY_TITLE}</h2>
             <p className="deck-empty__body">{DECK_EMPTY_BODY}</p>
@@ -250,124 +471,62 @@ export function DeckView({
               ) : null}
             </div>
           </section>
-        </div>
-      </main>
-    );
-  }
+        )}
+      </section>
 
-  const serialIndex = cards.findIndex((candidate) => candidate.activity.id === activeCard.activity.id);
-
-  return (
-    <main className="deck-view">
-      <div className="deck-view__inner">
-        {/* Status Bar */}
-        <div className="deck-view__status-bar">
-          <span>{deckStackCount(activeCardIndex + 1, unassignedCards.length)}</span>
-          <span>{deckCardsRemaining(unassignedCards.length)}</span>
-        </div>
-
-        {/* Card Stack */}
-        <div className="deck-stack">
-          {ghostCard2 ? (
-            <div className="deck-stack__item deck-stack__item--ghost-2">
-              <DeckCard isGhost match={ghostCard2} />
-            </div>
-          ) : null}
-
-          {ghostCard1 ? (
-            <div className="deck-stack__item deck-stack__item--ghost-1">
-              <DeckCard isGhost match={ghostCard1} />
-            </div>
-          ) : null}
-
-          <div
-            className="deck-stack__item deck-stack__item--active"
-            onLostPointerCapture={handlePointerCancel}
-            onPointerCancel={handlePointerCancel}
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-          >
-            <DeckCard
-              index={serialIndex >= 0 ? serialIndex : activeCardIndex}
-              match={activeCard}
-              onFindSimilar={onFindSimilar}
-              style={cardStyle}
-              swipeDirection={swipeDirection}
-            />
+      {/* Right Column: Weekend Timeline Slots */}
+      <aside aria-label={DECK_TIMELINE_PANEL_TITLE} className="deck-sidebar deck-sidebar--timeline">
+        <div className="deck-sidebar__header">
+          <span className="deck-sidebar__icon-wrap deck-sidebar__icon-wrap--dock">
+            <IconDeckView className="deck-sidebar__icon" />
+          </span>
+          <div className="deck-sidebar__titles">
+            <h2 className="deck-sidebar__title">{DECK_TIMELINE_PANEL_TITLE}</h2>
+            <span className="deck-sidebar__count">
+              {deckScheduledCount(scheduledSlotsCount, TIMELINE_SLOTS.length)}
+            </span>
           </div>
         </div>
 
-        {/* Inline Slot Picker when triggered */}
-        {isSlotPickerOpen ? (
-          <aside aria-label={DECK_SLOT_PICKER_TITLE} className="deck-slot-picker">
-            <h3 className="deck-slot-picker__title">{DECK_SLOT_PICKER_TITLE}</h3>
-            <p className="deck-controls__hint">{DECK_SLOT_PICKER_HINT}</p>
-            <div className="deck-slot-picker__chips">
-              {TIMELINE_SLOTS.map((slot) => {
-                const isOccupied = timelineSlots.some((s) => s.id === slot.id && s.activityId !== null);
-                return (
-                  <button
-                    className="deck-slot-picker__chip"
-                    key={slot.id}
-                    onClick={() => handleDockSlot(slot.id)}
-                    type="button"
-                  >
-                    {deckSlotPickerChipLabel(slot.label, isOccupied)}
-                  </button>
-                );
-              })}
-            </div>
-          </aside>
-        ) : null}
+        <div className="deck-timeline-slots">
+          {TIMELINE_SLOTS.map((slot) => {
+            const slotState = timelineSlots.find((s) => s.id === slot.id);
+            const bookedCard = slotState?.activityId ? cards.find((c) => c.activity.id === slotState.activityId) : null;
+            const isHoveredTarget = hoveredDropTarget === slot.id;
 
-        {/* Action Controls Bar */}
-        <div className="deck-controls" role="toolbar">
-          <button
-            aria-label={DECK_DISCARD_LABEL}
-            className="deck-controls__btn deck-controls__btn--discard"
-            onClick={handleDiscard}
-            title={DECK_DISCARD_TOOLTIP}
-            type="button"
-          >
-            <IconClose />
-          </button>
-
-          <button
-            aria-label={DECK_UNDO_LABEL}
-            className="deck-controls__btn"
-            disabled={!canUndo}
-            onClick={handleUndo}
-            title={DECK_UNDO_TOOLTIP}
-            type="button"
-          >
-            <IconUndo />
-          </button>
-
-          <button
-            aria-label={DECK_SKIP_LABEL}
-            className="deck-controls__btn"
-            disabled={unassignedCards.length <= 1}
-            onClick={handleSkip}
-            title={DECK_SKIP_TOOLTIP}
-            type="button"
-          >
-            <IconSkip />
-          </button>
-
-          <button
-            aria-label={DECK_DOCK_LABEL}
-            className="deck-controls__btn deck-controls__btn--dock"
-            onClick={handleQuickDock}
-            title={DECK_DOCK_TOOLTIP}
-            type="button"
-          >
-            <IconCheck />
-          </button>
+            return (
+              <div
+                className={`deck-slot-item${bookedCard ? ' deck-slot-item--booked' : ' deck-slot-item--empty'}${
+                  isHoveredTarget ? ' deck-slot-item--drop-target' : ''
+                }`}
+                data-drop-zone="timeslot"
+                data-slot-id={slot.id}
+                key={slot.id}
+                onClick={() => {
+                  if (activeCard) {
+                    handleDockSlot(slot.id);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                title={slot.label}
+              >
+                <div className="deck-slot-item__header">
+                  <span className="deck-slot-item__label">{slot.label}</span>
+                  {bookedCard ? (
+                    <span className="deck-slot-item__badge">{bookedCard.activity.location.district}</span>
+                  ) : (
+                    <span className="deck-slot-item__status">{DECK_SLOT_AVAILABLE_LABEL}</span>
+                  )}
+                </div>
+                {bookedCard ? (
+                  <p className="deck-slot-item__title">{bookedCard.activity.title_en ?? bookedCard.activity.title}</p>
+                ) : null}
+              </div>
+            );
+          })}
         </div>
-
-        <p className="deck-controls__hint">{DECK_KEYBOARD_HINT}</p>
-      </div>
+      </aside>
     </main>
   );
 }

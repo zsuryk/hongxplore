@@ -5,14 +5,25 @@ import { DeckView } from './DeckView';
 import type { components } from './api/schema';
 import { useBoardStore } from './state/boardStore';
 import {
+  DECK_ACTION_DISCARD,
+  DECK_ACTION_DOCK,
+  DECK_ACTION_SKIP,
+  DECK_ACTION_UNDO,
+  DECK_DISCARD_DROP_HINT,
   DECK_DISCARD_LABEL,
+  DECK_DISCARD_PANEL_TITLE,
   DECK_DOCK_LABEL,
+  DECK_DROP_HINT_BAR,
   DECK_EMPTY_RESTORE_CTA,
   DECK_EMPTY_SEARCH_CTA,
   DECK_EMPTY_TITLE,
   DECK_EMPTY_VIEW_PLAN_CTA,
-  DECK_KEYBOARD_HINT,
+  DECK_KEY_LEFT,
+  DECK_KEY_RIGHT,
+  DECK_KEY_SPACE,
+  DECK_KEY_Z,
   DECK_SKIP_LABEL,
+  DECK_TIMELINE_PANEL_TITLE,
   DECK_UNDO_LABEL,
   TIMELINE_SLOTS,
 } from './copy';
@@ -30,7 +41,7 @@ describe('DeckView', () => {
     });
   });
 
-  it('renders the top unassigned card, controls, and stack progress counter', () => {
+  it('renders three-column layout: discard bin, top unassigned card, controls, and timeline panel', () => {
     const markup = renderToStaticMarkup(<DeckView cards={response.matches} />);
 
     const firstCardTitle = response.matches[0].activity.title_en ?? response.matches[0].activity.title;
@@ -38,20 +49,43 @@ describe('DeckView', () => {
     expect(markup).toContain(`1 of ${response.matches.length}`);
     expect(markup).toContain(`${response.matches.length} remaining`);
 
-    // Controls
+    // Left sidebar (Discard bin)
+    expect(markup).toContain(DECK_DISCARD_PANEL_TITLE);
+    expect(markup).toContain(DECK_DISCARD_DROP_HINT);
+    expect(markup).toContain('data-drop-zone="discard"');
+
+    // Right sidebar (Weekend schedule)
+    expect(markup).toContain(DECK_TIMELINE_PANEL_TITLE);
+    expect(markup).toContain('data-drop-zone="timeslot"');
+
+    // Redesigned Action Controls
     expect(markup).toContain(DECK_DISCARD_LABEL);
+    expect(markup).toContain(DECK_ACTION_DISCARD);
+    expect(markup).toContain(DECK_KEY_LEFT);
+
     expect(markup).toContain(DECK_UNDO_LABEL);
+    expect(markup).toContain(DECK_ACTION_UNDO);
+    expect(markup).toContain(DECK_KEY_Z);
+
     expect(markup).toContain(DECK_SKIP_LABEL);
+    expect(markup).toContain(DECK_ACTION_SKIP);
+    expect(markup).toContain(DECK_KEY_SPACE);
+
     expect(markup).toContain(DECK_DOCK_LABEL);
-    expect(markup).toContain(DECK_KEYBOARD_HINT);
+    expect(markup).toContain(DECK_ACTION_DOCK);
+    expect(markup).toContain(DECK_KEY_RIGHT);
+
+    expect(markup).toContain(DECK_DROP_HINT_BAR);
   });
 
-  it('renders empty completion state when all cards are triaged', () => {
+  it('renders empty completion state when all cards are triaged while retaining sidebar context', () => {
     const markup = renderToStaticMarkup(<DeckView cards={[]} />);
 
     expect(markup).toContain(DECK_EMPTY_TITLE);
     expect(markup).toContain(DECK_EMPTY_VIEW_PLAN_CTA);
     expect(markup).toContain(DECK_EMPTY_RESTORE_CTA);
+    expect(markup).toContain(DECK_DISCARD_PANEL_TITLE);
+    expect(markup).toContain(DECK_TIMELINE_PANEL_TITLE);
   });
 
   it('renders search CTA in empty completion state when onSearchFocus is provided', () => {
@@ -71,5 +105,8 @@ describe('DeckView', () => {
     // Should show second card as the top unassigned card
     expect(markup).toContain(secondCardTitle);
     expect(markup).toContain(`1 of ${response.matches.length - 1}`);
+
+    // Docked card title should appear in right timeline sidebar
+    expect(markup).toContain(dockedCard.activity.title_en ?? dockedCard.activity.title);
   });
 });
