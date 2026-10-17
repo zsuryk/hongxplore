@@ -13,20 +13,24 @@ export type SwipeOutcome =
   { type: 'discard' } | { type: 'dock'; slotId: string } | { type: 'quick-dock' } | { type: 'cancel' };
 
 /**
- * Resolves final outcome of a pointer drag / swipe release based on displacement and drop target.
+ * Resolves final outcome of a pointer drag / swipe release based on displacement, drop target, and velocity.
  */
 export function resolveSwipeOutcome(
   deltaX: number,
   dropTarget: string | null,
   threshold: number = SWIPE_THRESHOLD_PX,
+  velocityX?: number,
 ): SwipeOutcome {
-  if (dropTarget === 'discard' || deltaX < -threshold) {
+  const isFastLeftFlick = velocityX !== undefined && velocityX < -0.4 && deltaX < -25;
+  const isFastRightFlick = velocityX !== undefined && velocityX > 0.4 && deltaX > 25;
+
+  if (dropTarget === 'discard' || deltaX < -threshold || isFastLeftFlick) {
     return { type: 'discard' };
   }
   if (dropTarget && dropTarget !== 'discard') {
     return { type: 'dock', slotId: dropTarget };
   }
-  if (deltaX > threshold) {
+  if (deltaX > threshold || isFastRightFlick) {
     return { type: 'quick-dock' };
   }
   return { type: 'cancel' };
@@ -37,6 +41,16 @@ export function resolveSwipeOutcome(
  */
 export function isHorizontalSwipeGesture(deltaX: number, deltaY: number, minDistance = 8): boolean {
   return Math.abs(deltaX) > minDistance && Math.abs(deltaX) > Math.abs(deltaY);
+}
+
+/**
+ * Determines whether a gesture is an intentional vertical scroll rather than a horizontal swipe.
+ * Requires dominant vertical displacement (exceeding threshold and significantly exceeding horizontal movement).
+ */
+export function isVerticalScrollIntent(deltaX: number, deltaY: number, threshold = 16): boolean {
+  const absX = Math.abs(deltaX);
+  const absY = Math.abs(deltaY);
+  return absY > threshold && absY > absX * 1.4;
 }
 
 /**

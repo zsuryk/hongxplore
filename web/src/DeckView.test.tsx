@@ -6,6 +6,7 @@ import {
   computeDynamicDragScale,
   findRestoredCardIndex,
   isHorizontalSwipeGesture,
+  isVerticalScrollIntent,
   resolveSwipeOutcome,
 } from './deckPhysics';
 import type { components } from './api/schema';
@@ -182,6 +183,27 @@ describe('DeckView', () => {
       // Jitter / deadzone
       expect(isHorizontalSwipeGesture(4, 2)).toBe(false);
       expect(isHorizontalSwipeGesture(0, 0)).toBe(false);
+
+      // Dedicated vertical scroll intent check (requires dominant vertical displacement)
+      expect(isVerticalScrollIntent(4, 25)).toBe(true);
+      expect(isVerticalScrollIntent(-5, 30)).toBe(true);
+
+      // Diagonal or horizontal swipe should NOT be classified as vertical scroll intent
+      expect(isVerticalScrollIntent(-15, 14)).toBe(false);
+      expect(isVerticalScrollIntent(40, 20)).toBe(false);
+      expect(isVerticalScrollIntent(0, 10)).toBe(false); // below threshold
+    });
+
+    it('resolves fast flick below static distance threshold using velocity', () => {
+      // 45px left flick at high velocity (-0.5 px/ms) -> discard
+      expect(resolveSwipeOutcome(-45, null, 70, -0.5)).toEqual({ type: 'discard' });
+
+      // 45px right flick at high velocity (+0.5 px/ms) -> quick-dock
+      expect(resolveSwipeOutcome(45, null, 70, 0.5)).toEqual({ type: 'quick-dock' });
+
+      // Sub-threshold drag with low velocity (0.1 px/ms) -> cancel
+      expect(resolveSwipeOutcome(45, null, 70, 0.1)).toEqual({ type: 'cancel' });
+      expect(resolveSwipeOutcome(-45, null, 70, -0.1)).toEqual({ type: 'cancel' });
     });
 
     it('identifies the exact index of restored card in unassigned stack', () => {

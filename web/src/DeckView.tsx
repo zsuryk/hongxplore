@@ -69,6 +69,7 @@ import {
   computeDynamicDragScale,
   findRestoredCardIndex,
   isHorizontalSwipeGesture,
+  isVerticalScrollIntent,
   resolveSwipeOutcome,
 } from './deckPhysics';
 
@@ -113,6 +114,7 @@ export function DeckView({
   const dragStartRef = useRef<{
     x: number;
     y: number;
+    startTime: number;
     pointerId: number;
     hasCaptured: boolean;
     isBodyTouch: boolean;
@@ -285,19 +287,15 @@ export function DeckView({
     const matchedSlotId = getActivityMatchingSlotId(startIso);
 
     if (matchedSlotId) {
-      const destination = timelineSlots.find((s) => s.id === matchedSlotId);
-      if (destination && !destination.activityId) {
-        // Slot is empty -> instant dock!
-        handleDockSlot(matchedSlotId);
-        return;
-      }
+      handleDockSlot(matchedSlotId);
+      return;
     }
 
     // Otherwise show slot picker so user selects slot
     setDragOffset(null);
     setHoveredDropTarget(null);
     setIsSlotPickerOpen(true);
-  }, [activeCard, handleDockSlot, isExiting, timelineSlots]);
+  }, [activeCard, handleDockSlot, isExiting]);
 
   const handleUndo = useCallback(() => {
     if (isExiting || enteringCard) return;
@@ -337,22 +335,23 @@ export function DeckView({
     const target = event.target as HTMLElement;
     if (target.closest('button') || target.closest('a') || target.closest('input')) return;
 
-    const isBodyTouch = Boolean(target.closest('.deck-card__scrollable, .deck-card__body'));
+    const isTouch = event.pointerType === 'touch' || event.pointerType === 'pen';
+    const isBodyTouch = isTouch && Boolean(target.closest('.deck-card__scrollable, .deck-card__body'));
 
     dragStartRef.current = {
       x: event.clientX,
       y: event.clientY,
+      startTime: Date.now(),
       pointerId: event.pointerId,
-      hasCaptured: false,
+      hasCaptured: !isBodyTouch,
       isBodyTouch,
     };
 
-    // Outside the scrollable container (e.g. card header, footer), capture immediately.
-    // Inside the scrollable container, defer capture until horizontal swipe threshold is passed so vertical scroll is preserved!
+    // Outside the scrollable container on touch (and always for mouse), capture immediately.
+    // Inside the scrollable container on touch, defer capture until horizontal swipe threshold is passed so vertical scroll is preserved!
     if (!isBodyTouch) {
       try {
         event.currentTarget.setPointerCapture(event.pointerId);
-        dragStartRef.current.hasCaptured = true;
       } catch {
         // Ignored in test runners or unsupported environments
       }
@@ -364,6 +363,12 @@ export function DeckView({
   const handlePointerMove = (event: PointerEvent<HTMLElement>) => {
     const drag = dragStartRef.current;
     if (!drag || drag.pointerId !== event.pointerId || isExiting) return;
+
+    if (event.pointerType === 'mouse' && event.buttons === 0) {
+      handlePointerUp(event);
+      return;
+    }
+
     const deltaX = event.clientX - drag.x;
     const deltaY = event.clientY - drag.y;
 
@@ -375,8 +380,8 @@ export function DeckView({
         } catch {
           // Ignored in test runners
         }
-      } else if (Math.abs(deltaY) > 12) {
-        // Vertical scroll intent detected inside card body: cancel swipe tracking so native scroll occurs
+      } else if (isVerticalScrollIntent(deltaX, deltaY)) {
+        // Dominant vertical scroll intent detected inside card body: cancel swipe tracking so native scroll occurs
         dragStartRef.current = null;
         setDragOffset(null);
         setHoveredDropTarget(null);
@@ -422,6 +427,8 @@ export function DeckView({
     const drag = dragStartRef.current;
     if (!drag || drag.pointerId !== event.pointerId || isExiting) return;
     const deltaX = event.clientX - drag.x;
+    const elapsedMs = Math.max(1, Date.now() - drag.startTime);
+    const velocityX = deltaX / elapsedMs;
     const target = hoveredDropTarget;
     dragStartRef.current = null;
 
@@ -431,14 +438,19 @@ export function DeckView({
       return;
     }
 
-    const outcome = resolveSwipeOutcome(deltaX, target, SWIPE_THRESHOLD_PX);
+    const outcome = resolveSwipeOutcome(deltaX, target, SWIPE_THRESHOLD_PX, velocityX);
     if (outcome.type === 'discard') {
       handleDiscard();
     } else if (outcome.type === 'dock') {
       const matchingSlotId = activeCard ? getActivityMatchingSlotId(activeCard.activity.parts[0]?.start) : null;
       if (matchingSlotId && matchingSlotId !== outcome.slotId) {
-        setDragOffset(null);
-        setHoveredDropTarget(null);
+        // If swiping right past threshold or flicking to schedule, fall back to quick-dock instead of cancelling
+        if (deltaX > SWIPE_THRESHOLD_PX || (velocityX > 0.4 && deltaX > 25)) {
+          handleQuickDock();
+        } else {
+          setDragOffset(null);
+          setHoveredDropTarget(null);
+        }
       } else {
         handleDockSlot(outcome.slotId);
       }
@@ -743,7 +755,6 @@ export function DeckView({
               <div
                 className="deck-stack__item deck-stack__item--active"
                 key={activeCard.activity.id}
-                onLostPointerCapture={handlePointerCancel}
                 onPointerCancel={handlePointerCancel}
                 onPointerDown={handlePointerDown}
                 onPointerMove={handlePointerMove}
