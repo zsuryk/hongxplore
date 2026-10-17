@@ -126,6 +126,24 @@
   min-height: var(--control-height-composite);
 }
 
+.agent-status-panel__key-badge {
+  align-items: center;
+  background: var(--input);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
+  display: inline-flex;
+  gap: var(--space-2);
+  min-height: var(--control-height-composite);
+  padding: 0 var(--space-2);
+}
+
+.agent-status-panel__key-masked {
+  color: var(--card-muted-foreground);
+  font-family: monospace;
+  font-size: var(--text-meta);
+  letter-spacing: 0.1em;
+}
+
 /**
  * The lamp.
  *

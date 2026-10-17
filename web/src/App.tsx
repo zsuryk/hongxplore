@@ -12,6 +12,7 @@ import {
   useState,
 } from 'react';
 import { ActivityCard } from './ActivityCard';
+import { AgentAccessKeyModal } from './AgentAccessKeyModal';
 import { AgentStatusPanel } from './AgentStatusPanel';
 import { BoardToolbar } from './BoardToolbar';
 import { IconClose, IconModeGrab, IconModeInspect, IconModePan } from './icons';
@@ -2357,6 +2358,7 @@ export function App({
         </div>
       ) : null}
       <ProductTour isOpen={isTourOpen} onClose={handleCloseTour} />
+      <AgentAccessKeyModal />
     </main>
   );
 }

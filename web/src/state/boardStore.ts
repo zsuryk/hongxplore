@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import {
-  defaultAgentClient,
+  createAgentClient,
   demoAgentClient,
   fixtureAgentClient,
   type AgentClient,
@@ -48,6 +48,8 @@ export type BoardStore = {
   agentError: string | null;
   lastMatchCount: number | null;
   dataSourceMode: DataSourceMode;
+  agentAccessKey: string | null;
+  isAccessKeyPromptOpen: boolean;
   selectedFreeSlotIds: string[];
   recentCardIds: string[];
   isClearConfirmOpen: boolean;
@@ -59,6 +61,10 @@ export type BoardStore = {
   cancelClearBoard: () => void;
   confirmClearBoard: () => void;
   clearBoard: () => void;
+  openAccessKeyPrompt: () => void;
+  closeAccessKeyPrompt: () => void;
+  setAgentAccessKey: (key: string | null) => void;
+  clearAgentAccessKey: () => void;
   setCardPosition: (activityId: string, position: Point) => void;
   setCardPositions: (positions: Record<string, Point>) => void;
   findSimilar: (card: ActivityCard, client?: AgentClient) => Promise<boolean>;
@@ -92,6 +98,33 @@ function promoteCardZIndex(cardZIndexById: Record<string, number>, activityId: s
   };
 }
 
+export const SESSION_STORAGE_ACCESS_KEY = 'hongxplore:agent_access_key';
+
+function getStoredAccessKey(): string | null {
+  try {
+    if (typeof window !== 'undefined' && window.sessionStorage) {
+      return window.sessionStorage.getItem(SESSION_STORAGE_ACCESS_KEY);
+    }
+  } catch {
+    // tolerate restricted storage environments
+  }
+  return null;
+}
+
+function setStoredAccessKey(key: string | null): void {
+  try {
+    if (typeof window !== 'undefined' && window.sessionStorage) {
+      if (key) {
+        window.sessionStorage.setItem(SESSION_STORAGE_ACCESS_KEY, key);
+      } else {
+        window.sessionStorage.removeItem(SESSION_STORAGE_ACCESS_KEY);
+      }
+    }
+  } catch {
+    // tolerate restricted storage environments
+  }
+}
+
 export function similarActivityRequest(card: ActivityCard): AgentRequest {
   const title = card.activity.title_en ?? card.activity.title;
   const tags = card.activity.tags.join(', ');
@@ -114,9 +147,33 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
   agentError: null,
   lastMatchCount: null,
   dataSourceMode: 'live',
+  agentAccessKey: getStoredAccessKey(),
+  isAccessKeyPromptOpen: false,
   selectedFreeSlotIds: [],
   recentCardIds: [],
   isClearConfirmOpen: false,
+  openAccessKeyPrompt() {
+    set({ isAccessKeyPromptOpen: true });
+  },
+  closeAccessKeyPrompt() {
+    set((state) => ({
+      isAccessKeyPromptOpen: false,
+      dataSourceMode: state.agentAccessKey ? state.dataSourceMode : 'mock',
+    }));
+  },
+  setAgentAccessKey(agentAccessKey) {
+    if (agentAccessKey) {
+      setStoredAccessKey(agentAccessKey);
+      set({ agentAccessKey, dataSourceMode: 'live', isAccessKeyPromptOpen: false });
+    } else {
+      setStoredAccessKey(null);
+      set({ agentAccessKey: null, dataSourceMode: 'mock', isAccessKeyPromptOpen: false });
+    }
+  },
+  clearAgentAccessKey() {
+    setStoredAccessKey(null);
+    set({ agentAccessKey: null, dataSourceMode: 'mock' });
+  },
   bringCardToFront(activityId) {
     set((state) => ({
       cardZIndexById: promoteCardZIndex(state.cardZIndexById, activityId),
@@ -218,7 +275,12 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
     }));
   },
   async findSimilar(card, client) {
-    const activeClient = client ?? (get().dataSourceMode === 'mock' ? demoAgentClient : defaultAgentClient);
+    const isLive = get().dataSourceMode === 'live';
+    const activeClient =
+      client ??
+      (isLive
+        ? createAgentClient({ mode: 'live', agentAccessKey: get().agentAccessKey ?? undefined })
+        : demoAgentClient);
     set({ agentStatus: 'searching', agentError: null });
     try {
       const response = await activeClient.requestAgent(similarActivityRequest(card));
@@ -315,7 +377,12 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
     });
   },
   setDataSourceMode(dataSourceMode) {
-    set({ dataSourceMode });
+    if (dataSourceMode === 'mock') {
+      setStoredAccessKey(null);
+      set({ dataSourceMode: 'mock', agentAccessKey: null });
+    } else {
+      set({ dataSourceMode: 'live' });
+    }
   },
   async submitSearch(query, client, options) {
     const selectedSlots = get().selectedFreeSlotIds;
@@ -327,19 +394,29 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
         end: slot.end,
       }));
 
-    const activeClient = client ?? (get().dataSourceMode === 'mock' ? demoAgentClient : defaultAgentClient);
+    const isLive = get().dataSourceMode === 'live';
+    const activeClient =
+      client ??
+      (isLive
+        ? createAgentClient({ mode: 'live', agentAccessKey: get().agentAccessKey ?? undefined })
+        : demoAgentClient);
 
     await get().loadAgentResponse(
       {
         query,
-        mode: 'demo',
+        mode: isLive ? 'live' : 'demo',
         ...(freeSlots.length > 0 ? { free_slots: freeSlots } : {}),
       },
       activeClient,
     );
   },
   async loadAgentResponse(request, client) {
-    const activeClient = client ?? (get().dataSourceMode === 'mock' ? demoAgentClient : defaultAgentClient);
+    const isLive = get().dataSourceMode === 'live';
+    const activeClient =
+      client ??
+      (isLive
+        ? createAgentClient({ mode: 'live', agentAccessKey: get().agentAccessKey ?? undefined })
+        : demoAgentClient);
     set({ agentStatus: 'searching', agentError: null });
     try {
       const response = await activeClient.requestAgent(request);
