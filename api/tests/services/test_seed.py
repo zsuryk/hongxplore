@@ -173,14 +173,43 @@ def test_upcoming_weekend_dates_derivation() -> None:
 
 
 def test_seed_dataset_all_entries_carry_valid_cover_images() -> None:
-    """Every entry in data/activities.json carries a valid HTTP/HTTPS image URL."""
+    """Every entry in data/activities.json carries a valid HTTPS image URL."""
     activities = load_seed_activities()
     assert len(activities) == 120
     for a in activities:
         assert a.image is not None, f"Activity {a.id} missing image URL"
-        assert str(a.image).startswith(("http://", "https://")), (
-            f"Activity {a.id} invalid image URL: {a.image}"
+        assert str(a.image).startswith("https://"), (
+            f"Activity {a.id} must have secure HTTPS image URL: {a.image}"
         )
+
+
+def test_seed_dataset_zero_foreign_landmarks_policy() -> None:
+    """Enforce Zero Foreign Landmark Policy and verify authentic Hong Kong visual grounding."""
+    activities = {a.id: a for a in load_seed_activities()}
+
+    # Ban known foreign landmark / unrelated placeholder Unsplash photo IDs
+    banned_substrings = [
+        "photo-1541872703-74c5e44368f9",  # Barack Obama on phone
+        "photo-1566127444979-b3d2b654e3d7",  # Louvre Museum Paris
+        "photo-1506973035872-a4ec16b8e8d9",  # Sydney Opera House
+        "photo-1538688525198-9b88f6f53126",  # Western office living room
+    ]
+    for act_id, act in activities.items():
+        img_str = str(act.image or "")
+        for banned in banned_substrings:
+            assert banned not in img_str, (
+                f"Activity {act_id} violates Zero Foreign Landmark Policy with image {img_str}"
+            )
+
+    # Verify specific key Hong Kong environmental groundings
+    assert "Tai_Kwun" in str(activities["act-023"].image)
+    assert "Blue_House" in str(activities["act-028"].image)
+    assert "Cantonese_Opera" in str(activities["act-029"].image)
+    assert "Dragons-Back" in str(activities["act-031"].image)
+    assert "Lionrock" in str(activities["act-032"].image)
+    assert "WongTaiSin" in str(activities["act-053"].image)
+    assert "Tai_O" in str(activities["act-054"].image)
+    assert "Kowloon_Walled_City" in str(activities["act-057"].image)
 
 
 def test_seed_dataset_all_entries_carry_bilingual_descriptions() -> None:

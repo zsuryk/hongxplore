@@ -47,10 +47,11 @@ export interface paths {
          *     `mode="live"` is refused unless it carries a valid agent access key, and is
          *     refused unconditionally by an instance running with `DEMO_MODE=true`.
          *
-         *     Whatever the pipeline returns is scrubbed before it leaves: an upstream
-         *     failure answers with friendly copy, and no configured secret, provider base
-         *     URL or model name appears anywhere in the body — including in the agent log,
-         *     which the web app renders.
+         *     Two failures reach a client from here, and each has its own copy. A search
+         *     failure is one the route can explain (#85), so it keeps its mapped sentence.
+         *     Anything else carries whatever an exception library raised, so it is replaced
+         *     here — the detail stays in the server log, redacted but present, because an
+         *     operator mid-pitch needs it and a judge mid-pitch does not.
          */
         post: operations["agent_api_agent_post"];
         delete?: never;

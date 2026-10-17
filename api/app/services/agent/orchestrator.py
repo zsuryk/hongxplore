@@ -42,6 +42,7 @@ from app.services.agent.seed import (
     match_seed_activities,
 )
 from app.services.ports import LLMClient, SearchProvider
+from app.services.search.errors import SearchUnavailableError
 
 logger = logging.getLogger(__name__)
 HKT = ZoneInfo("Asia/Hong_Kong")
@@ -609,6 +610,9 @@ class AgentOrchestrator:
                 log=log,
             )
 
+        except SearchUnavailableError as exc:
+            exc.partial_log = log  # type: ignore[attr-defined]
+            raise
         except Exception as exc:
             # Server-side detail for the operator, redacted by the log filter; the
             # response gets the one sentence a person can act on (issue #88).

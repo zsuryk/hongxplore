@@ -242,13 +242,12 @@
 }
 
 /**
- * The pill: the card's serial and nothing else, centred on the card's own top-left corner.
+ * The pill: the card's serial and nothing else, centred directly under the pointer cursor.
  *
- * That corner is where the serial plate lives, so the pill reads as the plate lifted off the
- * card rather than as a new object that happened to appear — and it is the one anchor that
- * cannot end up covering what the user is aiming at, because the card's corner is by
- * definition the point furthest from the card's body. Anchoring on the pointer instead would
- * put the pill squarely over the slot under the cursor.
+ * It used to anchor to the card's own top-left corner (displacing the pill by grabOffset,
+ * which put it 200–350px away from the pointer depending on grab point and zoom). Anchoring
+ * on the pointer keeps the pill under the cursor so aiming at drop zones (timeline slots,
+ * the discard bin) is natural at every zoom and grab point (#139).
  *
  * Cyan, because the card in hand is the user acting and `--accent` is the colour that means
  * exactly that; amber would be indistinguishable from the drop-target highlight it exists to

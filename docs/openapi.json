@@ -35,7 +35,7 @@
           "agent"
         ],
         "summary": "Find activities, in demo or live mode (issue #83 gates live, #88 guards it).",
-        "description": "Parse intent → search (or seed in demo mode) → rank → match rationale → respond.\n\n`mode=\"demo\"` is always served from the bundled seed data and needs no key.\n`mode=\"live\"` is refused unless it carries a valid agent access key, and is\nrefused unconditionally by an instance running with `DEMO_MODE=true`.\n\nWhatever the pipeline returns is scrubbed before it leaves: an upstream\nfailure answers with friendly copy, and no configured secret, provider base\nURL or model name appears anywhere in the body — including in the agent log,\nwhich the web app renders.",
+        "description": "Parse intent → search (or seed in demo mode) → rank → match rationale → respond.\n\n`mode=\"demo\"` is always served from the bundled seed data and needs no key.\n`mode=\"live\"` is refused unless it carries a valid agent access key, and is\nrefused unconditionally by an instance running with `DEMO_MODE=true`.\n\nTwo failures reach a client from here, and each has its own copy. A search\nfailure is one the route can explain (#85), so it keeps its mapped sentence.\nAnything else carries whatever an exception library raised, so it is replaced\nhere — the detail stays in the server log, redacted but present, because an\noperator mid-pitch needs it and a judge mid-pitch does not.",
         "operationId": "agent_api_agent_post",
         "requestBody": {
           "content": {

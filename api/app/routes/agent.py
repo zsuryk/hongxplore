@@ -1,21 +1,31 @@
-"""`POST /api/agent` — AI agent activity discovery endpoint (issue #9).
+"""`POST /api/agent` — AI agent activity discovery endpoint (issue #9, #85, #88).
 
-This is the public face of the service, so the route is where the guards from
-issue #88 are applied, in the order that costs least:
+Two things meet here. Issue #85 makes this route the composition root: it builds
+the live collaborators and maps the one upstream failure it knows how to explain.
+Issue #88 makes it the public face of a public URL, so the guards are applied here
+too, in the order that costs least:
 
 1. **Rate limit** (a dependency, so it runs before the handler body and cannot be
    forgotten on a new path) — refused before a provider is touched.
 2. **Request caps** — the query and slot count, before the gate and the pipeline.
 3. **Access gate** (#83) — live mode needs a key.
-4. **The pipeline**, and then the outbound hardening pass over whatever it returns.
+4. **The pipeline**, then the outbound hardening pass over whatever comes back.
+
+Whatever leaves this route is client-visible copy, including the agent log the web
+app renders in its status panel. So the route owns the last word on it: an
+unmapped failure answers with the one sentence written for a person, and no
+configured secret, provider base URL or model name appears anywhere in the body.
 """
 
+from datetime import UTC, datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request, Response, status
 
 from app.access import require_live_mode_access
+from app.config import settings
 from app.hardening import (
+    UPSTREAM_FAILURE_MESSAGE,
     RateLimitDecision,
     RateLimiter,
     client_identifier,
@@ -25,11 +35,19 @@ from app.hardening import (
 )
 from app.models import (
     AgentAccessError,
+    AgentLogEntry,
     AgentRequest,
     AgentRequestRejected,
     AgentResponse,
 )
 from app.services.agent import AgentOrchestrator
+from app.services.llm import LLMProviderPool
+from app.services.search import (
+    SearchUnavailableError,
+    SearchUnavailableReason,
+    SQLiteActivityCache,
+    TavilySearchProvider,
+)
 
 router = APIRouter(prefix="/api", tags=["agent"])
 
@@ -62,10 +80,65 @@ _REJECTED_RESPONSES: dict[int | str, dict[str, object]] = {
     },
 }
 
+SEARCH_UNAVAILABLE_MESSAGES: dict[SearchUnavailableReason, str] = {
+    "rate_limited": "Live search rate limit exceeded",
+    "quota_exhausted": "Live search quota exhausted",
+    "auth": "Live search authentication failed",
+    "bad_request": "Live search rejected invalid parameters",
+    "timeout": "Live search timed out",
+    "unreachable": "Live search network unreachable",
+}
+GENERIC_SEARCH_ERROR_MESSAGE = "Live search is unavailable right now"
+
+
+def handle_search_unavailable_error(
+    exc: SearchUnavailableError,
+    query: str,
+) -> AgentResponse:
+    """Map a SearchUnavailableError to a judge-safe response with sanitized log entry."""
+    reason_detail = SEARCH_UNAVAILABLE_MESSAGES.get(
+        exc.reason,
+        "Live search provider error encountered",
+    )
+    partial_log = getattr(exc, "partial_log", [])
+    log_entry = AgentLogEntry(
+        ts=datetime.now(UTC),
+        level="warn",
+        message=f"Live search unavailable ({exc.reason}): {reason_detail}",
+    )
+    return AgentResponse(
+        status="error",
+        query=query,
+        matches=[],
+        log=[*partial_log, log_entry],
+        error=GENERIC_SEARCH_ERROR_MESSAGE,
+    )
+
 
 def get_agent_orchestrator() -> AgentOrchestrator:
-    """Dependency provider for the agent pipeline orchestrator."""
-    return AgentOrchestrator()
+    """Dependency provider for the agent pipeline orchestrator.
+
+    In demo mode (`DEMO_MODE=true`), zero collaborators are injected and zero
+    network calls are made.
+    In live mode (`DEMO_MODE=false`), injects the `LLMProviderPool` and `TavilySearchProvider`.
+    """
+    if settings.demo_mode:
+        return AgentOrchestrator(settings=settings)
+
+    llm_client = LLMProviderPool(config=settings) if settings.llm_providers else None
+    search_provider = (
+        TavilySearchProvider(
+            config=settings,
+            cache=SQLiteActivityCache(),
+        )
+        if settings.tavily_api_key
+        else None
+    )
+    return AgentOrchestrator(
+        llm_client=llm_client,
+        search_provider=search_provider,
+        settings=settings,
+    )
 
 
 def limiter_for(request: Request) -> RateLimiter:
@@ -97,14 +170,14 @@ def enforce_rate_limit(
     pipeline will use, so there is one source of policy per request rather than
     two that can disagree.
     """
-    settings = orchestrator.settings
-    if not settings.rate_limit_enabled:
+    policy = orchestrator.settings
+    if not policy.rate_limit_enabled:
         return
 
     decision = limiter_for(request).hit(
-        client_identifier(request, settings),
-        limit=settings.rate_limit_requests,
-        window_seconds=settings.rate_limit_window_seconds,
+        client_identifier(request, policy),
+        limit=policy.rate_limit_requests,
+        window_seconds=policy.rate_limit_window_seconds,
     )
     # Stashed because FastAPI discards the injected `Response` the moment anything
     # raises, and a refusal without its budget is a refusal the client cannot
@@ -141,13 +214,23 @@ async def agent(
     `mode="live"` is refused unless it carries a valid agent access key, and is
     refused unconditionally by an instance running with `DEMO_MODE=true`.
 
-    Whatever the pipeline returns is scrubbed before it leaves: an upstream
-    failure answers with friendly copy, and no configured secret, provider base
-    URL or model name appears anywhere in the body — including in the agent log,
-    which the web app renders.
+    Two failures reach a client from here, and each has its own copy. A search
+    failure is one the route can explain (#85), so it keeps its mapped sentence.
+    Anything else carries whatever an exception library raised, so it is replaced
+    here — the detail stays in the server log, redacted but present, because an
+    operator mid-pitch needs it and a judge mid-pitch does not.
     """
-    settings = orchestrator.settings
+    policy = orchestrator.settings
     budget = budget_headers(request)
-    enforce_request_caps(payload, settings, headers=budget)
-    require_live_mode_access(payload, settings, headers=budget)
-    return harden_agent_response(await orchestrator.run(payload), settings)
+    enforce_request_caps(payload, policy, headers=budget)
+    require_live_mode_access(payload, policy, headers=budget)
+
+    try:
+        result = await orchestrator.run(payload)
+    except SearchUnavailableError as exc:
+        return harden_agent_response(handle_search_unavailable_error(exc, payload.query), policy)
+
+    if result.status == "error":
+        result = result.model_copy(update={"error": UPSTREAM_FAILURE_MESSAGE})
+
+    return harden_agent_response(result, policy)

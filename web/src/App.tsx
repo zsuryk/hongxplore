@@ -208,7 +208,7 @@ type PinchState = {
   viewport: Viewport;
 };
 
-type CardDragState = {
+export type CardDragState = {
   card: BoardActivityCard;
   cardSize?: Size;
   source: 'board' | 'timeline';
@@ -297,12 +297,14 @@ const INSPECT_MAX_ZOOM_PERCENT = 50;
 export type AppProps = {
   agentStatus?: AgentStatus;
   cards?: BoardActivityCard[];
+  initialCardDragState?: CardDragState | null;
   initialCardZIndexById?: Record<string, number>;
   initialClearConfirmOpen?: boolean;
   initialConfirmation?: string;
   initialHoverExpanded?: boolean;
   initialInspectedCardId?: string;
   initialInteractionMode?: BoardInteractionMode;
+  initialIsOverDropZone?: boolean;
   initialModeDropdownOpen?: boolean;
   initialTimelineExpanded?: boolean;
   initialTourOpen?: boolean;
@@ -314,12 +316,14 @@ export type AppProps = {
 export function App({
   agentStatus: propAgentStatus,
   cards: propCards,
+  initialCardDragState,
   initialCardZIndexById,
   initialClearConfirmOpen,
   initialConfirmation,
   initialHoverExpanded,
   initialInspectedCardId,
   initialInteractionMode,
+  initialIsOverDropZone,
   initialModeDropdownOpen,
   initialTimelineExpanded,
   initialTourOpen,
@@ -388,7 +392,7 @@ export function App({
   const [boardSize, setBoardSize] = useState<Size>({ width: 0, height: 0 });
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [pinchState, setPinchState] = useState<PinchState | null>(null);
-  const [cardDragState, setCardDragState] = useState<CardDragState | null>(null);
+  const [cardDragState, setCardDragState] = useState<CardDragState | null>(initialCardDragState ?? null);
   const [isGesturing, setIsGesturing] = useState(false);
   const [hoveredSlotId, setHoveredSlotId] = useState<string | null>(null);
   /**
@@ -396,7 +400,7 @@ export function App({
    * itself, or the discard bin. Drives the pill. Reset on every drag end and cancel, because a
    * stale `true` would leave the next drag invisible.
    */
-  const [isOverDropZone, setIsOverDropZone] = useState(false);
+  const [isOverDropZone, setIsOverDropZone] = useState(initialIsOverDropZone ?? false);
   const [cardHeightsById, setCardHeightsById] = useState<Record<string, number>>({});
   const [discardingCardId, setDiscardingCardId] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<string | null>(initialConfirmation ?? null);
@@ -2196,7 +2200,14 @@ export function App({
               />
             </div>
             {draggedCardSerial ? (
-              <span aria-hidden="true" className="board__drag-pill">
+              <span
+                aria-hidden="true"
+                className="board__drag-pill"
+                style={{
+                  left: cardDragState.grabOffset.x,
+                  top: cardDragState.grabOffset.y,
+                }}
+              >
                 {draggedCardSerial}
               </span>
             ) : null}

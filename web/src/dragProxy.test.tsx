@@ -176,4 +176,9 @@ describe('drag pill does not move the card in hand', () => {
     expect(boardCss).not.toMatch(/\.board__drag-pill[^{]*\{[^}]*display\s*:\s*none/);
     expect(tokenCss).toMatch(/@media \(prefers-reduced-motion: reduce\)/);
   });
+
+  it('records the pointer cursor anchor in the stylesheet comment rather than card corner (#139)', () => {
+    expect(boardCss).toMatch(/The pill: the card's serial and nothing else, centred directly under the pointer/);
+    expect(boardCss).not.toMatch(/centred on the card's own top-left corner/);
+  });
 });
