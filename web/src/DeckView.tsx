@@ -55,6 +55,7 @@ export type DeckViewProps = {
 };
 
 const SWIPE_THRESHOLD_PX = 70;
+const EXIT_DURATION_MS = 240;
 
 export function DeckView({
   cards: propCards,
@@ -80,8 +81,11 @@ export function DeckView({
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
   const [hoveredDropTarget, setHoveredDropTarget] = useState<string | null>(null);
   const [isSlotPickerOpen, setIsSlotPickerOpen] = useState(false);
+  const [isExiting, setIsExiting] = useState<'left' | 'right' | 'skip' | null>(null);
 
   const dragStartRef = useRef<{ x: number; y: number; pointerId: number } | null>(null);
+  const discardSidebarRef = useRef<HTMLElement | null>(null);
+  const timelineSidebarRef = useRef<HTMLElement | null>(null);
 
   // Compute unassigned cards (neither docked nor discarded)
   const dockedActivityIds = useMemo(
@@ -97,45 +101,52 @@ export function DeckView({
   // Clamp current card safely within unassignedCards
   const activeCardIndex = unassignedCards.length > 0 ? cardIndex % unassignedCards.length : 0;
   const activeCard = unassignedCards[activeCardIndex] ?? null;
-  const ghostCard1 =
-    unassignedCards.length > 1 ? unassignedCards[(activeCardIndex + 1) % unassignedCards.length] : null;
-  const ghostCard2 =
-    unassignedCards.length > 2 ? unassignedCards[(activeCardIndex + 2) % unassignedCards.length] : null;
+  // Two-card depth: crisp next card directly underneath (no faded ghosting)
+  const nextCard = unassignedCards.length > 1 ? unassignedCards[(activeCardIndex + 1) % unassignedCards.length] : null;
 
   const canUndo = undoStack.length > 0;
 
-  // Actions
-  const handleDiscard = useCallback(() => {
-    if (!activeCard) return;
+  // Animated exit runner
+  const triggerExit = useCallback((direction: 'left' | 'right' | 'skip', onComplete: () => void) => {
+    setIsExiting(direction);
     setDragOffset(null);
     setHoveredDropTarget(null);
+    window.setTimeout(() => {
+      onComplete();
+      setIsExiting(null);
+    }, EXIT_DURATION_MS);
+  }, []);
+
+  // Core actions
+  const handleDiscard = useCallback(() => {
+    if (!activeCard || isExiting) return;
     setIsSlotPickerOpen(false);
-    discardCard(activeCard.activity.id);
-  }, [activeCard, discardCard]);
+    triggerExit('left', () => {
+      discardCard(activeCard.activity.id);
+    });
+  }, [activeCard, discardCard, isExiting, triggerExit]);
 
   const handleSkip = useCallback(() => {
-    if (unassignedCards.length <= 1) return;
-    setDragOffset(null);
-    setHoveredDropTarget(null);
+    if (unassignedCards.length <= 1 || isExiting) return;
     setIsSlotPickerOpen(false);
-    setCardIndex((prev) => prev + 1);
-  }, [unassignedCards.length]);
+    triggerExit('skip', () => {
+      setCardIndex((prev) => prev + 1);
+    });
+  }, [isExiting, triggerExit, unassignedCards.length]);
 
   const handleDockSlot = useCallback(
     (slotId: string) => {
-      if (!activeCard) return;
-      setDragOffset(null);
-      setHoveredDropTarget(null);
+      if (!activeCard || isExiting) return;
       setIsSlotPickerOpen(false);
-      dockCard(activeCard.activity.id, slotId, { replace: true });
+      triggerExit('right', () => {
+        dockCard(activeCard.activity.id, slotId, { replace: true });
+      });
     },
-    [activeCard, dockCard],
+    [activeCard, dockCard, isExiting, triggerExit],
   );
 
   const handleQuickDock = useCallback(() => {
-    if (!activeCard) return;
-    setDragOffset(null);
-    setHoveredDropTarget(null);
+    if (!activeCard || isExiting) return;
     const startIso = activeCard.activity.parts[0]?.start;
     const matchedSlotId = getActivityMatchingSlotId(startIso);
 
@@ -149,21 +160,24 @@ export function DeckView({
     }
 
     // Otherwise show slot picker so user selects slot
+    setDragOffset(null);
+    setHoveredDropTarget(null);
     setIsSlotPickerOpen(true);
-  }, [activeCard, handleDockSlot, timelineSlots]);
+  }, [activeCard, handleDockSlot, isExiting, timelineSlots]);
 
   const handleUndo = useCallback(() => {
+    if (isExiting) return;
     setDragOffset(null);
     setHoveredDropTarget(null);
     setIsSlotPickerOpen(false);
     undoLastAction();
-  }, [undoLastAction]);
+  }, [isExiting, undoLastAction]);
 
   // Pointer swipe & drag gestures
   const handlePointerDown = (event: PointerEvent<HTMLElement>) => {
-    if (event.button !== 0) return;
+    if (event.button !== 0 || isExiting) return;
     const target = event.target as HTMLElement;
-    if (target.closest('button') || target.closest('a')) return;
+    if (target.closest('button') || target.closest('a') || target.closest('input')) return;
 
     event.preventDefault();
     event.stopPropagation();
@@ -173,55 +187,68 @@ export function DeckView({
       y: event.clientY,
       pointerId: event.pointerId,
     };
+
     try {
       event.currentTarget.setPointerCapture(event.pointerId);
     } catch {
       // Ignored in test runners or unsupported environments
     }
+
     setDragOffset({ x: 0, y: 0 });
     setHoveredDropTarget(null);
   };
 
   const handlePointerMove = (event: PointerEvent<HTMLElement>) => {
-    if (!dragStartRef.current || dragStartRef.current.pointerId !== event.pointerId) return;
+    if (!dragStartRef.current || dragStartRef.current.pointerId !== event.pointerId || isExiting) return;
     const deltaX = event.clientX - dragStartRef.current.x;
     const deltaY = event.clientY - dragStartRef.current.y;
     setDragOffset({ x: deltaX, y: deltaY });
 
-    if (typeof document !== 'undefined' && typeof document.elementFromPoint === 'function') {
-      const elem = document.elementFromPoint(event.clientX, event.clientY);
-      const targetZone = elem?.closest<HTMLElement>('[data-drop-zone]');
-      if (targetZone) {
-        const zone = targetZone.dataset.dropZone;
-        if (zone === 'discard') {
-          setHoveredDropTarget('discard');
-        } else if (zone === 'timeslot') {
-          setHoveredDropTarget(targetZone.dataset.slotId ?? null);
-        } else {
-          setHoveredDropTarget(null);
-        }
-      } else {
-        setHoveredDropTarget(null);
+    // Robust bounding rect hit testing for sidebars & timeslots
+    const clientX = event.clientX;
+    const clientY = event.clientY;
+
+    if (discardSidebarRef.current) {
+      const rect = discardSidebarRef.current.getBoundingClientRect();
+      if (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
+        setHoveredDropTarget('discard');
+        return;
       }
     }
+
+    if (timelineSidebarRef.current) {
+      const sidebarRect = timelineSidebarRef.current.getBoundingClientRect();
+      if (clientX >= sidebarRect.left && clientX <= sidebarRect.right) {
+        // Find which slot rect contains clientY
+        const slotElements = timelineSidebarRef.current.querySelectorAll<HTMLElement>('[data-slot-id]');
+        for (const slotElem of slotElements) {
+          const rect = slotElem.getBoundingClientRect();
+          if (clientY >= rect.top && clientY <= rect.bottom) {
+            setHoveredDropTarget(slotElem.dataset.slotId ?? null);
+            return;
+          }
+        }
+      }
+    }
+
+    setHoveredDropTarget(null);
   };
 
   const handlePointerUp = (event: PointerEvent<HTMLElement>) => {
-    if (!dragStartRef.current || dragStartRef.current.pointerId !== event.pointerId) return;
+    if (!dragStartRef.current || dragStartRef.current.pointerId !== event.pointerId || isExiting) return;
     const deltaX = event.clientX - dragStartRef.current.x;
     const target = hoveredDropTarget;
     dragStartRef.current = null;
-    setDragOffset(null);
-    setHoveredDropTarget(null);
 
-    if (target === 'discard') {
+    if (target === 'discard' || deltaX < -SWIPE_THRESHOLD_PX) {
       handleDiscard();
     } else if (target && target !== 'discard') {
       handleDockSlot(target);
-    } else if (deltaX < -SWIPE_THRESHOLD_PX) {
-      handleDiscard();
     } else if (deltaX > SWIPE_THRESHOLD_PX) {
       handleQuickDock();
+    } else {
+      setDragOffset(null);
+      setHoveredDropTarget(null);
     }
   };
 
@@ -264,15 +291,61 @@ export function DeckView({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleDiscard, handleQuickDock, handleSkip, handleUndo, isSlotPickerOpen]);
 
-  const swipeDirection = dragOffset ? (dragOffset.x < -30 ? 'left' : dragOffset.x > 30 ? 'right' : null) : null;
+  // Dynamic animations & styles
+  const isDragging = dragOffset !== null;
+  const dragProgress = isDragging ? Math.min(Math.abs(dragOffset.x) / 160, 1) : 0;
+  const swipeDirection = isDragging ? (dragOffset.x < -30 ? 'left' : dragOffset.x > 30 ? 'right' : null) : null;
 
-  const cardStyle: CSSProperties | undefined = dragOffset
-    ? {
-        transform: `translate3d(${dragOffset.x}px, ${dragOffset.y * 0.4}px, 0) rotate(${dragOffset.x * 0.04}deg)`,
-        transition: 'none',
-        pointerEvents: 'none',
-      }
-    : undefined;
+  let activeCardStyle: CSSProperties | undefined;
+  if (isExiting === 'left') {
+    activeCardStyle = {
+      transform: 'translate3d(-120vw, 0, 0) rotate(-24deg) scale(0.95)',
+      opacity: 0,
+      transition: 'transform var(--motion-base) var(--motion-ease), opacity var(--motion-base) var(--motion-ease)',
+    };
+  } else if (isExiting === 'right') {
+    activeCardStyle = {
+      transform: 'translate3d(120vw, 0, 0) rotate(24deg) scale(0.95)',
+      opacity: 0,
+      transition: 'transform var(--motion-base) var(--motion-ease), opacity var(--motion-base) var(--motion-ease)',
+    };
+  } else if (isExiting === 'skip') {
+    activeCardStyle = {
+      transform: 'translate3d(0, 50px, 0) scale(0.9)',
+      opacity: 0,
+      transition: 'transform var(--motion-base) var(--motion-ease), opacity var(--motion-base) var(--motion-ease)',
+    };
+  } else if (isDragging) {
+    activeCardStyle = {
+      transform: `translate3d(${dragOffset.x}px, ${dragOffset.y * 0.35}px, 0) rotate(${dragOffset.x * 0.045}deg) scale(1.02)`,
+      boxShadow: 'var(--shadow-drag)',
+      transition: 'none',
+    };
+  } else {
+    activeCardStyle = {
+      transform: 'translate3d(0, 0, 0) rotate(0deg) scale(1)',
+      transition: 'transform var(--motion-fast) var(--motion-ease)',
+    };
+  }
+
+  // Next card dynamic scaling physics
+  let nextCardStyle: CSSProperties | undefined;
+  if (isExiting) {
+    nextCardStyle = {
+      transform: 'scale(1) translateY(0)',
+      transition: 'transform var(--motion-base) var(--motion-ease)',
+    };
+  } else if (isDragging) {
+    nextCardStyle = {
+      transform: `scale(${0.96 + dragProgress * 0.04}) translateY(${(1 - dragProgress) * 8}px)`,
+      transition: 'none',
+    };
+  } else {
+    nextCardStyle = {
+      transform: 'scale(0.96) translateY(var(--space-2))',
+      transition: 'transform var(--motion-fast) var(--motion-ease)',
+    };
+  }
 
   const serialIndex = activeCard
     ? cards.findIndex((candidate) => candidate.activity.id === activeCard.activity.id)
@@ -292,6 +365,7 @@ export function DeckView({
         onClick={() => {
           if (activeCard) handleDiscard();
         }}
+        ref={discardSidebarRef}
       >
         <div className="deck-sidebar__header">
           <span className="deck-sidebar__icon-wrap deck-sidebar__icon-wrap--discard">
@@ -335,15 +409,9 @@ export function DeckView({
             </div>
 
             <div className="deck-stack">
-              {ghostCard2 ? (
-                <div className="deck-stack__item deck-stack__item--ghost-2">
-                  <DeckCard isGhost match={ghostCard2} />
-                </div>
-              ) : null}
-
-              {ghostCard1 ? (
-                <div className="deck-stack__item deck-stack__item--ghost-1">
-                  <DeckCard isGhost match={ghostCard1} />
+              {nextCard ? (
+                <div className="deck-stack__item deck-stack__item--next">
+                  <DeckCard isGhost match={nextCard} style={nextCardStyle} />
                 </div>
               ) : null}
 
@@ -359,13 +427,13 @@ export function DeckView({
                   index={serialIndex >= 0 ? serialIndex : activeCardIndex}
                   match={activeCard}
                   onFindSimilar={onFindSimilar}
-                  style={cardStyle}
+                  style={activeCardStyle}
                   swipeDirection={swipeDirection}
                 />
               </div>
             </div>
 
-            {/* Inline Slot Picker when triggered */}
+            {/* Inline Slot Picker when quick-dock is ambiguous */}
             {isSlotPickerOpen ? (
               <aside aria-label={DECK_SLOT_PICKER_TITLE} className="deck-slot-picker">
                 <h3 className="deck-slot-picker__title">{DECK_SLOT_PICKER_TITLE}</h3>
@@ -475,7 +543,11 @@ export function DeckView({
       </section>
 
       {/* Right Column: Weekend Timeline Slots */}
-      <aside aria-label={DECK_TIMELINE_PANEL_TITLE} className="deck-sidebar deck-sidebar--timeline">
+      <aside
+        aria-label={DECK_TIMELINE_PANEL_TITLE}
+        className="deck-sidebar deck-sidebar--timeline"
+        ref={timelineSidebarRef}
+      >
         <div className="deck-sidebar__header">
           <span className="deck-sidebar__icon-wrap deck-sidebar__icon-wrap--dock">
             <IconDeckView className="deck-sidebar__icon" />

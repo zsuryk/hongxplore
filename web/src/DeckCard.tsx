@@ -72,6 +72,7 @@ export function DeckCard({
       aria-label={accessibleLabel}
       className={`deck-card${swipeClass}${ghostClass}`}
       data-activity-id={activity.id}
+      draggable={false}
       onDragStart={(event) => event.preventDefault()}
       onPointerDown={onPointerDown}
       style={style}

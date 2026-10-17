@@ -379,27 +379,15 @@
   cursor: grabbing;
 }
 
-/* Ghost cards beneath active card */
-.deck-stack__item--ghost-1 {
+/* Next card waiting beneath active card (two-card depth, full crispness) */
+.deck-stack__item--next {
   pointer-events: none;
-  transform: scale(0.97) translateY(var(--space-2));
-  transform-origin: center bottom;
+  transform-origin: center center;
   z-index: 2;
 }
 
-.deck-stack__item--ghost-1 .deck-card {
-  opacity: 0.7;
-}
-
-.deck-stack__item--ghost-2 {
-  pointer-events: none;
-  transform: scale(0.94) translateY(var(--space-4));
-  transform-origin: center bottom;
-  z-index: 1;
-}
-
-.deck-stack__item--ghost-2 .deck-card {
-  opacity: 0.4;
+.deck-stack__item--next .deck-card {
+  opacity: 1;
 }
 
 /* ---- Deck Card Component ---- */
@@ -424,8 +412,15 @@
     box-shadow var(--motion-fast) var(--motion-ease),
     transform var(--motion-fast) var(--motion-ease);
   user-select: none;
+  -webkit-user-drag: none;
   -webkit-user-select: none;
   width: 100%;
+}
+
+.deck-card * {
+  user-select: none;
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
 }
 
 .deck-card--swiping-left {
