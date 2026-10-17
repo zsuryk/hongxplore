@@ -330,6 +330,20 @@ export const DATA_SOURCE_LABEL = 'Data source mode';
 export const DATA_SOURCE_LIVE = 'Live API';
 export const DATA_SOURCE_DEMO = 'Demo data';
 
+export const ACCESS_KEY_MODAL_TITLE = 'Live Mode Agent Access Key';
+export const ACCESS_KEY_MODAL_DESCRIPTION =
+  'Enter the agent access key from the pitch deck to unlock live search and real-time LLM recommendations. This key is an access gate for our server, not a provider API key — provider credentials never leave our server.';
+export const ACCESS_KEY_INPUT_LABEL = 'Agent access key';
+export const ACCESS_KEY_INPUT_PLACEHOLDER = 'Paste the access key from the pitch deck';
+export const ACCESS_KEY_SUBMIT_LABEL = 'Unlock Live Mode';
+export const ACCESS_KEY_CANCEL_LABEL = 'Stay in Demo Mode';
+export const ACCESS_KEY_CLEAR_LABEL = 'Clear key';
+export const ACCESS_KEY_REPLACE_LABEL = 'Change key';
+export const ACCESS_KEY_HELP_TEXT =
+  'The access key is held in browser storage for this session only and is never logged or exposed. Demo mode requires no key.';
+export const ACCESS_KEY_MASKED = '••••••••';
+export const accessKeyMaskedLabel = (masked: string) => `Agent access key: ${masked}`;
+
 export const ACTIVITY_CARD_LABEL = 'Activity card';
 export const ACTIVITY_CARD_ORIGINAL_TITLE_LABEL = 'Original title';
 export const ACTIVITY_CARD_LANGUAGE_LABEL = 'Language';

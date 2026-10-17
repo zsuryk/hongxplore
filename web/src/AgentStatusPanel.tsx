@@ -15,6 +15,10 @@ import {
   DATA_SOURCE_LABEL,
   DATA_SOURCE_LIVE,
   DATA_SOURCE_DEMO,
+  ACCESS_KEY_CLEAR_LABEL,
+  ACCESS_KEY_MASKED,
+  ACCESS_KEY_REPLACE_LABEL,
+  accessKeyMaskedLabel,
   agentStatusResults,
   formatLogTimestamp,
   INITIAL_ACTIVITY_QUERY,
@@ -33,6 +37,9 @@ export type AgentStatusPanelProps = {
   log?: AgentLogEntry[];
   cards?: ActivityCard[];
   dataSourceMode?: DataSourceMode;
+  agentAccessKey?: string | null;
+  onOpenAccessKeyPrompt?: () => void;
+  onClearAccessKey?: () => void;
   initialExpanded?: boolean;
 };
 
@@ -52,6 +59,9 @@ export function AgentStatusPanel({
   log: propLog,
   cards: propCards,
   dataSourceMode: propDataSourceMode,
+  agentAccessKey: propAgentAccessKey,
+  onOpenAccessKeyPrompt: propOnOpenAccessKeyPrompt,
+  onClearAccessKey: propOnClearAccessKey,
   initialExpanded = false,
 }: AgentStatusPanelProps = {}) {
   const [isLogExpanded, setIsLogExpanded] = useState(initialExpanded);
@@ -63,16 +73,27 @@ export function AgentStatusPanel({
   const storeDataSourceMode = useBoardStore((state) => state.dataSourceMode);
   const setDataSourceMode = useBoardStore((state) => state.setDataSourceMode);
   const loadAgentResponse = useBoardStore((state) => state.loadAgentResponse);
+  const storeAccessKey = useBoardStore((state) => state.agentAccessKey);
+  const storeOpenPrompt = useBoardStore((state) => state.openAccessKeyPrompt);
+  const storeClearKey = useBoardStore((state) => state.clearAgentAccessKey);
 
   const agentStatus = propStatus ?? storeStatus;
   const agentError = propError ?? storeError;
   const agentLog = propLog ?? storeLog;
   const cards = propCards ?? storeCards;
   const dataSourceMode = propDataSourceMode ?? storeDataSourceMode;
+  const agentAccessKey = propAgentAccessKey !== undefined ? propAgentAccessKey : storeAccessKey;
+  const openAccessKeyPrompt = propOnOpenAccessKeyPrompt ?? storeOpenPrompt;
+  const clearAgentAccessKey = propOnClearAccessKey ?? storeClearKey;
   const resultCount = propCards !== undefined ? propCards.length : cards.length;
 
   function handleModeSwitch(mode: DataSourceMode) {
+    if (mode === 'live' && !agentAccessKey) return openAccessKeyPrompt();
     setDataSourceMode(mode);
+  }
+
+  function handleClearKey() {
+    clearAgentAccessKey();
   }
 
   function handleUseDemo() {
@@ -162,6 +183,29 @@ export function AgentStatusPanel({
               {DATA_SOURCE_DEMO}
             </button>
           </div>
+          {dataSourceMode === 'live' && agentAccessKey ? (
+            <div aria-label={accessKeyMaskedLabel(ACCESS_KEY_MASKED)} className="agent-status-panel__key-badge">
+              <span aria-hidden="true" className="agent-status-panel__key-masked">
+                {ACCESS_KEY_MASKED}
+              </span>
+              <button
+                aria-label={ACCESS_KEY_REPLACE_LABEL}
+                className="btn btn--sm"
+                onClick={openAccessKeyPrompt}
+                type="button"
+              >
+                {ACCESS_KEY_REPLACE_LABEL}
+              </button>
+              <button
+                aria-label={ACCESS_KEY_CLEAR_LABEL}
+                className="btn btn--sm"
+                onClick={handleClearKey}
+                type="button"
+              >
+                {ACCESS_KEY_CLEAR_LABEL}
+              </button>
+            </div>
+          ) : null}
           {agentStatus === 'error' ? (
             <button className="btn btn--sm btn--danger" onClick={handleUseDemo} type="button">
               {AGENT_USE_DEMO}

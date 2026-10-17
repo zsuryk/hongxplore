@@ -253,3 +253,10 @@ export const fixtureAgentClient = createAgentClient({ transport: 'fixture' });
  * `createAgentClient({ mode: 'live', agentAccessKey })`.
  */
 export const defaultAgentClient = demoAgentClient;
+
+/**
+ * Creates an agent client in live mode with the provided agent access key.
+ */
+export function createLiveAgentClient(agentAccessKey?: string, fetchImplementation?: Fetch): AgentClient {
+  return createAgentClient({ mode: 'live', agentAccessKey }, fetchImplementation);
+}

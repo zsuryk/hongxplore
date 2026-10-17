@@ -519,3 +519,14 @@
   justify-content: flex-end;
   margin-top: var(--space-2);
 }
+
+.board-modal__input-row {
+  margin-top: var(--space-2);
+}
+
+.board-modal__help {
+  color: var(--card-muted-foreground);
+  font-size: var(--text-label);
+  line-height: var(--leading-normal);
+  margin: var(--space-2) 0 0;
+}
