@@ -5,11 +5,15 @@ import { SearchBar } from './SearchBar';
 
 describe('SearchBar', () => {
   it('renders the search input, submit button, and time-slot chips', () => {
-    const markup = renderToStaticMarkup(<SearchBar selectedSlotIds={['saturday-afternoon']} status="idle" />);
+    const availableSlots = FREE_TIME_SLOTS;
+    const selectedSlotId = availableSlots[0]?.id ?? 'saturday-afternoon';
+    const markup = renderToStaticMarkup(
+      <SearchBar availableSlots={availableSlots} selectedSlotIds={[selectedSlotId]} status="idle" />,
+    );
 
     expect(markup).toContain('search-bar__input');
     expect(markup).toContain(SEARCH_SUBMIT_LABEL);
-    for (const slot of FREE_TIME_SLOTS) {
+    for (const slot of availableSlots) {
       expect(markup).toContain(slot.label);
     }
     expect(markup).toContain('search-bar__chip--selected');

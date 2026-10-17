@@ -28,11 +28,16 @@ describe('Search and Agent status integration', () => {
 
     const client = createAgentClient({ mode: 'demo' }, mockFetch as unknown as typeof fetch);
 
+    const fridayRef = new Date('2026-10-16T10:00:00Z');
+    const availableSlots = getUpcomingWeekendFreeSlots(fridayRef);
+    const slot1 = availableSlots.find((s) => s.id === 'saturday-morning')!;
+    const slot2 = availableSlots.find((s) => s.id === 'saturday-afternoon')!;
+
     useBoardStore.setState({
-      selectedFreeSlotIds: ['saturday-morning', 'saturday-afternoon'],
+      selectedFreeSlotIds: [slot1.id, slot2.id],
     });
 
-    await useBoardStore.getState().submitSearch('hiking in Sai Kung', client);
+    await useBoardStore.getState().submitSearch('hiking in Sai Kung', client, { referenceTime: fridayRef });
 
     expect(mockFetch).toHaveBeenCalledWith(
       '/api/agent',
@@ -46,9 +51,8 @@ describe('Search and Agent status integration', () => {
     expect(callBody.query).toBe('hiking in Sai Kung');
     expect(callBody.mode).toBe('demo');
     expect(callBody.free_slots).toHaveLength(2);
-    const expectedMorning = getUpcomingWeekendFreeSlots().find((s) => s.id === 'saturday-morning');
-    expect(callBody.free_slots[0].start).toBe(expectedMorning?.start);
-    expect(callBody.free_slots[0].end).toBe(expectedMorning?.end);
+    expect(callBody.free_slots[0].start).toBe(slot1.start);
+    expect(callBody.free_slots[0].end).toBe(slot1.end);
 
     expect(useBoardStore.getState().agentStatus).toBe('results');
     expect(useBoardStore.getState().cards).toEqual(response.matches);
