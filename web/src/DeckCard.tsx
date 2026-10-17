@@ -8,6 +8,9 @@ import {
   DECK_MATCH_RATIONALE_LABEL,
   DECK_PRICE_LABEL,
   DECK_SCHEDULE_LABEL,
+  DECK_STAMP_DISCARD,
+  DECK_STAMP_SCHEDULE,
+  DECK_STAMP_SKIP,
   FIND_SIMILAR_LABEL,
   TAGS_LABEL,
   activityCardAccessibleLabel,
@@ -20,6 +23,11 @@ import {
 
 type MatchedActivity = components['schemas']['MatchedActivity'];
 
+export type DeckCardStamp = {
+  type: 'discard' | 'dock' | 'skip';
+  opacity: number;
+};
+
 export type DeckCardProps = {
   index?: number;
   match: MatchedActivity;
@@ -27,6 +35,7 @@ export type DeckCardProps = {
   onPointerDown?: (event: PointerEvent<HTMLElement>) => void;
   style?: CSSProperties;
   swipeDirection?: 'left' | 'right' | null;
+  stamp?: DeckCardStamp | null;
   isGhost?: boolean;
 };
 
@@ -50,6 +59,7 @@ export function DeckCard({
   onPointerDown,
   style,
   swipeDirection,
+  stamp,
   isGhost = false,
 }: DeckCardProps) {
   const { activity, match_rationale: matchRationale } = match;
@@ -77,6 +87,21 @@ export function DeckCard({
       onPointerDown={onPointerDown}
       style={style}
     >
+      {/* Dynamic visual stamp feedback */}
+      {stamp && stamp.opacity > 0 ? (
+        <div
+          aria-hidden="true"
+          className={`deck-card__stamp deck-card__stamp--${stamp.type}`}
+          style={{ opacity: stamp.opacity }}
+        >
+          {stamp.type === 'discard'
+            ? DECK_STAMP_DISCARD
+            : stamp.type === 'dock'
+              ? DECK_STAMP_SCHEDULE
+              : DECK_STAMP_SKIP}
+        </div>
+      ) : null}
+
       {/* Top Header Plate */}
       <header className="deck-card__header">
         <div className="deck-card__meta">

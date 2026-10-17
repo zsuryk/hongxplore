@@ -372,6 +372,8 @@
 .deck-stack__item--active {
   cursor: grab;
   touch-action: none;
+  transform-origin: 50% 90%;
+  will-change: transform;
   z-index: 3;
 }
 
@@ -382,7 +384,8 @@
 /* Next card waiting beneath active card (two-card depth, full crispness) */
 .deck-stack__item--next {
   pointer-events: none;
-  transform-origin: center center;
+  transform-origin: 50% 90%;
+  will-change: transform;
   z-index: 2;
 }
 
@@ -435,6 +438,54 @@
   box-shadow:
     0 0 0 1px var(--accent),
     var(--shadow-drag);
+}
+
+/* ---- Card Stamps (Physical gesture feedback) ---- */
+
+.deck-card__stamp {
+  align-items: center;
+  border: var(--control-inset) solid;
+  border-radius: var(--radius-md);
+  display: inline-flex;
+  font-family: var(--font-mono);
+  font-size: var(--text-title);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-label);
+  line-height: 1;
+  padding: var(--space-2) var(--space-4);
+  pointer-events: none;
+  position: absolute;
+  text-transform: uppercase;
+  user-select: none;
+  z-index: 10;
+  transition: opacity var(--motion-fast) var(--motion-ease);
+}
+
+.deck-card__stamp--discard {
+  background: var(--destructive-soft);
+  border-color: var(--destructive);
+  color: var(--destructive);
+  right: var(--space-6);
+  top: var(--space-6);
+  transform: rotate(14deg);
+}
+
+.deck-card__stamp--dock {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+  left: var(--space-6);
+  top: var(--space-6);
+  transform: rotate(-14deg);
+}
+
+.deck-card__stamp--skip {
+  background: var(--chrome-raised);
+  border-color: var(--rule);
+  bottom: var(--space-6);
+  color: var(--foreground);
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .deck-card__header {
@@ -690,7 +741,7 @@
 
 .deck-action-btn:active:not(:disabled) {
   box-shadow: inset 0 1px 2px var(--shadow-press);
-  transform: translateY(1px);
+  transform: scale(0.96);
 }
 
 .deck-action-btn:disabled {
@@ -877,5 +928,23 @@
 
   .deck-slot-picker__chips {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ---- Accessibility (prefers-reduced-motion) ---- */
+
+@media (prefers-reduced-motion: reduce) {
+  .deck-card,
+  .deck-card *,
+  .deck-stack__item,
+  .deck-stack__item--active,
+  .deck-stack__item--next,
+  .deck-sidebar,
+  .deck-action-btn,
+  .deck-slot-item,
+  .deck-card__stamp {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

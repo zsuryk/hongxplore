@@ -60,4 +60,13 @@ describe('DeckCard', () => {
     const markup = renderToStaticMarkup(<DeckCard index={0} match={response.matches[0]} swipeDirection="left" />);
     expect(markup).toContain('deck-card--swiping-left');
   });
+
+  it('renders dynamic stamp overlay when stamp prop is provided', () => {
+    const markup = renderToStaticMarkup(
+      <DeckCard index={0} match={response.matches[0]} stamp={{ type: 'discard', opacity: 0.8 }} />,
+    );
+    expect(markup).toContain('deck-card__stamp--discard');
+    expect(markup).toContain('opacity:0.8');
+    expect(markup).toContain('Discard');
+  });
 });

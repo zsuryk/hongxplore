@@ -667,6 +667,9 @@ export const DECK_KEY_SPACE = 'Space';
 export const DECK_KEY_Z = 'Z';
 export const DECK_RESTORE_ALL_LABEL = 'Restore all';
 export const DECK_DROP_HINT_BAR = 'Drag card to any timeslot or discard bin · Or swipe left / right';
+export const DECK_STAMP_DISCARD = 'Discard';
+export const DECK_STAMP_SCHEDULE = 'Schedule';
+export const DECK_STAMP_SKIP = 'Skip';
 
 export function deckDiscardedCount(count: number): string {
   return `${count} discarded`;
