@@ -15,6 +15,7 @@ from app.services.search.extractor import (
     deterministic_extract,
     extract_activities_from_snippets,
 )
+from app.services.search.page_meta import PageMeta
 
 
 class FakeLLMClient(LLMClient):
@@ -469,3 +470,34 @@ def test_unverified_root_images_not_round_robined_to_snippets_without_images() -
     assert len(activities) == 1
     # Snippet without image must not inherit unrelated search root images
     assert activities[0].image is None
+
+
+def test_deterministic_extract_with_page_meta_enrichment() -> None:
+    raw_snippets = [
+        {
+            "title": "Timable",
+            "url": "https://timable.com/event/200",
+            "content": "Heritage walk in Central Hong Kong",
+        },
+        {
+            "title": "Eventbrite Directory",
+            "url": "https://eventbrite.hk/events",
+            "content": "Upcoming events",
+        },
+    ]
+
+    page_metas = {
+        "https://timable.com/event/200": PageMeta(
+            og_title="Central Heritage Walk 2026",
+            og_image="https://timable.com/images/central-hero.jpg",
+        ),
+        "https://eventbrite.hk/events": PageMeta(
+            og_title="Events",
+        ),
+    }
+
+    activities = deterministic_extract(raw_snippets, page_metas=page_metas)
+    # The second snippet has only generic title "Events" so it must be dropped
+    assert len(activities) == 1
+    assert activities[0].title == "Central Heritage Walk 2026"
+    assert str(activities[0].image) == "https://timable.com/images/central-hero.jpg"

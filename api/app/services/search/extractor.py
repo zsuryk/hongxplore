@@ -22,7 +22,10 @@ from app.prompts import HONG_KONG_DISTRICTS
 from app.prompts.extraction import EXTRACTION_SYSTEM_PROMPT
 from app.services.agent.seed import STOP_WORDS
 from app.services.ports import LLMClient
-from app.services.search.dedup import normalize_url, strip_portal_suffix
+from app.services.search.dates import extract_listed_at, extract_parts, extract_price
+from app.services.search.dedup import normalize_url
+from app.services.search.page_filter import is_generic_title, is_listing_or_portal_url
+from app.services.search.page_meta import PageMeta, choose_title, validate_image_url
 
 logger = logging.getLogger(__name__)
 
@@ -305,12 +308,42 @@ def _extract_valid_image_url(
     item: dict[str, Any] | None,
     fallback_images: list[Any] | None = None,
     item_index: int = 0,
+    page_meta: PageMeta | None = None,
 ) -> HttpUrl | None:
-    """Extract and validate the first valid HTTP/HTTPS image URL from a search snippet or item."""
+    """Extract and validate the highest-priority valid HTTP/HTTPS image URL.
+
+    Priority order (FIX.md Phase 1.4):
+    1. JSON-LD Event.image
+    2. og:image, then twitter:image
+    3. Direct snippet image
+    4. Relevant root image passing token gate
+    5. None
+    """
     if not item:
         item = {}
 
-    # 1. Direct snippet-level images (grounded directly in this result snippet)
+    # 1. JSON-LD Event.image
+    if page_meta and page_meta.jsonld_events:
+        for ev in page_meta.jsonld_events:
+            ev_img = ev.get("image")
+            img_url = _clean_candidate_url(ev_img)
+            if img_url and validate_image_url(img_url):
+                try:
+                    return HttpUrl(img_url)
+                except Exception:
+                    pass
+
+    # 2. og:image, then twitter:image
+    if page_meta:
+        for meta_img in (page_meta.og_image, page_meta.twitter_image):
+            img_url = _clean_candidate_url(meta_img)
+            if img_url and validate_image_url(img_url):
+                try:
+                    return HttpUrl(img_url)
+                except Exception:
+                    pass
+
+    # 3. Direct snippet-level images (grounded directly in this result snippet)
     direct_candidates: list[Any] = []
     raw_images = item.get("images")
     if isinstance(raw_images, list):
@@ -321,7 +354,7 @@ def _extract_valid_image_url(
 
     for candidate in direct_candidates:
         candidate_url = _clean_candidate_url(candidate)
-        if not candidate_url:
+        if not candidate_url or not validate_image_url(candidate_url):
             continue
         try:
             parsed = urlsplit(candidate_url)
@@ -330,7 +363,7 @@ def _extract_valid_image_url(
         except Exception:
             continue
 
-    # 2. Contextually verified fallback candidates (from search root images)
+    # 4. Contextually verified fallback candidates (from search root images)
     fallback_candidates: list[Any] = []
     root_images = item.get("root_images")
     if isinstance(root_images, list) and root_images:
@@ -349,7 +382,7 @@ def _extract_valid_image_url(
 
     for candidate in ordered_candidates:
         candidate_url = _clean_candidate_url(candidate)
-        if not candidate_url:
+        if not candidate_url or not validate_image_url(candidate_url):
             continue
         if _is_relevant_fallback_image(candidate_url, item):
             try:
@@ -367,6 +400,7 @@ def deterministic_extract(
     *,
     default_district: str | None = None,
     root_images: list[Any] | None = None,
+    page_metas: dict[str, PageMeta] | None = None,
 ) -> list[Activity]:
     """Deterministic, rule-based extraction from search snippets without LLM calls."""
     activities: list[Activity] = []
@@ -376,33 +410,62 @@ def deterministic_extract(
             if not url_str or not url_str.startswith(("http://", "https://")):
                 continue
 
-            raw_title = str(item.get("title") or "").strip() or f"Hong Kong Activity {idx + 1}"
-            cleaned_title = strip_portal_suffix(raw_title) or raw_title
-            content = str(item.get("content") or "").strip()
-            combined_text = f"{raw_title} {cleaned_title} {content}"
+            norm_url = normalize_url(url_str)
+            page_meta = page_metas.get(norm_url) if page_metas else None
 
-            is_zh = bool(_CHINESE_CHAR_PATTERN.search(raw_title))
+            domain = urlsplit(url_str).netloc.lower()
+            if domain.startswith("www."):
+                domain = domain[4:]
+            source_name = _resolve_source_name(domain)
+
+            # Drop listing / portal pages unless enriched with a specific event name
+            if is_listing_or_portal_url(url_str):
+                has_specific_event = False
+                if page_meta and page_meta.jsonld_events:
+                    has_specific_event = any(
+                        bool(ev.get("name"))
+                        and not is_generic_title(str(ev.get("name")), source_name)
+                        for ev in page_meta.jsonld_events
+                    )
+                if not has_specific_event:
+                    continue
+
+            raw_title = str(item.get("title") or "").strip() or f"Hong Kong Activity {idx + 1}"
+            content = str(item.get("content") or "").strip()
+
+            cleaned_title = choose_title(raw_title, page_meta, content, source_name=source_name)
+            if not cleaned_title:
+                continue  # Drop candidate per FIX.md Phase 1.5
+
+            combined_text = f"{raw_title} {cleaned_title} {content}"
+            if page_meta and page_meta.body_text:
+                combined_text += f" {page_meta.body_text}"
+
+            is_zh = bool(_CHINESE_CHAR_PATTERN.search(cleaned_title))
             lang: Lang = "zh" if is_zh else "en"
-            # Title_en should be None (not the Chinese title) for non-translated items
             title_en: str | None = None
 
             detected = _detect_district(combined_text, default_district=default_district)
             district = detected or default_district or "Central & Western"
             tags = _detect_tags(combined_text)
 
-            domain = urlsplit(url_str).netloc.lower()
-            if domain.startswith("www."):
-                domain = domain[4:]
-
-            source_name = _resolve_source_name(domain)
-
-            norm_url = normalize_url(url_str)
             stable_id = f"tavily-{hashlib.sha256(norm_url.encode()).hexdigest()[:12]}"
             extracted_image = _extract_valid_image_url(
                 item,
                 fallback_images=root_images,
                 item_index=idx,
+                page_meta=page_meta,
             )
+
+            parts = extract_parts(
+                jsonld_events=page_meta.jsonld_events if page_meta else None,
+                body_text=combined_text,
+            )
+            price = extract_price(
+                text=combined_text,
+                jsonld_offers=page_meta.jsonld_events if page_meta else None,
+            )
+            listed_at = extract_listed_at(str(item.get("published_date") or ""))
 
             act = Activity(
                 id=stable_id,
@@ -410,11 +473,13 @@ def deterministic_extract(
                 title_en=title_en,
                 lang=lang,
                 tags=tags,
-                parts=[],
+                parts=parts,
                 source=Source(name=source_name, url=HttpUrl(url_str)),
                 location=Location(district=district, venue=None, address=None),
                 url=HttpUrl(url_str),
                 image=extracted_image,
+                price=price,
+                listed_at=listed_at,
             )
             activities.append(act)
         except Exception as exc:
@@ -461,8 +526,9 @@ async def extract_activities_from_snippets(
     default_district: str | None = None,
     max_items: int = 10,
     root_images: list[Any] | None = None,
+    page_metas: dict[str, PageMeta] | None = None,
 ) -> list[Activity]:
-    """Extract Activity models from raw Tavily search snippets.
+    """Extract Activity models from raw search snippets with LLM structured parsing.
 
     Uses LLM structured extraction when llm_client is provided, validating all returned
     fields against canonical inputs. Falls back to deterministic extraction.
@@ -485,11 +551,27 @@ async def extract_activities_from_snippets(
             candidate_snippets = raw_results[:max_items]
             user_content = f"Search query: {query}\n\nSearch Results:\n"
             for i, res in enumerate(candidate_snippets, start=1):
-                user_content += (
-                    f"[{i}] Title: {res.get('title')}\n"
-                    f"    URL: {res.get('url')}\n"
-                    f"    Snippet: {res.get('content')}\n\n"
-                )
+                u = str(res.get("url") or "")
+                norm_u = normalize_url(u)
+                pm = page_metas.get(norm_u) if page_metas else None
+                snippet_text = str(res.get("content") or "")
+                title_text = str(res.get("title") or "")
+
+                entry = f"[{i}] Title: {title_text}\n    URL: {u}\n    Snippet: {snippet_text}\n"
+                if pm:
+                    if pm.og_title and pm.og_title != title_text:
+                        entry += f"    Page Title: {pm.og_title}\n"
+                    if pm.body_text:
+                        entry += f"    Page Content: {pm.body_text[:600]}\n"
+                    if pm.jsonld_events:
+                        ev_summaries = [
+                            f"Name: {ev.get('name')}, Start: {ev.get('startDate')}"
+                            for ev in pm.jsonld_events[:2]
+                            if isinstance(ev, dict)
+                        ]
+                        if ev_summaries:
+                            entry += f"    Event Info: {'; '.join(ev_summaries)}\n"
+                user_content += entry + "\n"
 
             raw_completion = await llm_client.complete(
                 system=EXTRACTION_SYSTEM_PROMPT,
@@ -509,6 +591,9 @@ async def extract_activities_from_snippets(
                         "Discarding LLM item with invented or missing URL: %s", raw_item_url
                     )
                     continue
+
+                raw_snippet = valid_url_map.get(norm_item_url)
+                page_meta = page_metas.get(norm_item_url) if page_metas else None
 
                 # Force deterministic ID hashed from canonical URL
                 item["id"] = f"tavily-{hashlib.sha256(norm_item_url.encode()).hexdigest()[:12]}"
@@ -534,28 +619,44 @@ async def extract_activities_from_snippets(
                         "address": None,
                     }
 
-                # Enforce valid image: prioritize verified snippet image from Tavily search
-                raw_snippet = valid_url_map.get(norm_item_url)
-                snippet_img = (
-                    _extract_valid_image_url(
-                        raw_snippet,
-                        fallback_images=root_images,
-                        item_index=idx,
-                    )
+                # Enforce valid image: code-grounded image only
+                resolved_img = _extract_valid_image_url(
+                    raw_snippet,
+                    fallback_images=root_images,
+                    item_index=idx,
+                    page_meta=page_meta,
+                )
+                item["image"] = str(resolved_img) if resolved_img else None
+
+                # Extract parts from JSON-LD, LLM, or body text
+                parts = extract_parts(
+                    jsonld_events=page_meta.jsonld_events if page_meta else None,
+                    body_text=page_meta.body_text if page_meta else None,
+                    llm_item=item,
+                )
+                item["parts"] = [p.model_dump(mode="json") for p in parts]
+
+                # Price and listed_at
+                snippet_body = raw_snippet.get("content", "") if raw_snippet else ""
+                combined_text = f"{item.get('title', '')} {snippet_body}"
+                if page_meta and page_meta.body_text:
+                    combined_text += f" {page_meta.body_text}"
+                item_price = extract_price(
+                    text=combined_text,
+                    jsonld_offers=page_meta.jsonld_events if page_meta else None,
+                )
+                if item_price:
+                    item["price"] = item_price.model_dump(mode="json")
+                elif "price" in item and item["price"] is None:
+                    del item["price"]
+
+                listed_at = (
+                    extract_listed_at(str(raw_snippet.get("published_date") or ""))
                     if raw_snippet
                     else None
                 )
-                llm_img = (
-                    _extract_valid_image_url(
-                        item,
-                        fallback_images=root_images,
-                        item_index=idx,
-                    )
-                    if item.get("image")
-                    else None
-                )
-                resolved_img = snippet_img or llm_img
-                item["image"] = str(resolved_img) if resolved_img else None
+                if listed_at:
+                    item["listed_at"] = listed_at.isoformat()
 
                 try:
                     act = Activity.model_validate(item)
@@ -575,6 +676,7 @@ async def extract_activities_from_snippets(
                     dropped_results,
                     default_district=default_district,
                     root_images=root_images,
+                    page_metas=page_metas,
                 )
                 extracted_activities.extend(fallback_acts)
 
@@ -590,4 +692,5 @@ async def extract_activities_from_snippets(
         raw_results,
         default_district=default_district,
         root_images=root_images,
+        page_metas=page_metas,
     )
