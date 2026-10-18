@@ -35,5 +35,9 @@ Guidelines:
 2. If language of title is Chinese/Cantonese, set "lang": "zh". Otherwise "en".
 3. "parts" should be empty [] if the listing has no fixed one-off scheduled time slots.
 4. "url" must be a valid http/https URL from the source snippet.
-5. Return ONLY the JSON array.
+5. "title" must be the specific event, workshop, exhibition, or facility activity name.
+   NEVER use generic website names, portal brands, or directory homepages (e.g. "Timable",
+   "LCSD Home", "Eventbrite HK") as the activity title. If a snippet only represents a homepage
+   or broad directory without a specific activity, skip it.
+6. Return ONLY the JSON array.
 """

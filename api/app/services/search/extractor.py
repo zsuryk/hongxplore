@@ -20,6 +20,7 @@ from app.models import Activity, Location, Source
 from app.models.activity import Lang
 from app.prompts import HONG_KONG_DISTRICTS
 from app.prompts.extraction import EXTRACTION_SYSTEM_PROMPT
+from app.services.agent.seed import STOP_WORDS
 from app.services.ports import LLMClient
 from app.services.search.dedup import normalize_url, strip_portal_suffix
 
@@ -211,6 +212,95 @@ def _resolve_source_name(domain: str) -> str:
     return clean.replace("-", " ").replace(".", " ").title()
 
 
+_GENERIC_IMG_TOKENS: frozenset[str] = frozenset(
+    {
+        "image",
+        "images",
+        "photo",
+        "photos",
+        "banner",
+        "thumb",
+        "thumbnail",
+        "upload",
+        "wikimedia",
+        "commons",
+        "wikipedia",
+        "static",
+        "media",
+        "assets",
+        "logo",
+        "header",
+        "footer",
+        "icon",
+        "icons",
+        "default",
+        "avatar",
+    }
+)
+
+
+def _clean_candidate_url(candidate: Any) -> str | None:
+    if not candidate:
+        return None
+    if isinstance(candidate, str):
+        cleaned = candidate.strip()
+        return cleaned if cleaned else None
+    if isinstance(candidate, dict):
+        raw_url = candidate.get("url")
+        if isinstance(raw_url, str):
+            cleaned = raw_url.strip()
+            return cleaned if cleaned else None
+    return None
+
+
+def _is_relevant_fallback_image(image_url: str, item: dict[str, Any]) -> bool:
+    """Check whether a search root / fallback image is contextually relevant to the snippet.
+
+    Rejects unrelated search-page banners, sponsor logos, or mismatched photos.
+    Requires at least one meaningful token match between the image URL/filename
+    and the activity title or URL slug.
+    """
+    if not image_url or not item:
+        return False
+
+    item_url = str(item.get("url") or "")
+    item_title = str(item.get("title") or "")
+
+    img_split = urlsplit(image_url)
+    img_path = img_split.path.lower()
+    img_tokens = {
+        re.sub(r"\W+", "", part)
+        for part in re.split(r"[/._\-]", img_path)
+        if len(part) >= 3 and part not in _GENERIC_IMG_TOKENS
+    }
+    img_tokens.discard("")
+
+    if not img_tokens:
+        return False
+
+    # Check against item URL path tokens
+    url_split = urlsplit(item_url)
+    url_tokens = {
+        re.sub(r"\W+", "", part)
+        for part in re.split(r"[/._\-]", url_split.path.lower())
+        if len(part) >= 3 and part not in _GENERIC_IMG_TOKENS
+    }
+    url_tokens.discard("")
+
+    if img_tokens & url_tokens:
+        return True
+
+    # Check against title tokens
+    title_tokens = {
+        re.sub(r"\W+", "", word.lower())
+        for word in item_title.split()
+        if len(word) >= 3 and word.lower() not in STOP_WORDS
+    }
+    title_tokens.discard("")
+
+    return bool(img_tokens & title_tokens)
+
+
 def _extract_valid_image_url(
     item: dict[str, Any] | None,
     fallback_images: list[Any] | None = None,
@@ -220,47 +310,55 @@ def _extract_valid_image_url(
     if not item:
         item = {}
 
-    candidates: list[Any] = []
+    # 1. Direct snippet-level images (grounded directly in this result snippet)
+    direct_candidates: list[Any] = []
     raw_images = item.get("images")
     if isinstance(raw_images, list):
-        candidates.extend(raw_images)
+        direct_candidates.extend(raw_images)
     raw_image = item.get("image")
     if raw_image is not None:
-        candidates.append(raw_image)
+        direct_candidates.append(raw_image)
 
-    # Check snippet-level root_images preserved from Tavily payload
-    root_images = item.get("root_images")
-    if isinstance(root_images, list) and root_images:
-        candidates.append(root_images[item_index % len(root_images)])
-        candidates.extend(root_images)
-
-    # Check caller-level fallback_images
-    if fallback_images:
-        candidates.append(fallback_images[item_index % len(fallback_images)])
-        candidates.extend(fallback_images)
-
-    for candidate in candidates:
-        if not candidate:
-            continue
-        candidate_url: str | None = None
-        if isinstance(candidate, str):
-            candidate_url = candidate
-        elif isinstance(candidate, dict):
-            raw_url = candidate.get("url")
-            if isinstance(raw_url, str):
-                candidate_url = raw_url
-
+    for candidate in direct_candidates:
+        candidate_url = _clean_candidate_url(candidate)
         if not candidate_url:
             continue
-        cleaned = candidate_url.strip()
-        if not cleaned:
-            continue
         try:
-            parsed = urlsplit(cleaned)
+            parsed = urlsplit(candidate_url)
             if parsed.scheme in ("http", "https") and parsed.netloc:
-                return HttpUrl(cleaned)
+                return HttpUrl(candidate_url)
         except Exception:
             continue
+
+    # 2. Contextually verified fallback candidates (from search root images)
+    fallback_candidates: list[Any] = []
+    root_images = item.get("root_images")
+    if isinstance(root_images, list) and root_images:
+        fallback_candidates.extend(root_images)
+    if fallback_images:
+        fallback_candidates.extend(fallback_images)
+
+    # Prioritize the candidate at item_index while maintaining relevance check
+    ordered_candidates: list[Any] = []
+    if fallback_candidates:
+        idx = item_index % len(fallback_candidates)
+        ordered_candidates.append(fallback_candidates[idx])
+        for i, cand in enumerate(fallback_candidates):
+            if i != idx:
+                ordered_candidates.append(cand)
+
+    for candidate in ordered_candidates:
+        candidate_url = _clean_candidate_url(candidate)
+        if not candidate_url:
+            continue
+        if _is_relevant_fallback_image(candidate_url, item):
+            try:
+                parsed = urlsplit(candidate_url)
+                if parsed.scheme in ("http", "https") and parsed.netloc:
+                    return HttpUrl(candidate_url)
+            except Exception:
+                continue
+
     return None
 
 

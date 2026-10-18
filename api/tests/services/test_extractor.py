@@ -268,7 +268,7 @@ def test_deterministic_extract_missing_image_defaults_to_none() -> None:
 
 
 def test_deterministic_extract_with_root_images() -> None:
-    """Snippet lacking individual image falls back to preserved root_images."""
+    """Snippet lacking individual image falls back to preserved relevant root_images."""
     raw_snippets = [
         {
             "title": "Kowloon Park Indoor Pool",
@@ -276,7 +276,7 @@ def test_deterministic_extract_with_root_images() -> None:
             "content": "Public pool in TST",
             "root_images": [
                 "https://upload.wikimedia.org/wikipedia/commons/1/11/kowloon_park.jpg",
-                "https://upload.wikimedia.org/wikipedia/commons/2/22/tst_park.jpg",
+                "https://upload.wikimedia.org/wikipedia/commons/2/22/sun_yat_sen.jpg",
             ],
         },
         {
@@ -285,7 +285,7 @@ def test_deterministic_extract_with_root_images() -> None:
             "content": "Public pool in Sai Ying Pun",
             "root_images": [
                 "https://upload.wikimedia.org/wikipedia/commons/1/11/kowloon_park.jpg",
-                "https://upload.wikimedia.org/wikipedia/commons/2/22/tst_park.jpg",
+                "https://upload.wikimedia.org/wikipedia/commons/2/22/sun_yat_sen.jpg",
             ],
         },
     ]
@@ -298,7 +298,7 @@ def test_deterministic_extract_with_root_images() -> None:
     )
     assert (
         str(activities[1].image)
-        == "https://upload.wikimedia.org/wikipedia/commons/2/22/tst_park.jpg"
+        == "https://upload.wikimedia.org/wikipedia/commons/2/22/sun_yat_sen.jpg"
     )
 
 
@@ -414,3 +414,58 @@ async def test_llm_extraction_prioritizes_grounded_snippet_image() -> None:
     assert len(results) == 1
     # Grounded snippet image overrides ungrounded LLM image
     assert str(results[0].image) == "https://www.mplus.org.hk/media/verified-snippet-image.jpg"
+
+
+def test_deterministic_extract_strips_portal_prefixes_and_suffixes() -> None:
+    raw_snippets = [
+        {
+            "title": "Timable: Hong Kong Heritage Walk & Cultural Tour",
+            "url": "https://timable.com/event/101",
+            "content": "Heritage walk in Central",
+        },
+        {
+            "title": "LCSD - Wan Chai Sports Centre Squash Court",
+            "url": "https://www.lcsd.gov.hk/facility/102",
+            "content": "Squash court booking in Wan Chai",
+        },
+        {
+            "title": "Eventbrite - Neon Sign Making Workshop in Sham Shui Po",
+            "url": "https://eventbrite.hk/e/103",
+            "content": "Neon craft workshop in Sham Shui Po",
+        },
+        {
+            "title": "Discover Hong Kong - Hong Kong Museum of Art",
+            "url": "https://discoverhongkong.com/art",
+            "content": "Exhibition in Tsim Sha Tsui",
+        },
+        {
+            "title": "【Timable】Central Market Weekend Bazaar",
+            "url": "https://timable.com/event/104",
+            "content": "Weekend market in Central",
+        },
+    ]
+
+    activities = deterministic_extract(raw_snippets)
+    assert len(activities) == 5
+    assert activities[0].title == "Hong Kong Heritage Walk & Cultural Tour"
+    assert activities[1].title == "Wan Chai Sports Centre Squash Court"
+    assert activities[2].title == "Neon Sign Making Workshop in Sham Shui Po"
+    assert activities[3].title == "Hong Kong Museum of Art"
+    assert activities[4].title == "Central Market Weekend Bazaar"
+
+
+def test_unverified_root_images_not_round_robined_to_snippets_without_images() -> None:
+    raw_snippets = [
+        {
+            "title": "Local Street Art Tour",
+            "url": "https://example.com/art-tour",
+            "content": "Walking tour in Sheung Wan",
+            # No snippet-level image
+        }
+    ]
+    unrelated_root_images = ["https://example.com/unrelated-serp-banner.jpg"]
+
+    activities = deterministic_extract(raw_snippets, root_images=unrelated_root_images)
+    assert len(activities) == 1
+    # Snippet without image must not inherit unrelated search root images
+    assert activities[0].image is None

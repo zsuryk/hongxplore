@@ -473,6 +473,15 @@ class AgentOrchestrator:
     ) -> None:
         self.llm_client = llm_client
         self.search_provider = search_provider
+        if (
+            self.search_provider is not None
+            and getattr(self.search_provider, "llm_client", None) is None
+            and self.llm_client is not None
+        ):
+            try:
+                object.__setattr__(self.search_provider, "llm_client", self.llm_client)
+            except Exception:
+                pass
         self.settings = settings or app_settings
         self.seed_data_path = seed_data_path
 

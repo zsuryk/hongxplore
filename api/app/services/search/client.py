@@ -201,14 +201,11 @@ class TavilySearchProvider(SearchProvider):
             )
 
             if isinstance(results, list):
-                for idx, item in enumerate(results):
+                for item in results:
                     if isinstance(item, dict):
                         # Retain root images on item for downstream extractor
                         if images_list and "root_images" not in item:
                             item["root_images"] = images_list
-                        # If snippet lacks its own image, associate from root images
-                        if not item.get("images") and not item.get("image") and images_list:
-                            item["image"] = images_list[idx % len(images_list)]
                 return results
             return []
 
