@@ -30,6 +30,7 @@ for arg in "$@"; do
   case "$arg" in
     --dry-run) DRY_RUN=1 ;;
     --rollback) MODE=rollback ;;
+    --verify) MODE=verify ;;
     -h | --help)
       sed -n '2,20p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
       exit 0
@@ -123,6 +124,52 @@ conf_or() {
 PROJECT=$(conf_or HONGXPLORE_PROJECT hongxplore)
 SERVICE=$(conf_or HONGXPLORE_SERVICE hongxplore)
 REGION=$(conf_or HONGXPLORE_REGION asia-east2)
+
+# ── Verify: prove the deployment works, changing nothing ──────────────────────
+# The check that matters most needs the judge key, and a key on a command line is
+# visible in `ps` and lands in shell history. So the request body is built in a
+# variable and piped to curl on stdin, and only non-secret output is printed —
+# which means this can be run by an agent without the agent ever seeing the key.
+if [[ "$MODE" == verify ]]; then
+  BASE=${HONGXPLORE_BASE_URL:-https://${SERVICE}.cloud.run}
+  judge_key=$(conf_or AGENT_ACCESS_KEYS "")
+  # A rotation list may hold several keys; the first is the current one.
+  judge_key=${judge_key%%,*}
+  [[ -n "$judge_key" && "$judge_key" != __FILL_* ]] || {
+    red "AGENT_ACCESS_KEYS is not filled in — cannot verify a live request"
+    exit 1
+  }
+
+  bold "Verifying $BASE"
+
+  printf '  health     '
+  if ! curl -fsS --max-time 20 "$BASE/health"; then
+    printf '\n'
+    red "health check failed — is the service up?"
+    exit 1
+  fi
+  printf '\n'
+
+  printf '  demo path  '
+  printf '{"query":"free museums in Central","mode":"demo"}' |
+    curl -fsS --max-time 60 -X POST "$BASE/api/agent" \
+      -H 'content-type: application/json' --data-binary @- |
+    jq -r '"status=\(.status) cards=\(.matches | length) error=\(.error // "none")"'
+
+  printf '  live path  '
+  live=$(printf '{"query":"free museums in Central","mode":"live","agent_access_key":"%s"}' "$judge_key" |
+    curl -fsS --max-time 120 -X POST "$BASE/api/agent" \
+      -H 'content-type: application/json' --data-binary @- |
+    jq -r '"status=\(.status) cards=\(.matches | length) error=\(.error // "none")"')
+  unset judge_key
+  printf '%s\n' "$live"
+
+  case "$live" in
+    status=ok*) bold "Live mode works with the judge key." ;;
+    *) red "Live mode did NOT answer ok — DEPLOY.md has the troubleshooting table" ;;
+  esac
+  exit 0
+fi
 
 # These four become Secret Manager secrets. Everything else becomes a plain env
 # var, which is what it is: none of them is a credential.
