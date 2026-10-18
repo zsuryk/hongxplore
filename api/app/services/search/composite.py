@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import re
 import time
 from datetime import UTC, datetime
 from typing import Any
@@ -26,6 +27,7 @@ from app.services.search.normalizer import normalize_query
 from app.services.search.page_filter import is_listing_or_portal_url
 from app.services.search.page_meta import PageEnricher
 from app.services.search.ranking import SearchContext, rank_and_filter_activities
+from app.services.search.serper import SerperSearchProvider
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +39,32 @@ _ERROR_SEVERITY_ORDER: list[str] = [
     "timeout",
     "unreachable",
 ]
+
+
+def generate_query_variants(query: str, max_variants: int = 2) -> list[str]:
+    """Generate event-oriented query variants to retrieve attendable activities."""
+    clean = query.strip()
+    if not clean or max_variants <= 1:
+        return [clean]
+
+    variants = [clean]
+    is_cjk = bool(re.search(r"[\u4e00-\u9fff]", clean))
+    negatives = "-blog -listicle"
+
+    if is_cjk:
+        if not any(token in clean for token in ("活動", "報名", "工作坊", "展覽", "門票")):
+            variants.append(f"{clean} 活動 報名 {negatives}".strip())
+        else:
+            variants.append(f"{clean} {negatives}".strip())
+    else:
+        if not any(
+            token in clean.lower() for token in ("register", "book", "tickets", "event", "workshop")
+        ):
+            variants.append(f"{clean} register OR book OR tickets {negatives}".strip())
+        else:
+            variants.append(f"{clean} {negatives}".strip())
+
+    return variants[:max_variants]
 
 
 class CompositeSearchProvider(SearchProvider):
@@ -51,6 +79,7 @@ class CompositeSearchProvider(SearchProvider):
         page_enricher: PageEnricher | None = None,
         providers: list[Any] | None = None,
         tavily_provider: TavilySearchProvider | None = None,
+        serper_provider: SerperSearchProvider | None = None,
         brave_provider: BraveSearchProvider | None = None,
         ttl_seconds: int | None = None,
         now: datetime | None = None,
@@ -71,7 +100,7 @@ class CompositeSearchProvider(SearchProvider):
         else:
             built_providers: list[Any] = []
             configured_names = [
-                p.lower() for p in getattr(self.config, "search_providers", ["tavily", "brave"])
+                p.lower() for p in getattr(self.config, "search_providers", ["tavily", "serper"])
             ]
 
             if "tavily" in configured_names:
@@ -82,6 +111,15 @@ class CompositeSearchProvider(SearchProvider):
                     page_enricher=self.page_enricher,
                 )
                 built_providers.append(t_prov)
+
+            if "serper" in configured_names:
+                s_prov = serper_provider or SerperSearchProvider(
+                    config=self.config,
+                    cache=self.cache,
+                    llm_client=self.llm_client,
+                    page_enricher=self.page_enricher,
+                )
+                built_providers.append(s_prov)
 
             if "brave" in configured_names:
                 b_prov = brave_provider or BraveSearchProvider(
@@ -135,14 +173,38 @@ class CompositeSearchProvider(SearchProvider):
         active: list[Any] = []
         for p in self.providers:
             if isinstance(p, TavilySearchProvider):
-                if self.config.tavily_api_key.strip():
+                if getattr(self.config, "tavily_api_key", "").strip():
+                    active.append(p)
+            elif isinstance(p, SerperSearchProvider):
+                if getattr(self.config, "serper_api_key", "").strip():
                     active.append(p)
             elif isinstance(p, BraveSearchProvider):
-                if self.config.brave_api_key.strip():
+                if getattr(self.config, "brave_api_key", "").strip():
                     active.append(p)
             else:
                 active.append(p)
         return active
+
+    async def _fetch_provider_raw(
+        self,
+        provider: Any,
+        query: str,
+        *,
+        limit: int = 10,
+        context: SearchContext | None = None,
+    ) -> list[dict[str, Any]]:
+        import inspect
+
+        sig = inspect.signature(provider.fetch_raw)
+        kwargs: dict[str, Any] = {}
+        if "limit" in sig.parameters:
+            kwargs["limit"] = limit
+        elif "max_results" in sig.parameters:
+            kwargs["max_results"] = limit
+        if "context" in sig.parameters and context is not None:
+            kwargs["context"] = context
+        raw_res = await provider.fetch_raw(query, **kwargs)
+        return list(raw_res) if isinstance(raw_res, list) else []
 
     async def search_with_context(
         self,
@@ -193,29 +255,45 @@ class CompositeSearchProvider(SearchProvider):
                 logger.debug("No search providers have active API keys configured")
                 return []
 
-            # Run all active providers concurrently
+            # Query shaping: generate event-oriented query variants
+            max_variants = getattr(self.config, "search_max_query_variants", 2)
+            query_variants = generate_query_variants(query, max_variants=max_variants)
+
+            calls: list[tuple[Any, str]] = [
+                (p, q_var) for p in active_providers for q_var in query_variants
+            ]
             results = await asyncio.gather(
-                *(p.fetch_raw(query, limit=limit) for p in active_providers),
+                *(
+                    self._fetch_provider_raw(p, q_var, limit=limit, context=context)
+                    for p, q_var in calls
+                ),
                 return_exceptions=True,
             )
 
-            exceptions: list[SearchUnavailableError] = []
+            provider_exceptions: dict[Any, list[SearchUnavailableError]] = {}
             successful_provider_results: list[list[dict[str, Any]]] = []
 
-            for p, res in zip(active_providers, results, strict=True):
+            for (p, _), res in zip(calls, results, strict=True):
                 if isinstance(res, BaseException):
                     if isinstance(res, SearchUnavailableError):
-                        exceptions.append(res)
+                        provider_exceptions.setdefault(p, []).append(res)
                     else:
-                        exceptions.append(SearchUnavailableError("unreachable", str(res)))
+                        provider_exceptions.setdefault(p, []).append(
+                            SearchUnavailableError("unreachable", str(res))
+                        )
                     logger.warning("Provider %s failed: %s", type(p).__name__, res)
                 elif isinstance(res, list):
                     successful_provider_results.append(res)
 
-            # If all active providers failed, re-raise the most informative error
-            if len(exceptions) == len(active_providers):
+            # If all active providers failed across all attempts, re-raise the
+            # most informative error
+            if (
+                len(provider_exceptions) == len(active_providers)
+                and not successful_provider_results
+            ):
+                all_exc = [e for err_list in provider_exceptions.values() for e in err_list]
                 best_exc = sorted(
-                    exceptions,
+                    all_exc,
                     key=lambda e: (
                         _ERROR_SEVERITY_ORDER.index(e.reason)
                         if e.reason in _ERROR_SEVERITY_ORDER
@@ -225,7 +303,7 @@ class CompositeSearchProvider(SearchProvider):
                 self._error_cache[cache_key] = (best_exc, time.time() + 30.0)
                 raise best_exc
 
-            partial_failure = bool(exceptions)
+            partial_failure = bool(provider_exceptions)
 
             # Merge raw results by normalized URL
             merged_by_url: dict[str, dict[str, Any]] = {}
@@ -287,7 +365,9 @@ class CompositeSearchProvider(SearchProvider):
                 filtered_candidates.append(item)
 
             if not filtered_candidates:
-                filtered_candidates = raw_candidates
+                logger.debug("All raw search candidates filtered out as portal/directory pages")
+                await self.cache.set(cache_key, [], ttl_seconds=min(self.ttl_seconds, 300))
+                return []
 
             # Extract activities via structured LLM or deterministic fallback
             query_district = _detect_district(query)

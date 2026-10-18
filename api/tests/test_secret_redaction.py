@@ -81,7 +81,7 @@ def test_a_provider_from_the_pool_is_treated_as_a_secret(tmp_path: Path) -> None
 
 def test_a_fresh_clone_has_no_secrets_to_redact() -> None:
     """The demo default is empty strings; redacting those would redact the alphabet."""
-    assert known_secrets(Settings()) == ()
+    assert known_secrets(Settings(_env_file=None)) == ()
 
 
 # --- redaction itself -----------------------------------------------------------

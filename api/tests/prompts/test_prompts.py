@@ -316,3 +316,7 @@ def test_extraction_system_prompt_rules() -> None:
     assert "18 Hong Kong districts" in EXTRACTION_SYSTEM_PROMPT
     assert "start" in EXTRACTION_SYSTEM_PROMPT
     assert "end" in EXTRACTION_SYSTEM_PROMPT
+    assert "page_type" in EXTRACTION_SYSTEM_PROMPT
+    assert "one attendable thing" in EXTRACTION_SYSTEM_PROMPT
+    assert "10 best hiking trails" in EXTRACTION_SYSTEM_PROMPT
+    assert "evidence" in EXTRACTION_SYSTEM_PROMPT

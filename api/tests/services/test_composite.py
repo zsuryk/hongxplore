@@ -52,6 +52,7 @@ def composite_settings() -> Settings:
         brave_api_key="brave-mock",
         search_providers=["tavily", "brave"],
         search_extract_with_llm=False,
+        search_max_query_variants=1,
     )
 
 

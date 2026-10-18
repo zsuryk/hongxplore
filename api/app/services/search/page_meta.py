@@ -32,7 +32,56 @@ _BLOCKED_IMAGE_PATTERNS = re.compile(
     re.IGNORECASE,
 )
 
+_TEXT_BANNER_PATTERNS = re.compile(
+    r"(?:banner|header|cover-default|share|social|og-default|thumbnail-default|poster-list|slide|hero-text)",
+    re.IGNORECASE,
+)
+
 _DISALLOWED_IMAGE_EXTENSIONS = frozenset({".svg", ".ico", ".gif"})
+
+
+def normalize_and_upgrade_image_url(raw_url: str, base_url: str) -> str | None:
+    """Resolve an image URL absolutely and upgrade http to https."""
+    if not raw_url or not raw_url.strip():
+        return None
+    full = urljoin(base_url, raw_url.strip())
+    if full.startswith("http://"):
+        full = "https://" + full[7:]
+    if not full.startswith("https://"):
+        return None
+    if not validate_image_url(full):
+        return None
+    return full
+
+
+def _pick_largest_srcset(srcset: str, base_url: str) -> str | None:
+    """Parse a srcset attribute string and return the candidate with largest descriptor."""
+    best_candidate: str | None = None
+    max_metric = -1.0
+    for part in srcset.split(","):
+        tokens = part.strip().split()
+        if not tokens:
+            continue
+        cand_url = tokens[0]
+        metric = 1.0
+        if len(tokens) > 1:
+            desc = tokens[1].lower()
+            if desc.endswith("w"):
+                try:
+                    metric = float(desc[:-1])
+                except ValueError:
+                    metric = 1.0
+            elif desc.endswith("x"):
+                try:
+                    metric = float(desc[:-1]) * 1000.0
+                except ValueError:
+                    metric = 1.0
+        if metric > max_metric:
+            normed = normalize_and_upgrade_image_url(cand_url, base_url)
+            if normed:
+                max_metric = metric
+                best_candidate = normed
+    return best_candidate
 
 
 @dataclass(slots=True)
@@ -42,6 +91,8 @@ class PageMeta:
     og_title: str | None = None
     og_image: str | None = None
     twitter_image: str | None = None
+    article_image: str | None = None
+    image_candidates: list[str] = field(default_factory=list)
     h1: str | None = None
     meta_description: str | None = None
     jsonld_events: list[dict[str, Any]] = field(default_factory=list)
@@ -57,6 +108,8 @@ class _HTMLMetaParser(HTMLParser):
         self.og_title: str | None = None
         self.og_image: str | None = None
         self.twitter_image: str | None = None
+        self.article_image: str | None = None
+        self.image_candidates: list[str] = []
         self.meta_description: str | None = None
         self.h1: str | None = None
 
@@ -69,9 +122,17 @@ class _HTMLMetaParser(HTMLParser):
         self._body_chunks: list[str] = []
         self._body_text_length = 0
 
+        self._in_article_depth = 0
+        self._skip_depth = 0
+
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         attrs_dict = {k.lower(): (v or "").strip() for k, v in attrs}
         tag_lower = tag.lower()
+
+        if tag_lower in ("article", "main"):
+            self._in_article_depth += 1
+        elif tag_lower in ("header", "nav", "footer", "aside"):
+            self._skip_depth += 1
 
         if tag_lower == "meta":
             prop = attrs_dict.get("property", "").lower()
@@ -83,10 +144,20 @@ class _HTMLMetaParser(HTMLParser):
 
             if prop == "og:title" and not self.og_title:
                 self.og_title = content
-            elif prop == "og:image" and not self.og_image:
-                self.og_image = urljoin(self.base_url, content)
-            elif name == "twitter:image" and not self.twitter_image:
-                self.twitter_image = urljoin(self.base_url, content)
+            elif prop in ("og:image", "og:image:secure_url"):
+                cand = normalize_and_upgrade_image_url(content, self.base_url)
+                if cand:
+                    if not self.og_image and prop == "og:image":
+                        self.og_image = cand
+                    if cand not in self.image_candidates:
+                        self.image_candidates.append(cand)
+            elif name == "twitter:image":
+                cand = normalize_and_upgrade_image_url(content, self.base_url)
+                if cand:
+                    if not self.twitter_image:
+                        self.twitter_image = cand
+                    if cand not in self.image_candidates:
+                        self.image_candidates.append(cand)
             elif name in ("description", "twitter:description") and not self.meta_description:
                 self.meta_description = content
 
@@ -100,9 +171,35 @@ class _HTMLMetaParser(HTMLParser):
             self._in_h1 = True
             self._h1_chunks = []
 
+        elif (
+            tag_lower == "img"
+            and self._in_article_depth > 0
+            and self._skip_depth == 0
+            and not self.article_image
+        ):
+            attrs_str = f"{attrs_dict.get('class', '')} {attrs_dict.get('id', '')}".lower()
+            if not any(
+                token in attrs_str
+                for token in ("ad", "sponsor", "avatar", "icon", "share", "social")
+            ):
+                srcset = attrs_dict.get("srcset")
+                cand = _pick_largest_srcset(srcset, self.base_url) if srcset else None
+                if not cand:
+                    src = attrs_dict.get("src")
+                    if src:
+                        cand = normalize_and_upgrade_image_url(src, self.base_url)
+                if cand:
+                    self.article_image = cand
+                    if cand not in self.image_candidates:
+                        self.image_candidates.append(cand)
+
     def handle_endtag(self, tag: str) -> None:
         tag_lower = tag.lower()
-        if tag_lower == "script" and self._in_script_jsonld:
+        if tag_lower in ("article", "main") and self._in_article_depth > 0:
+            self._in_article_depth -= 1
+        elif tag_lower in ("header", "nav", "footer", "aside") and self._skip_depth > 0:
+            self._skip_depth -= 1
+        elif tag_lower == "script" and self._in_script_jsonld:
             self._in_script_jsonld = False
             raw_json = "".join(self._jsonld_chunks).strip()
             if raw_json:
@@ -169,6 +266,8 @@ def parse_page_html(html: str, base_url: str) -> PageMeta:
         og_title=parser.og_title,
         og_image=parser.og_image,
         twitter_image=parser.twitter_image,
+        article_image=parser.article_image,
+        image_candidates=parser.image_candidates,
         h1=parser.h1,
         meta_description=parser.meta_description,
         jsonld_events=parser.jsonld_events,
@@ -253,6 +352,9 @@ def validate_image_url(url: str) -> bool:
                 return False
 
         if _BLOCKED_IMAGE_PATTERNS.search(cleaned):
+            return False
+
+        if _TEXT_BANNER_PATTERNS.search(cleaned):
             return False
 
         return True

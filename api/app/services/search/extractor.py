@@ -24,6 +24,12 @@ from app.services.agent.seed import STOP_WORDS
 from app.services.ports import LLMClient
 from app.services.search.dates import extract_listed_at, extract_parts, extract_price
 from app.services.search.dedup import normalize_url
+from app.services.search.granularity import is_single_activity
+from app.services.search.image_probe import (
+    ImageProbe,
+    SiteWideImageTracker,
+    resolve_verified_image,
+)
 from app.services.search.page_filter import is_generic_title, is_listing_or_portal_url
 from app.services.search.page_meta import PageMeta, choose_title, validate_image_url
 
@@ -309,15 +315,19 @@ def _extract_valid_image_url(
     fallback_images: list[Any] | None = None,
     item_index: int = 0,
     page_meta: PageMeta | None = None,
+    tags: list[str] | None = None,
+    district: str | None = None,
 ) -> HttpUrl | None:
     """Extract and validate the highest-priority valid HTTP/HTTPS image URL.
 
-    Priority order (FIX.md Phase 1.4):
+    Priority order (FIX.md Phase 1.4 & WI-2):
     1. JSON-LD Event.image
-    2. og:image, then twitter:image
-    3. Direct snippet image
-    4. Relevant root image passing token gate
-    5. None
+    2. In-body article image
+    3. og:image, then twitter:image
+    4. Direct snippet image
+    5. Curated seed fallback image
+    6. Relevant root image passing token gate
+    7. None
     """
     if not item:
         item = {}
@@ -333,7 +343,16 @@ def _extract_valid_image_url(
                 except Exception:
                     pass
 
-    # 2. og:image, then twitter:image
+    # 2. In-body article image
+    if page_meta and page_meta.article_image:
+        img_url = _clean_candidate_url(page_meta.article_image)
+        if img_url and validate_image_url(img_url):
+            try:
+                return HttpUrl(img_url)
+            except Exception:
+                pass
+
+    # 3. og:image, then twitter:image
     if page_meta:
         for meta_img in (page_meta.og_image, page_meta.twitter_image):
             img_url = _clean_candidate_url(meta_img)
@@ -343,7 +362,7 @@ def _extract_valid_image_url(
                 except Exception:
                     pass
 
-    # 3. Direct snippet-level images (grounded directly in this result snippet)
+    # 4. Direct snippet-level images (grounded directly in this result snippet)
     direct_candidates: list[Any] = []
     raw_images = item.get("images")
     if isinstance(raw_images, list):
@@ -363,7 +382,7 @@ def _extract_valid_image_url(
         except Exception:
             continue
 
-    # 4. Contextually verified fallback candidates (from search root images)
+    # 5. Contextually verified fallback candidates (from search root images)
     fallback_candidates: list[Any] = []
     root_images = item.get("root_images")
     if isinstance(root_images, list) and root_images:
@@ -449,14 +468,6 @@ def deterministic_extract(
             district = detected or default_district or "Central & Western"
             tags = _detect_tags(combined_text)
 
-            stable_id = f"tavily-{hashlib.sha256(norm_url.encode()).hexdigest()[:12]}"
-            extracted_image = _extract_valid_image_url(
-                item,
-                fallback_images=root_images,
-                item_index=idx,
-                page_meta=page_meta,
-            )
-
             parts = extract_parts(
                 jsonld_events=page_meta.jsonld_events if page_meta else None,
                 body_text=combined_text,
@@ -466,6 +477,35 @@ def deterministic_extract(
                 jsonld_offers=page_meta.jsonld_events if page_meta else None,
             )
             listed_at = extract_listed_at(str(item.get("published_date") or ""))
+
+            # Granularity and concreteness check
+            start_date_str = None
+            if parts and parts[0].start:
+                start_date_str = parts[0].start.isoformat()
+
+            is_valid, reason = is_single_activity(
+                title=cleaned_title,
+                url=url_str,
+                content=content,
+                page_meta=page_meta,
+                venue=None,
+                address=None,
+                start_date=start_date_str,
+            )
+            if not is_valid:
+                logger.debug("Dropping candidate %s due to granularity check: %s", url_str, reason)
+                continue
+
+            extracted_image = _extract_valid_image_url(
+                item,
+                fallback_images=root_images,
+                item_index=idx,
+                page_meta=page_meta,
+                tags=tags,
+                district=district,
+            )
+
+            stable_id = f"tavily-{hashlib.sha256(norm_url.encode()).hexdigest()[:12]}"
 
             act = Activity(
                 id=stable_id,
@@ -485,7 +525,16 @@ def deterministic_extract(
         except Exception as exc:
             logger.debug("Failed to extract Activity from snippet item %s: %s", item, exc)
 
-    return activities
+    # Filter site-wide repeated images across query results
+    img_urls = [str(act.image) if act.image else None for act in activities]
+    filtered_imgs = SiteWideImageTracker.filter_query_duplicate_images(img_urls)
+    final_activities: list[Activity] = []
+    for act, f_img in zip(activities, filtered_imgs, strict=True):
+        if str(act.image or "") != (f_img or ""):
+            act = act.model_copy(update={"image": HttpUrl(f_img) if f_img else None})
+        final_activities.append(act)
+
+    return final_activities
 
 
 def _parse_llm_json_activities(raw_text: str) -> list[dict[str, Any]]:
@@ -527,6 +576,7 @@ async def extract_activities_from_snippets(
     max_items: int = 10,
     root_images: list[Any] | None = None,
     page_metas: dict[str, PageMeta] | None = None,
+    image_probe: ImageProbe | None = None,
 ) -> list[Activity]:
     """Extract Activity models from raw search snippets with LLM structured parsing.
 
@@ -578,110 +628,158 @@ async def extract_activities_from_snippets(
                 user=user_content,
             )
             parsed_items = _parse_llm_json_activities(raw_completion)
-
-            extracted_activities: list[Activity] = []
-            seen_llm_urls: set[str] = set()
-
-            for idx, item in enumerate(parsed_items):
-                raw_item_url = str(item.get("url") or "").strip()
-                norm_item_url = normalize_url(raw_item_url)
-                # B10: Validate that the URL comes from real search results
-                if not norm_item_url or norm_item_url not in valid_url_map:
-                    logger.debug(
-                        "Discarding LLM item with invented or missing URL: %s", raw_item_url
-                    )
-                    continue
-
-                raw_snippet = valid_url_map.get(norm_item_url)
-                page_meta = page_metas.get(norm_item_url) if page_metas else None
-
-                # Force deterministic ID hashed from canonical URL
-                item["id"] = f"tavily-{hashlib.sha256(norm_item_url.encode()).hexdigest()[:12]}"
-
-                # Enforce canonical district
-                loc = item.get("location")
-                if isinstance(loc, dict):
-                    given_dist = str(loc.get("district") or "")
-                    if given_dist not in HONG_KONG_DISTRICTS:
-                        detected_dist = _detect_district(
-                            f"{given_dist} {item.get('title', '')}",
-                            default_district=default_district,
-                        )
-                        loc["district"] = detected_dist or default_district or "Central & Western"
-                else:
-                    detected_dist = _detect_district(
-                        str(item.get("title", "")),
-                        default_district=default_district,
-                    )
-                    item["location"] = {
-                        "district": detected_dist or default_district or "Central & Western",
-                        "venue": None,
-                        "address": None,
-                    }
-
-                # Enforce valid image: code-grounded image only
-                resolved_img = _extract_valid_image_url(
-                    raw_snippet,
-                    fallback_images=root_images,
-                    item_index=idx,
-                    page_meta=page_meta,
-                )
-                item["image"] = str(resolved_img) if resolved_img else None
-
-                # Extract parts from JSON-LD, LLM, or body text
-                parts = extract_parts(
-                    jsonld_events=page_meta.jsonld_events if page_meta else None,
-                    body_text=page_meta.body_text if page_meta else None,
-                    llm_item=item,
-                )
-                item["parts"] = [p.model_dump(mode="json") for p in parts]
-
-                # Price and listed_at
-                snippet_body = raw_snippet.get("content", "") if raw_snippet else ""
-                combined_text = f"{item.get('title', '')} {snippet_body}"
-                if page_meta and page_meta.body_text:
-                    combined_text += f" {page_meta.body_text}"
-                item_price = extract_price(
-                    text=combined_text,
-                    jsonld_offers=page_meta.jsonld_events if page_meta else None,
-                )
-                if item_price:
-                    item["price"] = item_price.model_dump(mode="json")
-                elif "price" in item and item["price"] is None:
-                    del item["price"]
-
-                listed_at = (
-                    extract_listed_at(str(raw_snippet.get("published_date") or ""))
-                    if raw_snippet
-                    else None
-                )
-                if listed_at:
-                    item["listed_at"] = listed_at.isoformat()
-
-                try:
-                    act = Activity.model_validate(item)
-                    extracted_activities.append(act)
-                    seen_llm_urls.add(norm_item_url)
-                except Exception as exc:
-                    logger.debug("Activity validation failed for LLM item: %s", exc)
-
-            # Fill in any results the LLM dropped using deterministic extraction
-            dropped_results = [
-                res
-                for res in candidate_snippets
-                if normalize_url(str(res.get("url") or "")) not in seen_llm_urls
-            ]
-            if dropped_results:
-                fallback_acts = deterministic_extract(
-                    dropped_results,
+            if not parsed_items:
+                logger.warning("LLM response unparseable, falling back to deterministic extraction")
+                return deterministic_extract(
+                    raw_results,
                     default_district=default_district,
                     root_images=root_images,
                     page_metas=page_metas,
                 )
-                extracted_activities.extend(fallback_acts)
 
-            if extracted_activities:
-                return extracted_activities
+            extracted_activities: list[Activity] = []
+            seen_llm_urls: set[str] = set()
+
+            probe = image_probe
+            try:
+                for _idx, item in enumerate(parsed_items):
+                    # 1. Page type check from LLM structured output
+                    page_type = str(item.get("page_type") or "").strip().lower()
+                    if page_type and page_type != "single_activity":
+                        logger.debug(
+                            "Dropping LLM item with non-single page_type=%s: %s",
+                            page_type,
+                            item.get("title"),
+                        )
+                        continue
+
+                    raw_item_url = str(item.get("url") or "").strip()
+                    norm_item_url = normalize_url(raw_item_url)
+                    # B10: Validate that the URL comes from real search results
+                    if not norm_item_url or norm_item_url not in valid_url_map:
+                        logger.debug(
+                            "Discarding LLM item with invented or missing URL: %s", raw_item_url
+                        )
+                        continue
+
+                    raw_snippet = valid_url_map.get(norm_item_url)
+                    page_meta = page_metas.get(norm_item_url) if page_metas else None
+                    snippet_body = str(raw_snippet.get("content") or "") if raw_snippet else ""
+
+                    # 2. Granularity and concreteness check
+                    title = str(item.get("title") or "")
+                    loc = item.get("location")
+                    venue = loc.get("venue") if isinstance(loc, dict) else None
+                    address = loc.get("address") if isinstance(loc, dict) else None
+                    start_date = item.get("start")
+
+                    is_valid, reason = is_single_activity(
+                        title=title,
+                        url=raw_item_url,
+                        content=snippet_body,
+                        page_meta=page_meta,
+                        venue=venue,
+                        address=address,
+                        start_date=start_date,
+                    )
+                    if not is_valid:
+                        logger.debug(
+                            "Dropping LLM item due to granularity failure (%s): %s",
+                            reason,
+                            title,
+                        )
+                        continue
+
+                    # Force deterministic ID hashed from canonical URL
+                    item["id"] = f"tavily-{hashlib.sha256(norm_item_url.encode()).hexdigest()[:12]}"
+
+                    # Enforce canonical district
+                    if isinstance(loc, dict):
+                        given_dist = str(loc.get("district") or "")
+                        if given_dist not in HONG_KONG_DISTRICTS:
+                            detected_dist = _detect_district(
+                                f"{given_dist} {item.get('title', '')}",
+                                default_district=default_district,
+                            )
+                            loc["district"] = (
+                                detected_dist or default_district or "Central & Western"
+                            )
+                    else:
+                        detected_dist = _detect_district(
+                            str(item.get("title", "")),
+                            default_district=default_district,
+                        )
+                        loc = {
+                            "district": detected_dist or default_district or "Central & Western",
+                            "venue": None,
+                            "address": None,
+                        }
+                        item["location"] = loc
+
+                    # Image verification with probe and priority ladder
+                    item_tags = list(item.get("tags") or [])
+                    item_dist = loc.get("district") if isinstance(loc, dict) else default_district
+                    resolved_img = await resolve_verified_image(
+                        page_meta=page_meta,
+                        raw_snippet=raw_snippet,
+                        probe=probe,
+                        tags=item_tags,
+                        district=item_dist,
+                    )
+                    item["image"] = str(resolved_img) if resolved_img else None
+
+                    # Extract parts from JSON-LD, LLM, or body text
+                    parts = extract_parts(
+                        jsonld_events=page_meta.jsonld_events if page_meta else None,
+                        body_text=page_meta.body_text if page_meta else None,
+                        llm_item=item,
+                    )
+                    item["parts"] = [p.model_dump(mode="json") for p in parts]
+
+                    # Price and listed_at
+                    combined_text = f"{item.get('title', '')} {snippet_body}"
+                    if page_meta and page_meta.body_text:
+                        combined_text += f" {page_meta.body_text}"
+                    item_price = extract_price(
+                        text=combined_text,
+                        jsonld_offers=page_meta.jsonld_events if page_meta else None,
+                    )
+                    if item_price:
+                        item["price"] = item_price.model_dump(mode="json")
+                    elif "price" in item and item["price"] is None:
+                        del item["price"]
+
+                    listed_at = (
+                        extract_listed_at(str(raw_snippet.get("published_date") or ""))
+                        if raw_snippet
+                        else None
+                    )
+                    if listed_at:
+                        item["listed_at"] = listed_at.isoformat()
+
+                    try:
+                        act = Activity.model_validate(item)
+                        extracted_activities.append(act)
+                        seen_llm_urls.add(norm_item_url)
+                    except Exception as exc:
+                        logger.debug("Activity validation failed for LLM item: %s", exc)
+
+                # Filter site-wide repeated images
+                img_urls = [str(act.image) if act.image else None for act in extracted_activities]
+                filtered_imgs = SiteWideImageTracker.filter_query_duplicate_images(img_urls)
+                final_acts: list[Activity] = []
+                for act, f_img in zip(extracted_activities, filtered_imgs, strict=True):
+                    if str(act.image or "") != (f_img or ""):
+                        act = act.model_copy(update={"image": HttpUrl(f_img) if f_img else None})
+                    final_acts.append(act)
+
+                # WI-1: When LLM runs successfully, its exclusions are final
+                return final_acts
+
+            finally:
+                if probe is not None:
+                    await probe.aclose()
+
         except Exception as exc:
             logger.warning(
                 "LLM extraction failed, falling back to deterministic extraction: %s", exc

@@ -15,7 +15,10 @@ _LISTING_PATH_PATTERNS: tuple[re.Pattern[str], ...] = (
     re.compile(r"^/(?:category|categories|tag|tags)(?:/.*)?$", re.IGNORECASE),
     re.compile(r"^/page/\d+/?$", re.IGNORECASE),
     re.compile(r"^/search/?$", re.IGNORECASE),
-    re.compile(r"^/(?:events|whats-on|whatson|activities)/?$", re.IGNORECASE),
+    re.compile(
+        r"^/(?:events|whats-on|whatson|activities|directory|all-events|all-activities)/?$",
+        re.IGNORECASE,
+    ),
 )
 
 _SEARCH_QUERY_PARAMS: frozenset[str] = frozenset({"s", "q", "query", "search", "cat", "category"})

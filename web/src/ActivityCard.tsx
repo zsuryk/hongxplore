@@ -142,6 +142,7 @@ export function ActivityCard({
             key={activity.image ?? undefined}
             loading="lazy"
             onError={() => setFailedImageUrl(activity.image ?? '')}
+            referrerPolicy="no-referrer"
             src={activity.image ?? undefined}
           />
         </div>
