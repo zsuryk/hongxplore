@@ -22,10 +22,14 @@ from app.models import Activity
 from app.services.ports import ActivityCache, LLMClient, SearchProvider
 from app.services.search.cache import SQLiteActivityCache
 from app.services.search.client import ground_query_for_search
-from app.services.search.dedup import deduplicate_activities
+from app.services.search.dedup import deduplicate_activities, normalize_url
 from app.services.search.errors import SearchUnavailableError
-from app.services.search.extractor import _detect_district, extract_activities_from_snippets
+from app.services.search.extractor import (
+    _detect_district,
+    extract_activities_from_snippets,
+)
 from app.services.search.normalizer import normalize_query
+from app.services.search.page_filter import is_listing_or_portal_url
 from app.services.search.page_meta import PageEnricher
 from app.services.search.ranking import SearchContext, rank_and_filter_activities
 
@@ -146,8 +150,6 @@ class SerperSearchProvider(SearchProvider):
                 payload["tbs"] = "qdr:w"
             else:
                 payload["tbs"] = "qdr:m"
-        elif context and context.now:
-            payload["tbs"] = "qdr:m"
 
         headers = {
             "Accept": "application/json",
@@ -264,11 +266,25 @@ class SerperSearchProvider(SearchProvider):
             candidate_urls = [r["url"] for r in raw_results if r.get("url")]
             page_metas = await self.page_enricher.enrich_many(candidate_urls)
 
+            filtered_results: list[dict[str, Any]] = []
+            for item in raw_results:
+                u = item.get("url", "")
+                norm_u = normalize_url(u)
+                pm = page_metas.get(norm_u)
+                if is_listing_or_portal_url(u):
+                    if not pm or not pm.jsonld_events:
+                        continue
+                filtered_results.append(item)
+
+            if not filtered_results:
+                await self.cache.set(cache_key, [], ttl_seconds=min(self.ttl_seconds, 300))
+                return []
+
             query_district = _detect_district(query)
             extract_with_llm = getattr(self.config, "search_extract_with_llm", True)
 
             extracted = await extract_activities_from_snippets(
-                raw_results,
+                filtered_results,
                 query=query,
                 llm_client=self.llm_client if extract_with_llm else None,
                 default_district=query_district,

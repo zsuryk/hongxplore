@@ -126,13 +126,19 @@ def get_agent_orchestrator() -> AgentOrchestrator:
         return AgentOrchestrator(settings=settings)
 
     llm_client = LLMProviderPool(config=settings) if settings.llm_providers else None
+    has_search_provider_key = bool(
+        settings.tavily_api_key.strip()
+        or settings.serper_api_key.strip()
+        or settings.brave_api_key.strip()
+        or settings.exa_api_key.strip()
+    )
     search_provider = (
         CompositeSearchProvider(
             config=settings,
             cache=SQLiteActivityCache(),
             llm_client=llm_client,
         )
-        if (settings.tavily_api_key.strip() or settings.brave_api_key.strip())
+        if has_search_provider_key
         else None
     )
     return AgentOrchestrator(

@@ -176,3 +176,10 @@ async def test_serper_time_window_mapping_from_context(
         assert len(recorded_requests) == 1
         body = json.loads(recorded_requests[0].content)
         assert body.get("tbs") == "qdr:w"
+
+        # Without target slots, tbs is omitted to prevent choking evergreen activities
+        ctx_no_slots = SearchContext()
+        await provider.fetch_raw("hiking trails", context=ctx_no_slots)
+        assert len(recorded_requests) == 2
+        body_no_slots = json.loads(recorded_requests[1].content)
+        assert "tbs" not in body_no_slots
