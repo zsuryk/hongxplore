@@ -524,16 +524,20 @@
   margin-top: var(--space-2);
 }
 
-.board-modal__help {
+.board-modal .board-modal__help {
   color: var(--card-muted-foreground);
   font-size: var(--text-label);
   line-height: var(--leading-normal);
   margin: var(--space-2) 0 0;
 }
 
-.board-modal__error {
+.board-modal .board-modal__error {
+  background: var(--destructive-soft);
+  border: 1px solid var(--destructive-border);
+  border-radius: var(--radius-sm);
   color: var(--destructive);
   font-size: var(--text-label);
   line-height: var(--leading-normal);
   margin: var(--space-2) 0 0;
+  padding: var(--space-2) var(--space-3);
 }

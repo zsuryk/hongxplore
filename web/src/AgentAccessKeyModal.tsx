@@ -131,10 +131,10 @@ export function AgentAccessKeyModal({
   const storeSubmitKey = useBoardStore((state) => state.submitAccessKey);
   const storeKey = useBoardStore((state) => state.agentAccessKey);
 
-  const isOpen = propIsOpen ?? storeState?.isAccessKeyPromptOpen ?? storeIsOpen;
+  const isOpen = propIsOpen ?? (storeIsOpen || Boolean(storeState?.isAccessKeyPromptOpen));
   const onClose = propOnClose ?? storeClose;
   const onSubmit = propOnSubmit ?? storeSubmitKey;
-  const initialKey = propInitialKey ?? storeState?.agentAccessKey ?? storeKey ?? '';
+  const initialKey = propInitialKey ?? storeKey ?? storeState?.agentAccessKey ?? '';
 
   if (!isOpen) {
     return null;
