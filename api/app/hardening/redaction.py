@@ -101,6 +101,20 @@ class SecretRedactionFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
         if not self._secrets:
             return True
+        if (
+            record.name == "uvicorn.access"
+            and isinstance(record.args, tuple)
+            and len(record.args) == 5
+        ):
+            client_addr, method, full_path, http_version, status_code = record.args
+            record.args = (
+                redact(str(client_addr), self._secrets),
+                method,
+                redact(str(full_path), self._secrets),
+                http_version,
+                status_code,
+            )
+            return True
         try:
             message = record.getMessage()
         except Exception:  # a broken format string must not become a leak, nor a crash
