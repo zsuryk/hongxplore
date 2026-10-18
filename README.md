@@ -18,7 +18,9 @@ A standalone HTML prototype from earlier exploration lives in the separate `kult
 
 Start here: [`docs/PLAN.md`](docs/PLAN.md) (phased tickets + ownership) and the [issue backlog](https://github.com/zsuryk/hongxplore/issues).
 
-For the UI: [`DESIGN.md`](DESIGN.md) is the design contract — tokens, card anatomy, board/zoom geometry, component behaviour and the accessibility gates. It is a design-system document, not a product spec (see [ADR-0004](docs/adr/0004-spec-and-prototype-kept-out-of-repo)).
+For the UI: [`DESIGN.md`](DESIGN.md) is the design contract — tokens, card anatomy, zoom geometry, component behaviour and the accessibility gates. It is a design-system document, not a product spec (see [ADR-0004](docs/adr/0004-spec-and-prototype-kept-out-of-repo)).
+
+**Deploying it, or running the demo?** [`docs/DEPLOY.md`](docs/DEPLOY.md) is the operator-facing runbook: the pitch URL, deploy/verify/rollback, what demo mode guarantees versus what live mode requires, key rotation, the provider pool, the pre-pitch checklist, a symptom → cause → fix troubleshooting table, and the honest note on what the browser-stored access key does and does not protect.
 
 ## Quickstart
 
