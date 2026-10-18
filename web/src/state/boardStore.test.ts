@@ -341,4 +341,111 @@ describe('board store search retrieval and error handling', () => {
       expect(useBoardStore.getState().cardZIndexById[cardA]).toBeUndefined();
     });
   });
+
+  describe('view mode and undo actions', () => {
+    const memoryStorage = new Map<string, string>();
+    const localStorageMock = {
+      getItem: (key: string) => memoryStorage.get(key) ?? null,
+      setItem: (key: string, val: string) => memoryStorage.set(key, val),
+      removeItem: (key: string) => memoryStorage.delete(key),
+      clear: () => memoryStorage.clear(),
+      key: (i: number) => Array.from(memoryStorage.keys())[i] ?? null,
+      length: 0,
+    };
+
+    beforeEach(() => {
+      vi.stubGlobal('localStorage', localStorageMock);
+      localStorageMock.clear();
+      useBoardStore.setState({
+        cards: [...response.matches],
+        discardedCards: [],
+        timelineSlots: slots.map((s) => ({ ...s, activityId: null })),
+        viewMode: 'board',
+        undoStack: [],
+      });
+    });
+
+    it('defaults to board view mode and switches to deck view mode', () => {
+      expect(useBoardStore.getState().viewMode).toBe('board');
+      useBoardStore.getState().setViewMode('deck');
+      expect(useBoardStore.getState().viewMode).toBe('deck');
+      expect(localStorage.getItem('hongxplore:view-mode')).toBe('deck');
+
+      useBoardStore.getState().setViewMode('board');
+      expect(useBoardStore.getState().viewMode).toBe('board');
+      expect(localStorage.getItem('hongxplore:view-mode')).toBe('board');
+    });
+
+    it('undoes a discard action, restoring the card back to active cards', () => {
+      const card = response.matches[0];
+      const initialCount = useBoardStore.getState().cards.length;
+
+      useBoardStore.getState().discardCard(card.activity.id);
+      expect(useBoardStore.getState().cards.length).toBe(initialCount - 1);
+      expect(useBoardStore.getState().discardedCards).toContainEqual(card);
+
+      const undone = useBoardStore.getState().undoLastAction();
+      expect(undone).toBe(true);
+      expect(useBoardStore.getState().cards.some((c) => c.activity.id === card.activity.id)).toBe(true);
+      expect(useBoardStore.getState().discardedCards.some((c) => c.activity.id === card.activity.id)).toBe(false);
+    });
+
+    it('undoes a dock action, restoring the timeline slot', () => {
+      const card = response.matches[0];
+      useBoardStore.getState().dockCard(card.activity.id, 'saturday-afternoon');
+      expect(useBoardStore.getState().timelineSlots[0].activityId).toBe(card.activity.id);
+
+      const undone = useBoardStore.getState().undoLastAction();
+      expect(undone).toBe(true);
+      expect(useBoardStore.getState().timelineSlots[0].activityId).toBeNull();
+      // Card is still preserved in cards list and ready to be displayed as unassigned
+      expect(useBoardStore.getState().cards.some((c) => c.activity.id === card.activity.id)).toBe(true);
+      const isStillDocked = useBoardStore.getState().timelineSlots.some((s) => s.activityId === card.activity.id);
+      expect(isStillDocked).toBe(false);
+    });
+
+    it('restores replaced card when undoing a replacing dock action', () => {
+      const card1 = response.matches[0];
+      const card2 = response.matches[1];
+
+      useBoardStore.getState().dockCard(card1.activity.id, 'saturday-afternoon');
+      useBoardStore.getState().dockCard(card2.activity.id, 'saturday-afternoon', { replace: true });
+      expect(useBoardStore.getState().timelineSlots[0].activityId).toBe(card2.activity.id);
+
+      const undone = useBoardStore.getState().undoLastAction();
+      expect(undone).toBe(true);
+      expect(useBoardStore.getState().timelineSlots[0].activityId).toBe(card1.activity.id);
+    });
+
+    it('returns false when undoing with empty undo stack', () => {
+      expect(useBoardStore.getState().undoLastAction()).toBe(false);
+    });
+
+    it('restores all discarded cards back to cards array', () => {
+      const card1 = response.matches[0];
+      const card2 = response.matches[1];
+      useBoardStore.getState().discardCard(card1.activity.id);
+      useBoardStore.getState().discardCard(card2.activity.id);
+      expect(useBoardStore.getState().discardedCards.length).toBe(2);
+
+      useBoardStore.getState().restoreDiscardedCards();
+      expect(useBoardStore.getState().discardedCards.length).toBe(0);
+      expect(useBoardStore.getState().cards.some((c) => c.activity.id === card1.activity.id)).toBe(true);
+      expect(useBoardStore.getState().cards.some((c) => c.activity.id === card2.activity.id)).toBe(true);
+    });
+
+    it('restores a specific single discarded card back to cards array', () => {
+      const card1 = response.matches[0];
+      const card2 = response.matches[1];
+      useBoardStore.getState().discardCard(card1.activity.id);
+      useBoardStore.getState().discardCard(card2.activity.id);
+      expect(useBoardStore.getState().discardedCards.length).toBe(2);
+
+      const restored = useBoardStore.getState().restoreSingleDiscardedCard(card1.activity.id);
+      expect(restored).toBe(true);
+      expect(useBoardStore.getState().discardedCards.some((c) => c.activity.id === card1.activity.id)).toBe(false);
+      expect(useBoardStore.getState().discardedCards.some((c) => c.activity.id === card2.activity.id)).toBe(true);
+      expect(useBoardStore.getState().cards.some((c) => c.activity.id === card1.activity.id)).toBe(true);
+    });
+  });
 });

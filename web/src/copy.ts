@@ -483,6 +483,15 @@ export function activityCardPriceLabel(
   return price.amount ? `${price.amount} ${price.currency}` : ACTIVITY_CARD_PRICE_UNKNOWN;
 }
 
+export const hktActivityDateTimeFormatter = new Intl.DateTimeFormat('en-HK', {
+  day: 'numeric',
+  hour: 'numeric',
+  minute: '2-digit',
+  month: 'short',
+  timeZone: 'Asia/Hong_Kong',
+  weekday: 'short',
+});
+
 const listedOnFormatter = new Intl.DateTimeFormat('en-HK', {
   day: '2-digit',
   month: 'short',
@@ -599,3 +608,107 @@ export const GATHERING_INFO_SUBTITLE = 'Researching and ranking weekend activiti
 export const GATHERING_INFO_LABEL = 'AI research in progress: gathering activities';
 /** Tracked caps on the pending card's header row. Amber means pending, and this is pending. */
 export const GATHERING_INFO_PLATE_LABEL = 'Gathering';
+
+/* ---- Deck View strings (issue #140) ---- */
+export const VIEW_SWITCHER_LABEL = 'Switch view mode';
+export const VIEW_MODE_BOARD_LABEL = 'Board';
+export const VIEW_MODE_BOARD_TOOLTIP = 'Infinite whiteboard view';
+export const VIEW_MODE_DECK_LABEL = 'Deck';
+export const VIEW_MODE_DECK_TOOLTIP = 'Card-by-card deck navigation';
+
+export const DECK_DISCARD_LABEL = 'Discard activity';
+export const DECK_DISCARD_TOOLTIP = 'Discard (← or Backspace)';
+export const DECK_UNDO_LABEL = 'Undo last action';
+export const DECK_UNDO_TOOLTIP = 'Undo (Z or Cmd+Z)';
+export const DECK_SKIP_LABEL = 'Skip to back';
+export const DECK_SKIP_TOOLTIP = 'Skip to back of stack (Space)';
+export const DECK_DOCK_LABEL = 'Quick dock';
+export const DECK_DOCK_TOOLTIP = 'Schedule to weekend (→ or Enter)';
+export const DECK_SLOT_PICKER_TITLE = 'Choose a weekend slot';
+export const DECK_SLOT_PICKER_HINT = 'Select which time slot to schedule this activity';
+export const DECK_KEYBOARD_HINT = 'Left arrow discards, right arrow docks, space skips, Z undoes.';
+export const DECK_SWIPE_DISCARD_HINT = 'Swipe left to discard';
+export const DECK_SWIPE_DOCK_HINT = 'Swipe right to schedule';
+
+export function deckStackCount(current: number, total: number): string {
+  return `${current} of ${total}`;
+}
+
+export function deckCardsRemaining(count: number): string {
+  return `${count} remaining`;
+}
+
+export const DECK_EMPTY_TITLE = 'All activities reviewed';
+export const DECK_EMPTY_BODY = 'You have gone through all returned activities for this query.';
+export const DECK_EMPTY_VIEW_PLAN_CTA = 'View weekend plan';
+export const DECK_EMPTY_RESTORE_CTA = 'Restore discarded activities';
+export const DECK_EMPTY_SEARCH_CTA = 'Search for more';
+
+export const DECK_BOOKING_GUIDE_BADGE = 'Facility booking guide';
+export const DECK_MATCH_RATIONALE_LABEL = 'Why this matches';
+export const DECK_LOCATION_LABEL = 'Location';
+export const DECK_SCHEDULE_LABEL = 'Schedule';
+export const DECK_PRICE_LABEL = 'Price';
+export const DECK_EXTERNAL_LINK_LABEL = 'Open details & booking';
+export const TAGS_LABEL = 'Tags';
+
+export function deckExternalLinkLabel(sourceName: string): string {
+  return `${DECK_EXTERNAL_LINK_LABEL} (${sourceName})`;
+}
+
+export function deckSlotPickerChipLabel(slotLabel: string, isOccupied: boolean): string {
+  return isOccupied ? `${slotLabel} (*)` : slotLabel;
+}
+
+export const DECK_DISCARD_PANEL_TITLE = 'Discard bin';
+export const DECK_DISCARD_DROP_HINT = 'Drop card here to discard';
+export const DECK_DISCARD_EMPTY_HINT = 'No discarded activities yet';
+export const DECK_TIMELINE_PANEL_TITLE = 'Weekend schedule';
+export const DECK_TIMELINE_DROP_HINT = 'Drag card here to schedule';
+export const DECK_SLOT_AVAILABLE_LABEL = 'Available slot';
+export const DECK_SLOT_INCOMPATIBLE_LABEL = 'Time mismatch';
+export const DECK_SLOT_INCOMPATIBLE_HINT = 'Cannot schedule at this time';
+export const DECK_SLOT_DISCARD_TOOLTIP = 'Discard activity from timeslot';
+export const DECK_ACTION_DISCARD = 'Discard';
+export const DECK_ACTION_UNDO = 'Undo';
+export const DECK_ACTION_SKIP = 'Skip';
+export const DECK_ACTION_DOCK = 'Schedule';
+export const DECK_KEY_LEFT = '←';
+export const DECK_KEY_RIGHT = '→';
+export const DECK_KEY_SPACE = 'Space';
+export const DECK_KEY_Z = 'Z';
+export const DECK_RESTORE_ALL_LABEL = 'Restore all';
+export const DECK_DROP_HINT_BAR = 'Drag card to any timeslot or discard bin · Or swipe left / right';
+export const DECK_STAMP_DISCARD = 'Discard';
+export const DECK_STAMP_SCHEDULE = 'Schedule';
+export const DECK_STAMP_SKIP = 'Skip';
+export const DECK_DISCARD_RESTORE_LABEL = 'Restore';
+export const DECK_DISCARD_RESTORE_TOOLTIP = 'Restore this activity to deck';
+export const DECK_DISCARD_QUEUE_TITLE = 'Discarded queue';
+export const DECK_SLOT_DROP_HERE_HINT = 'Drop card to schedule';
+
+export function deckDiscardedCount(count: number): string {
+  return `${count} discarded`;
+}
+
+export function deckScheduledCount(count: number, total: number): string {
+  return `${count} of ${total} slots scheduled`;
+}
+
+export const DECK_TOUR_STORAGE_KEY = 'hongxplore_deck_tour_completed';
+export const DECK_HELP_LABEL = 'Help and tour';
+export const DECK_TOUR_REOPEN_TOOLTIP = 'Learn how to use Deck mode (?)';
+export const DECK_TOUR_CARD_TITLE = 'Swipe or scroll the card';
+export const DECK_TOUR_CARD_BODY =
+  'Swipe left to discard, or swipe right to schedule into the weekend. Scroll down the card to see full details, venue location, schedule, and cover photo.';
+export const DECK_TOUR_DISCARD_TITLE = 'Discard queue & restore';
+export const DECK_TOUR_DISCARD_BODY =
+  'Activities you skip or discard appear here. You can restore any single activity or restore all of them at once with undo.';
+export const DECK_TOUR_TIMELINE_TITLE = 'Weekend timeslots';
+export const DECK_TOUR_TIMELINE_BODY =
+  'Timeslots highlight automatically when a card matches. Drag onto a slot or click to schedule. Occupied slots can be replaced, or discarded with the red timeslot button.';
+export const DECK_TOUR_CONTROLS_TITLE = 'Quick action bar & keys';
+export const DECK_TOUR_CONTROLS_BODY =
+  'Use the bottom toolbar buttons or rapid keyboard shortcuts: Left Arrow to discard, Right Arrow to schedule, Space to skip, and Z to undo.';
+export const DECK_TOUR_CUE_DISCARD = 'Swipe left to discard';
+export const DECK_TOUR_CUE_SCHEDULE = 'Swipe right to schedule';

@@ -17,6 +17,7 @@ import {
   activityCardPriceLabel,
   activityCardSerial,
   getActivityLanguageBadge,
+  hktActivityDateTimeFormatter,
 } from './copy';
 import type { components } from './api/schema';
 
@@ -49,15 +50,6 @@ export type ActivityCardProps = {
   style?: CSSProperties;
   variant?: CardVariant;
 };
-
-const hktDateFormatter = new Intl.DateTimeFormat('en-HK', {
-  day: 'numeric',
-  hour: 'numeric',
-  minute: '2-digit',
-  month: 'short',
-  timeZone: 'Asia/Hong_Kong',
-  weekday: 'short',
-});
 
 export function ActivityCard({
   index,
@@ -250,5 +242,5 @@ export function ActivityCard({
 }
 
 function formatActivityTime(start: string): string {
-  return hktDateFormatter.format(new Date(start));
+  return hktActivityDateTimeFormatter.format(new Date(start));
 }
