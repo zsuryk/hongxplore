@@ -185,7 +185,7 @@ async def test_pool_all_providers_exhausted_raises_sanitized_error() -> None:
         await pool.complete(system="sys", user="user")
 
     error_msg = str(exc_info.value)
-    assert "All 2 LLM provider(s) in the pool failed." in error_msg
+    assert "All 2 LLM endpoint(s) in the pool failed." in error_msg
     assert "internal-proxy.corp.net" not in error_msg
     assert "secret123" not in error_msg
 
@@ -217,7 +217,7 @@ async def test_pool_size_limits_candidates() -> None:
     with pytest.raises(LLMPoolExhaustedError) as exc_info:
         await pool.complete(system="sys", user="user")
 
-    assert "All 2 LLM provider(s) in the pool failed." in str(exc_info.value)
+    assert "All 2 LLM endpoint(s) in the pool failed." in str(exc_info.value)
     assert len(p1.calls) == 1
     assert len(p2.calls) == 1
     assert len(p3.calls) == 0  # p3 was never touched because pool_size = 2
@@ -372,5 +372,179 @@ async def test_agent_orchestrator_integration_with_exhausted_pool_fallback(
     assert len(response.matches) > 0
     log_messages = [entry.message for entry in response.log]
     assert any("Live intent parsing unavailable" in msg for msg in log_messages)
-    assert not any("All 2 LLM provider(s) in the pool failed." in msg for msg in log_messages)
-    assert "All 2 LLM provider(s) in the pool failed." in caplog.text
+    assert not any("All 2 LLM endpoint(s) in the pool failed." in msg for msg in log_messages)
+    assert "All 2 LLM endpoint(s) in the pool failed." in caplog.text
+
+
+# --- Multiple models per provider (issue #149) --------------------------------
+
+
+def test_pool_builds_one_client_per_model_in_failover_order() -> None:
+    """Every model of provider 1, then every model of provider 2 — in that order."""
+    cfg = Settings(
+        llm_pool_size=2,
+        llm_provider_1_api_key="key-alpha",
+        llm_provider_1_model="alpha-fast,alpha-spare",
+        llm_provider_2_api_key="key-beta",
+        llm_provider_2_model="beta-fast",
+    )
+    pool = LLMProviderPool(config=cfg)
+
+    assert [c._model for c in pool._clients] == ["alpha-fast", "alpha-spare", "beta-fast"]
+    assert [c._api_key for c in pool._clients] == ["key-alpha", "key-alpha", "key-beta"]
+
+
+def test_pool_size_bounds_providers_not_model_pairs() -> None:
+    """`llm_pool_size` means providers. It must not silently multiply call budget."""
+    cfg = Settings(
+        llm_pool_size=1,
+        llm_provider_1_api_key="key-alpha",
+        llm_provider_1_model="alpha-one,alpha-two,alpha-three",
+        llm_provider_2_api_key="key-beta",
+        llm_provider_2_model="beta-one",
+    )
+    pool = LLMProviderPool(config=cfg)
+
+    assert [c._model for c in pool._clients] == ["alpha-one", "alpha-two", "alpha-three"]
+
+
+def test_a_provider_with_no_key_contributes_no_models() -> None:
+    """An unkeyed slot contributes nothing, however many models it lists."""
+    cfg = Settings(
+        llm_pool_size=3,
+        llm_provider_1_api_key="key-alpha",
+        llm_provider_1_model="alpha-one,alpha-two",
+        llm_provider_3_api_key="",
+        llm_provider_3_model="gamma-one,gamma-two",
+    )
+    pool = LLMProviderPool(config=cfg)
+    assert [c._model for c in pool._clients] == ["alpha-one", "alpha-two"]
+
+
+def test_a_provider_with_no_usable_model_contributes_nothing() -> None:
+    """A slot whose model list is empty is skipped rather than built with ""."""
+    cfg = Settings(
+        llm_pool_size=2,
+        llm_provider_1_api_key="key-alpha",
+        llm_provider_1_model=" , , ",
+        llm_provider_2_api_key="key-beta",
+        llm_provider_2_model="beta-one",
+    )
+    pool = LLMProviderPool(config=cfg)
+    assert [c._model for c in pool._clients] == ["beta-one"]
+
+
+@pytest.mark.anyio
+async def test_a_dead_model_fails_over_to_the_next_model_on_the_same_provider() -> None:
+    """The point of the feature: one bad model costs a model, not the provider."""
+    p1_model_1 = FakeClient([_make_status_error(404)])
+    p1_model_2 = FakeClient(["Peak Tram and Victoria Peak"])
+    p2 = FakeClient(["Provider 2 must not be reached"])
+
+    pool = LLMProviderPool(
+        config=Settings(llm_pool_size=2, llm_pool_failover_enabled=True),
+        clients=[p1_model_1, p1_model_2, p2],
+    )
+
+    result = await pool.complete(system="sys", user="user")
+    assert result == "Peak Tram and Victoria Peak"
+    assert len(p1_model_1.calls) == 1
+    assert len(p1_model_2.calls) == 1
+    assert len(p2.calls) == 0
+
+
+@pytest.mark.anyio
+async def test_the_next_provider_is_reached_only_after_every_model_is_tried() -> None:
+    """Both of provider 1's models must fail before provider 2 gets a turn."""
+    p1_m1 = FakeClient([_make_status_error(429)])
+    p1_m2 = FakeClient(
+        [
+            openai.APITimeoutError(
+                request=httpx.Request("POST", "https://api.mockllm.com/v1/chat/completions")
+            )
+        ]
+    )
+    p2 = FakeClient(["Tai O Fishing Village"])
+
+    pool = LLMProviderPool(
+        config=Settings(llm_pool_size=3, llm_pool_failover_enabled=True),
+        clients=[p1_m1, p1_m2, p2],
+    )
+
+    result = await pool.complete(system="sys", user="user")
+    assert result == "Tai O Fishing Village"
+    assert len(p1_m1.calls) == 1
+    assert len(p1_m2.calls) == 1
+    assert len(p2.calls) == 1
+
+
+@pytest.mark.anyio
+async def test_cooldown_is_tracked_per_model_not_per_provider() -> None:
+    """A dead model must not disable a sibling model on the same provider."""
+    current_time = 1000.0
+    p1_m1 = FakeClient([_make_status_error(429), "Recovered"])
+    p1_m2 = FakeClient(["Spare still works", "Spare works again"])
+
+    pool = LLMProviderPool(
+        config=Settings(llm_pool_size=2, llm_pool_failover_enabled=True),
+        clients=[p1_m1, p1_m2],
+        cooldown_seconds=60.0,
+        clock=lambda: current_time,
+    )
+
+    assert await pool.complete(system="s", user="u1") == "Spare still works"
+    assert len(p1_m1.calls) == 1
+
+    # Still inside the cooldown: model 1 is skipped, model 2 serves the request.
+    current_time += 10.0
+    assert await pool.complete(system="s", user="u2") == "Spare works again"
+    assert len(p1_m1.calls) == 1
+    assert len(p1_m2.calls) == 2
+
+
+@pytest.mark.anyio
+async def test_every_model_of_every_provider_failing_exhausts_the_pool() -> None:
+    """Exhaustion still raises one sanitised error when all pairs are tried."""
+    req = httpx.Request(
+        "POST", "https://internal-proxy.corp.net:8443/v1/chat/completions?token=secret123"
+    )
+    resp = httpx.Response(502, request=req)
+    raw = openai.APIStatusError("Upstream bad gateway", response=resp, body=None)
+
+    clients = [FakeClient([raw]), FakeClient([_make_status_error(503)])]
+    pool = LLMProviderPool(
+        config=Settings(llm_pool_size=2, llm_pool_failover_enabled=True),
+        clients=clients,
+    )
+
+    with pytest.raises(LLMPoolExhaustedError) as exc_info:
+        await pool.complete(system="sys", user="user")
+
+    assert "All 2 LLM endpoint(s) in the pool failed." in str(exc_info.value)
+    assert "internal-proxy.corp.net" not in str(exc_info.value)
+    assert "secret123" not in str(exc_info.value)
+    assert all(len(c.calls) == 1 for c in clients)
+
+
+def test_every_provider_stays_reachable_when_one_holds_several_models() -> None:
+    """Regression: the pool limit counts providers, not (provider, model) pairs.
+
+    Applying `llm_pool_size` as a list slice over built clients counted models,
+    so the moment a provider listed two models the pool silently stopped
+    short — the last provider became unreachable and nobody could tell from the
+    outside, because the pool still answered.
+    """
+    cfg = Settings(
+        llm_pool_size=2,
+        llm_provider_1_api_key="key-alpha",
+        llm_provider_1_model="alpha-one,alpha-two",
+        llm_provider_2_api_key="key-beta",
+        llm_provider_2_model="beta-one,beta-two",
+        llm_provider_3_api_key="key-gamma",
+        llm_provider_3_model="gamma-one",
+    )
+    pool = LLMProviderPool(config=cfg)
+
+    reachable = [c._model for c in pool._clients[: pool._max_candidates]]
+    assert reachable == ["alpha-one", "alpha-two", "beta-one", "beta-two"]
+    assert "gamma-one" not in reachable

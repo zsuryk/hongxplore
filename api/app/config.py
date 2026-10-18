@@ -56,6 +56,20 @@ class LLMProvider(BaseModel):
     model: str = ""
     api_key: str = ""
 
+    @property
+    def models(self) -> list[str]:
+        """The configured models for this provider, in failover order.
+
+        `LLM_PROVIDER_<n>_MODEL` takes a comma-separated list, so one provider
+        can hold several models and the pool walks them before giving up on the
+        slot. `model` stays the raw string for the legacy `OPENAI_*` bridge and
+        for anything that echoes back exactly what was configured.
+
+        A property rather than a second field: the raw value is the source of
+        truth, and a stored copy is another thing that can drift from it.
+        """
+        return [model.strip() for model in self.model.split(",") if model.strip()]
+
 
 class Settings(BaseSettings):
     """Environment configuration.
