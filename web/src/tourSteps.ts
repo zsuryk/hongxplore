@@ -1,4 +1,12 @@
 import {
+  DECK_TOUR_CARD_BODY,
+  DECK_TOUR_CARD_TITLE,
+  DECK_TOUR_CONTROLS_BODY,
+  DECK_TOUR_CONTROLS_TITLE,
+  DECK_TOUR_DISCARD_BODY,
+  DECK_TOUR_DISCARD_TITLE,
+  DECK_TOUR_TIMELINE_BODY,
+  DECK_TOUR_TIMELINE_TITLE,
   TOUR_CARD_BODY,
   TOUR_CARD_TITLE,
   TOUR_MODE_BODY,
@@ -60,6 +68,41 @@ export const TOUR_STEPS: ProductTourStep[] = [
     title: TOUR_TOOLBAR_TITLE,
     body: TOUR_TOOLBAR_BODY,
     placement: 'left',
+  },
+];
+
+export const DECK_TOUR_STEPS: ProductTourStep[] = [
+  {
+    id: 'deck-card',
+    anchorSelector: '[data-tour-anchor="deck-card"]',
+    fallbackSelector: '.deck-stack__item--active',
+    title: DECK_TOUR_CARD_TITLE,
+    body: DECK_TOUR_CARD_BODY,
+    placement: 'adjacent',
+  },
+  {
+    id: 'deck-discard',
+    anchorSelector: '[data-tour-anchor="deck-discard"]',
+    fallbackSelector: '.deck-sidebar--discard',
+    title: DECK_TOUR_DISCARD_TITLE,
+    body: DECK_TOUR_DISCARD_BODY,
+    placement: 'adjacent',
+  },
+  {
+    id: 'deck-timeline',
+    anchorSelector: '[data-tour-anchor="deck-timeline"]',
+    fallbackSelector: '.deck-sidebar--timeline',
+    title: DECK_TOUR_TIMELINE_TITLE,
+    body: DECK_TOUR_TIMELINE_BODY,
+    placement: 'left',
+  },
+  {
+    id: 'deck-controls',
+    anchorSelector: '[data-tour-anchor="deck-controls"]',
+    fallbackSelector: '.deck-controls',
+    title: DECK_TOUR_CONTROLS_TITLE,
+    body: DECK_TOUR_CONTROLS_BODY,
+    placement: 'top',
   },
 ];
 

@@ -25,6 +25,7 @@
 @import './styles/card.css';
 @import './styles/timeline.css';
 @import './styles/panels.css';
+@import './styles/deck.css';
 
 @theme inline {
   --color-background: var(--background);

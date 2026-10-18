@@ -23,12 +23,17 @@ export type IconName =
   | 'reset'
   | 'fit'
   | 'auto-fit'
+  | 'board-view'
+  | 'deck-view'
   | 'tile'
   | 'clear'
   | 'close'
   | 'search'
   | 'pending'
   | 'help'
+  | 'undo'
+  | 'skip'
+  | 'check'
   | 'mode-grab'
   | 'mode-pan'
   | 'mode-inspect';
@@ -226,11 +231,64 @@ export function IconModeInspect(props: IconProps) {
   );
 }
 
+/** Infinite board view — a 2x2 grid representing whiteboard canvas. */
+export function IconBoardView(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect height="7" rx="1" width="7" x="3.5" y="3.5" />
+      <rect height="7" rx="1" width="7" x="13.5" y="3.5" />
+      <rect height="7" rx="1" width="7" x="3.5" y="13.5" />
+      <rect height="7" rx="1" width="7" x="13.5" y="13.5" />
+    </Svg>
+  );
+}
+
+/** Deck view — layered stacked cards. */
+export function IconDeckView(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect height="13" rx="1.5" width="11" x="7.5" y="6.5" />
+      <path d="M4.5 16.5v-10A1.5 1.5 0 0 1 6 5h10" />
+    </Svg>
+  );
+}
+
+/** Undo action — counter-clockwise curved arrow. */
+export function IconUndo(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M3.5 9h9a5.5 5.5 0 1 1 0 11H9" />
+      <path d="m6.5 12-3-3 3-3" />
+    </Svg>
+  );
+}
+
+/** Skip to back — forward arrow with vertical line. */
+export function IconSkip(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M5 5l8 7-8 7V5zM17 5v14" />
+    </Svg>
+  );
+}
+
+/** Quick dock / confirm — clean checkmark. */
+export function IconCheck(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M4.5 12.5l5 5 10-11" />
+    </Svg>
+  );
+}
+
 /** Kept as a lookup so a control can declare an icon by name instead of by element. */
 export const ICONS = {
   'auto-fit': IconAutoFit,
+  'board-view': IconBoardView,
+  check: IconCheck,
   clear: IconClear,
   close: IconClose,
+  'deck-view': IconDeckView,
   fit: IconFit,
   help: IconHelp,
   'mode-grab': IconModeGrab,
@@ -239,7 +297,9 @@ export const ICONS = {
   pending: IconPending,
   reset: IconReset,
   search: IconSearch,
+  skip: IconSkip,
   tile: IconTile,
+  undo: IconUndo,
   'zoom-in': IconZoomIn,
   'zoom-out': IconZoomOut,
 } satisfies Record<IconName, (props: IconProps) => React.ReactElement>;

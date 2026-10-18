@@ -15,7 +15,8 @@ import { ActivityCard } from './ActivityCard';
 import { AgentAccessKeyModal } from './AgentAccessKeyModal';
 import { AgentStatusPanel } from './AgentStatusPanel';
 import { BoardToolbar } from './BoardToolbar';
-import { IconClose, IconModeGrab, IconModeInspect, IconModePan } from './icons';
+import { DeckView } from './DeckView';
+import { IconBoardView, IconClose, IconDeckView, IconModeGrab, IconModeInspect, IconModePan } from './icons';
 import { ProductTour } from './ProductTour';
 import { ResearchCard } from './ResearchCard';
 import { SearchBar } from './SearchBar';
@@ -55,6 +56,11 @@ import {
   TIMELINE_SLOT_EMPTY,
   TIMELINE_SLOTS,
   UNDOCK_CARD_LABEL,
+  VIEW_MODE_BOARD_LABEL,
+  VIEW_MODE_BOARD_TOOLTIP,
+  VIEW_MODE_DECK_LABEL,
+  VIEW_MODE_DECK_TOOLTIP,
+  VIEW_SWITCHER_LABEL,
   activityCardSerial,
   boardModeActiveLabel,
   boardModeSelectedConfirmation,
@@ -94,6 +100,7 @@ import {
   type ActivityCard as BoardActivityCard,
   type AgentStatus,
   type TimelineSlot,
+  type ViewMode,
   useBoardStore,
 } from './state/boardStore';
 import {
@@ -311,6 +318,7 @@ export type AppProps = {
   initialTourOpen?: boolean;
   initialViewportScale?: number;
   initialWheelPosition?: Point;
+  initialViewMode?: ViewMode;
   timelineSlots?: TimelineSlot[];
 };
 
@@ -330,6 +338,7 @@ export function App({
   initialTourOpen,
   initialViewportScale,
   initialWheelPosition,
+  initialViewMode,
   timelineSlots: propTimelineSlots,
 }: AppProps = {}) {
   const boardRef = useRef<HTMLDivElement>(null);
@@ -438,6 +447,29 @@ export function App({
   const [wheelPosition, setWheelPosition] = useState<Point | null>(initialWheelPosition ?? null);
   const [hoveredWheelMode, setHoveredWheelMode] = useState<BoardInteractionMode | null>(null);
   const [inspectedCardId, setInspectedCardId] = useState<string | null>(initialInspectedCardId ?? null);
+  const storeViewMode = useBoardStore((state) => state.viewMode);
+  const setViewMode = useBoardStore((state) => state.setViewMode);
+  const [viewModeState, setViewModeState] = useState<ViewMode>(initialViewMode ?? storeViewMode);
+  const viewMode = initialViewMode !== undefined ? viewModeState : storeViewMode;
+
+  const handleSwitchView = useCallback(
+    (mode: ViewMode) => {
+      setViewMode(mode);
+      if (initialViewMode !== undefined) {
+        setViewModeState(mode);
+      }
+    },
+    [initialViewMode, setViewMode],
+  );
+
+  const handleFocusSearch = useCallback(() => {
+    const input = document.getElementById('search-input');
+    if (input instanceof HTMLInputElement) {
+      input.focus();
+      input.select();
+    }
+  }, []);
+
   const lastPointerTypeRef = useRef<string>('mouse');
   const wheelMouseEnteredRef = useRef(false);
 
@@ -1778,551 +1810,591 @@ export function App({
         <div className="app__header-search" data-tour-anchor="search">
           <SearchBar />
         </div>
+        <div className="app__header-actions" data-tour-anchor="view-switcher">
+          <nav aria-label={VIEW_SWITCHER_LABEL} className="view-switcher" role="tablist">
+            <button
+              aria-selected={viewMode === 'board'}
+              className={`view-switcher__btn${viewMode === 'board' ? ' view-switcher__btn--active' : ''}`}
+              onClick={() => handleSwitchView('board')}
+              role="tab"
+              title={VIEW_MODE_BOARD_TOOLTIP}
+              type="button"
+            >
+              <IconBoardView />
+              <span>{VIEW_MODE_BOARD_LABEL}</span>
+            </button>
+            <button
+              aria-selected={viewMode === 'deck'}
+              className={`view-switcher__btn${viewMode === 'deck' ? ' view-switcher__btn--active' : ''}`}
+              onClick={() => handleSwitchView('deck')}
+              role="tab"
+              title={VIEW_MODE_DECK_TOOLTIP}
+              type="button"
+            >
+              <IconDeckView />
+              <span>{VIEW_MODE_DECK_LABEL}</span>
+            </button>
+          </nav>
+        </div>
       </header>
       <AgentStatusPanel status={agentStatus} />
       <p className="sr-only" id="board-keyboard-hint">
         {BOARD_KEYBOARD_HINT}
       </p>
-      <div
-        aria-describedby="board-keyboard-hint"
-        aria-keyshortcuts={BOARD_KEYBOARD_SHORTCUTS}
-        aria-label={BOARD_LABEL}
-        className={`board board--mode-${interactionMode}${dragState || pinchState ? ' board--dragging' : ''}${
-          isGesturing ? ' board--gesturing' : ''
-        }`}
-        onContextMenu={handleBoardContextMenu}
-        onKeyDown={handleBoardKeyDown}
-        onPointerCancel={stopDragging}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={stopDragging}
-        ref={boardRef}
-        role="region"
-        style={boardStyle}
-        tabIndex={0}
-      >
-        {!isTimelineVisible ? (
-          /**
-           * The collapsed summary is a real disclosure button, and it stays the keyboard route
-           * into the timeline now that hover is one too: hover previews, activation pins. The
-           * `aria-label` is the accessible name and `aria-expanded` is the state, neither of
-           * which the visible content provides — the hint text below is decoration on top of
-           * the name, and it names all three ways in (hover, click, drop).
-           */
-          <button
-            aria-expanded={false}
-            aria-label={TIMELINE_EXPAND_LABEL}
-            className="timeline timeline--collapsed"
-            data-tour-anchor="timeline"
-            onBlur={requestHoverCollapse}
-            onClick={() => {
-              clearTimelineHoverTimers();
-              setIsTimelineExpanded(true);
-            }}
-            onPointerEnter={requestHoverExpand}
-            onPointerLeave={requestHoverCollapse}
-            type="button"
-          >
-            <div className="timeline__collapsed-content">
-              <div className="timeline__collapsed-header">
-                <span className="timeline__collapsed-badge">
-                  {timelinePlannedCount(dockedCount, TIMELINE_SLOTS.length)}
-                </span>
-                <strong>{TIMELINE_COLLAPSED_LABEL}</strong>
+      {viewMode === 'deck' ? (
+        <DeckView
+          cards={cards}
+          onFindSimilar={findSimilar}
+          onSearchFocus={handleFocusSearch}
+          onSwitchToBoard={() => handleSwitchView('board')}
+          timelineSlots={timelineSlots}
+        />
+      ) : (
+        <div
+          aria-describedby="board-keyboard-hint"
+          aria-keyshortcuts={BOARD_KEYBOARD_SHORTCUTS}
+          aria-label={BOARD_LABEL}
+          className={`board board--mode-${interactionMode}${dragState || pinchState ? ' board--dragging' : ''}${
+            isGesturing ? ' board--gesturing' : ''
+          }`}
+          onContextMenu={handleBoardContextMenu}
+          onKeyDown={handleBoardKeyDown}
+          onPointerCancel={stopDragging}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={stopDragging}
+          ref={boardRef}
+          role="region"
+          style={boardStyle}
+          tabIndex={0}
+        >
+          {!isTimelineVisible ? (
+            /**
+             * The collapsed summary is a real disclosure button, and it stays the keyboard route
+             * into the timeline now that hover is one too: hover previews, activation pins. The
+             * `aria-label` is the accessible name and `aria-expanded` is the state, neither of
+             * which the visible content provides — the hint text below is decoration on top of
+             * the name, and it names all three ways in (hover, click, drop).
+             */
+            <button
+              aria-expanded={false}
+              aria-label={TIMELINE_EXPAND_LABEL}
+              className="timeline timeline--collapsed"
+              data-tour-anchor="timeline"
+              onBlur={requestHoverCollapse}
+              onClick={() => {
+                clearTimelineHoverTimers();
+                setIsTimelineExpanded(true);
+              }}
+              onPointerEnter={requestHoverExpand}
+              onPointerLeave={requestHoverCollapse}
+              type="button"
+            >
+              <div className="timeline__collapsed-content">
+                <div className="timeline__collapsed-header">
+                  <span className="timeline__collapsed-badge">
+                    {timelinePlannedCount(dockedCount, TIMELINE_SLOTS.length)}
+                  </span>
+                  <strong>{TIMELINE_COLLAPSED_LABEL}</strong>
+                </div>
+                <p className="timeline__collapsed-hint">{TIMELINE_COLLAPSED_HINT}</p>
               </div>
-              <p className="timeline__collapsed-hint">{TIMELINE_COLLAPSED_HINT}</p>
-            </div>
-          </button>
-        ) : (
-          /**
-           * Enter and leave are both needed here, and only leave is obvious. `onPointerEnter`
-           * exists to cancel a collapse the pointer is already inside the effect of undoing:
-           * moving from the timeline's edge to a slot must not read as leaving and coming back.
-           */
-          <section
-            aria-label={TIMELINE_LABEL}
-            className={`timeline timeline--expanded${
-              isDragTimelineExpanded ? ' timeline--hover-expanded' : isTimelinePreviewed ? ' timeline--preview' : ''
-            }`}
-            data-tour-anchor="timeline"
-            onPointerEnter={cancelHoverCollapse}
-            onPointerLeave={requestHoverCollapse}
-          >
-            {isReplacingHoveredSlot && hoveredExistingCard ? (
-              <div className="timeline__guide-hint timeline__replace-toast board__toast">
-                {timelineSlotReplaceAlert(hoveredExistingCard.activity.title_en ?? hoveredExistingCard.activity.title)}
-              </div>
-            ) : isDragTimelineExpanded ? (
-              /* Drag-only. Offering "press Esc to minimize" to somebody who is only hovering
+            </button>
+          ) : (
+            /**
+             * Enter and leave are both needed here, and only leave is obvious. `onPointerEnter`
+             * exists to cancel a collapse the pointer is already inside the effect of undoing:
+             * moving from the timeline's edge to a slot must not read as leaving and coming back.
+             */
+            <section
+              aria-label={TIMELINE_LABEL}
+              className={`timeline timeline--expanded${
+                isDragTimelineExpanded ? ' timeline--hover-expanded' : isTimelinePreviewed ? ' timeline--preview' : ''
+              }`}
+              data-tour-anchor="timeline"
+              onPointerEnter={cancelHoverCollapse}
+              onPointerLeave={requestHoverCollapse}
+            >
+              {isReplacingHoveredSlot && hoveredExistingCard ? (
+                <div className="timeline__guide-hint timeline__replace-toast board__toast">
+                  {timelineSlotReplaceAlert(
+                    hoveredExistingCard.activity.title_en ?? hoveredExistingCard.activity.title,
+                  )}
+                </div>
+              ) : isDragTimelineExpanded ? (
+                /* Drag-only. Offering "press Esc to minimize" to somebody who is only hovering
                  would be offering to undo something they never did. */
-              <div className="timeline__guide-hint board__toast">{TIMELINE_DRAG_COLLAPSE_HINT}</div>
-            ) : null}
-            <div className="timeline__header">
-              <div className="timeline__header-left">
-                <h2>{TIMELINE_LABEL}</h2>
-                <span className="timeline__count-badge">
-                  {timelinePlannedCount(dockedCount, TIMELINE_SLOTS.length)}
-                </span>
+                <div className="timeline__guide-hint board__toast">{TIMELINE_DRAG_COLLAPSE_HINT}</div>
+              ) : null}
+              <div className="timeline__header">
+                <div className="timeline__header-left">
+                  <h2>{TIMELINE_LABEL}</h2>
+                  <span className="timeline__count-badge">
+                    {timelinePlannedCount(dockedCount, TIMELINE_SLOTS.length)}
+                  </span>
+                </div>
+                <button
+                  aria-expanded={true}
+                  aria-label={TIMELINE_COLLAPSE_LABEL}
+                  className="timeline__minimize-button"
+                  onClick={() => {
+                    setIsTimelineExpanded(false);
+                    setIsDragTimelineExpanded(false);
+                    setIsTimelinePreviewed(false);
+                    clearTimelineHoverTimers();
+                    userCollapsedDuringDragRef.current = true;
+                  }}
+                  title={TIMELINE_COLLAPSE_LABEL}
+                  type="button"
+                >
+                  &minus;
+                </button>
               </div>
+              <div className="timeline__slots">
+                {timelineSlots.map((slot) => {
+                  const match = cards.find((candidate) => candidate.activity.id === slot.activityId);
+                  const isDraggingThisCard = cardDragState?.card.activity.id === match?.activity.id;
+                  const isSuggested = activeMatchingSlotId === slot.id;
+                  const isHovered = hoveredSlotId === slot.id;
+                  const isReplacingThisSlot = isHovered && isReplacingHoveredSlot;
+                  const isIncompatibleHover =
+                    isHovered && activeMatchingSlotId !== null && activeMatchingSlotId !== slot.id;
+
+                  let slotClass = 'timeline__slot';
+                  if (isReplacingThisSlot) {
+                    slotClass += ' timeline__slot--replacing';
+                  } else {
+                    if (isSuggested) slotClass += ' timeline__slot--suggested';
+                    if (isHovered && !isIncompatibleHover) slotClass += ' timeline__slot--dragover';
+                    if (isIncompatibleHover) slotClass += ' timeline__slot--incompatible';
+                  }
+                  if (match) {
+                    slotClass += ' timeline__slot--docked';
+                  }
+                  if (settlingSlotId === slot.id) {
+                    slotClass += ' timeline__slot--settling';
+                  }
+
+                  return (
+                    <div aria-live="polite" className={slotClass} data-timeline-slot={slot.id} key={slot.id}>
+                      <div className="timeline__slot-header">
+                        <span>{TIMELINE_SLOTS.find((definition) => definition.id === slot.id)?.label}</span>
+                        {match ? (
+                          <button
+                            aria-label={UNDOCK_CARD_LABEL}
+                            className="btn btn--sm btn--icon timeline__slot-remove"
+                            onClick={() => undockCard(slot.id)}
+                            type="button"
+                          >
+                            &times;
+                          </button>
+                        ) : null}
+                      </div>
+                      {match ? (
+                        <div
+                          className={`timeline__docked-card${isDraggingThisCard ? ' timeline__docked-card--ghost' : ''}`}
+                          draggable={false}
+                          onDragStart={(event) => event.preventDefault()}
+                          onLostPointerCapture={handleCardLostPointerCapture}
+                          onPointerCancel={handleCardPointerCancel}
+                          onPointerDown={(event) => handleCardPointerDown(event, match, { slotId: slot.id })}
+                          onPointerMove={handleCardPointerMove}
+                          onPointerUp={handleCardPointerUp}
+                        >
+                          <ActivityCard match={match} size="docked" state="spawning" />
+                        </div>
+                      ) : (
+                        <div className="timeline__slot-empty">{TIMELINE_SLOT_EMPTY}</div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+          <aside
+            aria-label={DISCARD_BIN_LABEL}
+            className={`discard-bin${cardDragState ? ' discard-bin--active' : ''}`}
+            ref={discardBinRef}
+          >
+            <strong>{DISCARD_BIN_LABEL}</strong>
+            <span>{DISCARD_BIN_HINT}</span>
+          </aside>
+          <div className="board-mode-control" data-tour-anchor="mode">
+            <button
+              aria-expanded={isModeDropdownOpen}
+              aria-haspopup="menu"
+              aria-label={`${BOARD_MODE_TRIGGER_LABEL} (${boardModeActiveLabel(activeModeOption.label)})`}
+              className={`board-mode-trigger${
+                interactionMode !== 'grab' || isModeDropdownOpen ? ' board-mode-trigger--active' : ''
+              }`}
+              onClick={handleToggleModeDropdown}
+              title={`${BOARD_MODE_TRIGGER_LABEL} — ${activeModeOption.hint}`}
+              type="button"
+            >
+              <ActiveModeIcon />
+              <span className="board-mode-trigger__label">{activeModeOption.label}</span>
+            </button>
+            {isModeDropdownOpen ? (
+              <div aria-label={BOARD_MODE_DROPDOWN_LABEL} className="board-mode-dropdown" role="menu">
+                {MODE_OPTIONS.map((option) => {
+                  const OptionIcon = option.Icon;
+                  const isSelected = interactionMode === option.id;
+                  return (
+                    <button
+                      aria-checked={isSelected}
+                      className={`board-mode-dropdown__option${isSelected ? ' board-mode-dropdown__option--active' : ''}`}
+                      key={option.id}
+                      onClick={() => selectInteractionMode(option.id)}
+                      role="menuitemradio"
+                      type="button"
+                    >
+                      <OptionIcon />
+                      <span>{option.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : null}
+          </div>
+          {wheelPosition ? (
+            <div
+              aria-label={BOARD_MODE_WHEEL_LABEL}
+              className="board-wheel"
+              onPointerEnter={(event) => {
+                if (event.pointerType === 'mouse' || !event.pointerType) {
+                  wheelMouseEnteredRef.current = true;
+                }
+              }}
+              onPointerLeave={(event) => {
+                setHoveredWheelMode(null);
+                if (event.pointerType === 'mouse' || !event.pointerType) {
+                  closeModeWheel();
+                }
+              }}
+              role="menu"
+              style={{ left: wheelPosition.x, top: wheelPosition.y }}
+            >
+              <div aria-hidden="true" className="board-wheel__ring" />
+              <svg aria-hidden="true" className="board-wheel__sectors" viewBox="0 0 240 240">
+                <defs>
+                  <radialGradient cx="50%" cy="50%" id="wheel-grad-idle" r="50%">
+                    <stop offset="30%" stopColor="var(--card-hover)" stopOpacity="0.22" />
+                    <stop offset="100%" stopColor="var(--chrome)" stopOpacity="0.58" />
+                  </radialGradient>
+                  <radialGradient cx="50%" cy="50%" id="wheel-grad-active" r="50%">
+                    <stop offset="25%" stopColor="var(--accent-soft)" stopOpacity="0.45" />
+                    <stop offset="100%" stopColor="var(--accent)" stopOpacity="0.32" />
+                  </radialGradient>
+                  <radialGradient cx="50%" cy="50%" id="wheel-grad-hover" r="50%">
+                    <stop offset="20%" stopColor="var(--accent-soft)" stopOpacity="0.65" />
+                    <stop offset="100%" stopColor="var(--accent-strong)" stopOpacity="0.46" />
+                  </radialGradient>
+                </defs>
+                {MODE_OPTIONS.map((option) => {
+                  const isHovered = hoveredWheelMode === option.id;
+                  const isSelected = interactionMode === option.id;
+                  const fillUrl = isHovered
+                    ? 'url(#wheel-grad-hover)'
+                    : isSelected
+                      ? 'url(#wheel-grad-active)'
+                      : 'url(#wheel-grad-idle)';
+                  return (
+                    <path
+                      className={`board-wheel__sector${
+                        isHovered ? ' board-wheel__sector--hover' : isSelected ? ' board-wheel__sector--active' : ''
+                      }`}
+                      d={option.sectorPath}
+                      fill={fillUrl}
+                      key={option.id}
+                    />
+                  );
+                })}
+                <line className="board-wheel__divider" x1="95.75" x2="17.81" y1="106" y2="61" />
+                <line className="board-wheel__divider" x1="144.25" x2="222.19" y1="106" y2="61" />
+                <line className="board-wheel__divider" x1="120" x2="120" y1="148" y2="238" />
+                <circle className="board-wheel__rim" cx="120" cy="120" r="118" />
+                <circle className="board-wheel__rim" cx="120" cy="120" r="28" />
+              </svg>
               <button
-                aria-expanded={true}
-                aria-label={TIMELINE_COLLAPSE_LABEL}
-                className="timeline__minimize-button"
-                onClick={() => {
-                  setIsTimelineExpanded(false);
-                  setIsDragTimelineExpanded(false);
-                  setIsTimelinePreviewed(false);
-                  clearTimelineHoverTimers();
-                  userCollapsedDuringDragRef.current = true;
-                }}
-                title={TIMELINE_COLLAPSE_LABEL}
+                aria-label={BOARD_MODE_WHEEL_CLOSE_LABEL}
+                className="board-wheel__hub"
+                onClick={closeModeWheel}
                 type="button"
               >
-                &minus;
+                <IconClose />
               </button>
-            </div>
-            <div className="timeline__slots">
-              {timelineSlots.map((slot) => {
-                const match = cards.find((candidate) => candidate.activity.id === slot.activityId);
-                const isDraggingThisCard = cardDragState?.card.activity.id === match?.activity.id;
-                const isSuggested = activeMatchingSlotId === slot.id;
-                const isHovered = hoveredSlotId === slot.id;
-                const isReplacingThisSlot = isHovered && isReplacingHoveredSlot;
-                const isIncompatibleHover =
-                  isHovered && activeMatchingSlotId !== null && activeMatchingSlotId !== slot.id;
-
-                let slotClass = 'timeline__slot';
-                if (isReplacingThisSlot) {
-                  slotClass += ' timeline__slot--replacing';
-                } else {
-                  if (isSuggested) slotClass += ' timeline__slot--suggested';
-                  if (isHovered && !isIncompatibleHover) slotClass += ' timeline__slot--dragover';
-                  if (isIncompatibleHover) slotClass += ' timeline__slot--incompatible';
-                }
-                if (match) {
-                  slotClass += ' timeline__slot--docked';
-                }
-                if (settlingSlotId === slot.id) {
-                  slotClass += ' timeline__slot--settling';
-                }
-
-                return (
-                  <div aria-live="polite" className={slotClass} data-timeline-slot={slot.id} key={slot.id}>
-                    <div className="timeline__slot-header">
-                      <span>{TIMELINE_SLOTS.find((definition) => definition.id === slot.id)?.label}</span>
-                      {match ? (
-                        <button
-                          aria-label={UNDOCK_CARD_LABEL}
-                          className="btn btn--sm btn--icon timeline__slot-remove"
-                          onClick={() => undockCard(slot.id)}
-                          type="button"
-                        >
-                          &times;
-                        </button>
-                      ) : null}
-                    </div>
-                    {match ? (
-                      <div
-                        className={`timeline__docked-card${isDraggingThisCard ? ' timeline__docked-card--ghost' : ''}`}
-                        draggable={false}
-                        onDragStart={(event) => event.preventDefault()}
-                        onLostPointerCapture={handleCardLostPointerCapture}
-                        onPointerCancel={handleCardPointerCancel}
-                        onPointerDown={(event) => handleCardPointerDown(event, match, { slotId: slot.id })}
-                        onPointerMove={handleCardPointerMove}
-                        onPointerUp={handleCardPointerUp}
-                      >
-                        <ActivityCard match={match} size="docked" state="spawning" />
-                      </div>
-                    ) : (
-                      <div className="timeline__slot-empty">{TIMELINE_SLOT_EMPTY}</div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-        )}
-        <aside
-          aria-label={DISCARD_BIN_LABEL}
-          className={`discard-bin${cardDragState ? ' discard-bin--active' : ''}`}
-          ref={discardBinRef}
-        >
-          <strong>{DISCARD_BIN_LABEL}</strong>
-          <span>{DISCARD_BIN_HINT}</span>
-        </aside>
-        <div className="board-mode-control" data-tour-anchor="mode">
-          <button
-            aria-expanded={isModeDropdownOpen}
-            aria-haspopup="menu"
-            aria-label={`${BOARD_MODE_TRIGGER_LABEL} (${boardModeActiveLabel(activeModeOption.label)})`}
-            className={`board-mode-trigger${
-              interactionMode !== 'grab' || isModeDropdownOpen ? ' board-mode-trigger--active' : ''
-            }`}
-            onClick={handleToggleModeDropdown}
-            title={`${BOARD_MODE_TRIGGER_LABEL} — ${activeModeOption.hint}`}
-            type="button"
-          >
-            <ActiveModeIcon />
-            <span className="board-mode-trigger__label">{activeModeOption.label}</span>
-          </button>
-          {isModeDropdownOpen ? (
-            <div aria-label={BOARD_MODE_DROPDOWN_LABEL} className="board-mode-dropdown" role="menu">
               {MODE_OPTIONS.map((option) => {
                 const OptionIcon = option.Icon;
                 const isSelected = interactionMode === option.id;
                 return (
                   <button
                     aria-checked={isSelected}
-                    className={`board-mode-dropdown__option${isSelected ? ' board-mode-dropdown__option--active' : ''}`}
+                    className={`board-wheel__option ${option.posClass}${
+                      isSelected ? ' board-wheel__option--active' : ''
+                    }`}
                     key={option.id}
+                    onBlur={() => setHoveredWheelMode(null)}
                     onClick={() => selectInteractionMode(option.id)}
+                    onFocus={() => setHoveredWheelMode(option.id)}
+                    onPointerEnter={() => setHoveredWheelMode(option.id)}
+                    onPointerLeave={() => setHoveredWheelMode(null)}
                     role="menuitemradio"
                     type="button"
                   >
-                    <OptionIcon />
-                    <span>{option.label}</span>
+                    <span className="board-wheel__option-content">
+                      <OptionIcon />
+                      <span>{option.label}</span>
+                    </span>
                   </button>
                 );
               })}
             </div>
           ) : null}
-        </div>
-        {wheelPosition ? (
-          <div
-            aria-label={BOARD_MODE_WHEEL_LABEL}
-            className="board-wheel"
-            onPointerEnter={(event) => {
-              if (event.pointerType === 'mouse' || !event.pointerType) {
-                wheelMouseEnteredRef.current = true;
-              }
-            }}
-            onPointerLeave={(event) => {
-              setHoveredWheelMode(null);
-              if (event.pointerType === 'mouse' || !event.pointerType) {
-                closeModeWheel();
-              }
-            }}
-            role="menu"
-            style={{ left: wheelPosition.x, top: wheelPosition.y }}
-          >
-            <div aria-hidden="true" className="board-wheel__ring" />
-            <svg aria-hidden="true" className="board-wheel__sectors" viewBox="0 0 240 240">
-              <defs>
-                <radialGradient cx="50%" cy="50%" id="wheel-grad-idle" r="50%">
-                  <stop offset="30%" stopColor="var(--card-hover)" stopOpacity="0.22" />
-                  <stop offset="100%" stopColor="var(--chrome)" stopOpacity="0.58" />
-                </radialGradient>
-                <radialGradient cx="50%" cy="50%" id="wheel-grad-active" r="50%">
-                  <stop offset="25%" stopColor="var(--accent-soft)" stopOpacity="0.45" />
-                  <stop offset="100%" stopColor="var(--accent)" stopOpacity="0.32" />
-                </radialGradient>
-                <radialGradient cx="50%" cy="50%" id="wheel-grad-hover" r="50%">
-                  <stop offset="20%" stopColor="var(--accent-soft)" stopOpacity="0.65" />
-                  <stop offset="100%" stopColor="var(--accent-strong)" stopOpacity="0.46" />
-                </radialGradient>
-              </defs>
-              {MODE_OPTIONS.map((option) => {
-                const isHovered = hoveredWheelMode === option.id;
-                const isSelected = interactionMode === option.id;
-                const fillUrl = isHovered
-                  ? 'url(#wheel-grad-hover)'
-                  : isSelected
-                    ? 'url(#wheel-grad-active)'
-                    : 'url(#wheel-grad-idle)';
-                return (
-                  <path
-                    className={`board-wheel__sector${
-                      isHovered ? ' board-wheel__sector--hover' : isSelected ? ' board-wheel__sector--active' : ''
-                    }`}
-                    d={option.sectorPath}
-                    fill={fillUrl}
-                    key={option.id}
-                  />
-                );
-              })}
-              <line className="board-wheel__divider" x1="95.75" x2="17.81" y1="106" y2="61" />
-              <line className="board-wheel__divider" x1="144.25" x2="222.19" y1="106" y2="61" />
-              <line className="board-wheel__divider" x1="120" x2="120" y1="148" y2="238" />
-              <circle className="board-wheel__rim" cx="120" cy="120" r="118" />
-              <circle className="board-wheel__rim" cx="120" cy="120" r="28" />
-            </svg>
-            <button
-              aria-label={BOARD_MODE_WHEEL_CLOSE_LABEL}
-              className="board-wheel__hub"
-              onClick={closeModeWheel}
-              type="button"
+          {inspectedPlaced && inspectedGeometry ? (
+            <div
+              aria-label={BOARD_INSPECT_CALLOUT_LABEL}
+              aria-live="polite"
+              className={`board-inspect${inspectedGeometry.below ? ' board-inspect--below' : ''}`}
+              role="status"
+              style={{
+                left: inspectedGeometry.left,
+                top: inspectedGeometry.top,
+              }}
             >
-              <IconClose />
-            </button>
-            {MODE_OPTIONS.map((option) => {
-              const OptionIcon = option.Icon;
-              const isSelected = interactionMode === option.id;
-              return (
-                <button
-                  aria-checked={isSelected}
-                  className={`board-wheel__option ${option.posClass}${
-                    isSelected ? ' board-wheel__option--active' : ''
-                  }`}
-                  key={option.id}
-                  onBlur={() => setHoveredWheelMode(null)}
-                  onClick={() => selectInteractionMode(option.id)}
-                  onFocus={() => setHoveredWheelMode(option.id)}
-                  onPointerEnter={() => setHoveredWheelMode(option.id)}
-                  onPointerLeave={() => setHoveredWheelMode(null)}
-                  role="menuitemradio"
-                  type="button"
+              <div className="board-inspect__meta">
+                {inspectedSerialIndex >= 0 ? (
+                  <span className="board-inspect__serial">{activityCardSerial(inspectedSerialIndex)}</span>
+                ) : null}
+                {inspectedPlaced.card.activity.location.district ? (
+                  <span className="board-inspect__district">{inspectedPlaced.card.activity.location.district}</span>
+                ) : null}
+              </div>
+              <p className="board-inspect__title">
+                {inspectedPlaced.card.activity.title_en ?? inspectedPlaced.card.activity.title}
+              </p>
+              {inspectedPlaced.card.activity.title_en &&
+              inspectedPlaced.card.activity.title_en !== inspectedPlaced.card.activity.title ? (
+                <p className="board-inspect__subtitle">{inspectedPlaced.card.activity.title}</p>
+              ) : null}
+            </div>
+          ) : null}
+          <BoardToolbar
+            autoFitEnabled={autoFitEnabled}
+            canAutoTile={canvasCards.length > 0}
+            canClearBoard={cards.length > 0 || timelineSlots.some((s) => Boolean(s.activityId))}
+            canFitContent={canvasCards.length > 0}
+            canResetZoom={Math.abs(viewport.scale - 1) >= 0.001}
+            canZoomIn={canZoomIn(viewport.scale)}
+            canZoomOut={canZoomOut(viewport.scale)}
+            isDragging={Boolean(cardDragState)}
+            onAutoTile={handleAutoTile}
+            onClearBoard={requestClearBoard}
+            onFitContent={() => fitContent(1.0)}
+            onOpenHelp={handleOpenTour}
+            onResetZoom={resetZoom}
+            onToggleAutoFit={setAutoFitEnabled}
+            onZoomIn={() => stepZoom(1)}
+            onZoomOut={() => stepZoom(-1)}
+            scale={viewport.scale}
+          />
+          {cards.length === 0 && agentStatus !== 'searching' ? (
+            <div className="board__layer board__layer--center">
+              <div className="board__panel">
+                <h2>{BOARD_GUIDE_TITLE}</h2>
+                <p>{BOARD_GUIDE_BODY}</p>
+                <p>{BOARD_EMPTY_STATE}</p>
+              </div>
+            </div>
+          ) : null}
+          {confirmation ? (
+            <div className="board__layer board__layer--top">
+              <p aria-live="polite" className="board__toast" role="status">
+                {confirmation}
+              </p>
+            </div>
+          ) : null}
+          {cardDragState ? (
+            /**
+             * The proxy is the *same card*, not a simplified stand-in.
+             *
+             * It used to render `<ActivityCard>` with no `index` and no `onFindSimilar`, which made
+             * the serial plate and the Find similar button vanish from the DOM — and because the
+             * card's height is content-driven (DESIGN.md), the card you were carrying came up 45
+             * world units shorter than the one you picked it up from, at the exact moment you are
+             * looking at it to aim. Removing the elements was the bug; dimming them was never
+             * asked for. Both props are passed so the proxy's box is the card's box by construction,
+             * at every board zoom, and any future change to the card's anatomy carries into the drag
+             * for free.
+             *
+             * `inert` is what makes rendering the real controls safe here: the proxy must not
+             * contribute a second tab stop or a second "Find similar" to the accessibility tree
+             * while the real card is still on the board underneath it. It changes nothing about
+             * layout or paint — `.board__drag` is already `pointer-events: none`.
+             *
+             * The pill is a **sibling** of the card, not a state of it, and that is the whole
+             * reconciliation with the layout-stability guarantee above. While the pointer is over
+             * a drop zone the card cross-fades to a small serial pill so the slot highlight it is
+             * aimed at becomes visible — but the card is not scaled down, not re-rendered and not
+             * given fewer props. It stays at full size with every element in the DOM and loses
+             * only its **opacity**, so the proxy's layout box is the card's layout box in every
+             * state of the drag, not merely at rest. The pill is `position: absolute`, so it is
+             * out of flow and cannot contribute to that box even by accident.
+             *
+             * Under `prefers-reduced-motion` the cross-fade snaps; the pill still appears, because
+             * getting the card out of the way is information, not decoration.
+             */
+            <div
+              className={`board__drag${cardDragState.source === 'timeline' ? ' board__drag--docked' : ''}${
+                isDragProxyPill ? ' board__drag--pill' : ''
+              }`}
+              inert
+              style={{
+                left: cardDragState.screenPoint.x - cardDragState.grabOffset.x,
+                top: cardDragState.screenPoint.y - cardDragState.grabOffset.y,
+              }}
+            >
+              <div className="board__drag-scale">
+                <ActivityCard
+                  index={
+                    cardDragState.source === 'timeline'
+                      ? undefined
+                      : cards.findIndex((c) => c.activity.id === cardDragState.card.activity.id)
+                  }
+                  isRecent={recentCardIds.includes(cardDragState.card.activity.id)}
+                  match={cardDragState.card}
+                  onFindSimilar={cardDragState.source === 'timeline' ? undefined : handleFindSimilar}
+                  size={cardDragState.source === 'timeline' ? 'docked' : 'canvas'}
+                  state="dragging"
+                  variant={
+                    boardLayout.variantsById[cardDragState.card.activity.id] ?? getCardVariant(cardDragState.card)
+                  }
+                />
+              </div>
+              {draggedCardSerial ? (
+                <span
+                  aria-hidden="true"
+                  className="board__drag-pill"
+                  style={{
+                    left: cardDragState.grabOffset.x,
+                    top: cardDragState.grabOffset.y,
+                  }}
                 >
-                  <span className="board-wheel__option-content">
-                    <OptionIcon />
-                    <span>{option.label}</span>
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        ) : null}
-        {inspectedPlaced && inspectedGeometry ? (
-          <div
-            aria-label={BOARD_INSPECT_CALLOUT_LABEL}
-            aria-live="polite"
-            className={`board-inspect${inspectedGeometry.below ? ' board-inspect--below' : ''}`}
-            role="status"
-            style={{
-              left: inspectedGeometry.left,
-              top: inspectedGeometry.top,
-            }}
-          >
-            <div className="board-inspect__meta">
-              {inspectedSerialIndex >= 0 ? (
-                <span className="board-inspect__serial">{activityCardSerial(inspectedSerialIndex)}</span>
-              ) : null}
-              {inspectedPlaced.card.activity.location.district ? (
-                <span className="board-inspect__district">{inspectedPlaced.card.activity.location.district}</span>
+                  {draggedCardSerial}
+                </span>
               ) : null}
             </div>
-            <p className="board-inspect__title">
-              {inspectedPlaced.card.activity.title_en ?? inspectedPlaced.card.activity.title}
-            </p>
-            {inspectedPlaced.card.activity.title_en &&
-            inspectedPlaced.card.activity.title_en !== inspectedPlaced.card.activity.title ? (
-              <p className="board-inspect__subtitle">{inspectedPlaced.card.activity.title}</p>
-            ) : null}
-          </div>
-        ) : null}
-        <BoardToolbar
-          autoFitEnabled={autoFitEnabled}
-          canAutoTile={canvasCards.length > 0}
-          canClearBoard={cards.length > 0 || timelineSlots.some((s) => Boolean(s.activityId))}
-          canFitContent={canvasCards.length > 0}
-          canResetZoom={Math.abs(viewport.scale - 1) >= 0.001}
-          canZoomIn={canZoomIn(viewport.scale)}
-          canZoomOut={canZoomOut(viewport.scale)}
-          isDragging={Boolean(cardDragState)}
-          onAutoTile={handleAutoTile}
-          onClearBoard={requestClearBoard}
-          onFitContent={() => fitContent(1.0)}
-          onOpenHelp={handleOpenTour}
-          onResetZoom={resetZoom}
-          onToggleAutoFit={setAutoFitEnabled}
-          onZoomIn={() => stepZoom(1)}
-          onZoomOut={() => stepZoom(-1)}
-          scale={viewport.scale}
-        />
-        {cards.length === 0 && agentStatus !== 'searching' ? (
-          <div className="board__layer board__layer--center">
-            <div className="board__panel">
-              <h2>{BOARD_GUIDE_TITLE}</h2>
-              <p>{BOARD_GUIDE_BODY}</p>
-              <p>{BOARD_EMPTY_STATE}</p>
-            </div>
-          </div>
-        ) : null}
-        {confirmation ? (
-          <div className="board__layer board__layer--top">
-            <p aria-live="polite" className="board__toast" role="status">
-              {confirmation}
-            </p>
-          </div>
-        ) : null}
-        {cardDragState ? (
-          /**
-           * The proxy is the *same card*, not a simplified stand-in.
-           *
-           * It used to render `<ActivityCard>` with no `index` and no `onFindSimilar`, which made
-           * the serial plate and the Find similar button vanish from the DOM — and because the
-           * card's height is content-driven (DESIGN.md), the card you were carrying came up 45
-           * world units shorter than the one you picked it up from, at the exact moment you are
-           * looking at it to aim. Removing the elements was the bug; dimming them was never
-           * asked for. Both props are passed so the proxy's box is the card's box by construction,
-           * at every board zoom, and any future change to the card's anatomy carries into the drag
-           * for free.
-           *
-           * `inert` is what makes rendering the real controls safe here: the proxy must not
-           * contribute a second tab stop or a second "Find similar" to the accessibility tree
-           * while the real card is still on the board underneath it. It changes nothing about
-           * layout or paint — `.board__drag` is already `pointer-events: none`.
-           *
-           * The pill is a **sibling** of the card, not a state of it, and that is the whole
-           * reconciliation with the layout-stability guarantee above. While the pointer is over
-           * a drop zone the card cross-fades to a small serial pill so the slot highlight it is
-           * aimed at becomes visible — but the card is not scaled down, not re-rendered and not
-           * given fewer props. It stays at full size with every element in the DOM and loses
-           * only its **opacity**, so the proxy's layout box is the card's layout box in every
-           * state of the drag, not merely at rest. The pill is `position: absolute`, so it is
-           * out of flow and cannot contribute to that box even by accident.
-           *
-           * Under `prefers-reduced-motion` the cross-fade snaps; the pill still appears, because
-           * getting the card out of the way is information, not decoration.
-           */
-          <div
-            className={`board__drag${cardDragState.source === 'timeline' ? ' board__drag--docked' : ''}${
-              isDragProxyPill ? ' board__drag--pill' : ''
-            }`}
-            inert
-            style={{
-              left: cardDragState.screenPoint.x - cardDragState.grabOffset.x,
-              top: cardDragState.screenPoint.y - cardDragState.grabOffset.y,
-            }}
-          >
-            <div className="board__drag-scale">
-              <ActivityCard
-                index={
-                  cardDragState.source === 'timeline'
-                    ? undefined
-                    : cards.findIndex((c) => c.activity.id === cardDragState.card.activity.id)
-                }
-                isRecent={recentCardIds.includes(cardDragState.card.activity.id)}
-                match={cardDragState.card}
-                onFindSimilar={cardDragState.source === 'timeline' ? undefined : handleFindSimilar}
-                size={cardDragState.source === 'timeline' ? 'docked' : 'canvas'}
-                state="dragging"
-                variant={boardLayout.variantsById[cardDragState.card.activity.id] ?? getCardVariant(cardDragState.card)}
-              />
-            </div>
-            {draggedCardSerial ? (
-              <span
-                aria-hidden="true"
-                className="board__drag-pill"
-                style={{
-                  left: cardDragState.grabOffset.x,
-                  top: cardDragState.grabOffset.y,
-                }}
-              >
-                {draggedCardSerial}
-              </span>
-            ) : null}
-          </div>
-        ) : null}
-        {dragParticles.length > 0 ? (
-          <div aria-hidden="true" className="board__drag-particles">
-            {dragParticles.map((particle) => (
-              <div
-                className="board__drag-particle"
-                key={particle.id}
-                style={
-                  {
-                    left: particle.x,
-                    top: particle.y,
-                    width: `${particle.size}px`,
-                    height: `${particle.size}px`,
-                    backgroundColor: particle.color,
-                    color: particle.color,
-                    '--p-dx': `${particle.dx}px`,
-                    '--p-dy': `${particle.dy}px`,
-                  } as CSSProperties
-                }
-              />
-            ))}
-          </div>
-        ) : null}
-        <div className="board__pan">
-          <div className="board__world">
-            <div className={`board__cards${deal ? ' board__cards--dealing' : ''}`}>
-              {agentStatus === 'searching' ? (
+          ) : null}
+          {dragParticles.length > 0 ? (
+            <div aria-hidden="true" className="board__drag-particles">
+              {dragParticles.map((particle) => (
                 <div
-                  className="board__card board__card--research"
-                  data-research-card
-                  style={{ left: researchCardPosition.x, top: researchCardPosition.y }}
-                >
-                  <ResearchCard />
-                </div>
-              ) : null}
-              {canvasCards.map(({ card: match, position, variant }, index) => {
-                const isDragging = cardDragState?.card.activity.id === match.activity.id;
-                const isDiscarding = discardingCardId === match.activity.id;
-                const isInspected =
-                  interactionMode === 'inspect' && isInspectZoomActive && inspectedCardId === match.activity.id;
-                const cardZ = cardZIndexById[match.activity.id] ?? 1;
-                // The serial is the card's index in the *full* list, not in `canvasCards`, so
-                // docking or discarding a card never renumbers the ones that stay.
-                const serialIndex = cards.findIndex((candidate) => candidate.activity.id === match.activity.id);
-                const placement = deal?.placements[match.activity.id];
-
-                return (
+                  className="board__drag-particle"
+                  key={particle.id}
+                  style={
+                    {
+                      left: particle.x,
+                      top: particle.y,
+                      width: `${particle.size}px`,
+                      height: `${particle.size}px`,
+                      backgroundColor: particle.color,
+                      color: particle.color,
+                      '--p-dx': `${particle.dx}px`,
+                      '--p-dy': `${particle.dy}px`,
+                    } as CSSProperties
+                  }
+                />
+              ))}
+            </div>
+          ) : null}
+          <div className="board__pan">
+            <div className="board__world">
+              <div className={`board__cards${deal ? ' board__cards--dealing' : ''}`}>
+                {agentStatus === 'searching' ? (
                   <div
-                    className={`board__card board__card--${variant}${isDragging ? ' board__card--ghost' : ''}${
-                      placement ? ' board__card--dealing' : ''
-                    }${isInspected ? ' board__card--inspected' : ''}`}
-                    data-activity-card
-                    data-activity-card-id={match.activity.id}
-                    data-card-z={cardZ}
-                    data-tour-anchor={index === 0 ? 'card' : undefined}
-                    draggable={false}
-                    key={match.activity.id}
-                    onDragStart={(event) => event.preventDefault()}
-                    onLostPointerCapture={handleCardLostPointerCapture}
-                    onPointerCancel={handleCardPointerCancel}
-                    onPointerDown={(event) => handleCardPointerDown(event, match)}
-                    onPointerEnter={() => {
-                      if (interactionMode === 'inspect') {
-                        setInspectedCardId(match.activity.id);
-                      }
-                    }}
-                    onPointerLeave={() => {
-                      if (interactionMode === 'inspect') {
-                        setInspectedCardId((current) => (current === match.activity.id ? null : current));
-                      }
-                    }}
-                    onPointerMove={handleCardPointerMove}
-                    onPointerUp={handleCardPointerUp}
-                    style={
-                      {
-                        left: position.x,
-                        top: position.y,
-                        zIndex: placement ? placement.stack : cardZ,
-                        '--card-z': cardZ,
-                        // `left`/`top` are the card's *final* slot for the whole deal. Only
-                        // these offsets and the two durations are per-card, and all of them come
-                        // from `dealTiming()`, so the stylesheet contains no timing of its own.
-                        ...(placement
-                          ? {
-                              '--deal-from-x': `${placement.fromX}px`,
-                              '--deal-from-y': `${placement.fromY}px`,
-                              '--deal-tilt': `${placement.tiltDeg}deg`,
-                              '--deal-stack': placement.stack,
-                              '--deal-delay': `${placement.delayMs}ms`,
-                              '--deal-travel': `${placement.travelMs}ms`,
-                            }
-                          : null),
-                      } as CSSProperties
-                    }
+                    className="board__card board__card--research"
+                    data-research-card
+                    style={{ left: researchCardPosition.x, top: researchCardPosition.y }}
                   >
-                    <ActivityCard
-                      index={serialIndex}
-                      isRecent={recentCardIds.includes(match.activity.id)}
-                      match={match}
-                      onFindSimilar={handleFindSimilar}
-                      state={isDiscarding ? 'discarding' : 'spawning'}
-                      variant={variant}
-                    />
+                    <ResearchCard />
                   </div>
-                );
-              })}
+                ) : null}
+                {canvasCards.map(({ card: match, position, variant }, index) => {
+                  const isDragging = cardDragState?.card.activity.id === match.activity.id;
+                  const isDiscarding = discardingCardId === match.activity.id;
+                  const isInspected =
+                    interactionMode === 'inspect' && isInspectZoomActive && inspectedCardId === match.activity.id;
+                  const cardZ = cardZIndexById[match.activity.id] ?? 1;
+                  // The serial is the card's index in the *full* list, not in `canvasCards`, so
+                  // docking or discarding a card never renumbers the ones that stay.
+                  const serialIndex = cards.findIndex((candidate) => candidate.activity.id === match.activity.id);
+                  const placement = deal?.placements[match.activity.id];
+
+                  return (
+                    <div
+                      className={`board__card board__card--${variant}${isDragging ? ' board__card--ghost' : ''}${
+                        placement ? ' board__card--dealing' : ''
+                      }${isInspected ? ' board__card--inspected' : ''}`}
+                      data-activity-card
+                      data-activity-card-id={match.activity.id}
+                      data-card-z={cardZ}
+                      data-tour-anchor={index === 0 ? 'card' : undefined}
+                      draggable={false}
+                      key={match.activity.id}
+                      onDragStart={(event) => event.preventDefault()}
+                      onLostPointerCapture={handleCardLostPointerCapture}
+                      onPointerCancel={handleCardPointerCancel}
+                      onPointerDown={(event) => handleCardPointerDown(event, match)}
+                      onPointerEnter={() => {
+                        if (interactionMode === 'inspect') {
+                          setInspectedCardId(match.activity.id);
+                        }
+                      }}
+                      onPointerLeave={() => {
+                        if (interactionMode === 'inspect') {
+                          setInspectedCardId((current) => (current === match.activity.id ? null : current));
+                        }
+                      }}
+                      onPointerMove={handleCardPointerMove}
+                      onPointerUp={handleCardPointerUp}
+                      style={
+                        {
+                          left: position.x,
+                          top: position.y,
+                          zIndex: placement ? placement.stack : cardZ,
+                          '--card-z': cardZ,
+                          // `left`/`top` are the card's *final* slot for the whole deal. Only
+                          // these offsets and the two durations are per-card, and all of them come
+                          // from `dealTiming()`, so the stylesheet contains no timing of its own.
+                          ...(placement
+                            ? {
+                                '--deal-from-x': `${placement.fromX}px`,
+                                '--deal-from-y': `${placement.fromY}px`,
+                                '--deal-tilt': `${placement.tiltDeg}deg`,
+                                '--deal-stack': placement.stack,
+                                '--deal-delay': `${placement.delayMs}ms`,
+                                '--deal-travel': `${placement.travelMs}ms`,
+                              }
+                            : null),
+                        } as CSSProperties
+                      }
+                    >
+                      <ActivityCard
+                        index={serialIndex}
+                        isRecent={recentCardIds.includes(match.activity.id)}
+                        match={match}
+                        onFindSimilar={handleFindSimilar}
+                        state={isDiscarding ? 'discarding' : 'spawning'}
+                        variant={variant}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
       {isClearConfirmOpen ? (
         <div
           aria-describedby="clear-board-desc"
