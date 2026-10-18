@@ -530,3 +530,10 @@
   line-height: var(--leading-normal);
   margin: var(--space-2) 0 0;
 }
+
+.board-modal__error {
+  color: var(--destructive);
+  font-size: var(--text-label);
+  line-height: var(--leading-normal);
+  margin: var(--space-2) 0 0;
+}

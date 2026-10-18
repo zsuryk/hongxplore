@@ -376,6 +376,7 @@ export const ACCESS_KEY_MODAL_DESCRIPTION =
 export const ACCESS_KEY_INPUT_LABEL = 'Agent access key';
 export const ACCESS_KEY_INPUT_PLACEHOLDER = 'Paste the access key from the pitch deck';
 export const ACCESS_KEY_SUBMIT_LABEL = 'Unlock Live Mode';
+export const ACCESS_KEY_VERIFYING_LABEL = 'Checking key...';
 export const ACCESS_KEY_CANCEL_LABEL = 'Stay in Demo Mode';
 export const ACCESS_KEY_CLEAR_LABEL = 'Clear key';
 export const ACCESS_KEY_REPLACE_LABEL = 'Change key';
