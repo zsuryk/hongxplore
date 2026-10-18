@@ -45,6 +45,7 @@ def known_secrets(settings: Settings) -> tuple[str, ...]:
     secrets.update(provider.api_key for provider in settings.llm_providers)
     secrets.add(settings.openai_api_key)
     secrets.add(settings.tavily_api_key)
+    secrets.add(settings.brave_api_key)
     return tuple(secret for secret in secrets if secret.strip())
 
 

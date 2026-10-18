@@ -24,9 +24,9 @@ from app.services.agent import AgentOrchestrator
 from app.services.llm import LLMProviderPool
 from app.services.ports import LLMClient, SearchProvider
 from app.services.search import (
+    CompositeSearchProvider,
     SearchUnavailableError,
     SearchUnavailableReason,
-    TavilySearchProvider,
 )
 
 PITCH_KEY = "hx-pitch-key-2026"
@@ -126,7 +126,7 @@ def test_get_agent_orchestrator_live_mode_injects_collaborators(
     orchestrator = get_agent_orchestrator()
 
     assert isinstance(orchestrator.llm_client, LLMProviderPool)
-    assert isinstance(orchestrator.search_provider, TavilySearchProvider)
+    assert isinstance(orchestrator.search_provider, CompositeSearchProvider)
     assert orchestrator.settings.demo_mode is False
 
 

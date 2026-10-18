@@ -43,10 +43,10 @@ from app.models import (
 from app.services.agent import AgentOrchestrator
 from app.services.llm import LLMProviderPool
 from app.services.search import (
+    CompositeSearchProvider,
     SearchUnavailableError,
     SearchUnavailableReason,
     SQLiteActivityCache,
-    TavilySearchProvider,
 )
 
 router = APIRouter(prefix="/api", tags=["agent"])
@@ -127,11 +127,12 @@ def get_agent_orchestrator() -> AgentOrchestrator:
 
     llm_client = LLMProviderPool(config=settings) if settings.llm_providers else None
     search_provider = (
-        TavilySearchProvider(
+        CompositeSearchProvider(
             config=settings,
             cache=SQLiteActivityCache(),
+            llm_client=llm_client,
         )
-        if settings.tavily_api_key
+        if (settings.tavily_api_key.strip() or settings.brave_api_key.strip())
         else None
     )
     return AgentOrchestrator(
