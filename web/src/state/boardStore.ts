@@ -9,6 +9,7 @@ import {
 import type { components } from '../api/schema';
 import { computeBoardLayout } from '../boardLayout';
 import {
+  AGENT_ACCESS_DENIED_COPY,
   AGENT_ERROR_LOG_PREFIX,
   AGENT_STATUS_ERROR,
   formatAgentErrorMessage,
@@ -96,6 +97,7 @@ export type BoardStore = {
   openAccessKeyPrompt: () => void;
   closeAccessKeyPrompt: () => void;
   setAgentAccessKey: (key: string | null) => void;
+  submitAccessKey: (key: string, client?: AgentClient) => Promise<boolean>;
   clearAgentAccessKey: () => void;
   setCardPosition: (activityId: string, position: Point) => void;
   setCardPositions: (positions: Record<string, Point>) => void;
@@ -167,6 +169,8 @@ export function similarActivityRequest(card: ActivityCard): AgentRequest {
   };
 }
 
+const initialAccessKey = getStoredAccessKey();
+
 export const useBoardStore = create<BoardStore>((set, get) => ({
   cards: [],
   cardPositions: {},
@@ -178,8 +182,8 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
   agentStatus: 'idle',
   agentError: null,
   lastMatchCount: null,
-  dataSourceMode: 'live',
-  agentAccessKey: getStoredAccessKey(),
+  dataSourceMode: initialAccessKey ? 'live' : 'mock',
+  agentAccessKey: initialAccessKey,
   isAccessKeyPromptOpen: false,
   selectedFreeSlotIds: [],
   recentCardIds: [],
@@ -200,6 +204,84 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
     } else {
       setStoredAccessKey(null);
       set({ agentAccessKey: null, dataSourceMode: 'mock', isAccessKeyPromptOpen: false });
+    }
+  },
+  async submitAccessKey(key, client) {
+    const trimmed = key.trim();
+    if (!trimmed) {
+      set({
+        agentStatus: 'error',
+        agentError: AGENT_ACCESS_DENIED_COPY.missing_key,
+      });
+      return false;
+    }
+
+    // 1. Clear previous verdict immediately before any network call
+    set((state) => ({
+      agentError: null,
+      agentStatus: 'searching',
+      agentLog: state.agentLog.filter(
+        (entry) =>
+          !(
+            entry.level === 'error' &&
+            (entry.message.includes(AGENT_ERROR_LOG_PREFIX) ||
+              Object.values(AGENT_ACCESS_DENIED_COPY).some((msg) => entry.message.includes(msg)))
+          ),
+      ),
+    }));
+
+    // 2. Probe the live endpoint
+    const activeClient = client ?? createAgentClient({ mode: 'live', agentAccessKey: trimmed });
+
+    try {
+      const response = await activeClient.requestAgent({
+        query: INITIAL_ACTIVITY_QUERY,
+        mode: 'live',
+      });
+
+      if (response.status === 'error') {
+        const errorMsg = response.error ?? AGENT_STATUS_ERROR;
+        set((state) => ({
+          agentStatus: 'error',
+          agentError: errorMsg,
+          agentLog: [
+            ...state.agentLog,
+            {
+              ts: new Date().toISOString(),
+              level: 'error',
+              message: `${AGENT_ERROR_LOG_PREFIX}: ${errorMsg}`,
+            },
+          ],
+        }));
+        return false;
+      }
+
+      // Accepted!
+      setStoredAccessKey(trimmed);
+      set({
+        agentAccessKey: trimmed,
+        dataSourceMode: 'live',
+        agentStatus: 'idle',
+        agentError: null,
+        isAccessKeyPromptOpen: false,
+      });
+      return true;
+    } catch (error) {
+      // Rejected!
+      const message = formatAgentErrorMessage(error);
+      set((state) => ({
+        agentStatus: 'error',
+        agentError: message,
+        agentLog: [
+          ...state.agentLog,
+          {
+            ts: new Date().toISOString(),
+            level: 'error',
+            message: `${AGENT_ERROR_LOG_PREFIX}: ${message}`,
+          },
+        ],
+      }));
+      return false;
     }
   },
   clearAgentAccessKey() {
@@ -479,8 +561,7 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
   },
   setDataSourceMode(dataSourceMode) {
     if (dataSourceMode === 'mock') {
-      setStoredAccessKey(null);
-      set({ dataSourceMode: 'mock', agentAccessKey: null });
+      set({ dataSourceMode: 'mock' });
     } else {
       set({ dataSourceMode: 'live' });
     }

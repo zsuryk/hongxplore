@@ -315,6 +315,25 @@ with a single `--rule`, so the two chrome blocks read as **one band** rather tha
 The status strip continues the gradient down into `--background`, which hands the board off
 without a hard edge.
 
+### Agent status strip and access-key verdict
+
+The agent status strip pairs an operational status indicator lamp with the live/demo data source controls and session credentials.
+
+**Status indicator lamp semantics:**
+- `--idle`: Blue Hour cold rule dot indicating agent is ready at rest.
+- `--searching`: Pulsating Sodium Amber lamp (`--primary`) indicating pending activity (intent parsing, live search query, or access key verification in flight). Amber is reserved strictly for pending/in-flight states and never used for errors or borders.
+- `--results`: Harbour Cyan dot (`--accent`) accompanied by match count results.
+- `--error`: Destructive coral dot (`--destructive`) accompanied by human-facing refusal copy.
+
+**The access-key verdict lifecycle:**
+Pasting the agent access key from the pitch deck triggers an **immediate verdict** rather than postponing verification to a later search.
+1. **Immediate reset**: Submitting a key immediately clears previous error messages and purges contradicting access-denied error lines from the agent log before any network call fires.
+2. **In-flight verification**: The status indicator pulses amber (`--searching`), the modal submit button reports checking state (`Checking key...`), and a probe request contacts `POST /api/agent`.
+3. **Accepted verdict**: On successful verification, the credential is held in `sessionStorage`, `dataSourceMode` switches to `live`, the status indicator settles to `--idle`, and the dialog closes. The panel reveals a masked key badge (`••••••••`) with "Change key" (pre-filled with the current key) and "Clear key" actions.
+4. **Rejected verdict**: On rejection, the dialog **stays open** and announces the refusal inline via a dedicated `role="alert"` region. The status indicator immediately reflects `--error`. The user can correct typos in the key and retry without re-opening the prompt.
+5. **Non-oracle refusal decision**: In accordance with ADR-0011, the server answers 403 `invalid_key` identically for missing and wrong keys to prevent timing/content oracles. The browser decides whether to show the "needs a key" guidance (`missing_key`) or "key not recognised" guidance (`invalid_key`) based on whether an access key was actually sent.
+6. **Credential preservation in recovery**: Toggling to demo data (including the "Load demo data" recovery escape hatch upon failure) switches `dataSourceMode` without silently wiping the stored access key. The credential is only dropped upon explicit "Clear key" invocation.
+
 ### Browser surfaces
 
 **Selection, the caret and the scrollbars ship with the browser and belong to no design system.**

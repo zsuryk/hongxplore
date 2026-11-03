@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import agentResponse from '../../../docs/examples/agent-response.json';
-import type { AgentClient } from '../api/client';
+import { AgentAccessDeniedError, type AgentClient } from '../api/client';
 import type { components } from '../api/schema';
+import { AGENT_ACCESS_DENIED_COPY, AGENT_ERROR_LOG_PREFIX } from '../copy';
 import { useBoardStore } from './boardStore';
 
 const response = agentResponse as components['schemas']['AgentResponse'];
@@ -446,6 +447,150 @@ describe('board store search retrieval and error handling', () => {
       expect(useBoardStore.getState().discardedCards.some((c) => c.activity.id === card1.activity.id)).toBe(false);
       expect(useBoardStore.getState().discardedCards.some((c) => c.activity.id === card2.activity.id)).toBe(true);
       expect(useBoardStore.getState().cards.some((c) => c.activity.id === card1.activity.id)).toBe(true);
+    });
+  });
+
+  describe('board store agent access key verdict lifecycle (#157)', () => {
+    const storageMap = new Map<string, string>();
+    const mockSessionStorage = {
+      getItem: (key: string) => storageMap.get(key) ?? null,
+      setItem: (key: string, value: string) => storageMap.set(key, value),
+      removeItem: (key: string) => storageMap.delete(key),
+      clear: () => storageMap.clear(),
+    };
+
+    beforeEach(() => {
+      storageMap.clear();
+      (globalThis as unknown as { window?: { sessionStorage: typeof mockSessionStorage } }).window = {
+        sessionStorage: mockSessionStorage,
+      };
+      (globalThis as unknown as { sessionStorage?: typeof mockSessionStorage }).sessionStorage = mockSessionStorage;
+
+      useBoardStore.setState({
+        agentAccessKey: null,
+        dataSourceMode: 'mock',
+        agentStatus: 'idle',
+        agentError: null,
+        agentLog: [],
+        isAccessKeyPromptOpen: false,
+      });
+    });
+
+    it('submitting a key immediately clears previous verdict and contradicting log lines before network call completes', async () => {
+      useBoardStore.setState({
+        agentStatus: 'error',
+        agentError: AGENT_ACCESS_DENIED_COPY.invalid_key,
+        agentLog: [
+          {
+            ts: '2026-10-18T00:00:00Z',
+            level: 'error',
+            message: `${AGENT_ERROR_LOG_PREFIX}: ${AGENT_ACCESS_DENIED_COPY.invalid_key}`,
+          },
+          {
+            ts: '2026-10-18T00:00:01Z',
+            level: 'info',
+            message: 'Previous harmless info step',
+          },
+        ],
+      });
+
+      let networkCallStarted = false;
+      let stateAtNetworkStart: { agentError: string | null; agentStatus: string; agentLogCount: number } | null = null;
+
+      const slowClient: AgentClient = {
+        async requestAgent() {
+          networkCallStarted = true;
+          const current = useBoardStore.getState();
+          stateAtNetworkStart = {
+            agentError: current.agentError,
+            agentStatus: current.agentStatus,
+            agentLogCount: current.agentLog.length,
+          };
+          return {
+            status: 'ok',
+            query: 'initial',
+            matches: [],
+            log: [],
+          };
+        },
+      };
+
+      const submitPromise = useBoardStore.getState().submitAccessKey('valid-pitch-key', slowClient);
+
+      expect(networkCallStarted).toBe(true);
+      expect(stateAtNetworkStart).toEqual({
+        agentError: null,
+        agentStatus: 'searching',
+        agentLogCount: 1, // contradicting error entry removed, info entry preserved
+      });
+
+      const success = await submitPromise;
+      expect(success).toBe(true);
+      expect(useBoardStore.getState().agentStatus).toBe('idle');
+      expect(useBoardStore.getState().agentError).toBeNull();
+    });
+
+    it('accepted verdict: verifies against live endpoint, stores key, sets live mode and closes dialog', async () => {
+      const mockClient: AgentClient = {
+        requestAgent: vi.fn().mockResolvedValue({
+          status: 'ok',
+          query: 'test',
+          matches: [],
+          log: [],
+        }),
+      };
+
+      useBoardStore.setState({ isAccessKeyPromptOpen: true });
+      const ok = await useBoardStore.getState().submitAccessKey('new-valid-key', mockClient);
+
+      expect(ok).toBe(true);
+      expect(useBoardStore.getState().agentAccessKey).toBe('new-valid-key');
+      expect(useBoardStore.getState().dataSourceMode).toBe('live');
+      expect(useBoardStore.getState().agentStatus).toBe('idle');
+      expect(useBoardStore.getState().agentError).toBeNull();
+      expect(useBoardStore.getState().isAccessKeyPromptOpen).toBe(false);
+      expect(mockSessionStorage.getItem('hongxplore:agent_access_key')).toBe('new-valid-key');
+    });
+
+    it('rejected verdict: verifies against live endpoint, leaves dialog open, and announces rejection inline and on status indicator', async () => {
+      const mockClient: AgentClient = {
+        requestAgent: vi.fn().mockRejectedValue(new AgentAccessDeniedError('invalid_key')),
+      };
+
+      useBoardStore.setState({ isAccessKeyPromptOpen: true });
+      const ok = await useBoardStore.getState().submitAccessKey('typo-wrong-key', mockClient);
+
+      expect(ok).toBe(false);
+      expect(useBoardStore.getState().agentAccessKey).toBeNull();
+      expect(useBoardStore.getState().agentStatus).toBe('error');
+      expect(useBoardStore.getState().agentError).toBe(AGENT_ACCESS_DENIED_COPY.invalid_key);
+      expect(
+        useBoardStore
+          .getState()
+          .agentLog.some((l) => l.level === 'error' && l.message.includes(AGENT_ACCESS_DENIED_COPY.invalid_key)),
+      ).toBe(true);
+      // Dialog remains open on unverified key
+      expect(useBoardStore.getState().isAccessKeyPromptOpen).toBe(true);
+    });
+
+    it('recovery path: switching to demo mode does not silently discard a valid credential', () => {
+      useBoardStore.setState({
+        agentAccessKey: 'my-valid-key',
+        dataSourceMode: 'live',
+      });
+      mockSessionStorage.setItem('hongxplore:agent_access_key', 'my-valid-key');
+
+      // User switches to demo mode or clicks "Load demo data" recovery
+      useBoardStore.getState().setDataSourceMode('mock');
+
+      expect(useBoardStore.getState().dataSourceMode).toBe('mock');
+      expect(useBoardStore.getState().agentAccessKey).toBe('my-valid-key');
+      expect(mockSessionStorage.getItem('hongxplore:agent_access_key')).toBe('my-valid-key');
+
+      // Only explicit clearAgentAccessKey destroys the credential
+      useBoardStore.getState().clearAgentAccessKey();
+      expect(useBoardStore.getState().agentAccessKey).toBeNull();
+      expect(mockSessionStorage.getItem('hongxplore:agent_access_key')).toBeNull();
     });
   });
 });

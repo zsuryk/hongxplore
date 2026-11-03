@@ -208,10 +208,12 @@ export function createAgentClient(options: AgentClientOptions = {}, fetchImpleme
 
       // The key travels only with a live request, so a demo request can never
       // leak it into a request log or a proxy trace.
+      const effectiveKey = mode === 'live' ? (agentAccessKey ?? request.agent_access_key) : undefined;
+      const keyWasSent = Boolean(effectiveKey?.trim());
       const payload: AgentRequest = {
         ...request,
         mode,
-        ...(mode === 'live' && agentAccessKey ? { agent_access_key: agentAccessKey } : {}),
+        ...(keyWasSent ? { agent_access_key: effectiveKey } : {}),
       };
 
       const response = await fetchImplementation('/api/agent', {
@@ -221,7 +223,7 @@ export function createAgentClient(options: AgentClientOptions = {}, fetchImpleme
       });
 
       if (response.status === 401 || response.status === 403) {
-        throw await accessDeniedFrom(response);
+        throw await accessDeniedFrom(response, keyWasSent);
       }
 
       if (!response.ok) {
@@ -271,21 +273,33 @@ async function readDetail(response: Response): Promise<{ reason?: unknown; messa
 }
 
 /** Read the server's `AgentAccessError` detail, tolerating a body that lacks it. */
-async function accessDeniedFrom(response: Response): Promise<AgentAccessDeniedError> {
-  // The status still carries the signal when the body does not: 401 means no
-  // credential arrived, 403 means one arrived and was not accepted. Defaulting
-  // both to `invalid_key` would tell someone who never entered a key to go
-  // check the one they do not have.
-  const fallbackReason: AccessDeniedReason = response.status === 401 ? 'missing_key' : 'invalid_key';
+async function accessDeniedFrom(response: Response, keyWasSent: boolean): Promise<AgentAccessDeniedError> {
   const fallback = `Agent request refused with status ${response.status}`;
-
   const { reason, message } = await readDetail(response);
+  const sentence = typeof message === 'string' && message.trim() ? message : fallback;
 
-  if (typeof reason !== 'string' || !isAccessDeniedReason(reason)) {
-    return new AgentAccessDeniedError(fallbackReason, typeof message === 'string' ? message : fallback);
+  // ADR-0011: The server sends the identical 403 invalid_key refusal for both missing
+  // and wrong keys to prevent an oracle. The browser client decides between 'missing_key'
+  // and 'invalid_key' based on whether an access key was actually sent with the request.
+  if (reason === 'demo_only_instance') {
+    return new AgentAccessDeniedError('demo_only_instance', sentence);
   }
 
-  return new AgentAccessDeniedError(reason, typeof message === 'string' ? message : fallback);
+  if (reason === 'missing_key') {
+    return new AgentAccessDeniedError('missing_key', sentence);
+  }
+
+  if (reason === 'invalid_key') {
+    const resolvedReason: AccessDeniedReason = keyWasSent ? 'invalid_key' : 'missing_key';
+    return new AgentAccessDeniedError(resolvedReason, sentence);
+  }
+
+  if (typeof reason === 'string' && isAccessDeniedReason(reason)) {
+    return new AgentAccessDeniedError(reason, sentence);
+  }
+
+  const fallbackReason: AccessDeniedReason = keyWasSent ? 'invalid_key' : 'missing_key';
+  return new AgentAccessDeniedError(fallbackReason, sentence);
 }
 
 function isAccessDeniedReason(value: string): value is AccessDeniedReason {

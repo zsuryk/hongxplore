@@ -128,16 +128,24 @@ describe('AgentAccessKey (Issue #86 & #136)', () => {
       expect(sessionStorage.getItem(SESSION_STORAGE_ACCESS_KEY)).toBeNull();
     });
 
-    it('drops access key when switching back to demo mode mid-session', () => {
+    it('preserves access key when switching back to demo mode mid-session (recovery path)', () => {
       useBoardStore.getState().setAgentAccessKey('pitch-test-key-123');
       expect(useBoardStore.getState().dataSourceMode).toBe('live');
 
-      // User switches back to demo mode
+      // User switches back to demo mode or loads demo data recovery
       useBoardStore.getState().setDataSourceMode('mock');
 
       expect(useBoardStore.getState().dataSourceMode).toBe('mock');
-      expect(useBoardStore.getState().agentAccessKey).toBeNull();
-      expect(sessionStorage.getItem(SESSION_STORAGE_ACCESS_KEY)).toBeNull();
+      expect(useBoardStore.getState().agentAccessKey).toBe('pitch-test-key-123');
+      expect(sessionStorage.getItem(SESSION_STORAGE_ACCESS_KEY)).toBe('pitch-test-key-123');
+    });
+
+    it('"Change key" pre-fills the current key for editing rather than an empty field (#157)', () => {
+      useBoardStore.getState().setAgentAccessKey('my-existing-pitch-key');
+      useBoardStore.getState().openAccessKeyPrompt();
+
+      const markup = renderToStaticMarkup(<AgentAccessKeyModal />);
+      expect(markup).toContain('value="my-existing-pitch-key"');
     });
   });
 
@@ -231,6 +239,37 @@ describe('AgentAccessKey (Issue #86 & #136)', () => {
 
       expect(useBoardStore.getState().agentStatus).toBe('results');
       expect(useBoardStore.getState().cards.length).toBeGreaterThan(0);
+    });
+
+    it('missing key: live request without key resolves to missing_key copy despite 403 refusal (#157)', async () => {
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 403,
+        json: async () => ({ detail: { reason: 'invalid_key', message: 'server refused' } }),
+      });
+
+      const client = createAgentClient({ mode: 'live' }, mockFetch as unknown as typeof fetch);
+
+      await expect(client.requestAgent({ query: 'cultural tours', mode: 'live' })).rejects.toMatchObject({
+        reason: 'missing_key',
+      });
+    });
+
+    it('wrong key: live request with key resolves to invalid_key copy upon 403 refusal (#157)', async () => {
+      const mockFetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 403,
+        json: async () => ({ detail: { reason: 'invalid_key', message: 'server refused' } }),
+      });
+
+      const client = createAgentClient(
+        { mode: 'live', agentAccessKey: 'wrong-key-typed' },
+        mockFetch as unknown as typeof fetch,
+      );
+
+      await expect(client.requestAgent({ query: 'cultural tours', mode: 'live' })).rejects.toMatchObject({
+        reason: 'invalid_key',
+      });
     });
   });
 
