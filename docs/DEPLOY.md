@@ -32,6 +32,11 @@ on Tier 1 pricing.
 machine (`gcloud auth login`). Runtime configuration is set as Cloud Run env vars
 at deploy time, from the values in [`api/.env.example`](../api/.env.example).
 
+**This document intentionally contains no live deployment identifiers.** The
+service URL, custom domain, project number and revision names are
+deployment-specific. Read the current URL from `gcloud` when you need it, keep it
+in your local notes or the pitch deck, and do not commit it to this repository.
+
 ---
 
 ## How much of this has actually been run
@@ -39,12 +44,12 @@ at deploy time, from the values in [`api/.env.example`](../api/.env.example).
 A runbook is worth nothing if it is written from theory, so this states plainly
 which parts were executed against the real service and which were not.
 
-Verified on 2026-10-18 against `asia-east2` revision `hongxplore-00002-nq5`, from
+Verified on 2026-10-18 against a live Cloud Run deployment in `asia-east2`, from
 the tip of `main` at `b045720`:
 
 | Area | Status |
 | --- | --- |
-| `gcloud run deploy`, `update-traffic` rollback and forward, `revisions list`, `services describe` | **Run.** Rolled back to `00001-6wb` and forward again, with `/health` and a demo query checked either side |
+| `gcloud run deploy`, `update-traffic` rollback and forward, `revisions list`, `services describe` | **Run.** Rolled back to the previous revision and forward again, with `/health` and a demo query checked either side |
 | `/health`, demo `POST /api/agent`, the web app root, a deep-link refresh, a hashed asset | **Run.** All as expected |
 | Rate limit | **Run.** 429 at request #61 of a burst, carrying `x-ratelimit-limit: 60`, `x-ratelimit-remaining: 0` and `retry-after: 56` |
 | Request caps | **Run.** `request_too_large`, `query_too_long` and `too_many_free_slots` each returned 413 with their reason code |
@@ -82,36 +87,37 @@ Human setup. An agent cannot do any of this, and no part of it belongs in the re
 
    ```bash
    export HONGXPLORE_PROJECT=<PROJECT_ID>
-   export HONGXPLORE_SERVICE=hongxplore
+   export HONGXPLORE_SERVICE=<SERVICE_NAME>
    export HONGXPLORE_REGION=asia-east2     # Hong Kong — lowest latency for local judges
    ```
 
 ---
 
-## The pitch URL
+## The deployment URL
 
-**https://hongxplore.cloud.run**
+Cloud Run gives the service a URL; a custom domain mapping can point at the same
+service. Neither is committed here, because both are deployment-specific.
 
-Three names point at the one service, and telling them apart saves a confusing
-minute on stage:
+Read the current URL after a deploy:
 
-| URL | What it is |
-| --- | --- |
-| `https://hongxplore.cloud.run` | **The one that goes in the deck.** A custom domain mapped to the `hongxplore` service. |
-| `https://hongxplore-2hzxu2fprq-df.a.run.app` | Cloud Run's own `status.url` — what `gcloud` calls the service URL. Keep it as a fallback. |
-| `https://hongxplore-183992832600.asia-east2.run.app` | The legacy `SERVICE-PROJECT_NUMBER.REGION.run.app` form. It still resolves, but it is an alias, and the project number is baked in and cannot be shortened. Never put this one in a deck. |
+```bash
+URL=$(gcloud run services describe "$HONGXPLORE_SERVICE" \
+  --project "$HONGXPLORE_PROJECT" --region "$HONGXPLORE_REGION" \
+  --format 'value(status.url)')
+echo "$URL"
+```
 
-All three were checked by hand against the running service: `/health` answers
-`{"status":"ok"}` on each. The custom domain is a **mapping in front of the same
-service**, not a second deployment, so nothing needs to be kept in sync.
+The service URL is the fallback. If you map a custom domain, the mapping is in
+front of the same service, not a second deployment, so nothing needs to be kept
+in sync.
 
 A custom URL gives the memorable form:
 
 ```bash
 gcloud beta run domain-mappings create \
-    --service=hongxplore \
-    --domain=hongxplore.cloud.run \
-    --project=hongxplore --region=asia-east2
+    --service="$HONGXPLORE_SERVICE" \
+    --domain=<YOUR_DOMAIN> \
+    --project="$HONGXPLORE_PROJECT" --region="$HONGXPLORE_REGION"
 ```
 
 The `run.app` URL keeps working, so nothing breaks and there is no cutover to
@@ -128,13 +134,16 @@ allowlist is unaffected because no request is cross-origin.
 - **Never delete the mapping.** Deleting it releases the subdomain *immediately*
   to anyone else, which the docs call **domain sniping**. If you must move it to
   another service, expect to re-claim it and possibly lose it in between.
-- **Subdomains are globally unique across all of Google Cloud.** If
-  `hongxplore` is taken you get an error and must pick another name — and you
-  cannot test availability without claiming. Claim early.
+- **Subdomains are globally unique across all of Google Cloud.** If your chosen
+  name is taken you get an error and must pick another name — and you cannot
+  test availability without claiming. Claim early.
 
-For something permanent, a real custom domain (`go.hongxplore.hk`) is GA rather
-than Preview and entirely under your control. It needs a domain purchase and a DNS
-change; the TLS certificate is provisioned and renewed automatically.
+For something permanent, a real custom domain is GA rather than Preview and
+entirely under your control. It needs a domain purchase and a DNS change; the TLS
+certificate is provisioned and renewed automatically.
+
+**Do not commit the resulting URL.** It belongs in the deck and your local notes,
+not in this repository.
 
 ---
 
@@ -239,7 +248,7 @@ An API that answers while the web app is missing produces a *blank board*, and
 the API check above would still pass. Four lines cover it:
 
 ```bash
-BASE=https://hongxplore.cloud.run
+BASE="$URL"   # set by the verify step above
 
 # The app itself, and a hard refresh on a client-side route.
 curl -s -o /dev/null -w 'root      %{http_code} %{content_type}\n' "$BASE/"
@@ -412,12 +421,16 @@ throttled between requests — the ping is what keeps it genuinely warm, which i
 the reason the cadence is 5 minutes and not 30. Nothing here is billed while idle,
 so the pinging itself is free.
 
-Set the URL once. It is a repository **variable**, not a secret — the deployed URL
-is public, so there is nothing to protect:
+Set the URL once as a repository **variable**, not a secret:
 
 ```bash
-gh variable set HONGXPLORE_DEPLOY_URL --repo zsuryk/hongxplore --body "$URL"
+gh variable set HONGXPLORE_DEPLOY_URL --repo <OWNER>/<REPO> --body "$URL"
 ```
+
+The value is deployment-specific. **On a public repository, leave this variable
+unset** — repository variables are part of the repository's configuration, and
+this project deliberately does not publish its deployment URL. Run keep-warm from
+a private fork or trigger the workflow manually if you need it during a demo.
 
 **If keep-warm is not running**, the service still works; it is just cold until the
 first request, which costs a second or two. To warm it by hand:
@@ -429,7 +442,8 @@ curl -fsS "$URL/health"
 Scheduled workflows are disabled for forks and pause after 60 days of repository
 inactivity, so check the Actions tab before demo day rather than assuming. A
 failed ping raises a failing check rather than failing silently — if you see one
-mid-pitch, the fix is usually `gh variable set` with the current URL.
+mid-pitch, set the variable in your private deployment fork or ping the health
+endpoint by hand.
 
 What a cold start looks like from the audience's side, and how to confirm warmth
 before you walk on, is in [the pre-pitch checklist](#what-a-cold-start-looks-like).
@@ -679,7 +693,10 @@ verify is a wish.
 **1. The service is warm and serving the web app.**
 
 ```bash
-BASE=https://hongxplore.cloud.run
+URL=$(gcloud run services describe "$HONGXPLORE_SERVICE" \
+  --project "$HONGXPLORE_PROJECT" --region "$HONGXPLORE_REGION" \
+  --format 'value(status.url)')
+BASE="$URL"
 curl -s -o /dev/null -w 'app       %{http_code} %{content_type}\n' "$BASE/"
 curl -s -o /dev/null -w 'deep link %{http_code} %{content_type}\n' \
   -H 'Accept: text/html' "$BASE/weekend/plan/abc"

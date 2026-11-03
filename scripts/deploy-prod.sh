@@ -46,6 +46,13 @@ red() { printf '\033[31m%s\033[0m\n' "$*" >&2; }
 bold() { printf '\033[1m%s\033[0m\n' "$*"; }
 note() { printf '  %s\n' "$*"; }
 
+# Deployment coordinates. The env file can override these once it is read below;
+# the defaults let --rollback work without it. The service URL itself is never
+# hard-coded: resolve it from gcloud when you need it.
+PROJECT=${HONGXPLORE_PROJECT:-hongxplore}
+SERVICE=${HONGXPLORE_SERVICE:-hongxplore}
+REGION=${HONGXPLORE_REGION:-asia-east2}
+
 # ── Rollback: the demo-only deployment, which needs no keys at all ────────────
 if [[ "$MODE" == rollback ]]; then
   bold "Rolling back to the demo-only deployment"
@@ -54,11 +61,12 @@ if [[ "$MODE" == rollback ]]; then
     note "dry run — not applied"
     exit 0
   fi
-  gcloud run services update hongxplore \
-    --project=hongxplore --region=asia-east2 --quiet \
+  gcloud run services update "$SERVICE" \
+    --project="$PROJECT" --region="$REGION" --quiet \
     --set-env-vars "DEMO_MODE=true,AGENT_ACCESS_KEYS="
   bold "Done — demo-only. Verify with:"
-  note 'curl -fsS https://hongxplore.cloud.run/health'
+  note 'URL=$(gcloud run services describe "$SERVICE" --project="$PROJECT" --region="$REGION" --format "value(status.url)")'
+  note 'curl -fsS "$URL/health"'
   exit 0
 fi
 
@@ -121,9 +129,9 @@ conf_or() {
   conf_get "$1" 2>/dev/null || printf '%s' "$2"
 }
 
-PROJECT=$(conf_or HONGXPLORE_PROJECT hongxplore)
-SERVICE=$(conf_or HONGXPLORE_SERVICE hongxplore)
-REGION=$(conf_or HONGXPLORE_REGION asia-east2)
+PROJECT=$(conf_or HONGXPLORE_PROJECT "$PROJECT")
+SERVICE=$(conf_or HONGXPLORE_SERVICE "$SERVICE")
+REGION=$(conf_or HONGXPLORE_REGION "$REGION")
 
 # ── Verify: prove the deployment works, changing nothing ──────────────────────
 # The check that matters most needs the judge key, and a key on a command line is
@@ -131,7 +139,12 @@ REGION=$(conf_or HONGXPLORE_REGION asia-east2)
 # variable and piped to curl on stdin, and only non-secret output is printed —
 # which means this can be run by an agent without the agent ever seeing the key.
 if [[ "$MODE" == verify ]]; then
-  BASE=${HONGXPLORE_BASE_URL:-https://${SERVICE}.cloud.run}
+  if [[ -n "${HONGXPLORE_BASE_URL:-}" ]]; then
+    BASE=$HONGXPLORE_BASE_URL
+  else
+    BASE=$(gcloud run services describe "$SERVICE" \
+      --project="$PROJECT" --region="$REGION" --format 'value(status.url)')
+  fi
   judge_key=$(conf_or AGENT_ACCESS_KEYS "")
   # A rotation list may hold several keys; the first is the current one.
   judge_key=${judge_key%%,*}
@@ -267,8 +280,9 @@ gcloud run services update "$SERVICE" \
   --set-env-vars "$SET_ENVS"
 
 bold "Deployed. Verify:"
-note 'curl -fsS https://hongxplore.cloud.run/health'
+note 'URL=$(gcloud run services describe "$SERVICE" --project="$PROJECT" --region="$REGION" --format "value(status.url)")'
+note 'curl -fsS "$URL/health"'
 note "then a live call — replace PITCH with \$AGENT_ACCESS_KEYS from .env.deploy:"
-note 'curl -s -X POST https://hongxplore.cloud.run/api/agent -H "content-type: application/json" \'
+note 'curl -s -X POST "$URL/api/agent" -H "content-type: application/json" \'
 note '  -d "{\"query\":\"free museums in Central\",\"mode\":\"live\",\"agent_access_key\":\"PITCH\"}" | jq'
 note "rollback: ./scripts/deploy-prod.sh --rollback"
