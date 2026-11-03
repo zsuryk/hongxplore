@@ -43,6 +43,7 @@ from app.services.agent.seed import (
 )
 from app.services.ports import LLMClient, SearchProvider
 from app.services.search.errors import SearchUnavailableError
+from app.services.search.ranking import SearchContext
 
 logger = logging.getLogger(__name__)
 HKT = ZoneInfo("Asia/Hong_Kong")
@@ -473,6 +474,15 @@ class AgentOrchestrator:
     ) -> None:
         self.llm_client = llm_client
         self.search_provider = search_provider
+        if (
+            self.search_provider is not None
+            and getattr(self.search_provider, "llm_client", None) is None
+            and self.llm_client is not None
+        ):
+            try:
+                object.__setattr__(self.search_provider, "llm_client", self.llm_client)
+            except Exception:
+                pass
         self.settings = settings or app_settings
         self.seed_data_path = seed_data_path
 
@@ -543,9 +553,20 @@ class AgentOrchestrator:
                     )
                 )
             else:
-                raw_results = await self.search_provider.search(
-                    parsed_intent.search_query, limit=10
+                search_ctx = SearchContext(
+                    target_slots=request.free_slots,
+                    district=parsed_intent.districts[0] if parsed_intent.districts else None,
+                    categories=parsed_intent.categories,
                 )
+                search_with_ctx = getattr(self.search_provider, "search_with_context", None)
+                if callable(search_with_ctx):
+                    raw_results = await search_with_ctx(
+                        parsed_intent.search_query, limit=10, context=search_ctx
+                    )
+                else:
+                    raw_results = await self.search_provider.search(
+                        parsed_intent.search_query, limit=10
+                    )
                 candidates = match_seed_activities(
                     raw_results, parsed_intent, limit=self.settings.agent_match_limit
                 )

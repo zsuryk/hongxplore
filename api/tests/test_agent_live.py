@@ -24,9 +24,9 @@ from app.services.agent import AgentOrchestrator
 from app.services.llm import LLMProviderPool
 from app.services.ports import LLMClient, SearchProvider
 from app.services.search import (
+    CompositeSearchProvider,
     SearchUnavailableError,
     SearchUnavailableReason,
-    TavilySearchProvider,
 )
 
 PITCH_KEY = "hx-pitch-key-2026"
@@ -126,7 +126,27 @@ def test_get_agent_orchestrator_live_mode_injects_collaborators(
     orchestrator = get_agent_orchestrator()
 
     assert isinstance(orchestrator.llm_client, LLMProviderPool)
-    assert isinstance(orchestrator.search_provider, TavilySearchProvider)
+    assert isinstance(orchestrator.search_provider, CompositeSearchProvider)
+    assert orchestrator.settings.demo_mode is False
+
+
+def test_get_agent_orchestrator_live_mode_with_serper_only(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """In DEMO_MODE=false with only serper_api_key, CompositeSearchProvider is injected."""
+    from app.routes import agent as agent_route
+
+    live_settings = Settings(
+        _env_file=None,
+        demo_mode=False,
+        serper_api_key="secret-serper-key",
+        openai_api_key="secret-llm-key",
+    )
+    monkeypatch.setattr(agent_route, "settings", live_settings)
+
+    orchestrator = get_agent_orchestrator()
+
+    assert isinstance(orchestrator.search_provider, CompositeSearchProvider)
     assert orchestrator.settings.demo_mode is False
 
 

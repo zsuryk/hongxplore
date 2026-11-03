@@ -41,6 +41,7 @@ LEAKY_LOGGER = logging.getLogger("app.tests.redaction")
 def live_secrets() -> Iterator[Settings]:
     """Settings carrying every kind of secret this deployment holds."""
     yield Settings(
+        _env_file=None,
         agent_access_keys=[PITCH_KEY],
         openai_api_key=PROVIDER_KEY,
         tavily_api_key=SEARCH_KEY,

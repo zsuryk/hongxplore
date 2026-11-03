@@ -43,6 +43,14 @@ _PORTAL_PATTERN = (
     rf"康文署|政府一站通|{_DISTRICT_NAMES})\s*$"
 )
 _PORTAL_SUFFIXES = re.compile(_PORTAL_PATTERN, re.IGNORECASE)
+
+_PORTAL_PREFIX_PATTERN = (
+    r"^(?:(?:【|\[|\()?\s*(?:lcsd|govhk|discover\s*hong\s*kong|timable|art-mate|eventbrite|hkartion|"
+    r"west\s*kowloon|tai\s*kwun|康文署|政府一站通)(?:\s*(?:】|\]|\)))?\s*[-|–—:：|]\s*|"
+    r"[【\[](?:lcsd|govhk|discover\s*hong\s*kong|timable|art-mate|eventbrite|hkartion|"
+    r"west\s*kowloon|tai\s*kwun|康文署|政府一站通)[】\]]\s*)"
+)
+_PORTAL_PREFIXES = re.compile(_PORTAL_PREFIX_PATTERN, re.IGNORECASE)
 _NON_WORD_PATTERN = re.compile(r"[^\w\s\u4e00-\u9fff]+", re.UNICODE)
 
 
@@ -74,14 +82,21 @@ def normalize_url(url: str) -> str:
     return urlunsplit((scheme, netloc, path, query, ""))
 
 
+def strip_portal_branding(title: str) -> str:
+    """Strip both leading portal prefixes and trailing portal/district suffixes."""
+    cleaned = _PORTAL_SUFFIXES.sub("", title).strip()
+    cleaned = _PORTAL_PREFIXES.sub("", cleaned).strip()
+    return cleaned
+
+
 def strip_portal_suffix(title: str) -> str:
-    """Strip trailing portal/district branding suffixes while preserving original casing."""
-    return _PORTAL_SUFFIXES.sub("", title).strip()
+    """Strip portal branding (prefixes and suffixes) while preserving original casing."""
+    return strip_portal_branding(title)
 
 
 def clean_title(title: str) -> str:
     """Strip trailing portal/district branding suffixes and punctuation for semantic comparison."""
-    no_suffix = _PORTAL_SUFFIXES.sub("", title)
+    no_suffix = strip_portal_branding(title)
     return _NON_WORD_PATTERN.sub(" ", no_suffix.lower()).strip()
 
 

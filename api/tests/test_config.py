@@ -117,6 +117,42 @@ def test_search_policy_overrides_from_dotenv(
     assert settings.search_cache_path == "/tmp/hongxplore-cache.db"
 
 
+def test_search_providers_defaults_and_env_overrides(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _clear_env(monkeypatch)
+    defaults = Settings(_env_file=None)
+    assert defaults.search_providers == ["tavily", "serper"]
+
+    dotenv = _write_dotenv(
+        tmp_path,
+        SEARCH_PROVIDERS="tavily,serper,brave",
+        SERPER_API_KEY="serper-test-key",
+        SERPER_TIMEOUT_SECONDS="8.0",
+        SERPER_MAX_RESULTS="15",
+        EXA_API_KEY="exa-test-key",
+        SEARCH_MAX_QUERY_VARIANTS="3",
+    )
+    overridden = Settings(_env_file=dotenv)
+    assert overridden.search_providers == ["tavily", "serper", "brave"]
+    assert overridden.serper_api_key == "serper-test-key"
+    assert overridden.serper_timeout_seconds == 8.0
+    assert overridden.serper_max_results == 15
+    assert overridden.exa_api_key == "exa-test-key"
+    assert overridden.search_max_query_variants == 3
+
+
+def test_invalid_search_provider_raises_validation_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _clear_env(monkeypatch)
+    monkeypatch.setenv("SEARCH_PROVIDERS", "tavily,bing,unknown")
+    with pytest.raises(ValidationError) as exc_info:
+        Settings(_env_file=None)
+    assert "Unknown search provider" in str(exc_info.value)
+    assert "bing" in str(exc_info.value)
+
+
 def test_agent_match_limit_overrides_from_dotenv(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

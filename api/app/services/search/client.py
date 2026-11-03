@@ -28,6 +28,7 @@ from app.services.search.dedup import deduplicate_activities, normalize_url
 from app.services.search.errors import SearchUnavailableError
 from app.services.search.extractor import _detect_district, extract_activities_from_snippets
 from app.services.search.normalizer import normalize_query
+from app.services.search.page_meta import PageEnricher
 from app.services.search.policy import (
     get_tavily_cache_ttl_seconds,
     get_tavily_extract_with_llm,
@@ -78,6 +79,7 @@ class TavilySearchProvider(SearchProvider):
         cache: ActivityCache | None = None,
         *,
         llm_client: LLMClient | None = None,
+        page_enricher: PageEnricher | None = None,
         http_client: httpx.AsyncClient | None = None,
         ttl_seconds: int | None = None,
         timeout_seconds: float | None = None,
@@ -87,8 +89,10 @@ class TavilySearchProvider(SearchProvider):
         self.config = config
         self.cache = cache if cache is not None else SQLiteActivityCache()
         self.llm_client = llm_client
+        self.page_enricher = page_enricher or PageEnricher()
         self._injected_http_client = http_client
         self._owned_http_client: httpx.AsyncClient | None = None
+        self._last_tier2_failed = False
 
         self.ttl_seconds = (
             ttl_seconds if ttl_seconds is not None else get_tavily_cache_ttl_seconds(self.config)
@@ -119,9 +123,11 @@ class TavilySearchProvider(SearchProvider):
         return self._owned_http_client
 
     async def aclose(self) -> None:
-        """Close the owned HTTP client and cache if open."""
+        """Close the owned HTTP client, page enricher, and cache if open."""
         if self._owned_http_client is not None:
             await self._owned_http_client.aclose()
+        if hasattr(self.page_enricher, "aclose"):
+            await self.page_enricher.aclose()
         cache_aclose = getattr(self.cache, "aclose", None)
         if callable(cache_aclose):
             await cache_aclose()
@@ -201,14 +207,11 @@ class TavilySearchProvider(SearchProvider):
             )
 
             if isinstance(results, list):
-                for idx, item in enumerate(results):
+                for item in results:
                     if isinstance(item, dict):
                         # Retain root images on item for downstream extractor
                         if images_list and "root_images" not in item:
                             item["root_images"] = images_list
-                        # If snippet lacks its own image, associate from root images
-                        if not item.get("images") and not item.get("image") and images_list:
-                            item["image"] = images_list[idx % len(images_list)]
                 return results
             return []
 
@@ -289,45 +292,9 @@ class TavilySearchProvider(SearchProvider):
             tier2_failed = False
 
             try:
-                # Tier 1: Search within curated Hong Kong domains
-                raw_results = await self._execute_tavily_query(
-                    query,
-                    include_domains=CURATED_HK_DOMAINS,
-                    max_results=fetch_limit,
-                )
-
-                # Tier 2 fallback: If fewer results than threshold from curated domains,
-                # expand to open web
-                if len(raw_results) < self.min_curated_results:
-                    logger.debug(
-                        "Curated search yielded %d results, expanding to open web", len(raw_results)
-                    )
-                    try:
-                        open_results = await self._execute_tavily_query(
-                            query,
-                            include_domains=None,
-                            max_results=fetch_limit,
-                        )
-                        seen_urls = {
-                            normalize_url(r.get("url", "")) for r in raw_results if r.get("url")
-                        }
-                        for res in open_results:
-                            u = res.get("url")
-                            if u:
-                                norm_u = normalize_url(u)
-                                if norm_u not in seen_urls:
-                                    raw_results.append(res)
-                                    seen_urls.add(norm_u)
-                    except SearchUnavailableError as tier2_exc:
-                        tier2_failed = True
-                        if not raw_results:
-                            raise
-                        logger.warning(
-                            "Tier 2 search failed (%s), proceeding with %d tier 1 results",
-                            tier2_exc.reason,
-                            len(raw_results),
-                        )
-
+                self._last_tier2_failed = False
+                raw_results = await self.fetch_raw(query, limit=fetch_limit)
+                tier2_failed = self._last_tier2_failed
             except SearchUnavailableError as exc:
                 # Cache error briefly (30s cooldown) so waiting requests don't storm the endpoint
                 self._error_cache[normalised] = (exc, time.time() + 30.0)
@@ -338,6 +305,11 @@ class TavilySearchProvider(SearchProvider):
                 empty_ttl = min(self.ttl_seconds, 300)
                 await self._safe_cache_set(normalised, [], ttl=empty_ttl)
                 return []
+
+            # Concurrently enrich page metadata
+            page_metas = await self.page_enricher.enrich_many(
+                [r["url"] for r in raw_results if r.get("url")]
+            )
 
             # Infer query's district to pass as default fallback for snippets lacking location
             query_district = _detect_district(query)
@@ -350,6 +322,7 @@ class TavilySearchProvider(SearchProvider):
                 llm_client=self.llm_client if extract_with_llm else None,
                 default_district=query_district,
                 max_items=self.max_results,
+                page_metas=page_metas,
             )
 
             # Multi-stage deduplication
@@ -363,3 +336,57 @@ class TavilySearchProvider(SearchProvider):
 
             await self._safe_cache_set(normalised, deduplicated, ttl=ttl)
             return deduplicated[:limit]
+
+    async def fetch_raw(
+        self,
+        query: str,
+        *,
+        limit: int = 10,
+    ) -> list[dict[str, Any]]:
+        """Fetch raw snippet candidates from Tavily using two-tier strategy."""
+        if self.config.demo_mode or not self.config.tavily_api_key.strip():
+            return []
+
+        fetch_limit = min(max(limit, self.max_results), 20)
+
+        # Tier 1: Search within curated Hong Kong domains
+        raw_results = await self._execute_tavily_query(
+            query,
+            include_domains=CURATED_HK_DOMAINS,
+            max_results=fetch_limit,
+        )
+
+        # Tier 2 fallback: If fewer results than threshold from curated domains,
+        # expand to open web
+        if len(raw_results) < self.min_curated_results:
+            logger.debug(
+                "Curated search yielded %d results, expanding to open web", len(raw_results)
+            )
+            try:
+                open_results = await self._execute_tavily_query(
+                    query,
+                    include_domains=None,
+                    max_results=fetch_limit,
+                )
+                seen_urls = {normalize_url(r.get("url", "")) for r in raw_results if r.get("url")}
+                for res in open_results:
+                    u = res.get("url")
+                    if u:
+                        norm_u = normalize_url(u)
+                        if norm_u not in seen_urls:
+                            raw_results.append(res)
+                            seen_urls.add(norm_u)
+            except SearchUnavailableError as tier2_exc:
+                self._last_tier2_failed = True
+                if not raw_results:
+                    raise
+                logger.warning(
+                    "Tier 2 search failed (%s), proceeding with %d tier 1 results",
+                    tier2_exc.reason,
+                    len(raw_results),
+                )
+
+        for res in raw_results:
+            res["provider"] = "tavily"
+
+        return raw_results

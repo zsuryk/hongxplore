@@ -303,3 +303,20 @@ def test_canonical_hong_kong_districts() -> None:
     assert normalize_district("Central and Western") == "Central & Western"
     assert normalize_district("central and western") == "Central & Western"
     assert normalize_district("Wan Chai") == "Wan Chai"
+
+
+def test_extraction_system_prompt_rules() -> None:
+    """Assert EXTRACTION_SYSTEM_PROMPT specifies anti-portal rules, dates and null images."""
+    from app.prompts.extraction import EXTRACTION_SYSTEM_PROMPT
+
+    assert "NEVER" in EXTRACTION_SYSTEM_PROMPT or "BAD:" in EXTRACTION_SYSTEM_PROMPT
+    assert "Timable" in EXTRACTION_SYSTEM_PROMPT
+    assert "image" in EXTRACTION_SYSTEM_PROMPT
+    assert "null" in EXTRACTION_SYSTEM_PROMPT
+    assert "18 Hong Kong districts" in EXTRACTION_SYSTEM_PROMPT
+    assert "start" in EXTRACTION_SYSTEM_PROMPT
+    assert "end" in EXTRACTION_SYSTEM_PROMPT
+    assert "page_type" in EXTRACTION_SYSTEM_PROMPT
+    assert "one attendable thing" in EXTRACTION_SYSTEM_PROMPT
+    assert "10 best hiking trails" in EXTRACTION_SYSTEM_PROMPT
+    assert "evidence" in EXTRACTION_SYSTEM_PROMPT

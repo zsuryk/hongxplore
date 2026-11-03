@@ -19,3 +19,7 @@ The agent must research fragmented, partly Cantonese-only sources (LCSD portals,
 - Repeated queries return fast and free; demos are stable once warm.
 - Stale results are bounded by the TTL; TTL semantics are a config key owned by the API lead, strategy inside the service is the data owner's.
 - A real dependency: `TAVILY_API_KEY` is required for live search — never present in CI.
+
+> [!NOTE]
+> Extended by **ADR-0012** (Multi-provider search, publisher page enrichment, and image fidelity), which orchestrates Tavily and Brave Search behind `CompositeSearchProvider`.
+

@@ -44,6 +44,16 @@ team's provider quota, so a wildcard is a startup error rather than a value
 (issue #88).
 """
 
+SearchProviders = Annotated[list[str], NoDecode]
+"""Search provider names, as a comma-separated string rather than JSON.
+
+``NoDecode`` prevents pydantic-settings from trying to parse comma-separated
+names (e.g. ``tavily,serper``) as JSON before the before-validator runs.
+"""
+
+KNOWN_SEARCH_PROVIDERS = frozenset({"tavily", "serper", "brave", "exa"})
+"""Closed set of recognized search provider identifiers."""
+
 
 class LLMProvider(BaseModel):
     """One configured OpenAI-compatible endpoint.
@@ -86,6 +96,16 @@ class Settings(BaseSettings):
     tavily_max_results: int = Field(default=10, ge=1)
     tavily_min_curated_results: int = Field(default=3, ge=0)
     tavily_extract_with_llm: bool = False
+    search_extract_with_llm: bool = True
+    brave_api_key: str = ""
+    brave_timeout_seconds: float = Field(default=10.0, gt=0)
+    brave_max_results: int = Field(default=10, ge=1, le=20)
+    serper_api_key: str = ""
+    serper_timeout_seconds: float = Field(default=10.0, gt=0)
+    serper_max_results: int = Field(default=10, ge=1, le=20)
+    exa_api_key: str = ""
+    search_max_query_variants: int = Field(default=2, ge=1, le=5)
+    search_providers: SearchProviders = Field(default_factory=lambda: ["tavily", "serper"])
     search_cache_path: str | None = None
     # Retrieval policy: how many cards one query may fill the board with (A8.4).
     agent_match_limit: int = Field(default=6, ge=3, le=10)
@@ -141,6 +161,25 @@ class Settings(BaseSettings):
         if isinstance(value, str) and not value.strip():
             return None
         return value
+
+    @field_validator("search_providers", mode="before")
+    @classmethod
+    def _split_search_providers(cls, value: object) -> object:
+        """Accept `tavily,serper` from the environment as a comma-separated list."""
+        if isinstance(value, str):
+            providers = [part.strip().lower() for part in value.split(",") if part.strip()]
+        elif isinstance(value, (list, tuple, set)):
+            providers = [str(part).strip().lower() for part in value if str(part).strip()]
+        else:
+            return value
+
+        unknown = set(providers) - KNOWN_SEARCH_PROVIDERS
+        if unknown:
+            raise ValueError(
+                f"Unknown search provider(s): {', '.join(sorted(unknown))}. "
+                f"Known providers are: {', '.join(sorted(KNOWN_SEARCH_PROVIDERS))}"
+            )
+        return providers
 
     @field_validator("cors_allowed_origins", mode="before")
     @classmethod
