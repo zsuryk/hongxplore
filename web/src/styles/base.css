@@ -161,6 +161,13 @@ textarea {
   width: min(38rem, 100%);
 }
 
+.app__header-actions {
+  align-items: center;
+  display: flex;
+  grid-column: 3;
+  justify-self: end;
+}
+
 /* Narrow: the grid collapses to one column and the order flips to brand-then-search. The
    search still leads the eye because it is the taller, filled, actionable thing — the brand is
    now a two-line signature above it. */
@@ -173,9 +180,14 @@ textarea {
   }
 
   .app__header-brand,
-  .app__header-search {
+  .app__header-search,
+  .app__header-actions {
     grid-column: 1;
     justify-self: stretch;
     width: 100%;
+  }
+
+  .app__header-actions {
+    justify-content: center;
   }
 }

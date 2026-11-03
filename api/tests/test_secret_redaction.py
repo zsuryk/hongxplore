@@ -82,7 +82,44 @@ def test_a_provider_from_the_pool_is_treated_as_a_secret(tmp_path: Path) -> None
 
 def test_a_fresh_clone_has_no_secrets_to_redact() -> None:
     """The demo default is empty strings; redacting those would redact the alphabet."""
-    assert known_secrets(Settings()) == ()
+    assert known_secrets(Settings(_env_file=None)) == ()
+
+
+def test_uvicorn_access_args_are_preserved_and_redacted() -> None:
+    """Uvicorn's AccessFormatter expects record.args to remain a 5-tuple (#145)."""
+    filter_ = SecretRedactionFilter((PROVIDER_KEY,))
+    record = logging.LogRecord(
+        name="uvicorn.access",
+        level=logging.INFO,
+        pathname="",
+        lineno=0,
+        msg='%s - "%s %s HTTP/%s" %d',
+        args=("127.0.0.1", "GET", f"/health?key={PROVIDER_KEY}", "1.1", 200),
+        exc_info=None,
+    )
+    assert filter_.filter(record) is True
+    assert record.args == ("127.0.0.1", "GET", "/health?key=[redacted]", "1.1", 200)
+
+
+def test_uvicorn_access_formatter_formats_without_unpacking_error() -> None:
+    from uvicorn.logging import AccessFormatter
+
+    filter_ = SecretRedactionFilter((PROVIDER_KEY,))
+    record = logging.LogRecord(
+        name="uvicorn.access",
+        level=logging.INFO,
+        pathname="",
+        lineno=0,
+        msg='%s - "%s %s HTTP/%s" %d',
+        args=("127.0.0.1", "GET", f"/health?key={PROVIDER_KEY}", "1.1", 200),
+        exc_info=None,
+    )
+    filter_.filter(record)
+    formatter = AccessFormatter()
+    formatted = formatter.format(record)
+    assert PROVIDER_KEY not in formatted
+    assert "[redacted]" in formatted
+    assert "200" in formatted
 
 
 # --- redaction itself -----------------------------------------------------------

@@ -14,6 +14,17 @@ api/.cache/
 .env
 .env.*
 !.env.example
+!.env.deploy.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.p8
+*.jks
+*.keystore
+service-account*.json
+gcloud-service-account*.json
+credentials*.json
 
 # Node
 node_modules/

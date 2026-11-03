@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useId, useState } from 'react';
 import {
+  DECK_TOUR_CUE_DISCARD,
+  DECK_TOUR_CUE_SCHEDULE,
   PRODUCT_TOUR_LABEL,
   TOUR_FINISH_LABEL,
   TOUR_NEXT_LABEL,
@@ -8,19 +10,21 @@ import {
   tourStepAnnouncement,
   tourStepCount,
 } from './copy';
-import { type CardCoords, computePlacement, TOUR_STEPS } from './tourSteps';
+import { type CardCoords, computePlacement, type ProductTourStep, TOUR_STEPS } from './tourSteps';
 
 export type ProductTourProps = {
   isOpen: boolean;
   onClose: () => void;
   initialStep?: number;
   onStepChange?: (step: number) => void;
+  steps?: ProductTourStep[];
 };
 
-export function ProductTour({ isOpen, onClose, initialStep = 0, onStepChange }: ProductTourProps) {
+export function ProductTour({ isOpen, onClose, initialStep = 0, onStepChange, steps }: ProductTourProps) {
   const [currentStepIndex, setCurrentStepIndex] = useState(initialStep);
-  const totalSteps = TOUR_STEPS.length;
-  const currentStep = TOUR_STEPS[currentStepIndex] ?? TOUR_STEPS[0];
+  const tourSteps = steps ?? TOUR_STEPS;
+  const totalSteps = tourSteps.length;
+  const currentStep = tourSteps[currentStepIndex] ?? tourSteps[0];
   const isLastStep = currentStepIndex === totalSteps - 1;
 
   const [coords, setCoords] = useState<CardCoords>(() => {
@@ -29,6 +33,14 @@ export function ProductTour({ isOpen, onClose, initialStep = 0, onStepChange }: 
     return computePlacement(currentStep, vw, vh);
   });
   const titleId = useId();
+
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
+    if (isOpen) {
+      setCurrentStepIndex(initialStep);
+    }
+  }
 
   useEffect(() => {
     if (!isOpen) return;
@@ -71,11 +83,11 @@ export function ProductTour({ isOpen, onClose, initialStep = 0, onStepChange }: 
       setCurrentStepIndex(nextIndex);
       onStepChange?.(nextIndex);
       if (typeof window !== 'undefined') {
-        const nextStep = TOUR_STEPS[nextIndex] ?? currentStep;
+        const nextStep = tourSteps[nextIndex] ?? currentStep;
         setCoords(computePlacement(nextStep, window.innerWidth, window.innerHeight));
       }
     }
-  }, [currentStep, currentStepIndex, isLastStep, onClose, onStepChange]);
+  }, [currentStep, currentStepIndex, isLastStep, onClose, onStepChange, tourSteps]);
 
   const handlePrev = useCallback(() => {
     if (currentStepIndex > 0) {
@@ -83,11 +95,11 @@ export function ProductTour({ isOpen, onClose, initialStep = 0, onStepChange }: 
       setCurrentStepIndex(prevIndex);
       onStepChange?.(prevIndex);
       if (typeof window !== 'undefined') {
-        const prevStep = TOUR_STEPS[prevIndex] ?? currentStep;
+        const prevStep = tourSteps[prevIndex] ?? currentStep;
         setCoords(computePlacement(prevStep, window.innerWidth, window.innerHeight));
       }
     }
-  }, [currentStep, currentStepIndex, onStepChange]);
+  }, [currentStep, currentStepIndex, onStepChange, tourSteps]);
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
@@ -160,6 +172,19 @@ export function ProductTour({ isOpen, onClose, initialStep = 0, onStepChange }: 
         </h2>
 
         <p className="product-tour__body">{currentStep.body}</p>
+
+        {currentStep.id === 'deck-card' ? (
+          <div aria-hidden="true" className="deck-tour-cues">
+            <div className="deck-tour-cue deck-tour-cue--discard">
+              <span className="deck-tour-cue__arrow">←</span>
+              <span className="deck-tour-cue__text">{DECK_TOUR_CUE_DISCARD}</span>
+            </div>
+            <div className="deck-tour-cue deck-tour-cue--schedule">
+              <span className="deck-tour-cue__text">{DECK_TOUR_CUE_SCHEDULE}</span>
+              <span className="deck-tour-cue__arrow">→</span>
+            </div>
+          </div>
+        ) : null}
 
         <div className="product-tour__actions">
           {currentStepIndex > 0 ? (

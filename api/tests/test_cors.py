@@ -19,7 +19,7 @@ from app.config import Settings
 from app.main import create_app
 
 DEV_ORIGIN = "http://localhost:5173"
-PREVIEW_ORIGIN = "https://preview-hongxplore.web.app"
+PREVIEW_ORIGIN = "https://preview.example.app"
 
 
 def preflight(origin: str, *, client: TestClient) -> object:
