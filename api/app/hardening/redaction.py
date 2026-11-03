@@ -61,7 +61,12 @@ def known_private_details(settings: Settings) -> tuple[str, ...]:
     """
     details = {settings.openai_base_url, settings.openai_model}
     for provider in settings.llm_providers:
-        details.update({provider.base_url, provider.model})
+        details.add(provider.base_url)
+        # Every model, not the raw `model` string. With a comma-separated list
+        # that raw value is the whole list joined together, so redacting only
+        # it would leave every model after the first readable in a response —
+        # the exact leak issue #88 closed.
+        details.update(provider.models)
     return tuple(detail for detail in details if detail and len(detail) >= MIN_REDACTED_PREFIX)
 
 

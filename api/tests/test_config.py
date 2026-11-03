@@ -426,3 +426,84 @@ def test_app_boot_aborts_on_malformed_env() -> None:
     assert result.returncode != 0
     assert "api/.env.example" in result.stderr
     assert "demo_mode" in result.stderr
+
+
+# --- Comma-separated model lists (issue #149) ---------------------------------
+# A provider holding several models is what stops one dead model id — a
+# deprecated name, a per-model quota, an endpoint not served in this region —
+# from taking the whole slot down with it.
+
+
+def test_a_single_model_parses_to_a_one_entry_list(tmp_path: Path, monkeypatch) -> None:
+    """Every existing single-model config must keep working, untouched."""
+    _clear_env(monkeypatch)
+    dotenv = _write_dotenv(
+        tmp_path,
+        LLM_PROVIDER_1_MODEL="first-model",
+        LLM_PROVIDER_1_API_KEY="sk-first",
+    )
+    (provider,) = Settings(_env_file=dotenv).llm_providers
+    assert provider.models == ["first-model"]
+
+
+def test_a_comma_separated_model_becomes_an_ordered_list(tmp_path: Path, monkeypatch) -> None:
+    """The list order is the failover order, so it must survive parsing exactly."""
+    _clear_env(monkeypatch)
+    dotenv = _write_dotenv(
+        tmp_path,
+        LLM_PROVIDER_1_MODEL="gemini-2.5-flash,gemini-2.0-flash,gemini-1.5-pro",
+        LLM_PROVIDER_1_API_KEY="sk-one",
+    )
+    (provider,) = Settings(_env_file=dotenv).llm_providers
+    assert provider.models == ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"]
+
+
+def test_model_list_tolerates_stray_whitespace_and_empty_entries(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """A trailing comma or a doubled comma is a typo, not a reason to fail startup."""
+    _clear_env(monkeypatch)
+    dotenv = _write_dotenv(
+        tmp_path,
+        LLM_PROVIDER_1_MODEL=" first-model , ,second-model, ",
+        LLM_PROVIDER_1_API_KEY="sk-one",
+    )
+    (provider,) = Settings(_env_file=dotenv).llm_providers
+    assert provider.models == ["first-model", "second-model"]
+
+
+def test_raw_model_string_is_preserved_for_the_legacy_bridge(tmp_path: Path, monkeypatch) -> None:
+    """`model` stays the raw value; `models` is derived. Two truths would drift."""
+    _clear_env(monkeypatch)
+    dotenv = _write_dotenv(
+        tmp_path,
+        LLM_PROVIDER_1_MODEL="first-model,second-model",
+        LLM_PROVIDER_1_API_KEY="sk-one",
+    )
+    (provider,) = Settings(_env_file=dotenv).llm_providers
+    assert provider.model == "first-model,second-model"
+    assert provider.models == ["first-model", "second-model"]
+
+
+def test_legacy_openai_model_bridge_supports_a_list(tmp_path: Path, monkeypatch) -> None:
+    """The deprecation bridge must gain the list form too, or upgrading loses failover."""
+    _clear_env(monkeypatch)
+    dotenv = _write_dotenv(
+        tmp_path,
+        OPENAI_API_KEY="sk-legacy",
+        OPENAI_MODEL="legacy-one,legacy-two",
+    )
+    (provider,) = Settings(_env_file=dotenv).llm_providers
+    assert provider.models == ["legacy-one", "legacy-two"]
+
+
+def test_a_model_that_is_only_commas_yields_no_models(tmp_path: Path, monkeypatch) -> None:
+    """A provider with no usable model must look unconfigured, not hold empty strings."""
+    _clear_env(monkeypatch)
+    dotenv = _write_dotenv(
+        tmp_path,
+        LLM_PROVIDER_1_MODEL=" , , ",
+        LLM_PROVIDER_1_API_KEY="sk-one",
+    )
+    (provider,) = Settings(_env_file=dotenv).llm_providers
+    assert provider.models == []

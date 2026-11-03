@@ -25,6 +25,7 @@ from app.hardening import (
     SecretRedactionFilter,
     harden_agent_response,
     install_secret_redaction,
+    known_private_details,
     known_secrets,
     redact,
 )
@@ -304,3 +305,45 @@ _ONE_MATCH = {
     },
     "match_rationale": "Free guided tour in Central & Western.",
 }
+
+
+def test_every_model_in_a_comma_separated_list_never_reaches_a_response() -> None:
+    """Regression: only the first model would have been redacted (issue #149).
+
+    `known_private_details` added `provider.model` — one string. Once a provider
+    lists several models that string is the whole list joined by commas, so
+    redacting it left every model after the first readable in the response.
+    """
+    settings = Settings(
+        llm_provider_1_base_url="https://llm.internal.example/v1",
+        llm_provider_1_model="alpha-flash-2026,alpha-pro-2026,alpha-ultra-2026",
+        llm_provider_1_api_key="sk-alpha",
+    )
+    response = AgentResponse(
+        status="ok",
+        query="weekend markets",
+        matches=[],
+        log=[
+            AgentLogEntry(
+                ts="2026-10-18T01:00:00Z",
+                message=("tried alpha-flash-2026, then alpha-pro-2026, then alpha-ultra-2026"),
+            )
+        ],
+    )
+
+    hardened = harden_agent_response(response, settings)
+
+    for model in ("alpha-flash-2026", "alpha-pro-2026", "alpha-ultra-2026"):
+        assert model not in hardened.log[0].message
+
+
+def test_known_private_details_lists_each_model_separately() -> None:
+    """The redaction set itself, not just its effect — the leak was in the set."""
+    settings = Settings(
+        llm_provider_1_model="alpha-one,alpha-two",
+        llm_provider_1_api_key="sk-alpha",
+    )
+    details = known_private_details(settings)
+    assert "alpha-one" in details
+    assert "alpha-two" in details
+    assert "alpha-one,alpha-two" not in details
