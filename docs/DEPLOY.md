@@ -56,13 +56,12 @@ the tip of `main` at `b045720`:
 | CORS | **Run.** An unlisted `Origin` got a 200 with **no** `Access-Control-Allow-Origin`; a cross-origin preflight got 400 |
 | Custom domain, keep-warm | **Run.** The mapping resolves and the scheduled pings are green |
 | The access-key gate itself | **Run locally**, not against the deployment. A valid key answered 200; a rotated-out key and a missing key both answered 403 with a byte-identical body; a perfect key against a `DEMO_MODE=true` instance answered 403 `demo_only_instance` |
-| **Live mode on the deployment, provider failover** | **NOT RUN** — see [the provider pool](#the-provider-pool). No provider keys are configured anywhere, so these commands are documented but unexecuted |
+| **Live mode, end to end** | **Run** against a live Cloud Run revision on 2026-10-18. A live query with the judge key returned `status=ok` with cards, across four different queries, and the demo path still returns its 6 seed matches. Keys land as Secret Manager **references**, not plaintext env vars — confirmed in the revision config |
+| **Provider failover between models** | **Not run.** All three slots are up and answering, so nothing has failed over in anger. The mechanism is tested with mocked transports (#84) but has not been observed failing live. Assume it is unproven until a quota actually dies |
 
-Everything in the last row is a live-mode command run against the real service.
-They are written to be copy-pasteable and are believed correct, but *believed
-correct* is the honest word, and on pitch day that distinction is the entire
-point of this section. The row above it is the one piece of that story verified —
-the *policy* is proven, only its deployment is not.
+Everything about the deployed configuration above was verified by running it. The
+row that is not is failover, and it is not verifiable by trying: it only proves
+itself when a provider actually fails.
 
 ---
 
@@ -279,6 +278,37 @@ default `Accept: */*` makes the server answer a correct `404`, and you will
 
 Everything below is configuration. Rotating a key is the same command with a
 different value — no code change, no web rebuild, no redeploy of the web app.
+
+### The script, which is the shorter path
+
+[`scripts/deploy-prod.sh`](../scripts/deploy-prod.sh) reads a gitignored
+`.env.deploy` (template: `.env.deploy.example`), puts the four `*_API_KEY` values
+into Secret Manager, sets everything else as plain env vars, and grants the
+service account read access:
+
+```bash
+./scripts/deploy-prod.sh --dry-run    # print the plan, change nothing
+./scripts/deploy-prod.sh              # apply it
+./scripts/deploy-prod.sh --verify     # check the deployment, change nothing
+./scripts/deploy-prod.sh --rollback   # back to demo-only, needs no keys
+```
+
+Use it rather than the raw commands below, because a provider key typed into a
+`--set-env-vars` flag ends up in plaintext revision config, and one on a command
+line is visible in `ps` and in shell history. The script pipes every key on stdin
+and never prints one.
+
+Two things it assumes, both of which were false on the first run and cost time:
+
+- **Secret Manager must be enabled** on the project
+  (`gcloud services enable secretmanager.googleapis.com`). Enabling it takes a
+  minute to propagate, so the first `gcloud secrets` call after enabling still
+  reports `SERVICE_DISABLED` — wait and retry rather than assuming it failed.
+- **The service account must be readable.** The script reads it off the running
+  service, because `projects.get(commonInstanceMetadata.serviceAccount)` is empty
+  for a user-managed project and silently yields an empty member.
+
+### By hand, if you need to
 
 ```bash
 gcloud run services update "$HONGXPLORE_SERVICE" \
@@ -617,21 +647,33 @@ fails, and so on (`api/app/services/llm/pool.py`). No vendor is named in code.
 
 ### The configured providers
 
-| Slot | Base URL | Model | Key source | Free-tier limit (measured) | Fails over to | Paid cost if it bills |
+Configured on 2026-10-18 and verified working against the live deployment.
+
+| Slot | Base URL | Model | Key source | Free-tier limit | Fails over to | Paid cost if it bills |
 | --- | --- | --- | --- | --- | --- | --- |
-| _(none configured)_ | — | — | — | — | — | — |
+| 1 | `https://opencode.ai/zen/v1` | `deepseek-v4.1-flash-free` | Secret Manager `llm-provider-1-api-key` | Not measured. Free model, but "free for a limited time" | Slot 2 | **Bills** if it leaves the free tier — pay-as-you-go, auto-reload |
+| 2 | `https://opencode.ai/zen/v1` | `space-bunny-free` | Secret Manager `llm-provider-2-api-key` | Not measured. Same caveat | Slot 3 | **Bills** likewise |
+| 3 | `https://opencode.ai/zen/v1` | `mimo-v2.6-flash-free` | Secret Manager `llm-provider-3-api-key` | Not measured. Same caveat | Exhausted — the offline parser takes over | **Bills** likewise |
 
-**This table is empty, and that is the current real state of the deployment.**
-Not an oversight in the document: as of `b045720` the service carries no
-`LLM_PROVIDER_<n>_*` variables, `.env.example` ships them commented out, and
-`LLM_POOL_SIZE` is `1`. With no provider triplet set the pool falls back to the
-plain `OPENAI_*` variables, and at a pool size of one **failover is a no-op** —
-there is no second endpoint to fail over to.
+**All three slots point at the same gateway with three different models.** That is
+deliberate: free-tier limits are counted per model, so three models on one
+account is three independent budgets, which is what makes this look like three
+providers from the pool's point of view. If all three keys are the *same* key,
+that reasoning still holds for per-model quota but **not** for anything billed
+per account — a balance that hits zero kills all three at once, not one.
 
-So today a dead provider is a dead live path, and the demo-only deployment is the
-only thing standing between that and an empty board. Fill the table in as
-providers are added; a row with a blank free-tier column is a provider nobody has
-measured, and an unmeasured limit is the number that surprises you on stage.
+Two caveats worth knowing before the pitch:
+
+- **The free models are free "for a limited time".** Nothing here is a permanent
+  free tier, and `beam-free` is not served in Hong Kong at all, so it must never
+  be configured. Check the live list with
+  `curl -s https://opencode.ai/zen/v1/models | jq -r '.data[].id | select(test("-free$"))'`.
+- **The free-tier limits are unmeasured.** Fill that column in before the pitch;
+  an unmeasured limit is the number that surprises you on stage.
+
+Live mode was verified end to end against this pool: health ok, a live query
+answered `status=ok` with cards, and the demo path still returns its 6 seed
+matches.
 
 ### When a quota dies mid-demo
 
