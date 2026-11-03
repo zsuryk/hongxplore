@@ -21,6 +21,7 @@ The binding ownership matrix is **`docs/PLAN.md` → "Part B — Workstreams & o
 
 - **Never push to `main`.** Feature branch + PR only; never force-push shared branches. Prefer opening the PR as a **draft first**, then working in commits on it.
 - **Never commit `.env` or secrets.** Only `.env.example` with placeholders.
+- **Never commit live deployment identifiers** — the demo site URL, custom domain, cloud project number, revision names or provider keys. The deployed hackathon site is out of scope for this repository; use placeholders, or resolve the URL from `gcloud` at runtime.
 - **The product PRD is out-of-repo.** Do not create `PRD.md`, `docs/PRD*`, or any PRD-style file. Do not create `CLAUDE.md` — nobody on this team uses Claude Code.
 - **Do not copy the old static demo** (the `index.html` whiteboard from `kulturecanvas`) into this repo.
 - **Timezone: Asia/Hong_Kong** — store UTC, display HKT.
