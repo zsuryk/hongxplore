@@ -53,13 +53,50 @@ Mirrors `AGENTS.md` → "Before finishing a task":
 
 ## Before making the repo public
 
-This repo flips public on demo day. Before that:
+This repo flips public on demo day. The checklist below was executed for the public flip on
+**2026-11-03** (issue #90); re-run it before any later visibility change. Evidence is recorded in
+that issue and its PR.
 
-- [ ] Scrub env & history for secrets: `git log -p | grep -iE 'sk-|api.?key|token|password'` and confirm GitHub → Settings → Secrets and variables → Actions is **empty**
-- [ ] Decide a LICENSE (issue #17 / ADR-0007)
-- [ ] Verify `.gitignore` still excludes `.env` and friends (`git check-ignore api/.env`)
-- [ ] Check commit history and docs for teammate full names or other personal data beyond GitHub handles (handles are fine)
-- [ ] Confirm no joke commits, no debug leftovers, no PRD-style files
+- [x] **Secrets scan:** scanned every commit and blob at scan time (131 commits) for provider keys,
+      private keys, tokens and high-entropy strings. Only test fixtures, placeholders and mock
+      values matched.
+      The real values from the local gitignored `.env.deploy` do **not** appear anywhere in history.
+      No `.env` file was ever committed — only `.env.example` and `.env.deploy.example`.
+- [x] **GitHub Actions secrets/variables are empty:** `gh secret list`, `gh variable list` and the
+      environment/dependabot secret endpoints all return nothing. The old keep-warm URL variable
+      was removed so the public repo does not publish a deployment URL.
+- [x] **`.gitignore` excludes env files and key material:** `git check-ignore -v .env.deploy api/.env`
+      resolves to the `.env` / `.env.*` rules; `*.pem`, `*.key`, service-account JSON and similar
+      credentials are ignored too.
+- [x] **No deployment identifiers in the tree:** no live URL, cloud project number, revision name or
+      provider credential is committed. `docs/DEPLOY.md`, `scripts/deploy-prod.sh` and
+      `.env.deploy.example` use placeholders or resolve the URL from `gcloud` at runtime.
+- [x] **License:** MIT (issue #17 / ADR-0007), `LICENSE` at the repository root.
+- [x] **Personal data in tracked files:** no teammate full names or private contact details beyond
+      GitHub handles. **Known exception:** git commit author names/emails were left unchanged by
+      team decision; they are visible in history but are not secrets.
+- [x] **No joke commits, no debug leftovers, no PRD-style files.** `git ls-files` contains no build
+      output, `__pycache__`, `.DS_Store` or `dist/` artifacts.
+- [x] **GitHub-hosted text and logs:** live URLs/revision names in issue and PR text were redacted,
+      and the keep-warm Actions runs whose logs printed the URL were deleted. Two merged PRs'
+      head-ref commit messages (#137 and #147) still contain the old URLs and cannot be edited
+      without rewriting history; that residual is recorded in issue #90.
+
+Useful commands if you need to re-verify:
+
+```bash
+# Any env/credential file ever committed?
+git log --all --name-only --pretty=format: | sort -u | grep -E '(^|/)\.env($|\.)|\.pem$|\.key$|service-account'
+
+# Runtime secrets, not just placeholders (expect test fixtures only)
+git log -p --all | grep -iE 'sk-|tvly-|AIza|BEGIN .*PRIVATE KEY|ghp_'
+
+# Env files are still ignored
+git check-ignore -v .env.deploy api/.env
+
+# GitHub-side stores
+gh secret list && gh variable list
+```
 
 ## Running everything locally
 

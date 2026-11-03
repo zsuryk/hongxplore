@@ -2,7 +2,7 @@
 
 import json
 import sys
-from datetime import date, datetime
+from datetime import date, timedelta
 from decimal import Decimal
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -105,38 +105,47 @@ def test_is_free_activity_prioritizes_price_object() -> None:
     assert is_free_activity(priced_act) is False
 
 
-def test_seed_activity_dates_fall_on_current_or_upcoming_weekend() -> None:
-    """Scheduled activities fall on the upcoming weekend in HKT (issue #78)."""
-    now_hkt = datetime.now(ZoneInfo("Asia/Hong_Kong"))
-    expected_dates = compute_upcoming_weekend_dates(now_hkt.date())
+def test_seed_activity_dates_form_one_consistent_weekend() -> None:
+    """Scheduled seed activities share one Saturday/Sunday weekend in HKT (issue #78).
 
+    The generator derives dates from the upcoming weekend when it runs, but the
+    committed dataset is a snapshot. Assert the dataset's internal consistency
+    rather than whether the snapshot is still current, so the suite does not rot
+    with the calendar. Freshness is the regeneration step's responsibility.
+    """
     activities = load_seed_activities()
     scheduled = [a for a in activities if a.parts]
     assert len(scheduled) > 0
 
-    sat_date_str = expected_dates["saturday"]
-    sun_date_str = expected_dates["sunday"]
+    hkt = ZoneInfo("Asia/Hong_Kong")
+    dates: set[date] = set()
+    saturdays: set[date] = set()
+    sundays: set[date] = set()
+    for activity in scheduled:
+        for part in activity.parts:
+            part_date = part.start.astimezone(hkt).date()
+            dates.add(part_date)
+            if part_date.weekday() == 5:
+                saturdays.add(part_date)
+            elif part_date.weekday() == 6:
+                sundays.add(part_date)
 
-    found_sat = False
-    found_sun = False
-    for a in scheduled:
-        for part in a.parts:
-            part_hkt = part.start.astimezone(ZoneInfo("Asia/Hong_Kong"))
-            date_str = part_hkt.strftime("%Y-%m-%d")
-            weekday = part_hkt.weekday()
-            if weekday == 5:
-                assert date_str == sat_date_str, (
-                    f"Activity {a.id} Sat date {date_str} != {sat_date_str}"
-                )
-                found_sat = True
-            elif weekday == 6:
-                assert date_str == sun_date_str, (
-                    f"Activity {a.id} Sun date {date_str} != {sun_date_str}"
-                )
-                found_sun = True
+    assert len(saturdays) == 1, (
+        f"Expected exactly one Saturday in the seed weekend, got {sorted(saturdays)}"
+    )
+    assert len(sundays) == 1, (
+        f"Expected exactly one Sunday in the seed weekend, got {sorted(sundays)}"
+    )
 
-    assert found_sat, "Expected Saturday activities in seed dataset"
-    assert found_sun, "Expected Sunday activities in seed dataset"
+    saturday = next(iter(saturdays))
+    sunday = next(iter(sundays))
+    assert sunday == saturday + timedelta(days=1), (
+        f"Seed Sunday {sunday} does not follow Saturday {saturday}"
+    )
+
+    week_start = saturday - timedelta(days=5)  # Monday of the same week
+    off_week = sorted(d for d in dates if not week_start <= d <= sunday)
+    assert not off_week, f"Seed dates outside the weekend's Monday-Sunday week: {off_week}"
 
 
 def test_upcoming_weekend_dates_derivation() -> None:

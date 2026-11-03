@@ -20,7 +20,9 @@ Start here: [`docs/PLAN.md`](docs/PLAN.md) (phased tickets + ownership) and the 
 
 For the UI: [`DESIGN.md`](DESIGN.md) is the design contract — tokens, card anatomy, zoom geometry, component behaviour and the accessibility gates. It is a design-system document, not a product spec (see [ADR-0004](docs/adr/0004-spec-and-prototype-kept-out-of-repo)).
 
-**Deploying it, or running the demo?** [`docs/DEPLOY.md`](docs/DEPLOY.md) is the operator-facing runbook: the pitch URL, deploy/verify/rollback, what demo mode guarantees versus what live mode requires, key rotation, the provider pool, the pre-pitch checklist, a symptom → cause → fix troubleshooting table, and the honest note on what the browser-stored access key does and does not protect.
+**Deploying it, or running the demo?** [`docs/DEPLOY.md`](docs/DEPLOY.md) is the operator-facing runbook: deploy/verify/rollback, what demo mode guarantees versus what live mode requires, key rotation, the provider pool, the pre-pitch checklist, a symptom → cause → fix troubleshooting table, and the honest note on what the browser-stored access key does and does not protect.
+
+The **live deployment** is deliberately out of scope for the public repository: the runbook uses placeholders, and no live URL, cloud project number or revision name is committed. Supply those values locally when you deploy.
 
 ## Quickstart
 
@@ -79,3 +81,13 @@ Run `make help` for the full target list. CI additionally lints commit messages 
 | `sweetpinejam` | Frontend |
 
 Ownership details per folder live in [`docs/PLAN.md`](docs/PLAN.md) ("Workstreams & ownership") and are enforced by the `zone-guard` CI check via `.github/CODEOWNERS`.
+
+## Contributing
+
+Read [`CONTRIBUTING.md`](CONTRIBUTING.md) for the GitHub flow, commit conventions, PR rules and the public-flip checklist. [`AGENTS.md`](AGENTS.md) is the binding rulebook for humans and AI agents.
+
+## License
+
+This project is released under the [MIT License](LICENSE). Copyright (c) 2026 Hongxplore contributors.
+
+Third-party activity listings, venue data and images linked from the app keep their own terms; the MIT license covers this repository's source code and original documentation.

@@ -249,10 +249,10 @@ Scope: glue the whole demo: fresh clone → `.env` with `DEMO_MODE=true` → que
 
 Scope: resolve ADR-0007 (status `proposed` → `accepted`), add the LICENSE file, and execute the "Before making the repo public" checklist in `CONTRIBUTING.md` before the demo-day flip.
 
-- [ ] ADR-0007 flipped to accepted with the chosen license
-- [ ] `LICENSE` file added at the repo root
-- [ ] `CONTRIBUTING.md` public-flip checklist executed and ticked
-- [ ] GitHub Actions secrets confirmed empty; git history scrubbed for secrets
+- [x] ADR-0007 flipped to accepted with the chosen license (MIT)
+- [x] `LICENSE` file added at the repo root
+- [x] `CONTRIBUTING.md` public-flip checklist executed and ticked
+- [x] GitHub Actions secrets/variables confirmed empty; git history scanned for secrets
 
 ---
 
