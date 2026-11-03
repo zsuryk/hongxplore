@@ -22,7 +22,7 @@ For the UI: [`DESIGN.md`](DESIGN.md) is the design contract — tokens, card ana
 
 **Deploying it, or running the demo?** [`docs/DEPLOY.md`](docs/DEPLOY.md) is the operator-facing runbook: deploy/verify/rollback, what demo mode guarantees versus what live mode requires, key rotation, the provider pool, the pre-pitch checklist, a symptom → cause → fix troubleshooting table, and the honest note on what the browser-stored access key does and does not protect.
 
-Deployment is deliberately **not** part of the public repository: the runbook uses placeholders, and no live URL, cloud project number or revision name is committed. Supply those values locally when you deploy.
+The **live deployment** is deliberately out of scope for the public repository: the runbook uses placeholders, and no live URL, cloud project number or revision name is committed. Supply those values locally when you deploy.
 
 ## Quickstart
 

@@ -57,8 +57,9 @@ This repo flips public on demo day. The checklist below was executed for the pub
 **2026-11-03** (issue #90); re-run it before any later visibility change. Evidence is recorded in
 that issue and its PR.
 
-- [x] **Secrets scan:** scanned all 131 commits and every blob for provider keys, private keys,
-      tokens and high-entropy strings. Only test fixtures, placeholders and mock values matched.
+- [x] **Secrets scan:** scanned every commit and blob at scan time (131 commits) for provider keys,
+      private keys, tokens and high-entropy strings. Only test fixtures, placeholders and mock
+      values matched.
       The real values from the local gitignored `.env.deploy` do **not** appear anywhere in history.
       No `.env` file was ever committed — only `.env.example` and `.env.deploy.example`.
 - [x] **GitHub Actions secrets/variables are empty:** `gh secret list`, `gh variable list` and the
@@ -77,9 +78,9 @@ that issue and its PR.
 - [x] **No joke commits, no debug leftovers, no PRD-style files.** `git ls-files` contains no build
       output, `__pycache__`, `.DS_Store` or `dist/` artifacts.
 - [x] **GitHub-hosted text and logs:** live URLs/revision names in issue and PR text were redacted,
-      and the keep-warm Actions runs whose logs printed the URL were deleted. One merged PR's
-      head-ref commit message still contains the old URLs and cannot be edited without rewriting
-      history; that residual is recorded in issue #90.
+      and the keep-warm Actions runs whose logs printed the URL were deleted. Two merged PRs'
+      head-ref commit messages (#137 and #147) still contain the old URLs and cannot be edited
+      without rewriting history; that residual is recorded in issue #90.
 
 Useful commands if you need to re-verify:
 
