@@ -17,4 +17,4 @@ The product PRD is zsuryk's personal work, and an earlier static prototype (`ind
 
 - Repo docs stay engineering-facing; `AGENTS.md` + `docs/PLAN.md` + issues are the work context.
 - The engineering skills bind to `AGENTS.md` (no `CLAUDE.md` to hijack them) and to `docs/adr/` as the decision log.
-- Demo-day repo scrubbing (CONTRIBUTING checklist) has no PRD or prototype to remove.
+- Demo-day repo scrubbing has no PRD or prototype to remove.

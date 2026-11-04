@@ -15,4 +15,4 @@ Use a single repository with top-level `api/` (Python/uv), `web/` (TypeScript/pn
 
 - One clone, one CI run, one number space — contract changes (`docs/openapi.json` ↔ `web/src/api/schema.ts`) land atomically in one PR.
 - Language toolchains stay separate (uv on `api/`, pnpm on `web/`); there is no cross-build.
-- Zone ownership (`api/`, `web/`, `data/`) maps directly onto folders, which is what `zone-guard` enforces per path.
+- Ownership (`api/`, `web/`, `data/`) maps directly onto folders, so changes outside an area are easy to spot.

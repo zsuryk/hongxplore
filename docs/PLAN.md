@@ -11,10 +11,10 @@ Two parts: **Part A — Tickets** (the phased backlog; mirrors GitHub issues #1 
 Completed by PR #2:
 
 - [x] Folder structure incl. Matt's-skills layout (`CONTEXT.md`, `docs/adr/`, `docs/agents/`, `## Agent skills` in `AGENTS.md`)
-- [x] All docs: README, AGENTS.md, GEMINI.md, CONTRIBUTING.md, ARCHITECTURE.md, this plan, ADR-0001…0007
+- [x] All docs: README, AGENTS.md, GEMINI.md, ARCHITECTURE.md, this plan, ADR-0001…0007
 - [x] Runnable-but-empty skeleton: `GET /health` on :8000, hello page on :5173, lockfiles committed
 - [x] Tooling green: uv + ruff + mypy + pytest; pnpm + eslint + prettier + tsc
-- [x] CI: `api`, `web`, `commitlint`, `zone-guard` jobs; CODEOWNERS; templates
+- [x] CI: `api`, `web`, `commitlint`, `image`, `check-run-names` jobs; templates
 - [x] Contract pipeline proven: `docs/openapi.json`, `docs/examples/agent-response.json`, `web/src/api/schema.ts` via `pnpm gen:types`
 - [x] Tracker: labels, issues #1 and #3–#17 with assignees and blocking edges (project board "Hongxplore" created — statuses `Backlog` · `Todo` · `In Progress` · `Done` · `Cancelled`)
 
@@ -247,29 +247,29 @@ Scope: glue the whole demo: fresh clone → `.env` with `DEMO_MODE=true` → que
 
 **Area:** infra · **Owner:** zsuryk · **Depends on:** — · **Blocks:** —
 
-Scope: resolve ADR-0007 (status `proposed` → `accepted`), add the LICENSE file, and execute the "Before making the repo public" checklist in `CONTRIBUTING.md` before the demo-day flip.
+Scope: resolve ADR-0007 (status `proposed` → `accepted`), add the LICENSE file, and run the public-flip checks before the demo-day flip.
 
 - [x] ADR-0007 flipped to accepted with the chosen license (MIT)
 - [x] `LICENSE` file added at the repo root
-- [x] `CONTRIBUTING.md` public-flip checklist executed and ticked
+- [x] Public-flip checklist executed and ticked
 - [x] GitHub Actions secrets/variables confirmed empty; git history scanned for secrets
 
 ---
 
 ## Part B — Workstreams & ownership
 
-Binding role-separation rules. These make it structurally hard for zsuryk, kORNkin, and sweetpinejam to collide. Read this before touching any file outside your zone.
+Role-separation map. These make it structurally hard for zsuryk, kORNkin, and sweetpinejam to collide. Use it to coordinate with the owner before touching any file outside your area.
 
-### A1. Ownership matrix (binding, mirrors CODEOWNERS)
+### A1. Ownership matrix (informational)
 
 | Zone | Owner | Files | Everyone else |
 | --- | --- | --- | --- |
-| API surface | zsuryk | `api/app/routes/`, `api/app/models/`, `api/app/config.py`, `api/tests/` **except** `api/tests/prompts/` and `api/tests/services/`, `.github/`, root docs (`README`, `AGENTS.md`, `CONTRIBUTING.md`, `docs/PLAN.md`, `docs/adr/`) | open an issue / PR; `zone-guard` enforces the owner's approval |
-| AI & data | kORNkin | `api/app/services/`, `api/app/prompts/`, `api/tests/prompts/`, `api/tests/services/`, `data/` (seed JSON) | no edits without kORNkin's ack on the issue |
-| Frontend | sweetpinejam | `web/**` | no edits without sweetpinejam's ack on the issue |
+| API surface | zsuryk | `api/app/routes/`, `api/app/models/`, `api/app/config.py`, `api/tests/` **except** `api/tests/prompts/` and `api/tests/services/`, `.github/`, root docs (`README`, `AGENTS.md`, `docs/PLAN.md`, `docs/adr/`) | open an issue / PR and coordinate with the owner |
+| AI & data | kORNkin | `api/app/services/`, `api/app/prompts/`, `api/tests/prompts/`, `api/tests/services/`, `data/` (seed JSON) | coordinate with kORNkin in the issue |
+| Frontend | sweetpinejam | `web/**` | coordinate with sweetpinejam in the issue |
 | Shared contract | zsuryk defines in #4; **owned jointly after freeze** | `api/app/models/` Activity + generated web types | changes require an issue comment + ack from zsuryk AND the affected consumer |
 
-`.github/CODEOWNERS` is the machine-readable copy; `zone-guard` CI enforces it per path. **Test placement rule:** a test lives under the zone root of the module it covers — `api/tests/prompts/` and `api/tests/services/` are kORNkin's; everything else under `api/tests/` stays zsuryk's. Adding a test for another zone's module needs no second approval.
+**Test placement rule:** a test lives under the zone root of the module it covers — `api/tests/prompts/` and `api/tests/services/` are kORNkin's; everything else under `api/tests/` stays zsuryk's. Adding a test for another area's module needs no second approval.
 
 ### A2. Dependency edges
 
@@ -292,7 +292,7 @@ Web never blocks on a live API (fixtures / `DEMO_MODE` first); services never bl
 ### A6. Conflict rules
 
 - Two owners never edit the same file concurrently.
-- A PR crossing a zone boundary requires the zone owner's approval — `zone-guard` enforces it. **Coordinate in the issue before starting, not in the PR after.**
+- A PR crossing a zone boundary should coordinate with the zone owner in the issue. **Coordinate before starting, not in the PR after.**
 - Integration/merge responsibility for cross-zone tickets (#9, #16) sits with zsuryk.
 
 ### A7. Checkpoints

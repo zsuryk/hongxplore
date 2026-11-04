@@ -1,6 +1,6 @@
 # ADR-0008: Required status checks must be approval-aware
 
-- **Status:** accepted
+- **Status:** superseded by [ADR-0012](0012-retire-zone-guard.md)
 - **Date:** 2026-10-03
 
 ## Context
@@ -14,6 +14,6 @@ One workflow (`.github/workflows/zone-guard.yml`), one job (`zone-guard`), one c
 ## Consequences
 
 - The last zone-owner approval turns the check green on its own — no rerun, no empty commit, one row in the checks list.
-- The branch ruleset is unchanged: it still names `zone-guard`; because the check name did not move, no ruleset edit was needed.
+- At the time, the branch ruleset still named `zone-guard`; because the check name did not move, no ruleset edit was needed.
 - A same-zone PR still passes with zero approvals (verified explicitly; this is why the review-triggered run can never become the only required context).
-- If a gate gets genuinely stuck (e.g. API trouble failing closed), the documented escape is a manual CI rerun from the Actions tab — see `CONTRIBUTING.md`.
+- If a gate gets genuinely stuck (e.g. API trouble failing closed), the documented escape was a manual CI rerun from the Actions tab.

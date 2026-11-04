@@ -70,7 +70,6 @@ Run `make help` for the full target list. CI additionally lints commit messages 
 | `docs/examples/` | Shared contract fixtures used by backend tests and web mocks |
 | `CONTEXT.md` | Domain glossary — read by the domain-modeling skill |
 | `AGENTS.md` | Single source of truth for every human and AI agent |
-| `CONTRIBUTING.md` | Workflow, commits, PR rules, pre-public checklist |
 
 ## Team & roles
 
@@ -80,11 +79,11 @@ Run `make help` for the full target list. CI additionally lints commit messages 
 | `kORNkin` | Data & AI integration (Tavily, LLM prompts), prompt engineering |
 | `sweetpinejam` | Frontend |
 
-Ownership details per folder live in [`docs/PLAN.md`](docs/PLAN.md) ("Workstreams & ownership") and are enforced by the `zone-guard` CI check via `.github/CODEOWNERS`.
+Ownership details per folder live in [`docs/PLAN.md`](docs/PLAN.md) ("Workstreams & ownership").
 
 ## Contributing
 
-Read [`CONTRIBUTING.md`](CONTRIBUTING.md) for the GitHub flow, commit conventions, PR rules and the public-flip checklist. [`AGENTS.md`](AGENTS.md) is the binding rulebook for humans and AI agents.
+Open an issue before starting significant work. [`AGENTS.md`](AGENTS.md) is the binding rulebook for the GitHub flow, commit conventions and PR rules.
 
 ## License
 

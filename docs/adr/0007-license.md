@@ -23,6 +23,6 @@ MIT is the smallest license that grants reuse, modification and redistribution w
 ## Consequences
 
 - The source code and original documentation in this repository are MIT-licensed. Anyone may reuse them with attribution and without warranty.
-- Contributions are accepted under the same MIT terms (see `CONTRIBUTING.md`).
+- Contributions are accepted under the same MIT terms.
 - Third-party material keeps its own terms: linked activity listings, venue data, cover images and other external sources are **not** relicensed by this repository, and their original licences/usage terms still apply.
-- The public-flip checklist in `CONTRIBUTING.md` is the gate for the actual visibility change; the flip itself remains a manual owner action.
+- The public-flip checklist is the gate for the actual visibility change; the flip itself remains a manual owner action.
