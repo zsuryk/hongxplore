@@ -1,0 +1,9 @@
+# pnpm v12 reads project settings from this file, not from `pnpm` in package.json.
+#
+# GHSA-g3hv-75wg-m249 (Dependabot alert #14) has no patch inside minimatch's
+# `^10` range, so the `^10` consumers — eslint, @eslint/config-array and
+# @typescript-eslint/typescript-estree — are pinned to the first patched
+# release. The `minimatch@5` copy under @redocly/openapi-core is deliberately
+# left alone: 11.x drops the default export that package calls.
+overrides:
+  minimatch@^10: 11.0.1
