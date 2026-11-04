@@ -1,9 +1,10 @@
 # pnpm v12 reads project settings from this file, not from `pnpm` in package.json.
 #
 # GHSA-g3hv-75wg-m249 (Dependabot alert #14) has no patch inside minimatch's
-# `^10` range, so the `^10` consumers — eslint, @eslint/config-array and
-# @typescript-eslint/typescript-estree — are pinned to the first patched
-# release. The `minimatch@5` copy under @redocly/openapi-core is deliberately
-# left alone: 11.x drops the default export that package calls.
+# `^10` or `^5` ranges, so every copy in the tree is pinned to the first
+# patched release. `@redocly/openapi-core@1` calls minimatch as a default
+# export, which 11.x removed — `patches/` carries the one-line fix.
 overrides:
-  minimatch@^10: 11.0.1
+  minimatch: 11.0.1
+patchedDependencies:
+  '@redocly/openapi-core@1.34.20': patches/@redocly__openapi-core@1.34.20.patch
