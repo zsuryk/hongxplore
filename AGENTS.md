@@ -12,10 +12,10 @@ Single source of truth for every human and AI agent working on this repo. `GEMIN
 | `web/` | React + Vite frontend | sweetpinejam |
 | `data/` | Seed datasets (JSON) | kORNkin |
 | `docs/` | Project docs, ADRs (`docs/adr/`), skill config (`docs/agents/`) | zsuryk |
-| `.github/` | CI workflows, CODEOWNERS, templates | zsuryk |
-| Root docs | `README.md`, `AGENTS.md`, `CONTRIBUTING.md`, `CONTEXT.md`, `docs/PLAN.md` | zsuryk |
+| `.github/` | CI workflows, templates | zsuryk |
+| Root docs | `README.md`, `AGENTS.md`, `CONTEXT.md`, `docs/PLAN.md` | zsuryk |
 
-The binding ownership matrix is **`docs/PLAN.md` → "Part B — Workstreams & ownership"** — it, not this table, is authoritative for folder ownership.
+The ownership matrix lives in **`docs/PLAN.md` → "Part B — Workstreams & ownership"**; use it to coordinate with the owner before changing another area.
 
 ## Hard rules
 
@@ -29,11 +29,10 @@ The binding ownership matrix is **`docs/PLAN.md` → "Part B — Workstreams & o
 - **No new dependencies** without noting them in the PR body.
 - **Respect `DEMO_MODE`** in any future agent endpoint.
 - Anything **>~1 hour or crossing two areas requires an issue first** (see `docs/agents/issue-tracker.md`).
-- **Before touching a folder you don't own**, read the ownership matrix in `docs/PLAN.md` and get the zone owner's ack in the issue.
-- **Test placement rule:** a test lives under the zone root of the module it covers — `api/tests/prompts/` and `api/tests/services/` belong to kORNkin; everything else under `api/tests/` stays zsuryk's. Adding a test for another zone's module needs no CODEOWNERS edit and no second approval.
+- **Before touching a folder you don't own**, read the ownership matrix in `docs/PLAN.md` and coordinate with the owner in the issue before starting.
+- **Test placement rule:** a test lives under the zone root of the module it covers — `api/tests/prompts/` and `api/tests/services/` belong to kORNkin; everything else under `api/tests/` stays zsuryk's. Adding a test for another area's module needs no second approval.
 - **Ticket-first protocol (applies to EVERY agent — OpenCode, Codex, Antigravity — not only users of Matt's skills):** before writing code for a ticket, run `gh issue view <n> --comments` and read its acceptance criteria, `Blocked by` edges, and linked artifacts. The issue, not a chat log, is where work context lives.
 - **Contract hub:** issue #4 is the single source of truth for API / service-seam / web-type questions. Its linked artifacts — `docs/openapi.json`, `docs/examples/agent-response.json`, `web/src/api/schema.ts` (via `pnpm gen:types`), and `api/app/services/ports.py` (once created) — are binding. If chat and these files disagree, the files win; fixing a mismatch is a PR, not a decision.
-- **Zone reviews are enforced by the `zone-guard` CI check, not by a GitHub checkbox:** a PR that touches only your zone's paths merges with **zero approvals**; touching another zone keeps the check red until that zone's owner approves (owners: `docs/PLAN.md` ownership matrix + `.github/CODEOWNERS`). GitHub's own "required approvals" is deliberately set to 0 — the check is the gate. **No author is exempt, the repo owner included.** The only escape hatch: `zsuryk` posts a PR conversation comment containing `zone-guard bypass` and the check re-runs green (triggered by the `issue_comment` event).
 
 ## Commands to run before saying "done"
 
