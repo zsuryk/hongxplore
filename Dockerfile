@@ -25,9 +25,11 @@ WORKDIR /build/web
 
 RUN corepack enable
 
-# pnpm v12 reads `overrides` from pnpm-workspace.yaml, not from package.json —
-# it has to be copied before the frozen install or the lockfile config mismatches.
+# pnpm v12 reads `overrides` and `patchedDependencies` from pnpm-workspace.yaml,
+# not from package.json — both it and the patch it points at have to be copied
+# before the frozen install, or the lockfile config mismatches.
 COPY web/package.json web/pnpm-lock.yaml web/pnpm-workspace.yaml ./
+COPY web/patches/ ./patches/
 RUN pnpm install --frozen-lockfile
 
 # `web/src/api/schema.ts` and the fixture are generated from the contract, and the
