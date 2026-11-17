@@ -4,7 +4,9 @@ An infinite whiteboard + AI activity agent that helps international and non-loca
 
 ## Demo
 
-[Watch the Hongxplore demo](docs/demo/demo_video.mov) (1 minute 6 seconds).
+https://github.com/user-attachments/assets/7c7565a1-6726-4b53-a426-6eca25850732
+
+[Download the Hongxplore demo](docs/demo/demo_video.mov) (1 minute 6 seconds).
 
 ## Background
 
