@@ -2,6 +2,10 @@
 
 An infinite whiteboard + AI activity agent that helps international and non-local students in Hong Kong discover, translate, and schedule local activities.
 
+## Demo
+
+[Watch the Hongxplore demo](docs/demo/demo_video.mov) (1 minute 6 seconds).
+
 ## Background
 
 International students in Hong Kong face chronic social isolation. Public facilities, grassroots recreation, and NGO cultural events are locked behind fragmented, Cantonese-only channels (LCSD portals, 活動站, district council pages, meetup groups) — students don't know what exists, how to book facilities, or when events happen.
